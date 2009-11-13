@@ -1,7 +1,7 @@
-Index: giac-0.8.4-dfsg1/configure.in
+Index: giac/configure.in
 ===================================================================
---- giac-0.8.4-dfsg1.orig/configure.in	2009-11-12 21:59:55.000000000 +0100
-+++ giac-0.8.4-dfsg1/configure.in	2009-11-12 23:49:35.000000000 +0100
+--- giac.orig/configure.in	2009-11-13 23:04:05.000000000 +0100
++++ giac/configure.in	2009-11-13 23:08:04.000000000 +0100
 @@ -18,6 +18,7 @@
  
  AC_INIT(src/index.h)
@@ -38,25 +38,24 @@ Index: giac-0.8.4-dfsg1/configure.in
  ])
  
  if test -z $prefix ;
-Index: giac-0.8.4-dfsg1/autogen.sh
+Index: giac/autogen.sh
 ===================================================================
---- giac-0.8.4-dfsg1.orig/autogen.sh	2009-11-12 21:59:56.000000000 +0100
-+++ giac-0.8.4-dfsg1/autogen.sh	2009-11-12 23:49:48.000000000 +0100
+--- giac.orig/autogen.sh	2009-11-13 23:04:05.000000000 +0100
++++ giac/autogen.sh	2009-11-13 23:08:23.000000000 +0100
 @@ -1,6 +1,4 @@
 -#! /bin/sh
 -aclocal -I /usr/local/share/aclocal
 -autoheader
 -autoconf
 -automake
--./configure $*
 +#! /bin/sh -e
 +cp /usr/share/gettext/config.rpath .
 +autoreconf -f -i
-+CXX=g++-4.1 ./configure $*
-Index: giac-0.8.4-dfsg1/acinclude.m4
+ ./configure $*
+Index: giac/acinclude.m4
 ===================================================================
---- giac-0.8.4-dfsg1.orig/acinclude.m4	2009-11-12 21:59:55.000000000 +0100
-+++ giac-0.8.4-dfsg1/acinclude.m4	2009-11-12 23:49:35.000000000 +0100
+--- giac.orig/acinclude.m4	2009-11-13 23:04:05.000000000 +0100
++++ giac/acinclude.m4	2009-11-13 23:07:46.000000000 +0100
 @@ -1,8 +1,8 @@
  dnl old names
 -AM_LC_MESSAGES
@@ -133,10 +132,10 @@ Index: giac-0.8.4-dfsg1/acinclude.m4
  if test "x${giac_error}" = "xyes"; then
      echo "**** The following problems have been detected by configure."
      echo "**** Please check the messages below before running \"make\"."
-Index: giac-0.8.4-dfsg1/src/Makefile.am
+Index: giac/src/Makefile.am
 ===================================================================
---- giac-0.8.4-dfsg1.orig/src/Makefile.am	2009-11-12 21:59:55.000000000 +0100
-+++ giac-0.8.4-dfsg1/src/Makefile.am	2009-11-12 23:49:35.000000000 +0100
+--- giac.orig/src/Makefile.am	2009-11-13 23:04:05.000000000 +0100
++++ giac/src/Makefile.am	2009-11-13 23:07:46.000000000 +0100
 @@ -42,7 +42,7 @@
  #mycas_SOURCES = mycas.cc 
  #mycas_LDFLAGS = -s -L../src/.libs 
@@ -155,10 +154,10 @@ Index: giac-0.8.4-dfsg1/src/Makefile.am
  EXTRA_DIST = .gdbinit xgiac pgiac prime.table gen_user \
  	input_parser.h softmath.h softmath.cc\
  	mkxcas mkwcas mkgcas mkaout Makefile.wince\
-Index: giac-0.8.4-dfsg1/Makefile.am
+Index: giac/Makefile.am
 ===================================================================
---- giac-0.8.4-dfsg1.orig/Makefile.am	2009-11-12 21:59:55.000000000 +0100
-+++ giac-0.8.4-dfsg1/Makefile.am	2009-11-12 23:49:35.000000000 +0100
+--- giac.orig/Makefile.am	2009-11-13 23:04:05.000000000 +0100
++++ giac/Makefile.am	2009-11-13 23:07:46.000000000 +0100
 @@ -1,7 +1,7 @@
  PACKAGE = giac
  VERSION = 0.8.4
