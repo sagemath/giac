@@ -1,0 +1,39 @@
+#! /bin/tcsh
+cd ~/src
+rm -f xcas
+#make -f Makefile.fast
+make -f Makefile.O2 statcas
+make -f Makefile.O2
+strip xcas
+cp -f xcasmenu /usr/local/share/giac
+cd ~/giac/doc
+cp -f aide_cas /usr/local/share/giac/
+#rm -rf /usr/local/share/giac/doc
+#make install
+#cd /usr/local/share/giac
+#tar xfz ~/giac-0.2.4/examples.tgz
+#tar cfz ~/giac-0.2.4/local.tgz doc examples
+cd ~/src
+'cp' -f xcas /usr/local/bin
+'cp' -f xcas ~/giac-0.2.4/xcas/xcas.bin
+#'cp' -f xcasnew /usr/local/bin
+#'cp' -f xcasnew ~/giac-0.2.4/xcas/xcasnew.bin
+'cp' -f icas /usr/local/bin/icas
+'cp' -f icas ~/giac-0.2.4/xcas/icas.bin
+cd ~/giac-0.2.4
+cd xcas
+cp -f ~/src/xcasmenu ~/giac-0.2.4/xcas
+rm -rf doc examples
+tar xfz ~/casdoc.tgz
+rm -f doc/fr/html_*
+cd ..
+tar cfz ~/xcas_user.tgz xcas
+cd /
+tar cfz ~/xcas_root.tgz /usr/local/bin/xcas /usr/local/bin/xcasnew /usr/local/bin/giac /usr/local/bin/xgiac  /usr/local/bin/icas /usr/local/share/giac/* /usr/share/giac /usr/local/share/locale/fr/LC_MESSAGES/giac.mo /usr/local/share/locale/es/LC_MESSAGES/giac.mo /usr/local/share/locale/de/LC_MESSAGES/giac.mo /usr/local/bin/updatecas /usr/local/bin/pgiac /usr/share/mime/packages/giac.xml /usr/share/applications/xcas.desktop /usr/share/application-registry/xcas.applications /usr/share/pixmaps/xcas.xpm /usr/lib/menu/giac /usr/lib/mime/packages/giac
+# run update-menus, update-mime-database, update-desktop-database
+cd ~/src
+rm -f icas.gz
+make -f Makefile.O2 statcas
+gzip icas
+rm -f xcas.gz
+gzip xcas

@@ -1,0 +1,12 @@
+#! /bin/bash
+export CXXFLAGS="-g -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 -L/usr/local/lib -I/usr/local/include" #  
+#export LDFLAGS=""
+export CFLAGS="-g -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 -L/usr/local/lib -I/usr/local/include" #  
+# When pari is enabled under OSX, memory allocation error happen
+# Maybe a miscompilation of pari for i386/ppc architecture??
+./configure --enable-dl=no --disable-pari
+cd src
+make
+sh mkstat
+make
+sh mkhist

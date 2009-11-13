@@ -1,0 +1,7530 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-11-09 11:23+0100\n"
+"PO-Revision-Date: 2009-11-10 10:41+0100\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/hist.cxx:93 src/History.cc:1284
+msgid " has changed. Save?"
+msgstr " Έχει αλλάξει. Αποθήκευση?"
+
+#: src/hist.cxx:409 src/hist.cxx:1768 src/hist.cxx:2528 src/hist.cxx:2550
+#, fuzzy
+msgid "CAS"
+msgstr "CAS"
+
+#: src/hist.cxx:410 src/hist.cxx:2551
+#, fuzzy
+msgid "Program CAS"
+msgstr "Προγραμματισμός και υπολογισμός σε μορφη1(CAS) "
+
+#: src/hist.cxx:411 src/hist.cxx:695 src/hist.cxx:1836 src/hist.cxx:4615
+#: src/Tableur.cc:132 src/Tableur.cc:2834
+msgid "Spreadsheet"
+msgstr "Πίνακας"
+
+#: src/hist.cxx:412 src/hist.cxx:695 src/hist.cxx:1747 src/hist.cxx:2540
+#: src/hist.cxx:2553
+msgid "Geometry"
+msgstr "Γεωμετρία"
+
+#: src/hist.cxx:413 src/hist.cxx:695 src/hist.cxx:1750 src/hist.cxx:1893
+#: src/hist.cxx:2554
+#, fuzzy
+msgid "Tortue"
+msgstr "Κατηγοριοποίηση"
+
+#. Xcas_Main_Window_->hide();
+#: src/hist.cxx:693 src/hist.cxx:695
+msgid "Choose start mode"
+msgstr "Επιλογή μιας μεθόδου εκκίνησης"
+
+#: src/hist.cxx:693 src/Cfg.cc:153
+msgid "Maple"
+msgstr "Maple"
+
+#: src/hist.cxx:693 src/Cfg.cc:152
+#, fuzzy
+msgid "Xcas"
+msgstr "Xcas"
+
+#: src/hist.cxx:693
+#, fuzzy
+msgid "Other"
+msgstr "sum"
+
+#. Ask user: ignore or run file
+#: src/hist.cxx:741
+msgid "Auto-recovery files found. Load ?"
+msgstr "Τα αρχεία της αυτόματης αποθήκευσης εντοπίστηκαν. Φορτωση?"
+
+#: src/hist.cxx:741 src/History.cc:1247 src/Tableur.cc:2525
+msgid "Yes"
+msgstr "Ναι"
+
+#: src/hist.cxx:741 src/History.cc:1247 src/Tableur.cc:2525
+msgid "No"
+msgstr "Όχι"
+
+#: src/hist.cxx:1256
+msgid "Enter new help browser program (empty line for builtin)"
+msgstr ""
+"Δώστε το όνομα του καθοδηγητή(browser) προγράμματος(καμία καταχώρηση για "
+"καθολικό)"
+
+#: src/hist.cxx:1453
+msgid "Exercice number (from 1 to 25)?"
+msgstr "Δώστε το νούμερο της άσκησης  "
+
+#: src/hist.cxx:1503 src/hist.cxx:1558 src/Graph.cc:5170
+msgid "Graph of a function"
+msgstr "Γράφημα μιας συνάρτησης"
+
+#: src/hist.cxx:1536 src/Graph.cc:5615
+msgid "Area under curve"
+msgstr "Περιοχή κάτς απο την καμπύλη"
+
+#: src/hist.cxx:1580 src/Graph.cc:5353
+msgid "Graph of a recurrent sequence"
+msgstr "Γράφημα μιας περιοδικής ακολουθίας"
+
+#: src/hist.cxx:1638 src/History.cc:2922
+msgid "File"
+msgstr "Αρχείο"
+
+#: src/hist.cxx:1639
+#, fuzzy
+msgid "New session"
+msgstr "Συνεδρία xcas "
+
+#: src/hist.cxx:1640
+msgid "Open"
+msgstr "’νοιγμα"
+
+#: src/hist.cxx:1641
+msgid "Open (recovery mode)"
+msgstr ""
+
+#: src/hist.cxx:1642
+msgid "Import"
+msgstr "Εισαγωγή"
+
+#: src/hist.cxx:1643
+msgid "maple worksheet"
+msgstr "Συνεδρία(πλαίσιο) εργασίας maple"
+
+#: src/hist.cxx:1644
+msgid "ti89 program"
+msgstr "Πρόγραμμα ti89"
+
+#: src/hist.cxx:1645
+msgid "V200 program"
+msgstr "Πρόγραμμα V200"
+
+#: src/hist.cxx:1647 src/History.cc:2932 src/Tableur.cc:2809
+#: src/Editeur.cc:1658 src/Graph.cc:5591
+msgid "Insert"
+msgstr "Εισαγωγή"
+
+#: src/hist.cxx:1648 src/History.cc:2933
+msgid "xcas session"
+msgstr "Συνεδρία xcas "
+
+#: src/hist.cxx:1649 src/History.cc:2934
+msgid "figure"
+msgstr "Φιγούρα"
+
+#: src/hist.cxx:1650 src/History.cc:2935
+msgid "spreadsheet"
+msgstr "Πίνακας"
+
+#: src/hist.cxx:1651 src/History.cc:2936 src/History.cc:2961
+#: src/History.cc:2973
+msgid "program"
+msgstr "Πρόγραμμα"
+
+#: src/hist.cxx:1653 src/hist.cxx:4357 src/History.cc:2923 src/Cfg.cc:304
+#: src/Cfg.cc:667 src/Editeur.cc:1665
+msgid "Save"
+msgstr "Αποθήκευση"
+
+#: src/hist.cxx:1654 src/History.cc:2924 src/Editeur.cc:1666
+msgid "Save as"
+msgstr "Αποθήκευση ως"
+
+#: src/hist.cxx:1655
+msgid "Save all"
+msgstr "Αποθήκευση όλων"
+
+#: src/hist.cxx:1656 src/History.cc:2925
+msgid "Export as"
+msgstr "Εξαγωγή ως"
+
+#: src/hist.cxx:1657 src/History.cc:2926 src/Editeur.cc:1660
+#: src/Editeur.cc:1669
+msgid "xcas text"
+msgstr "Κείμενο xcas"
+
+#: src/hist.cxx:1658 src/History.cc:2927 src/Editeur.cc:1661
+#: src/Editeur.cc:1670
+msgid "maple text"
+msgstr "Κείμενο maple"
+
+#: src/hist.cxx:1659 src/History.cc:2928 src/Editeur.cc:1662
+#: src/Editeur.cc:1671
+msgid "mupad text"
+msgstr "Κείμενο mupad"
+
+#: src/hist.cxx:1660 src/History.cc:2929 src/Editeur.cc:1663
+#: src/Editeur.cc:1672
+msgid "ti text"
+msgstr "Κείμενο ti89"
+
+#: src/hist.cxx:1662 src/History.cc:2938
+msgid "Kill"
+msgstr "Έξοδος χωρίς αποθήκευση"
+
+#: src/hist.cxx:1663
+msgid "About"
+msgstr "Όσον αφορά"
+
+#: src/hist.cxx:1664 src/hist.cxx:2701 src/History.cc:2939 src/Graph.cc:1052
+#: src/Graph.cc:6212
+msgid "Print"
+msgstr "Εκτύπωση"
+
+#: src/hist.cxx:1665 src/hist.cxx:2702 src/History.cc:2940
+msgid "preview"
+msgstr "Προοπτικοποίηση"
+
+#: src/hist.cxx:1666 src/History.cc:2941 src/Tableur.cc:2816
+#: src/Editeur.cc:1684 src/Graph.cc:5594
+msgid "to printer"
+msgstr "Για εκτύπωση"
+
+#: src/hist.cxx:1667 src/History.cc:2942
+msgid "preview selected levels"
+msgstr "Προοπτικοποίηση επιλεγμένων επιπέδων"
+
+#: src/hist.cxx:1669
+msgid "LaTeX"
+msgstr "LaTeX"
+
+#: src/hist.cxx:1670 src/hist.cxx:2704 src/History.cc:2943 src/Graph.cc:5595
+msgid "latex preview"
+msgstr "Προοπτικοποίηση (latex)"
+
+#: src/hist.cxx:1671 src/hist.cxx:2705 src/History.cc:2944
+msgid "latex print"
+msgstr "Για εκτύπωση(latex)"
+
+#: src/hist.cxx:1672 src/History.cc:2946
+msgid "latex print selection"
+msgstr "Εκτύπωση επιλογής(latex)"
+
+#: src/hist.cxx:1674
+msgid "Screen capture"
+msgstr "Σώσιμο οθώνης"
+
+#: src/hist.cxx:1675
+msgid "Quit"
+msgstr "Έξοδος"
+
+#. end Print
+#. end File
+#. end print
+#. end file
+#: src/hist.cxx:1677 src/History.cc:2949 src/Tableur.cc:2819
+#: src/Editeur.cc:1687 src/Graph.cc:5599
+msgid "Edit"
+msgstr "Επεξεργασία"
+
+#: src/hist.cxx:1678
+#, fuzzy
+msgid "Execute worksheet"
+msgstr "Απόθηκευση συνεδρίας ως"
+
+#: src/hist.cxx:1679
+#, fuzzy
+msgid "Execute below"
+msgstr "Εκτέλεση όλων"
+
+#: src/hist.cxx:1680
+#, fuzzy
+msgid "Remove answers"
+msgstr "Απόκρυψη απαντήσεων"
+
+#: src/hist.cxx:1681 src/History.cc:2988 src/Tableur.cc:2823 src/Graph.cc:1350
+#: src/Graph.cc:5608
+msgid "Undo"
+msgstr "Ακύρωση"
+
+#: src/hist.cxx:1682 src/History.cc:2989 src/Tableur.cc:2824 src/Graph.cc:5609
+#, fuzzy
+msgid "Redo"
+msgstr "Επανεκτέλεση"
+
+#: src/hist.cxx:1683 src/History.cc:2983 src/Tableur.cc:2822
+#: src/Editeur.cc:1688 src/Graph.cc:5604
+msgid "Paste"
+msgstr "Επικόλληση"
+
+#: src/hist.cxx:1684
+#, fuzzy
+msgid "Del selected levels"
+msgstr "Διαγραφή επιλεγμένων επιπέδων"
+
+#: src/hist.cxx:1685
+#, fuzzy
+msgid "selection -> LaTeX"
+msgstr "Ζώνη επιλογής->LaTeX "
+
+#: src/hist.cxx:1686 src/hist.cxx:1769
+#, fuzzy
+msgid "New entry"
+msgstr "Νέα είσοδος"
+
+#: src/hist.cxx:1687
+#, fuzzy
+msgid "New parameter"
+msgstr "Προσθήκη παραμέτρου"
+
+#: src/hist.cxx:1688 src/History.cc:2982
+msgid "Insert newline"
+msgstr "Εισαγωγή νέας γραμμής"
+
+#: src/hist.cxx:1689 src/History.cc:2986
+msgid "Merge selected levels"
+msgstr "Συγχώνευση επιλεγμένων επιπέδων"
+
+#: src/hist.cxx:1690
+#, fuzzy
+msgid "New group"
+msgstr "Ομάδα"
+
+#: src/hist.cxx:1691 src/History.cc:2985
+msgid "Group selected levels"
+msgstr "Ομαδοποίηση επιλεγμένων επιπέδων"
+
+#: src/hist.cxx:1692
+msgid "Degroup selected levels"
+msgstr "Απομαδοποίηση επιλεγμένων επιπέδων"
+
+#: src/hist.cxx:1694 src/Graph.cc:1605
+#, fuzzy
+msgid "Cfg"
+msgstr "Ειδικό"
+
+#: src/hist.cxx:1695
+msgid "Cas configuration"
+msgstr "Διαμόρφωση του CAS"
+
+#: src/hist.cxx:1696 src/Graph.cc:1638
+msgid "Graph configuration"
+msgstr "Γραφική διαμόρφωση"
+
+#: src/hist.cxx:1697
+msgid "General configuration"
+msgstr "Γενική διαμόρφωση"
+
+#: src/hist.cxx:1698
+msgid "Mode (syntax)"
+msgstr "Μέθοδος σύνταξης"
+
+#: src/hist.cxx:1699 src/Editeur.cc:1675
+msgid "xcas"
+msgstr "xcas"
+
+#: src/hist.cxx:1700 src/Editeur.cc:1676
+#, fuzzy
+msgid "maple"
+msgstr "Maple"
+
+#: src/hist.cxx:1701 src/Editeur.cc:1677
+msgid "mupad"
+msgstr "mupad"
+
+#: src/hist.cxx:1702
+#, fuzzy
+msgid "ti89/92"
+msgstr "TI89/92"
+
+#: src/hist.cxx:1704
+msgid "Show"
+msgstr "Εμφάνηση"
+
+#: src/hist.cxx:1705 src/hist.cxx:1712
+#, fuzzy
+msgid "DispG"
+msgstr "Εμφάνηση DispG"
+
+#: src/hist.cxx:1706 src/hist.cxx:1713
+#, fuzzy
+msgid "keyboard"
+msgstr "Πληκτρολόγιο"
+
+#: src/hist.cxx:1707 src/hist.cxx:1714
+msgid "bandeau"
+msgstr "Επικεφαλίδα"
+
+#: src/hist.cxx:1708 src/hist.cxx:1715 src/hist.cxx:4023
+msgid "msg"
+msgstr ""
+
+#: src/hist.cxx:1709
+msgid "Show script window"
+msgstr "Εμφάνηση παραθύρου σεναρίου(script)"
+
+#: src/hist.cxx:1711
+#, fuzzy
+msgid "Hide"
+msgstr "Απόκρυψη μηνυμάτων"
+
+#: src/hist.cxx:1717
+msgid "Index language"
+msgstr "Γλώσσα γραφής βοήθειας"
+
+#: src/hist.cxx:1718
+#, fuzzy
+msgid "francais"
+msgstr "Γαλλικά"
+
+#: src/hist.cxx:1719
+#, fuzzy
+msgid "english"
+msgstr "Αγγλικά"
+
+#: src/hist.cxx:1720
+#, fuzzy
+msgid "espanol"
+msgstr "Ισπανικά"
+
+#: src/hist.cxx:1722
+msgid "Colors"
+msgstr "Χρώματα"
+
+#: src/hist.cxx:1723
+msgid "default background"
+msgstr "Αρχικοποίηση φόντου"
+
+#: src/hist.cxx:1724
+msgid "input text"
+msgstr "Είσοδος κειμένου"
+
+#: src/hist.cxx:1725
+msgid "input background"
+msgstr "Είσοδος φόντου"
+
+#: src/hist.cxx:1726
+msgid "comment text"
+msgstr "Είσοδος σχολίου"
+
+#: src/hist.cxx:1727
+msgid "comment background"
+msgstr "Φόντο σχολίου"
+
+#: src/hist.cxx:1728
+msgid "log text"
+msgstr "Κείμενο πληροφοριών"
+
+#: src/hist.cxx:1729
+msgid "log background"
+msgstr "Φόντο πληροφοριών"
+
+#: src/hist.cxx:1730
+msgid "equation text"
+msgstr "Κείμενο εξομοιωσης(εξίσωσης)"
+
+#: src/hist.cxx:1731
+msgid "equation background"
+msgstr "Φόντο εξομοιωσης"
+
+#: src/hist.cxx:1732
+msgid "editor text"
+msgstr "Κείμενο έκδοσης"
+
+#: src/hist.cxx:1733
+msgid "editor background"
+msgstr "Φόντο έκδοσης"
+
+#: src/hist.cxx:1735
+msgid "Session font"
+msgstr "Συνεδρία γραμματοσειράς"
+
+#: src/hist.cxx:1736
+msgid "All fonts"
+msgstr "Όλες οι γραμματοσειρές"
+
+#: src/hist.cxx:1737 src/hist.cxx:4336
+msgid "browser"
+msgstr "Καθοδηγητής(browser)"
+
+#: src/hist.cxx:1738
+msgid "Save configuration"
+msgstr "Αποθήκευση επιλογών διαμόρφωσης"
+
+#: src/hist.cxx:1740
+msgid "Help"
+msgstr "Βοήθεια"
+
+#: src/hist.cxx:1741 src/Input.cc:324
+#, fuzzy
+msgid "Index"
+msgstr "Επιλογή επόμενου"
+
+#: src/hist.cxx:1742 src/Help1.cc:133
+msgid "Find word in HTML help"
+msgstr "Αναζήτηση λέξης σε HTML βοήθεια"
+
+#: src/hist.cxx:1743
+#, fuzzy
+msgid "Interface"
+msgstr "Διεπαφή"
+
+#: src/hist.cxx:1744
+msgid "Manuals"
+msgstr "Εγχειρίδια"
+
+#: src/hist.cxx:1745
+msgid "CAS reference"
+msgstr "Αναφορά σε υπολογισμό μορφής1(CAS)"
+
+#: src/hist.cxx:1746
+msgid "Algorithmes"
+msgstr "Αλγόριθμοι"
+
+#: src/hist.cxx:1748
+#, fuzzy
+msgid "Programmation"
+msgstr "Προγραμματισμός"
+
+#: src/hist.cxx:1749 src/hist.cxx:2534 src/hist.cxx:2552
+msgid "Tableur"
+msgstr "Πίνακας, στατιστικά"
+
+#: src/hist.cxx:1751
+#, fuzzy
+msgid "Exercices"
+msgstr "Ασκήσεις"
+
+#: src/hist.cxx:1752
+#, fuzzy
+msgid "Amusement"
+msgstr "Τμήματα"
+
+#: src/hist.cxx:1753
+msgid "PARI-GP"
+msgstr "PARI-GP"
+
+#: src/hist.cxx:1755
+#, fuzzy
+msgid "Internet"
+msgstr "Εισαγωγή"
+
+#: src/hist.cxx:1756
+#, fuzzy
+msgid "Forum"
+msgstr "Τόπος αναφοράς"
+
+#: src/hist.cxx:1757
+msgid "Site Lycee de G. Connan"
+msgstr "Ιστοσελίδα Λυκείου G. Connan"
+
+#: src/hist.cxx:1758
+msgid "Ressources bac S"
+msgstr "Καλάθι πόρων(πληροφόρησης) S"
+
+#: src/hist.cxx:1759
+msgid "Ressources Agregation"
+msgstr "Συσσώρευση πόρων"
+
+#: src/hist.cxx:1760
+msgid "Update help"
+msgstr "Ενημέρωση"
+
+#: src/hist.cxx:1762
+msgid "Start with CAS"
+msgstr "Εκκίνηση σε υπολογισμό μορφη1()CAS"
+
+#: src/hist.cxx:1763
+msgid "Tutorial"
+msgstr "Αρχάριο"
+
+#: src/hist.cxx:1764
+#, fuzzy
+msgid "solutions"
+msgstr "Επίλυση"
+
+#: src/hist.cxx:1766
+msgid "Rebuild help cache"
+msgstr "Επαναδημιουργία ένδειξης βοήθειας"
+
+#: src/hist.cxx:1770
+#, fuzzy
+msgid "New comment"
+msgstr "Σχόλιο"
+
+#: src/hist.cxx:1771
+#, fuzzy
+msgid "Equations"
+msgstr "Εξίσωση"
+
+#: src/hist.cxx:1772
+#, fuzzy
+msgid "solve: Solve equation or system"
+msgstr "Επιλυση εξίσωσης"
+
+#: src/hist.cxx:1773
+#, fuzzy
+msgid "fsolve: Solve equation numerically"
+msgstr "Επιλυση εξίσωσης"
+
+#: src/hist.cxx:1774
+msgid "proot: Roots of a polynomial"
+msgstr ""
+
+#: src/hist.cxx:1775
+msgid "linsolve: Solve linear system"
+msgstr ""
+
+#: src/hist.cxx:1776
+msgid "desolve: Solve differential equation"
+msgstr ""
+
+#: src/hist.cxx:1778
+msgid "Calculus"
+msgstr ""
+
+#: src/hist.cxx:1779
+msgid "int: Integration (definite/indefinite)"
+msgstr ""
+
+#: src/hist.cxx:1780
+msgid "diff: Derivative"
+msgstr ""
+
+#: src/hist.cxx:1781
+msgid "limit: Limit"
+msgstr ""
+
+#: src/hist.cxx:1782
+msgid "series: Taylor or asymptotic expansion"
+msgstr ""
+
+#: src/hist.cxx:1783
+msgid "sum: Discrete summation"
+msgstr ""
+
+#: src/hist.cxx:1784
+msgid "laplace: Laplace transform"
+msgstr ""
+
+#: src/hist.cxx:1785
+msgid "ilaplace: invert Laplace transform"
+msgstr ""
+
+#: src/hist.cxx:1787 src/Equation.cc:3971
+#, fuzzy
+msgid "Simplify"
+msgstr "Απλοποίηση"
+
+#: src/hist.cxx:1788
+#, fuzzy
+msgid "simplify: Simplify expression"
+msgstr "Υπονοούμενη έκφραση"
+
+#: src/hist.cxx:1789
+msgid "normal: Simplify rational and algebraic expression"
+msgstr ""
+
+#: src/hist.cxx:1790
+msgid "ratnormal: Simplify rational expressions"
+msgstr ""
+
+#: src/hist.cxx:1791
+msgid "factor: Factorization"
+msgstr ""
+
+#: src/hist.cxx:1792
+msgid "cfactor: Factorization over C"
+msgstr ""
+
+#: src/hist.cxx:1793
+msgid "partfrac: Partial fraction decomposition"
+msgstr ""
+
+#: src/hist.cxx:1794
+msgid "cpartfrac: Partial fraction decomposition over C"
+msgstr ""
+
+#: src/hist.cxx:1795 src/hist.cxx:1798 src/hist.cxx:1814 src/hist.cxx:1818
+msgid "---"
+msgstr ""
+
+#: src/hist.cxx:1796
+msgid "subst: Substitution of variables by expressions"
+msgstr ""
+
+#: src/hist.cxx:1797
+msgid "reorder: Reorder expression wrt list of variables"
+msgstr ""
+
+#: src/hist.cxx:1799
+msgid "lin: Linearization of exponentials"
+msgstr ""
+
+#: src/hist.cxx:1800
+msgid "tlin: Trigonometric linearization"
+msgstr ""
+
+#: src/hist.cxx:1801
+msgid "texpand: Expand transcendental expressions"
+msgstr ""
+
+#: src/hist.cxx:1802
+msgid "lncollect: Collect logarithms"
+msgstr ""
+
+#: src/hist.cxx:1803
+msgid "exp2pow: Convert exp(a*ln(b)) to b^a"
+msgstr ""
+
+#: src/hist.cxx:1804
+msgid "exp2trig: Convert complex exponentials to trig"
+msgstr ""
+
+#: src/hist.cxx:1805
+msgid "trig2exp: Convert trig to complex exponentials"
+msgstr ""
+
+#: src/hist.cxx:1807
+#, fuzzy
+msgid "Arithmetic"
+msgstr "Λογαριθμικό"
+
+#: src/hist.cxx:1808
+msgid "isprime: test if an integer is prime"
+msgstr ""
+
+#: src/hist.cxx:1809
+msgid "ifactor: factorize an integer"
+msgstr ""
+
+#: src/hist.cxx:1810
+#, fuzzy
+msgid "iquo: quotient for integers"
+msgstr "Πραγματικοί ή ακέραιοι"
+
+#: src/hist.cxx:1811
+#, fuzzy
+msgid "irem: remainder for integers"
+msgstr "Πραγματικοί ή ακέραιοι"
+
+#: src/hist.cxx:1812
+msgid "iabcuv: Solve a.u+b.v=c in Z"
+msgstr ""
+
+#: src/hist.cxx:1813
+msgid "ichinrem: Chinese remainder for integers"
+msgstr ""
+
+#: src/hist.cxx:1815
+msgid "gcd: gcd of integers or polynomials"
+msgstr ""
+
+#: src/hist.cxx:1816
+msgid "lcm: lcm of integers or polynomials"
+msgstr ""
+
+#: src/hist.cxx:1817
+msgid "powmod: fast powering modulo"
+msgstr ""
+
+#: src/hist.cxx:1819
+msgid "quo: quotient (poly. synthetic division)"
+msgstr ""
+
+#: src/hist.cxx:1820
+msgid "rem: remainder (poly. synthetic division)"
+msgstr ""
+
+#: src/hist.cxx:1821
+msgid "abcuv: Solve a.u+b.v=c for polynomials"
+msgstr ""
+
+#: src/hist.cxx:1822
+msgid "chinrem: Chinese remainder for polynomials"
+msgstr ""
+
+#: src/hist.cxx:1824
+#, fuzzy
+msgid "Linear algebra"
+msgstr "Αλγεβρική_Μήτρα(Matrix)"
+
+#: src/hist.cxx:1825
+msgid "matrix: Create a matrix"
+msgstr ""
+
+#: src/hist.cxx:1826
+msgid "tran: Transpose a matrix"
+msgstr ""
+
+#: src/hist.cxx:1827
+msgid "ker: Kernel of a matrix"
+msgstr ""
+
+#: src/hist.cxx:1828
+msgid "image: Image of a matrix"
+msgstr ""
+
+#: src/hist.cxx:1829
+#, fuzzy
+msgid "inv: Invert a matrix"
+msgstr "Ερμητιανή Μήτρα(Matrix)"
+
+#: src/hist.cxx:1830
+msgid "det: Determinant of a matrix"
+msgstr ""
+
+#: src/hist.cxx:1831
+msgid "charpoly: Characteristic polynomial"
+msgstr ""
+
+#: src/hist.cxx:1832
+msgid "egv: Eigenvectors of a matrix"
+msgstr ""
+
+#: src/hist.cxx:1833
+msgid "egvl: Eigenvalues of a matrix"
+msgstr ""
+
+#: src/hist.cxx:1837
+#, fuzzy
+msgid "New spreadsheet"
+msgstr "Πίνακας"
+
+#: src/hist.cxx:1839 src/hist.cxx:4619
+#, fuzzy
+msgid "Graphic"
+msgstr "Γράφημα"
+
+#: src/hist.cxx:1840
+#, fuzzy
+msgid "Attributs"
+msgstr "Κατανομή"
+
+#. end Circles
+#: src/hist.cxx:1841 src/Graph.cc:5651
+#, fuzzy
+msgid "Curves"
+msgstr "Καπμύλες"
+
+#: src/hist.cxx:1842
+msgid "plotfunc: Plot a 1-var function"
+msgstr ""
+
+#: src/hist.cxx:1843
+msgid "plotparam: Parametric 2-d curve"
+msgstr ""
+
+#: src/hist.cxx:1844
+msgid "plotpolar: Polar 2-d curve"
+msgstr ""
+
+#: src/hist.cxx:1845
+#, fuzzy
+msgid "plotarea: Area under curve"
+msgstr "Περιοχή κάτς απο την καμπύλη"
+
+#: src/hist.cxx:1846
+#, fuzzy
+msgid "plotimplicit: Implicit plot"
+msgstr "Υπονούμενο γράφημα"
+
+#: src/hist.cxx:1847
+msgid "plotcontour: Level curves"
+msgstr ""
+
+#: src/hist.cxx:1848
+msgid "plotdensity: 2-d z view as color"
+msgstr ""
+
+#: src/hist.cxx:1850
+#, fuzzy
+msgid "Surfaces"
+msgstr "Επιφάνεια τριών διαστάσεων (3d)"
+
+#: src/hist.cxx:1851
+msgid "plotfunc: Plot a 2-var function"
+msgstr ""
+
+#: src/hist.cxx:1852
+#, fuzzy
+msgid "plotparam: Parametric 3-d surface"
+msgstr "Χρωματιστές επιφάνειες τριών διαστάσεων(3-d)"
+
+#: src/hist.cxx:1854
+#, fuzzy
+msgid "Sequence"
+msgstr "Ακολουθίες"
+
+#: src/hist.cxx:1855
+#, fuzzy
+msgid "plotseq: Recurrent sequence plot"
+msgstr "Περιοδική ακολουθία"
+
+#: src/hist.cxx:1856
+msgid "plotlist: plot a list of values"
+msgstr ""
+
+#: src/hist.cxx:1858
+msgid "Ode"
+msgstr ""
+
+#: src/hist.cxx:1859
+msgid "plotfield: 2-d or 3-d field"
+msgstr ""
+
+#: src/hist.cxx:1860
+msgid "plotode: Diff. equation plot"
+msgstr ""
+
+#: src/hist.cxx:1861
+msgid "interactive_odeplot: Interactive diff. equation plot"
+msgstr ""
+
+#: src/hist.cxx:1863
+#, fuzzy
+msgid "Stats"
+msgstr "Κατάσταση"
+
+#: src/hist.cxx:1864
+#, fuzzy
+msgid "camembert: 1-d stats"
+msgstr "Στατιστικά μίας διάστασης(1-d)"
+
+#: src/hist.cxx:1865
+#, fuzzy
+msgid "histogram: 1-d stats"
+msgstr "Στατιστικά μίας διάστασης(1-d)"
+
+#: src/hist.cxx:1866
+#, fuzzy
+msgid "moustache: 1-d stats"
+msgstr "Στατιστικά μίας διάστασης(1-d)"
+
+#: src/hist.cxx:1867
+#, fuzzy
+msgid "scatterplot: 2-d stats"
+msgstr "Σύνολο σημείων"
+
+#: src/hist.cxx:1868 src/hist.cxx:1869
+#, fuzzy
+msgid "polygonscatterplot: 2-d stats"
+msgstr "Αναπαράσταση πολυγωνικού σχήματος"
+
+#: src/hist.cxx:1872 src/hist.cxx:4617
+msgid "Geo"
+msgstr "Γράφημα(Geo)"
+
+#: src/hist.cxx:1873
+#, fuzzy
+msgid "New figure"
+msgstr "Αποθήκευση σχήματος"
+
+#: src/hist.cxx:1874 src/History.cc:2956 src/History.cc:2968
+msgid "graph, geo2d"
+msgstr "γράφημα, geo3(τριών διαστάσεων)"
+
+#: src/hist.cxx:1875 src/History.cc:2957 src/History.cc:2969
+msgid "graph, geo3d"
+msgstr "γράφημα, geo3(τριών διαστάσεων)"
+
+#: src/hist.cxx:1876 src/History.cc:2958 src/History.cc:2970
+#, fuzzy
+msgid "geo2d exact"
+msgstr "Ακριβές γράφημα geo2d(2 διαστάσεων) "
+
+#: src/hist.cxx:1877 src/History.cc:2959 src/History.cc:2971
+#, fuzzy
+msgid "geo3d exact"
+msgstr "Ακριβές γράφημα geo2d(3 διαστάσεων)"
+
+#: src/hist.cxx:1880 src/hist.cxx:4621
+#, fuzzy
+msgid "Prg"
+msgstr "Προγραμματισμός"
+
+#: src/hist.cxx:1881
+#, fuzzy
+msgid "New program"
+msgstr "Πρόγραμμα"
+
+#: src/hist.cxx:1882
+msgid "debug: debug a program"
+msgstr ""
+
+#: src/hist.cxx:1884 src/Tableur.cc:1720 src/Tableur.cc:1723
+#: src/Tableur.cc:1944
+#, fuzzy
+msgid "Expression"
+msgstr "Έκφραση"
+
+#: src/hist.cxx:1885
+#, fuzzy
+msgid "New expression"
+msgstr "Έκφραση"
+
+#: src/hist.cxx:1887
+msgid "Cmds"
+msgstr ""
+
+#: src/hist.cxx:1889
+msgid "Phys"
+msgstr ""
+
+#: src/hist.cxx:1891
+msgid "Highschool"
+msgstr ""
+
+#: src/hist.cxx:1894
+msgid "New turtle"
+msgstr ""
+
+#: src/hist.cxx:2638
+#, fuzzy
+msgid "A4"
+msgstr "A4"
+
+#: src/hist.cxx:2639
+#, fuzzy
+msgid "A5"
+msgstr "A5"
+
+#: src/hist.cxx:2640
+#, fuzzy
+msgid "A3"
+msgstr "A3"
+
+#: src/hist.cxx:2641
+msgid "LETTER"
+msgstr "ΓΡΑΜΜΑ"
+
+#: src/hist.cxx:2642
+msgid "ENVELOPE"
+msgstr "Enveloppe"
+
+#: src/hist.cxx:2703
+msgid "print"
+msgstr "Εκτύπωση"
+
+#: src/hist.cxx:2706
+msgid "close"
+msgstr "Έξοδος"
+
+#: src/hist.cxx:2723
+msgid "Xcas New Interface"
+msgstr "Νέα διεπαφή Xcas "
+
+#: src/hist.cxx:2744 src/hist.cxx:3229 src/hist.cxx:3650 src/hist.cxx:3662
+#: src/hist.cxx:3674
+msgid "a"
+msgstr "a"
+
+#: src/hist.cxx:2755
+msgid "b"
+msgstr "b"
+
+#: src/hist.cxx:2766
+msgid "c"
+msgstr "c"
+
+#: src/hist.cxx:2777
+msgid "d"
+msgstr "d"
+
+#: src/hist.cxx:2788
+msgid "e"
+msgstr "e"
+
+#: src/hist.cxx:2799
+msgid "f"
+msgstr "f"
+
+#: src/hist.cxx:2810
+msgid "g"
+msgstr "g"
+
+#: src/hist.cxx:2821
+msgid "h"
+msgstr "h"
+
+#: src/hist.cxx:2832 src/hist.cxx:3452
+msgid "i"
+msgstr "i"
+
+#: src/hist.cxx:2843
+msgid "j"
+msgstr "j"
+
+#: src/hist.cxx:2854
+msgid "k"
+msgstr "k"
+
+#: src/hist.cxx:2865
+msgid "l"
+msgstr "l"
+
+#: src/hist.cxx:2876
+msgid "m"
+msgstr "m"
+
+#: src/hist.cxx:2887
+msgid "n"
+msgstr "n"
+
+#: src/hist.cxx:2898
+msgid "o"
+msgstr "o"
+
+#: src/hist.cxx:2909 src/hist.cxx:3218 src/hist.cxx:3465
+msgid "p"
+msgstr "p"
+
+#: src/hist.cxx:2920
+msgid "q"
+msgstr "q"
+
+#: src/hist.cxx:2931
+msgid "r"
+msgstr "r"
+
+#: src/hist.cxx:2942
+msgid "s"
+msgstr "s"
+
+#: src/hist.cxx:2953 src/hist.cxx:3314
+msgid "t"
+msgstr "t"
+
+#: src/hist.cxx:2964
+msgid "u"
+msgstr "u"
+
+#: src/hist.cxx:2975
+msgid "v"
+msgstr "v"
+
+#: src/hist.cxx:2986
+msgid "w"
+msgstr "w"
+
+#: src/hist.cxx:2997 src/hist.cxx:3278
+msgid "x"
+msgstr "x"
+
+#: src/hist.cxx:3008 src/hist.cxx:3290
+msgid "y"
+msgstr "y"
+
+#: src/hist.cxx:3019 src/hist.cxx:3302
+msgid "z"
+msgstr "z"
+
+#: src/hist.cxx:3030
+msgid "<"
+msgstr "<"
+
+#: src/hist.cxx:3041
+msgid ">"
+msgstr ">"
+
+#: src/hist.cxx:3052
+msgid "\\"
+msgstr "\\"
+
+#: src/hist.cxx:3063 src/hist.cxx:3339
+msgid "("
+msgstr "("
+
+#: src/hist.cxx:3074 src/hist.cxx:3427
+msgid ")"
+msgstr ")"
+
+#: src/hist.cxx:3085 src/hist.cxx:3438
+msgid " "
+msgstr " "
+
+#: src/hist.cxx:3096
+msgid "!"
+msgstr "!"
+
+#: src/hist.cxx:3107
+msgid "]"
+msgstr "]"
+
+#: src/hist.cxx:3118
+msgid "["
+msgstr "["
+
+#: src/hist.cxx:3129
+msgid "{"
+msgstr "{"
+
+#: src/hist.cxx:3140
+msgid "}"
+msgstr "}"
+
+#: src/hist.cxx:3151
+msgid ":"
+msgstr ":"
+
+#: src/hist.cxx:3162 src/Tableur.cc:1953
+msgid "="
+msgstr "="
+
+#: src/hist.cxx:3173 src/hist.cxx:3328
+msgid "\""
+msgstr "\""
+
+#: src/hist.cxx:3184
+msgid "_"
+msgstr "_"
+
+#: src/hist.cxx:3195
+msgid "Maj"
+msgstr "Κεφαλαία"
+
+#: src/hist.cxx:3207
+msgid "#"
+msgstr "#"
+
+#: src/hist.cxx:3241 src/hist.cxx:3383
+msgid ","
+msgstr ","
+
+#: src/hist.cxx:3252 src/hist.cxx:3394
+msgid ";"
+msgstr ";"
+
+#: src/hist.cxx:3263 src/hist.cxx:3372
+msgid "'"
+msgstr "'"
+
+#: src/hist.cxx:3350
+msgid "{}"
+msgstr "{}"
+
+#: src/hist.cxx:3361
+#, fuzzy
+msgid "[]"
+msgstr "[]"
+
+#: src/hist.cxx:3405
+msgid ":="
+msgstr ":="
+
+#: src/hist.cxx:3416
+msgid "|"
+msgstr "|"
+
+#: src/hist.cxx:3477
+#, fuzzy
+msgid "oo"
+msgstr "oo"
+
+#: src/hist.cxx:3489
+msgid "sqrt"
+msgstr "Τετραγωνική ρίζα"
+
+#: src/hist.cxx:3504
+msgid "~"
+msgstr "~"
+
+#: src/hist.cxx:3517
+#, fuzzy
+msgid "simplify"
+msgstr "Απλοποίηση"
+
+#: src/hist.cxx:3529
+msgid "factor"
+msgstr "Παραγοντας"
+
+#: src/hist.cxx:3542
+#, fuzzy
+msgid "convert"
+msgstr "Μεταροπή"
+
+#: src/hist.cxx:3558
+msgid "D"
+msgstr "D"
+
+#: src/hist.cxx:3559
+#, fuzzy
+msgid "diff"
+msgstr "Διαφορά"
+
+#: src/hist.cxx:3572
+msgid "I"
+msgstr "I"
+
+#: src/hist.cxx:3573
+#, fuzzy
+msgid "Integral"
+msgstr "Ολοκλήρομα"
+
+#: src/hist.cxx:3586
+#, fuzzy
+msgid "S"
+msgstr "S"
+
+#: src/hist.cxx:3587
+#, fuzzy
+msgid "Sum"
+msgstr "’θροισμα"
+
+#: src/hist.cxx:3599
+msgid "L"
+msgstr "L"
+
+#: src/hist.cxx:3600
+#, fuzzy
+msgid "Limit"
+msgstr "Λίστα"
+
+#: src/hist.cxx:3617
+msgid "sin"
+msgstr "Ημίτονο"
+
+#: src/hist.cxx:3628
+msgid "cos"
+msgstr "Συνημίτονο"
+
+#: src/hist.cxx:3639
+msgid "tan"
+msgstr "Εφαπτομένη"
+
+#: src/hist.cxx:3689
+msgid "exp"
+msgstr "Εκθέτης"
+
+#: src/hist.cxx:3700
+msgid "10^"
+msgstr "10^"
+
+#: src/hist.cxx:3711
+msgid "log10"
+msgstr "log10"
+
+#: src/hist.cxx:3722
+msgid "ln"
+msgstr "ln"
+
+#: src/hist.cxx:3738
+msgid "+"
+msgstr "+"
+
+#: src/hist.cxx:3750
+msgid "-"
+msgstr "-"
+
+#: src/hist.cxx:3762
+msgid "*"
+msgstr "*"
+
+#: src/hist.cxx:3774
+msgid "/"
+msgstr "/"
+
+#: src/hist.cxx:3786
+msgid "^"
+msgstr "^"
+
+#: src/hist.cxx:3798
+msgid "%"
+msgstr ""
+
+#: src/hist.cxx:3809
+msgid "inv"
+msgstr "Αντίστροφος"
+
+#: src/hist.cxx:3820
+msgid "neg"
+msgstr "Αρνητικός"
+
+#: src/hist.cxx:3836
+msgid "1"
+msgstr "1"
+
+#: src/hist.cxx:3848
+msgid "2"
+msgstr "2"
+
+#: src/hist.cxx:3860
+msgid "3"
+msgstr "3"
+
+#: src/hist.cxx:3872
+msgid "4"
+msgstr "4"
+
+#: src/hist.cxx:3884
+msgid "5"
+msgstr "5"
+
+#: src/hist.cxx:3896
+msgid "6"
+msgstr "6"
+
+#: src/hist.cxx:3908
+msgid "7"
+msgstr "7"
+
+#: src/hist.cxx:3920 src/Cfg.cc:219
+msgid "8"
+msgstr "8"
+
+#: src/hist.cxx:3932
+msgid "9"
+msgstr "9"
+
+#: src/hist.cxx:3944
+msgid "0"
+msgstr "0"
+
+#: src/hist.cxx:3956
+msgid "."
+msgstr "."
+
+#: src/hist.cxx:3967
+msgid "E"
+msgstr "E"
+
+#: src/hist.cxx:3981
+msgid "esc"
+msgstr "Έξοδος(διαφυγή)"
+
+#: src/hist.cxx:3982
+msgid "Cancel (erase cmdline, stop interactive_plotode)"
+msgstr ""
+"Ακύρωση (διαγραφή της γραμμής εντολών, σταμάτημα "
+"αλληλεπιδραστικής_λειτουργίας)"
+
+#: src/hist.cxx:3995
+msgid "abc"
+msgstr "abc"
+
+#: src/hist.cxx:3996
+msgid "Show/Hide alphabetic keyboard"
+msgstr "Εμφάνηση/Απόκρυψη Αλφαβητικού πληκτρολογίου"
+
+#: src/hist.cxx:4009
+msgid "cmds"
+msgstr ""
+
+#: src/hist.cxx:4010 src/hist.cxx:4024 src/hist.cxx:4052
+#, fuzzy
+msgid "Control"
+msgstr "Σταθερά"
+
+#: src/hist.cxx:4037
+#, fuzzy
+msgid "b7"
+msgstr "7"
+
+#: src/hist.cxx:4038
+#, fuzzy
+msgid "Alt"
+msgstr "Αλγόριθμοος"
+
+#: src/hist.cxx:4051
+#, fuzzy
+msgid "ctrl"
+msgstr "Έλεγχος(ctrl)"
+
+#: src/hist.cxx:4065 src/hist.cxx:4272 src/hist.cxx:4303
+#, fuzzy
+msgid "X"
+msgstr "X+"
+
+#: src/hist.cxx:4077
+#, fuzzy
+msgid "@<"
+msgstr "<"
+
+#: src/hist.cxx:4090
+msgid "paste"
+msgstr "Επικόλληση"
+
+#: src/hist.cxx:4103
+msgid "@returnarrow"
+msgstr "Δείκτης σε πίνακα"
+
+#: src/hist.cxx:4122
+msgid "<<"
+msgstr "<<"
+
+#: src/hist.cxx:4123
+msgid "Previous menu page"
+msgstr "Προηγούμενη σελίδα του μενου"
+
+#: src/hist.cxx:4214
+msgid ">>"
+msgstr ">>"
+
+#: src/hist.cxx:4215
+msgid "Next menu page"
+msgstr "Επόμενη σελίδα του μενου"
+
+#: src/hist.cxx:4228
+#, fuzzy
+msgid "cust"
+msgstr "Χρήστης"
+
+#: src/hist.cxx:4229
+msgid "Custom menu"
+msgstr "Μενού χρήστη"
+
+#: src/hist.cxx:4242
+msgid "var"
+msgstr "Μεταβλητή"
+
+#: src/hist.cxx:4243
+msgid "Show list of variables"
+msgstr "Εμφάνηση λίστας μεταβλητών"
+
+#: src/hist.cxx:4256
+msgid "home"
+msgstr "Ρίζα"
+
+#: src/hist.cxx:4257
+msgid "Home menu"
+msgstr "Menu home"
+
+#: src/hist.cxx:4289
+#, fuzzy
+msgid "Messages"
+msgstr "Θέση μηνυμάτων"
+
+#: src/hist.cxx:4319
+msgid "Xcas General Setup"
+msgstr "Γενική διαμόρφωση Xcas "
+
+#: src/hist.cxx:4321
+msgid "Level"
+msgstr "Επίπεδο"
+
+#: src/hist.cxx:4322
+msgid "Choose user level (from tortue to university)"
+msgstr "Επιλογή επιπέδου(αρχάριο σε πανεπιστημιακό)"
+
+#: src/hist.cxx:4327
+msgid "Size"
+msgstr "Μέγεθος "
+
+#: src/hist.cxx:4331
+msgid "Auto HTML help"
+msgstr "Αυτόματη βοήθεια HTML "
+
+#: src/hist.cxx:4332
+msgid "Selecting a menu item displays fulls help in browser"
+msgstr ""
+"Εμφάνηση βοήθειας γι;α τα επιλεγμένα στοιχεία του μενού, στον καθοδηγητή"
+"(browser)"
+
+#: src/hist.cxx:4341
+msgid "rows"
+msgstr "Γραμμές"
+
+#: src/hist.cxx:4342
+msgid "Number of rows for new->spreadsheet"
+msgstr "Αριθμός γραμμών για νέο->Πίνακας"
+
+#: src/hist.cxx:4349
+#, fuzzy
+msgid "cols"
+msgstr "Στήλες"
+
+#: src/hist.cxx:4350
+msgid "Number of columns for new->spreadsheet"
+msgstr "Αριθμός στηλών για νέο->Πίνακας"
+
+#: src/hist.cxx:4358
+msgid "Close window and save as default configuration"
+msgstr "Κλέισιμο παραθύρου και αποθήκευση ως εξ ορισμού διαμόρφωσης "
+
+#: src/hist.cxx:4362
+msgid "Close"
+msgstr "Κλείσιμο"
+
+#: src/hist.cxx:4368
+msgid "Print format"
+msgstr "Μορφή(Format) εκτύπωσης"
+
+#: src/hist.cxx:4369
+msgid "Printer page format"
+msgstr "Μορφή(Format) σελίδας εκτύπωσης"
+
+#. end graph
+#: src/hist.cxx:4375 src/Tableur.cc:2833
+#, fuzzy
+msgid "Format"
+msgstr "Μορφή(Format)"
+
+#: src/hist.cxx:4379 src/Tableur.cc:134 src/Graph.cc:5607
+msgid "Landscape"
+msgstr "Τοπίο"
+
+#: src/hist.cxx:4380
+msgid "Landscape or Portrait"
+msgstr "Τοπίο η πορτραίτο"
+
+#: src/hist.cxx:4387
+msgid "PS view"
+msgstr "Προεπισκόπηση(PS)"
+
+#: src/hist.cxx:4388
+msgid "Postscript previewer program (put no for no preview)"
+msgstr "Πρόγραμμα προεπισκόπησης(πατηστε οχι για καμία)"
+
+#: src/hist.cxx:4394
+msgid "Font"
+msgstr "Γραμματοσειρά"
+
+#: src/hist.cxx:4397
+#, fuzzy
+msgid "Auto index help"
+msgstr "Αυτόματη βοήθεια"
+
+#: src/hist.cxx:4398
+msgid "Selecting a menu item displays short index help"
+msgstr ""
+"Η συντόμεθση της βοήθειας θα εμφανηστεί για τισ επιλεγμένες εντολές του μενού"
+
+#: src/hist.cxx:4402
+msgid "Xcas < 0.8.1 compatible"
+msgstr ""
+
+#: src/hist.cxx:4403
+msgid ""
+"If not checked, save context information, incompatible with Xcas < 0.8.1"
+msgstr ""
+
+#: src/hist.cxx:4411
+msgid "Xcas Script Window"
+msgstr "Παράθυρο σεναρίου Xcas"
+
+#: src/hist.cxx:4416
+msgid "Xcas DispG Window"
+msgstr "Παράθυρο DispG Xcas"
+
+#: src/hist.cxx:4422
+msgid "Click in graph or here to cancel"
+msgstr "Κντε κλικ στο γράφημα(ή ακυρώστε πατώντας εδώ)"
+
+#: src/hist.cxx:4427
+#, fuzzy
+msgid "label"
+msgstr "Ετικέτα"
+
+#: src/History.cc:231
+msgid "Syntax compatibility mode "
+msgstr "Σύνταξη σε συμβατή μέθοδο"
+
+#: src/History.cc:231
+#, fuzzy
+msgid ""
+"\n"
+"Parse error line "
+msgstr "Γραμματικό σφάλμα γραμμής"
+
+#: src/History.cc:231 src/Input.cc:862 src/Editeur.cc:1086 src/Editeur.cc:1152
+msgid " at "
+msgstr "Στο"
+
+#: src/History.cc:1247 src/Input.cc:318 src/Xcas1.cc:2380 src/Xcas1.cc:2856
+#: src/Xcas1.cc:3082 src/Cfg.cc:309 src/Cfg.cc:671 src/Equation.cc:4106
+#: src/Print.cc:402 src/Tableur.cc:145 src/Tableur.cc:464 src/Tableur.cc:1477
+#: src/Tableur.cc:1757 src/Tableur.cc:1893 src/Tableur.cc:1972
+#: src/Tableur.cc:2163 src/Editeur.cc:1329 src/Graph.cc:837 src/Graph.cc:1345
+#: src/Graph.cc:1633 src/Graph.cc:2731 src/Graph.cc:4800 src/Graph.cc:4999
+msgid "Cancel"
+msgstr "Ακύρωση"
+
+#: src/History.cc:1253
+msgid " modified. Save?"
+msgstr " Έχει αλλάξει. Αποθήκευση"
+
+#: src/History.cc:1484
+msgid "Set compatibility mode to TI?"
+msgstr "Εφαρμογή συμβατής μεθόδου σε TI?"
+
+#: src/History.cc:1523
+msgid "File "
+msgstr "Αρχείου"
+
+#: src/History.cc:1523
+msgid " exists. Overwrite?"
+msgstr " Προυπάρχει. Αντικατάσταση?"
+
+#: src/History.cc:1528
+msgid "Translating worksheet and setting compatibility mode to maple"
+msgstr "Μετάφραση σε εξέλιξή της συνεδρίας, πέρασμα σε συμβατή μέθοδο maple"
+
+#: src/History.cc:1619
+msgid "Translating maple worksheet and setting compatibility mode to maple"
+msgstr ""
+"Μετάφραση σε εξέλιξή της μεθόδου maple , πέρασμα σε συμβατή μέθοδο maple"
+
+#: src/History.cc:1889 src/Xcas1.cc:1146
+msgid "Unable to launch thread"
+msgstr "Η εκκίνηση διεργασίας είναι αδύνατη"
+
+#: src/History.cc:2129
+msgid "Export worksheet as"
+msgstr "Απόθηκευση συνεδρίας ως"
+
+#: src/History.cc:2169
+msgid "Current buffer modified. Save?"
+msgstr "Ουρά τροποποιήθηκε. Αποθήκευση?"
+
+#: src/History.cc:2931 src/Editeur.cc:1657
+msgid "Load"
+msgstr "Φόρτωση"
+
+#: src/History.cc:2945
+msgid "latex preview selection"
+msgstr "Επιλογή προοπτικοποίησης(latex)"
+
+#. end Edit
+#: src/History.cc:2950 src/Editeur.cc:1695
+msgid "Add"
+msgstr "Προσθήκη"
+
+#: src/History.cc:2952 src/History.cc:2964
+msgid "comment"
+msgstr "Σχόλιο"
+
+#: src/History.cc:2953
+msgid "entry"
+msgstr "Είσοδος"
+
+#: src/History.cc:2954
+#, fuzzy
+msgid "expression"
+msgstr "Έκφραση"
+
+#: src/History.cc:2955 src/History.cc:2967
+msgid "tableur"
+msgstr "ΠΊνακας, στατιστικά"
+
+#: src/History.cc:2960
+#, fuzzy
+msgid "tortue"
+msgstr "Κατηγοριοποίηση"
+
+#: src/History.cc:2962 src/History.cc:2974
+msgid "group"
+msgstr "Ομάδα"
+
+#: src/History.cc:2965
+msgid "new entry"
+msgstr "Νέα είσοδος"
+
+#: src/History.cc:2966
+msgid "equation"
+msgstr "Εξομοίωση(εξίσωση)"
+
+#: src/History.cc:2972
+#, fuzzy
+msgid "dessin tortue"
+msgstr "Συντελεστής"
+
+#: src/History.cc:2977
+msgid "Execute"
+msgstr "Εκτέλεση"
+
+#: src/History.cc:2978
+msgid "worksheet"
+msgstr "Συνεδρία"
+
+#: src/History.cc:2979
+msgid "below"
+msgstr "Απο κάτω"
+
+#: src/History.cc:2980
+msgid "remove answers below"
+msgstr "Απόκρυψη των απαντήσεων που ακολουθούν"
+
+#: src/History.cc:2984 src/Graph.cc:5605
+msgid "Delete selected levels"
+msgstr "Διαγραφή επιλεγμένων επιπέδων"
+
+#: src/History.cc:2987
+msgid "Degroup current fold"
+msgstr "Αποκατηγοριοιποίηση ομάδας"
+
+#: src/History.cc:3348 src/History.cc:3372
+msgid "Unable to cut. Xcas is busy."
+msgstr "Η αποκοπή είναι αδύνατη. Το Xcas είναι αποσχολημένο"
+
+#: src/Input.cc:100
+msgid " or "
+msgstr " Ή "
+
+#: src/Input.cc:314 src/Xcas1.cc:2382 src/Xcas1.cc:2852 src/Xcas1.cc:3079
+#: src/Equation.cc:4103 src/Print.cc:399 src/Tableur.cc:142
+#: src/Tableur.cc:1474 src/Tableur.cc:1754 src/Tableur.cc:1890
+#: src/Tableur.cc:1969 src/Tableur.cc:2160 src/Graph.cc:1343 src/Graph.cc:1631
+#: src/Graph.cc:2728 src/Graph.cc:4797 src/Graph.cc:4996
+msgid "OK"
+msgstr "ΟΚ"
+
+#: src/Input.cc:315
+msgid "Click to copy the commandname to the commandline"
+msgstr "Κάντε κλίκ για αμτιγραφή της εντολής στην γραμμά εντολών"
+
+#: src/Input.cc:320
+msgid "Details"
+msgstr "Λεπτομέριες"
+
+#: src/Input.cc:321
+msgid "Show full HTML help in browser"
+msgstr "Εμφάνηση πλήρους HTML βοήθειας στον καθοδηγητή(browser) σας"
+
+#: src/Input.cc:329
+msgid "Related"
+msgstr "Εμφάνηση σχετικών "
+
+#: src/Input.cc:331
+msgid "Click for help on related command"
+msgstr "Κάντε κλικ για βοήθεια στις σχετικές εντολές"
+
+#: src/Input.cc:333
+msgid "Synonyms"
+msgstr ""
+
+#: src/Input.cc:337
+msgid "Search this word in HTML help"
+msgstr "Αναζήτηση λέξης στην HTML βοήθεια"
+
+#. input->label("?");
+#: src/Input.cc:341
+msgid "Show commandnames starting from this text"
+msgstr "Εμφάνηση των ονομάτων των εντολών ξεκινώντας απο αυτό το κείμενο"
+
+#: src/Input.cc:343
+msgid "Command short description and syntax"
+msgstr "Σύντομη περιγραφή της εντολης και της σύνταξης της"
+
+#: src/Input.cc:355
+msgid ""
+"Left-click: copy example to commandline, right-click: fill in template with "
+"example values"
+msgstr ""
+
+#: src/Input.cc:861
+msgid "Syntax error in compatibility mode: "
+msgstr "Συντακτικό λάθος σε συμβατή μέθοδο maple "
+
+#: src/Input.cc:862 src/Editeur.cc:1086 src/Editeur.cc:1152
+#, fuzzy
+msgid "Parse error line "
+msgstr "Γραμματικό σφάλμα γραμμής"
+
+#: src/Input.cc:875
+msgid "To get a newline, use shift-Enter. Reedit?"
+msgstr "Για είσοδο νέας γραμμής, πατήστε Shift-Enter. Επανεπεξεργασία?"
+
+#: src/Xcas1.cc:244
+msgid "Xcas Debug Window"
+msgstr "Παράθυρο αποσφαλμάτωσης(debug) Xcas"
+
+#: src/Xcas1.cc:249
+msgid "Show the source of the program"
+msgstr "Εμφάνηση της πηγής του προγράμματος"
+
+#: src/Xcas1.cc:253 src/Cfg.cc:358
+msgid "eval"
+msgstr "Αξιολόγηση"
+
+#: src/Xcas1.cc:273
+msgid "sst"
+msgstr "sst"
+
+#: src/Xcas1.cc:274
+msgid "Execute current line, skip function"
+msgstr "Εκτέλεση τρέχουσας γραμμής, προσπέρασμα συνάρτησης"
+
+#: src/Xcas1.cc:277
+msgid "in"
+msgstr "Στο"
+
+#: src/Xcas1.cc:278
+msgid "Execute current line, step in function"
+msgstr "Εκτέλεση τρέχουσας γραμμής, είσοδος στην συνάρτηση"
+
+#: src/Xcas1.cc:281
+msgid "cont"
+msgstr "Συνθήκη"
+
+#: src/Xcas1.cc:282
+msgid "Continue execution until next breakpoint"
+msgstr "Συνέχηση της εκτέλεσης μέχρι το επόμενο σημείο στοπ"
+
+#: src/Xcas1.cc:285
+msgid "kill"
+msgstr "Απότομος τερματισμός(kill)"
+
+#: src/Xcas1.cc:286
+msgid "Kill current program"
+msgstr "Τερματισμός(kill) τρέχοντος προγράμματος "
+
+#: src/Xcas1.cc:289 src/Editeur.cc:1714
+msgid "break"
+msgstr "Παύση"
+
+#: src/Xcas1.cc:290
+msgid "Add a breakpoint"
+msgstr "Προσθήκη σημείου στοπ"
+
+#: src/Xcas1.cc:293
+#, fuzzy
+msgid "rmbrk"
+msgstr "romberg"
+
+#: src/Xcas1.cc:294
+msgid "Remove a breakpoint"
+msgstr "Αφαίρεση ενός σημείου στοπ"
+
+#: src/Xcas1.cc:297
+msgid "watch"
+msgstr "Παρακολούθηση"
+
+#: src/Xcas1.cc:298 src/Xcas1.cc:302
+msgid "Add a variable name to the watch"
+msgstr "Προσθήκη συμβατού ονόματος μεταβλητής"
+
+#: src/Xcas1.cc:301
+#, fuzzy
+msgid "rmwtch"
+msgstr "Προβολή"
+
+#: src/Xcas1.cc:308
+msgid "Show watch variables"
+msgstr "Προβολή συμβατών μεταβλητών"
+
+#: src/Xcas1.cc:1146
+msgid "Computing..."
+msgstr "Υπολογισμός σε εξέλιξη..."
+
+#: src/Xcas1.cc:2860
+msgid "STOP"
+msgstr "ΣΤΟΠ"
+
+#: src/Xcas1.cc:3069
+msgid "What a nice font"
+msgstr "Τι ωραία γραμματοσειρά"
+
+#: src/Cfg.cc:128
+msgid "Standard"
+msgstr "Επιβεβλημένο"
+
+#: src/Cfg.cc:129
+msgid "Scientific"
+msgstr "Επιστημονικό"
+
+#: src/Cfg.cc:130 src/Cfg.cc:131
+msgid "Engineer"
+msgstr "Μηχανικός"
+
+#: src/Cfg.cc:154
+msgid "Mupad"
+msgstr "Mupad"
+
+#: src/Cfg.cc:155
+msgid "TI89/92"
+msgstr "TI89/92"
+
+#: src/Cfg.cc:217
+msgid "10"
+msgstr "10"
+
+#: src/Cfg.cc:218
+#, fuzzy
+msgid "16"
+msgstr "16"
+
+#: src/Cfg.cc:237
+msgid "Xcas Cas Setup"
+msgstr "Εγκατάσταση Xcas CAS"
+
+#: src/Cfg.cc:238
+msgid "Float format"
+msgstr "Μορφή(Format) σε δεκαδικό"
+
+#: src/Cfg.cc:243
+msgid "Current float printing format"
+msgstr "Τρέχουσα μορφή(format)εκτύπωσης των δεκαδικών"
+
+#: src/Cfg.cc:247
+msgid "epsilon"
+msgstr "Εψιλον"
+
+#: src/Cfg.cc:248
+msgid "Number with absolute value less than epsilon can be coerced to 0"
+msgstr ""
+"Ένας αριθμός με απόλυτη τιμή μικρότερη απο έψιλον μπορεί να αντικατασταθεί "
+"με 0"
+
+#: src/Cfg.cc:254
+#, fuzzy
+msgid "proba"
+msgstr "Prop"
+
+#: src/Cfg.cc:255
+msgid ""
+"Maximal probability of a wrong answer for non-deterministic algorithms. Set "
+"to 0 for deterministic algorithms only."
+msgstr ""
+
+#: src/Cfg.cc:261
+msgid "approx"
+msgstr "Προσεγγιστικό"
+
+#: src/Cfg.cc:262
+msgid "Approx or exact mode"
+msgstr "Πριοσεγγιστική ή ακριβής μέθοδος"
+
+#: src/Cfg.cc:267
+msgid "radian"
+msgstr "Τυχαίο"
+
+#: src/Cfg.cc:268
+msgid "Radian or degree angle mode"
+msgstr "Τυχαίο ή βαθμωτό άνοιγμα γανίας"
+
+#: src/Cfg.cc:273
+msgid "increasing power"
+msgstr "Αυξανώμενη δύναμη"
+
+#: src/Cfg.cc:274
+msgid "Show polynomials in increasin or decreasing order"
+msgstr "Εμφάνηση πολυωνύμων σε αύξουσα η φθίνουσα δύναμη"
+
+#: src/Cfg.cc:279
+msgid "Prog style"
+msgstr "Προγραμματιστικό στύλ"
+
+#: src/Cfg.cc:284
+msgid "Current programmation syntax style"
+msgstr "Τρέχων στύλ προγραμματισμού"
+
+#: src/Cfg.cc:288
+msgid "Complex"
+msgstr "Σύνθετο"
+
+#: src/Cfg.cc:289
+msgid "Complex mode (e.g. for factorization)"
+msgstr "Σύνθετη μέθοδος(π.χ. για πραγοντοποίηση)"
+
+#: src/Cfg.cc:294
+msgid "Cmplx_var"
+msgstr "Σύνθετες_μεταβλητές"
+
+#: src/Cfg.cc:295
+msgid "Variables are complex or real"
+msgstr "Οι μεταβλητές είναι σύνθετες η πραγματικές"
+
+#: src/Cfg.cc:300 src/Cfg.cc:663 src/Graph.cc:1352 src/Graph.cc:1601
+msgid "Apply"
+msgstr "Εφαρμογή"
+
+#: src/Cfg.cc:314
+msgid "threads"
+msgstr "Διεργασίες"
+
+#: src/Cfg.cc:315
+msgid "Maximal number of threads in parallel"
+msgstr "Μέγιστος αριθμός διεργασιών σε παράλληλη λειτουργία"
+
+#: src/Cfg.cc:322
+#, fuzzy
+msgid "Sqrt"
+msgstr "Τετραγωνική ρίζα"
+
+#: src/Cfg.cc:323
+msgid "Factor 2nd order poly using sqrt"
+msgstr ""
+"Παραγοντοπίηση των πολυωνύμων δευτέρου βαθμού που χρησιμοποιούν τεραγωνικές "
+"ρίζες"
+
+#: src/Cfg.cc:328
+msgid "All_trig_sol"
+msgstr "Επίλυση_όλων_των_τριγωνικών"
+
+#: src/Cfg.cc:329
+msgid "Solver: principal solution vs all solutions"
+msgstr "Επιλυτής: βασική ή όλες τις λύσεις"
+
+#: src/Cfg.cc:334 src/Cfg.cc:335
+msgid "Digits"
+msgstr "Δεκαδικοί"
+
+#: src/Cfg.cc:342
+msgid "Integer basis"
+msgstr "Δεκαδική βάση"
+
+#: src/Cfg.cc:347
+msgid "Current basis for printing integers"
+msgstr "Τρέχουσα βάση για την εκτύπωση των δεκαδικών"
+
+#: src/Cfg.cc:351
+msgid "debug"
+msgstr "Απασφαλμάτωση(debug)"
+
+#: src/Cfg.cc:352
+msgid "Level of information displayed by giac functions"
+msgstr "Επίπεδο ενημέρωσης που παρουσιάστηκε για τις συναρτήσεις του giac"
+
+#: src/Cfg.cc:359
+msgid "Number of embedded variable names replacement in interactive evaluation"
+msgstr ""
+"Αριθμός των αναδρομικών κλήσεων των ονομάτων των μεταβλητών (σε "
+"αλληλεπιδραστική λειτουργία)"
+
+#: src/Cfg.cc:366
+#, fuzzy
+msgid "recurs"
+msgstr "Αναδρομικό"
+
+#: src/Cfg.cc:367
+msgid "Number of embedded function calls allowed"
+msgstr "Αριθμός επιτρεπόμενων αναδρομικών κλήσεων"
+
+#: src/Cfg.cc:374
+#, fuzzy
+msgid "prog"
+msgstr "Προγραμματισμός"
+
+#: src/Cfg.cc:375
+msgid ""
+"Number of embedded variable names replacement in program evaluation (1 or 0 "
+"for default eval level)"
+msgstr ""
+"Αριθμός αναδρομικών κλήσεων των ονομάτων των μεταβλητών σε ένα πρόγραμμα(1 ή "
+"0 για προεπιλεγμένο επίπεδο αξιολόγησης  "
+
+#: src/Cfg.cc:382
+#, fuzzy
+msgid "maxiter"
+msgstr "εκτύπωση(latex)"
+
+#: src/Cfg.cc:383
+msgid "Default maximal number of iterations in Newton method"
+msgstr ""
+
+#: src/Cfg.cc:546
+msgid "Xcas Plot Setup"
+msgstr "Διαμόρφωση γραφικών στο Xcas"
+
+#: src/Cfg.cc:547
+msgid "Plot setup"
+msgstr "Διαμόρφωση γραφικών"
+
+#: src/Cfg.cc:552
+msgid "X-"
+msgstr "X-"
+
+#: src/Cfg.cc:553
+msgid "Xmin for computation"
+msgstr "Xmin για τους υπολογισμούς"
+
+#: src/Cfg.cc:561
+#, fuzzy
+msgid "X+"
+msgstr "X+"
+
+#: src/Cfg.cc:562
+msgid "Xmax for computation"
+msgstr "Xmax για τους υπολογισμούς"
+
+#: src/Cfg.cc:570
+msgid "Y-"
+msgstr "Y-"
+
+#: src/Cfg.cc:571
+msgid "Ymin for computation"
+msgstr "Ymin για τους υπολογισμούς"
+
+#: src/Cfg.cc:579
+msgid "Y+"
+msgstr "Y+"
+
+#: src/Cfg.cc:580
+msgid "Ymax for computation"
+msgstr "Ymax για τους υπολογισμούς"
+
+#: src/Cfg.cc:588
+msgid "Z-"
+msgstr "Z-"
+
+#: src/Cfg.cc:589
+msgid "Zmin (3-d)"
+msgstr "Zmin (3-d)"
+
+#: src/Cfg.cc:597
+msgid "Z+"
+msgstr "Z+"
+
+#: src/Cfg.cc:598
+msgid "Z-max (3-d)"
+msgstr "Zmax (3-d)"
+
+#: src/Cfg.cc:606
+msgid "t-"
+msgstr "t-"
+
+#: src/Cfg.cc:607
+msgid "T-min (parametric computation)"
+msgstr "T-min για τους υπολογισμούς"
+
+#: src/Cfg.cc:615
+msgid "t+"
+msgstr "t+"
+
+#: src/Cfg.cc:616
+msgid "T-max (parametric computation)"
+msgstr "T-max για τους υπολογισμούς"
+
+#: src/Cfg.cc:624
+#, fuzzy
+msgid "class_min"
+msgstr "Ελάχιστη_τάξη"
+
+#: src/Cfg.cc:625
+msgid "Minimum for classes (for e.g. histogram...)"
+msgstr "Ελάχιστη τιμή για τις τάξεις(π.χ. ιστόγραμμα...)"
+
+#: src/Cfg.cc:632
+msgid "class_size"
+msgstr "Μέγεθος_τάξης"
+
+#: src/Cfg.cc:633
+msgid "Size of a class (e.g. for histogram...)"
+msgstr "Μέγεθος τάξης(π.χ. για ιστόγραμμα...)"
+
+#: src/Cfg.cc:640
+#, fuzzy
+msgid "TX"
+msgstr "TX"
+
+#: src/Cfg.cc:641
+msgid "Tick range on X axis"
+msgstr "Διάστημα ανάμεσα σε δύο σημεία στον X άξονα"
+
+#: src/Cfg.cc:648
+#, fuzzy
+msgid "TY"
+msgstr "TY"
+
+#: src/Cfg.cc:649
+msgid "Tick range on Y axis"
+msgstr "Διάστημα ανάμεσα σε δύο σημεία στον Y  άξονα"
+
+#: src/Cfg.cc:656
+#, fuzzy
+msgid "autoscale"
+msgstr "Αυτόματη ρύθμιση του παραθύρου οπτικοποίησης"
+
+#: src/Cfg.cc:657
+#, fuzzy
+msgid "Autoscale graphs"
+msgstr "Αυτόματη ρύθμιση του παραθύρου οπτικοποίησης γραφημάτων"
+
+#: src/Cfg.cc:675
+msgid "WX-"
+msgstr "WX-"
+
+#: src/Cfg.cc:676 src/Graph.cc:1468
+msgid "Xmin for visualisation"
+msgstr "X-min για οπτικοποίηση"
+
+#: src/Cfg.cc:684
+msgid "WX+"
+msgstr "WX+"
+
+#: src/Cfg.cc:685
+msgid "Xmax for visualization"
+msgstr "X-max για οπτικοποίηση"
+
+#: src/Cfg.cc:693
+msgid "WY-"
+msgstr "WY-"
+
+#: src/Cfg.cc:694
+msgid "Ymin for visualization"
+msgstr "Ymin για οπτικοποίηση"
+
+#: src/Cfg.cc:702
+msgid "WY+"
+msgstr "WY+"
+
+#: src/Cfg.cc:703
+msgid "Ymax for visualization"
+msgstr "Y-max για οπτικοποίηση"
+
+#: src/Cfg.cc:711
+#, fuzzy
+msgid "ortho"
+msgstr "Ορθό"
+
+#: src/Cfg.cc:712
+msgid "Orthonormalize"
+msgstr "Ορθοκανικοποίηση"
+
+#: src/Cfg.cc:716
+#, fuzzy
+msgid ">W"
+msgstr ">W"
+
+#: src/Cfg.cc:717
+msgid "Copy XYminmax to W"
+msgstr "Αντιγραφή XYminmax στο W"
+
+#: src/Cfg.cc:721
+#, fuzzy
+msgid "W>"
+msgstr "W>"
+
+#: src/Cfg.cc:722
+msgid "Copy W to XYminmax"
+msgstr "Αντιγραφή W στο XYminmax"
+
+#: src/Equation.cc:3968 src/Graph.cc:1012
+msgid "M"
+msgstr ""
+
+#: src/Equation.cc:3969
+msgid "Select all"
+msgstr "Επιλογή όλων"
+
+#: src/Equation.cc:3970
+msgid "Normal"
+msgstr "Κανονικό"
+
+#: src/Equation.cc:3972
+#, fuzzy
+msgid "Factor"
+msgstr "παράγοντας"
+
+#: src/Equation.cc:3973
+#, fuzzy
+msgid "Evalf"
+msgstr "Αξιολόγηση"
+
+#: src/Equation.cc:3974
+msgid "Back"
+msgstr "Προηγούμενο"
+
+#: src/Equation.cc:3975
+msgid "Forward"
+msgstr "Επόμενο"
+
+#: src/Equation.cc:3994
+#, fuzzy
+msgid "Equation menu"
+msgstr "Εξίσωση"
+
+#: src/Print.cc:391
+msgid "Width"
+msgstr "Μήκος"
+
+#: src/Print.cc:392
+msgid "Width in pixels for export"
+msgstr "Μήκος ανάλυσης (σε pixels) για εξαγωγή εικόνας"
+
+#: src/Print.cc:393
+msgid "Height"
+msgstr "Ύψος"
+
+#: src/Print.cc:394
+msgid "Height in pixels for export"
+msgstr "Ύψος ανάλυσης (σε pixels) για εξαγωγή εικόνας"
+
+#: src/Print.cc:395
+msgid "Pixel size"
+msgstr "Μέγεθος του pixel"
+
+#: src/Print.cc:396
+msgid "Pixel size in mm"
+msgstr "Μέγεθος του pixel σε mm"
+
+#: src/Print.cc:405
+msgid "Size in pixels for export"
+msgstr "Μέγεθος ανάλυσης (σε pixels) για εξαγωγή εικόνας"
+
+#: src/Tableur.cc:83
+msgid "No spreadsheet found. Please click in or add one"
+msgstr ""
+
+#: src/Tableur.cc:115
+#, fuzzy
+msgid "Variable"
+msgstr "Όνομα μεταβλητής"
+
+#: src/Tableur.cc:116
+msgid "Save the spreadsheet as a matrix in this variable"
+msgstr "Αποθήκευση των τιμών του πίνακα στην μεταβλητή ως μήτρα(matrix)"
+
+#: src/Tableur.cc:117 src/Tableur.cc:464
+msgid "Rows"
+msgstr "Γραμμές"
+
+#: src/Tableur.cc:121 src/Tableur.cc:464
+msgid "Cols"
+msgstr "Στήλες"
+
+#: src/Tableur.cc:125
+#, fuzzy
+msgid "Eval"
+msgstr "Αξιολόγηση"
+
+#: src/Tableur.cc:126
+msgid "Reeval spreadsheet automatically"
+msgstr "Αυτόματη επαναξιολόγηση του πίνακα"
+
+#: src/Tableur.cc:128
+msgid "Move right"
+msgstr "Μετακίνηση δεξιά"
+
+#: src/Tableur.cc:129
+msgid "Move right or down after Enter"
+msgstr "Μετακίνηση δεξιά ή κάτω μετά την Είσοδο"
+
+#: src/Tableur.cc:130
+msgid "Distribute"
+msgstr "Κατανομή"
+
+#: src/Tableur.cc:131
+msgid "Matrix input is ditributed or kept inside a cell"
+msgstr "Μια είσοδος matrix τύπου έχει κατανεμηθεί ή παραμείνει σε ένα κελί "
+
+#: src/Tableur.cc:133
+msgid "Matrix or spreadsheet"
+msgstr "Μήτρα(Matrix)ή πίνακας"
+
+#: src/Tableur.cc:135
+msgid "Split sheet/graph horizontally or vertically"
+msgstr "Διαχωρισμός πίνακα/γραφήματος οριζοντίως ή καθέτως"
+
+#. end Edit
+#: src/Tableur.cc:136 src/Tableur.cc:2827 src/Graph.cc:5611
+msgid "Graph"
+msgstr "Γράφημα"
+
+#: src/Tableur.cc:137
+msgid "Show or hide graph connected to this sheet"
+msgstr "Εμφάνηση ή απόκρυψη γραφήματος που συνδέεται δυναμικά στον πίνακα"
+
+#: src/Tableur.cc:138
+#, fuzzy
+msgid "Undo history"
+msgstr "Αποθήκευση συνεδρίας"
+
+#: src/Tableur.cc:139
+#, fuzzy
+msgid "Init sheet"
+msgstr "Προσθήκη μήτρας(matrix) ενός αρχείου"
+
+#: src/Tableur.cc:149 src/Tableur.cc:2811
+msgid "Sheet configuration"
+msgstr "Διαμόρφωση του πίνακα"
+
+#: src/Tableur.cc:464
+msgid "Remove what?"
+msgstr "Απομάκρυνση τίνος?"
+
+#: src/Tableur.cc:771
+msgid "computation aborted"
+msgstr "Υπολογισμός διεκόπη"
+
+#: src/Tableur.cc:1262
+msgid "Save sheet"
+msgstr "Απόθηκευση πίνακας ως"
+
+#: src/Tableur.cc:1272 src/Editeur.cc:692 src/Graph.cc:4651
+msgid ": file exists. Overwrite?"
+msgstr ": φάκελος προυπάρχει. Αντικατάσταση?"
+
+#: src/Tableur.cc:1394
+msgid "Variable name?"
+msgstr "Όνομα της μεταβλητής?"
+
+#: src/Tableur.cc:1398
+msgid "is not a variable name"
+msgstr "Δεν είναι όνομα μεταβλητής"
+
+#: src/Tableur.cc:1422
+msgid "Insert sheet"
+msgstr "Προσθήκη μήτρας(matrix) ενός αρχείου"
+
+#: src/Tableur.cc:1445
+msgid "Insert CSV sheet"
+msgstr "Προσθήκη μήτρας(matrix)ενός CSV"
+
+#: src/Tableur.cc:1462
+msgid "Separator"
+msgstr "Διαχωριστής"
+
+#: src/Tableur.cc:1463
+msgid "One character used to separate fields, like ; Use ^I for tab"
+msgstr "Διαχωριστής πεδίων, π.χ. ; χρησιμοποιεί ^I για tab"
+
+#: src/Tableur.cc:1464
+msgid "Newline"
+msgstr "Νέα γραμμή"
+
+#: src/Tableur.cc:1465
+msgid "One character used to separate lines, like <return> Use ^I for tab"
+msgstr "Διαχωριστής γραμμών, π.χ. <return> χρησιμοποιεί ^I για tab"
+
+#: src/Tableur.cc:1466
+#, fuzzy
+msgid "Decimal"
+msgstr "Δεκαδικός"
+
+#: src/Tableur.cc:1467
+msgid "One character used for decimal digit separator, like . or ,"
+msgstr "Διαχωριστής γραμμών, π.χ. . ή ,"
+
+#: src/Tableur.cc:1468
+msgid "Endfile"
+msgstr "Τέλος αρχείου"
+
+#: src/Tableur.cc:1469
+msgid "Stop reading at first occurence of this character, leave blank for none"
+msgstr ""
+"Η ανάγνωση σταματά όταν εμφανηστεί αυτός ο χαρακτήρας, αλλιώς αφήστε κενό"
+
+#: src/Tableur.cc:1470
+msgid "Start row=1"
+msgstr "Γραμμή εκκίνησης=1"
+
+#: src/Tableur.cc:1480
+msgid "CSV Import filter"
+msgstr "Φίλτρο εισόδου CSV"
+
+#: src/Tableur.cc:1722
+msgid "Expression of the function (e.g sin(x))"
+msgstr "Έκφραση της συνάρτηση (π.χ. sin(x))"
+
+#: src/Tableur.cc:1725
+msgid "Expression of the function (e.g x-y^2)"
+msgstr "Έκφραση της συνάρτηση (π.χ. x-y^2)"
+
+#: src/Tableur.cc:1726 src/Graph.cc:4931 src/Graph.cc:4937
+msgid "1st var"
+msgstr "1η μεταβλητή"
+
+#: src/Tableur.cc:1728
+msgid "Independant variable name (e.g x)"
+msgstr "Ανεξάρτητη μεταβλητή (π.χ. x)"
+
+#: src/Tableur.cc:1729 src/Graph.cc:4934 src/Graph.cc:4940 src/Graph.cc:4946
+msgid "2nd var"
+msgstr "2η μεταβλητή"
+
+#: src/Tableur.cc:1731 src/Graph.cc:4942
+msgid "Second independant variable name (e.g y)"
+msgstr "Δεύτερη ανεξάρτητη μεταβλητή (π.χ. y)"
+
+#: src/Tableur.cc:1732 src/Graph.cc:4976
+#, fuzzy
+msgid "xmin"
+msgstr "xmin"
+
+#: src/Tableur.cc:1735 src/Graph.cc:4979
+#, fuzzy
+msgid "xstep"
+msgstr "t"
+
+#: src/Tableur.cc:1738 src/Graph.cc:4982
+#, fuzzy
+msgid "xmax"
+msgstr "xmax"
+
+#: src/Tableur.cc:1741
+msgid "Target"
+msgstr "Εύρος"
+
+#: src/Tableur.cc:1742
+msgid ""
+"Name of the first of two columns that will be overwritten by the tablefunc"
+msgstr ""
+"Όνομα της πρώτης εκ των δύο στηλών που θα αντικατασταθεί απο τον πίνακα των "
+"συναρτήσεων"
+
+#: src/Tableur.cc:1743 src/Graph.cc:4985
+#, fuzzy
+msgid "ymin"
+msgstr "ymin"
+
+#: src/Tableur.cc:1746 src/Graph.cc:4988
+#, fuzzy
+msgid "ystep"
+msgstr "t"
+
+#: src/Tableur.cc:1749 src/Graph.cc:4991
+#, fuzzy
+msgid "ymax"
+msgstr "ymax"
+
+#: src/Tableur.cc:1843
+msgid "Table of value of a function"
+msgstr "Πίνακας τιμών μιας συνάρτησης"
+
+#: src/Tableur.cc:1872
+msgid "Target cell range"
+msgstr "Χώρος εύρους κελιού"
+
+#: src/Tableur.cc:1873
+msgid "Target cell range will be filled by random numbers, e.g. A1:A8"
+msgstr "Κελί(ά) εύρους θα αντικατασταθεί(ούν) από τυχαίους αριθούς, π.χ. A1:A8"
+
+#: src/Tableur.cc:1874 src/Tableur.cc:1956
+#, fuzzy
+msgid "x-"
+msgstr "x-"
+
+#: src/Tableur.cc:1876
+msgid "Minimal value"
+msgstr "Ελάχιστη τιμή"
+
+#: src/Tableur.cc:1877 src/Tableur.cc:1959
+#, fuzzy
+msgid "x+"
+msgstr "x+"
+
+#: src/Tableur.cc:1879
+msgid "Maximal value"
+msgstr "Μέγιστη τιμή"
+
+#: src/Tableur.cc:1880
+msgid "integers"
+msgstr "ακέραιοι"
+
+#: src/Tableur.cc:1881
+msgid "Real or integers"
+msgstr "Πραγματικοί ή ακέραιοι"
+
+#: src/Tableur.cc:1884
+#, fuzzy
+msgid "static"
+msgstr "Στατιστικά"
+
+#: src/Tableur.cc:1885
+msgid "Immediate static value or formula reevaled each time"
+msgstr "Στατιστική τιμή ή επανεκτιμημένη φόρμουλα κάθε φορά"
+
+#: src/Tableur.cc:1946
+msgid ""
+"Expression of u_(n+1) in terms of a variable=u_n, e.g. 1/2*(x+2/x)\n"
+"Or expression of u_(n+k+1) in terms of a list of variables=[u_n,...,u_(n"
+"+k)], e.g. x+y"
+msgstr ""
+"Έκφραση του u_(n+1) συναρτήσει μιας μεταβλητής=u_n, π.χ. cos(x) ή έκφραση "
+"του u_(n+k+1) συναρτήσει μιας λίστας μεταβλητών =[u_n,...,u_(+k)], π.χ. x+y"
+
+#: src/Tableur.cc:1947
+#, fuzzy
+msgid "Variable(s)"
+msgstr "Όνομα μεταβλητής"
+
+#: src/Tableur.cc:1949
+msgid ""
+"Independant variable name representing u_n, e.g. x\n"
+"Or list of independant variables representing u_n,...,u_(n+k), e.g. [x,y]"
+msgstr ""
+"Όνομα της ανεξάρτητης μεταβλητής που αναπαρηστά το u_n, π.χ. x ή λίστα "
+"ανεξάρτητων μεταβλητών που αναπαρηστούν τα u_n,...,u_(n+k), π.χ. [x,y] liste "
+"de "
+
+#: src/Tableur.cc:1952
+msgid "Name of the initial value of un"
+msgstr "Όνομα της αρχικής τιμής του un"
+
+#: src/Tableur.cc:1955
+msgid ""
+"Initial value, e.g. 1.0\n"
+"Or list of initial values, e.g. [1.0,1.0]"
+msgstr ""
+"Αρχική τιμή του , u_0, π.χ. 1.0  η λίστα τςν αρχικών τιμών, π.χ.[1.0,1.0]"
+
+#: src/Tableur.cc:1958
+msgid "Minimal value for the function graph"
+msgstr "Ελάχιστη τιμή του γραφήματος της συνάρτησης"
+
+#: src/Tableur.cc:1961
+msgid "Maximal value for the function graph"
+msgstr "Μέγιστη τιμή του γραφήματος της συνάρτησης"
+
+#: src/Tableur.cc:1962
+msgid "Target column"
+msgstr "Εμβέλεια στήλης"
+
+#: src/Tableur.cc:1964
+msgid "Number of terms"
+msgstr "Πλήθος όρων"
+
+#: src/Tableur.cc:2105
+msgid "Table of value of a recurrent sequence"
+msgstr "Πίνακας τιμών μιας περιοδικής ακολουθίας"
+
+#: src/Tableur.cc:2139
+msgid "cells input"
+msgstr "Είσοδος κελιού"
+
+#: src/Tableur.cc:2140
+msgid "Zone over which the function will be applied, e.g. A1..B7 or A1..B7,D,E"
+msgstr ""
+"Χώρος στον οποίον η συνάρτηση θα εφαρμοστεί, π.χ. A1..B7 ou A1..B7,,D,E"
+
+#: src/Tableur.cc:2141
+msgid "target cell"
+msgstr "Εμβέλεια κελιού"
+
+#: src/Tableur.cc:2142
+msgid "Target cell(s) will be filled by the formula, e.g. A8"
+msgstr ""
+"Κελί(ά) εμβέλεια(ειες) θα γεμίσει (ουν) με την φόρμουλα, par exemple A8"
+
+#: src/Tableur.cc:2143
+msgid "class min"
+msgstr "Ελάχιστη τάξη"
+
+#: src/Tableur.cc:2144
+msgid "Minimal value of classes for histogramsl, e.g. -10"
+msgstr "Ελάχιστη τιμή για τις τάξεις του ιστογράμματος, π.χ. -10"
+
+#: src/Tableur.cc:2145
+msgid "class size"
+msgstr "Μέγεθος τάξης"
+
+#: src/Tableur.cc:2146
+msgid "Size of a class for histograms, e.g. 2"
+msgstr "Μέγεθος της τάξης του ισογράμματος, π.χ. 2"
+
+#: src/Tableur.cc:2147
+msgid "value"
+msgstr "Τιμή"
+
+#: src/Tableur.cc:2148
+msgid "Use submatrix by reference (dynamic) or by value (static)"
+msgstr "Χρήση του χώρου κατ' αναφορά(δυναμική)ή κατ' αξία(στατιστική)"
+
+#: src/Tableur.cc:2150
+msgid "lines"
+msgstr "Γραμμές"
+
+#: src/Tableur.cc:2151
+msgid "Use line or columns"
+msgstr "Χρήση γραμμής ή στήλης"
+
+#: src/Tableur.cc:2153
+msgid "outside"
+msgstr "Εξωτερικά"
+
+#: src/Tableur.cc:2154
+msgid "Sheet graph or standalone graph"
+msgstr "Γράφημα του πίνακα ή ξεχςριστό γράφημα"
+
+#: src/Tableur.cc:2156
+#, fuzzy
+msgid "degree"
+msgstr "Βαθμός"
+
+#: src/Tableur.cc:2157
+msgid "Degree of the polynomial regression"
+msgstr "Βαθμός της πολυωνιμικής οπισθοχώρησης"
+
+#: src/Tableur.cc:2246
+msgid "Syntax error"
+msgstr "Συντακτικό λάθος"
+
+#: src/Tableur.cc:2332
+msgid "Really delete rows?"
+msgstr "Είστε σίγουροι οτι θέλετε να διαγράψετε όλες τις γραμμές?"
+
+#: src/Tableur.cc:2348
+msgid "Really delete columns?"
+msgstr "Είστε σίγουροι οτι θέλετε να διαγράψετε όλες τις στήλες?"
+
+#: src/Tableur.cc:2362
+msgid "Histogram 1 or 2 columns: data or data/eff"
+msgstr "Ιστόγραμμα με 1 ή 2 στήλες: δεδομένα δεδομένα/διαγεγραμμένα"
+
+#: src/Tableur.cc:2372
+msgid "Make classes from column data or data/eff into two adjacent columns"
+msgstr ""
+"Δημιουργία τάξεων απο 1ή 2 στήλες δεδομένων που εφαρμόζονται σε δύο "
+"εφαπτομενες στήλες"
+
+#: src/Tableur.cc:2401
+msgid "One boxwhisker per column"
+msgstr "Ένα πλαίσιο(κουτί) εγγραφών ανα στήλη"
+
+#: src/Tableur.cc:2408
+msgid "Plotlist: One column (y) or two columns (x,y)"
+msgstr "Κατάλογος εγραφών: μία στήλη(y) ή 2 στήλες(x,y)"
+
+#: src/Tableur.cc:2415
+msgid "Camembert: column 1: legends, column 2: data"
+msgstr "Στατιστική πίτα: στήλη 1: ετικέτες, σττήλη 2: δεδομένα"
+
+#: src/Tableur.cc:2422
+msgid "Batons: column 1: legends, column 2: data"
+msgstr "Ράβδος: colonne 1: στήλη 1: ετικέτες, σττήλη 2: δεδομένα"
+
+#: src/Tableur.cc:2429
+msgid "Column 1: x, one scatterplot per remaining column"
+msgstr "Στήλη 1: x, ένα σύνολο σημείων ανα υπολειπόμενη στήλη"
+
+#: src/Tableur.cc:2436
+msgid "Column 1: x, one polygonplot per remaining column"
+msgstr "Στήλη 1: x, μια πολυγωνική εγραφή ανα υπολειπόμενη στήλη"
+
+#: src/Tableur.cc:2443
+msgid "Column 1: x, one polygon line per remaining column"
+msgstr "Στήλη 1: x, μια πολυγωνική εγραφή ανα υπολειπόμενη στήλη"
+
+#: src/Tableur.cc:2450
+msgid "Linear regression: column 1: x, column 2: y"
+msgstr "Γραμμική υποχώρηση: στήλη 1: x, στήλη 2: y"
+
+#: src/Tableur.cc:2457
+msgid "Power regression: Column 1: x, column 2: y"
+msgstr "Βαθμωτή υποβάθμιση: στήλη 1: x, στήλη 2: y"
+
+#: src/Tableur.cc:2464
+msgid "Log regression: Column 1: x, column 2: y"
+msgstr "Λογαριθμική υποβάθμιση: στήλη 1: x, στήλη 2: y"
+
+#: src/Tableur.cc:2471
+msgid "Exp regression: Column 1: x, column 2: y"
+msgstr "Εκθετική υποβάθμιση: στήλη 1: x, στήλη 2: y"
+
+#: src/Tableur.cc:2478
+msgid "Polynomial regression degree d: Column 1: x, column 2: y"
+msgstr "Πωλυωνιμική υποβάθμιση: στήλη 1: x, στήλη 2: y"
+
+#: src/Tableur.cc:2485
+msgid "Logistic regressionfor y', with y(x=1)=y1"
+msgstr "Λογιστική υποβάθμιση για y', με y(x=1)=y1"
+
+#: src/Tableur.cc:2494 src/Tableur.cc:2550
+msgid "Sort with respect to "
+msgstr "Κατηγοριοποίηση βάση το a"
+
+#: src/Tableur.cc:2496 src/Tableur.cc:2552
+msgid "row"
+msgstr "Γραμμή"
+
+#: src/Tableur.cc:2498 src/Tableur.cc:2554
+msgid "column"
+msgstr "Στήλη"
+
+#: src/Tableur.cc:2525
+msgid "Sorting is not compatible with some cell references. Sort anyway"
+msgstr ""
+"Η διαλογή είναι μη συμβατή με κάποιες αναφορές στο κελι. Παρ' όλα αυτά "
+"κατηγοριοιποίηση?"
+
+#: src/Tableur.cc:2690 src/Tableur.cc:2702 src/Tableur.cc:2714
+#: src/Tableur.cc:2726
+msgid "Make rows==cols first!"
+msgstr "Πράτα μεταροπή γραμμών σε στήλες"
+
+#: src/Tableur.cc:2803
+#, fuzzy
+msgid "Table"
+msgstr "Πίνακας, στατιστικά"
+
+#: src/Tableur.cc:2804
+#, fuzzy
+msgid "Save sheet as text"
+msgstr "<Αποθήκευση πίνακα ως κείμενο>"
+
+#: src/Tableur.cc:2805 src/Graph.cc:5590
+msgid "Save as alternate filename"
+msgstr ""
+
+#: src/Tableur.cc:2806
+msgid "Save as CSV"
+msgstr "Αποθήκευση σε μορφή (format) CSV "
+
+#: src/Tableur.cc:2807
+msgid "Save as mathml"
+msgstr "Αποθήκευση ως  mathml"
+
+#: src/Tableur.cc:2808
+msgid "Save selection to variable"
+msgstr "Αποθήκευση επιλογής στην μεταβλητή"
+
+#: src/Tableur.cc:2810
+msgid "Insert CSV"
+msgstr "Εισαγωγή CSV"
+
+#: src/Tableur.cc:2812
+msgid "Print/Export"
+msgstr "Εκτύπωση/Εξαγωγή"
+
+#. {gettext("latex preview"), 0,  (Fl_Callback*)cb_Tableur_LaTeX_Preview, 0, 0, 0, 0, 14, 56},
+#. {gettext("latex printer"), 0,  (Fl_Callback*)cb_Tableur_LaTeX_Print, 0, 0, 0, 0, 14, 56},
+#: src/Tableur.cc:2815 src/Graph.cc:6211
+msgid "EPS/PNG and preview"
+msgstr "Προοπτικοποιήσn EPS et PNG"
+
+#: src/Tableur.cc:2820
+msgid "Eval sheet"
+msgstr "Αξιολογηση του πίνακα"
+
+#: src/Tableur.cc:2821
+msgid "Copy Cell"
+msgstr "Αντιγραφή κελιού"
+
+#: src/Tableur.cc:2825
+msgid "Configuration"
+msgstr "Διαμορφωση"
+
+#: src/Tableur.cc:2826
+msgid "Cfg window"
+msgstr "Παράθυρο Cfg"
+
+#: src/Tableur.cc:2828
+msgid "Autoscale graph"
+msgstr "Αυτόματη ρύθμιση του παραθύρου οπτικοποίησης"
+
+#: src/Tableur.cc:2829
+msgid "Graph portrait"
+msgstr "Πορτραίτο γράφηματος"
+
+#: src/Tableur.cc:2830
+msgid "Graph landscape"
+msgstr "Τοπίο γραφήματος"
+
+#: src/Tableur.cc:2831
+msgid "Hide Graph"
+msgstr "Απόκρυψη γραφήματος"
+
+#: src/Tableur.cc:2835
+msgid "Matrix"
+msgstr "Μήτρα(Matrix)"
+
+#: src/Tableur.cc:2836
+msgid "Normal matrix"
+msgstr "Κανονική Μήτρα(Matrix)"
+
+#: src/Tableur.cc:2837
+msgid "Symmetric matrix"
+msgstr "Συμμετρική Μήτρα(Matrix)"
+
+#: src/Tableur.cc:2838
+msgid "AntiSymmetric matrix"
+msgstr "Αντισυμμετρική Μήτρα(Matrix)"
+
+#: src/Tableur.cc:2839
+msgid "Hermitian matrix"
+msgstr "Ερμητιανή Μήτρα(Matrix)"
+
+#: src/Tableur.cc:2840
+msgid "AntiHermitian matrix"
+msgstr "Αντιερμητιανή Μήτρα(Matrix)"
+
+#. end format
+#: src/Tableur.cc:2842
+msgid "Set Rows Number"
+msgstr "Αλλαγή του πλήθους γραμμών"
+
+#: src/Tableur.cc:2843
+msgid "Set Cols Number"
+msgstr "Αλλαγή του πλήθους στηλών"
+
+#: src/Tableur.cc:2844
+msgid "Move ->"
+msgstr "Μετακίνηση ->"
+
+#: src/Tableur.cc:2845
+msgid "Move down"
+msgstr "Μετακίνηση κάτω "
+
+#: src/Tableur.cc:2846
+msgid "Auto Recompute"
+msgstr "Αυτόματος επανυπολογισμός"
+
+#: src/Tableur.cc:2847
+msgid "No Recompute"
+msgstr "Μη εκτέλεση αυτόμματου επανυπολογισμού"
+
+#: src/Tableur.cc:2848
+msgid "Dispatch matrice to cells"
+msgstr "Κατανομή της μήτρας(matrix) σε κελιά"
+
+#: src/Tableur.cc:2849
+msgid "Keep matrice in one cell"
+msgstr "Διατήρηση της μήτρας(matrix) σε κελιά"
+
+#. end Configuration
+#: src/Tableur.cc:2851
+msgid "Fill"
+msgstr "Γέμισμα"
+
+#: src/Tableur.cc:2852
+msgid "Copy right"
+msgstr "Αντιγραφή δεξιά"
+
+#: src/Tableur.cc:2853
+msgid "Copy down"
+msgstr "Αντιγραφή κάτω"
+
+#: src/Tableur.cc:2854
+msgid "Fill selection with pushed cell"
+msgstr "Ανιγραφή πιασμένου κελιού ->επιλογή"
+
+#: src/Tableur.cc:2855
+msgid "Fill selection with 0"
+msgstr "Γέμισμα επιλογής με 0"
+
+#: src/Tableur.cc:2856
+msgid "Fill sheet with 0"
+msgstr "Γέμισμα του πίνακα με 0"
+
+#: src/Tableur.cc:2858
+#, fuzzy
+msgid "Add or delete"
+msgstr "Προσθήκη/Διαγραφή"
+
+#: src/Tableur.cc:2859
+msgid "Insert Row"
+msgstr "Είσοδος γραμμής"
+
+#: src/Tableur.cc:2860
+msgid "Row+ at end"
+msgstr "Γραμμή+ τελείωσε"
+
+#: src/Tableur.cc:2861
+msgid "Insert Col"
+msgstr "Είσοδος στήλης"
+
+#: src/Tableur.cc:2862
+msgid "Col+ at end"
+msgstr "Στήλη+ τελείωσε"
+
+#: src/Tableur.cc:2863
+msgid "Erase current row"
+msgstr "Διαγραφή τρέχουσας γραμμής"
+
+#: src/Tableur.cc:2864
+msgid "Erase selection rows"
+msgstr "Διαγραφή επιλογής γραμμών"
+
+#: src/Tableur.cc:2865
+msgid "Erase current col"
+msgstr "Διαγραφή τρέχουσας στήλης"
+
+#: src/Tableur.cc:2866
+msgid "Erase selection cols"
+msgstr "Διαγραφή επιλογής στηλών"
+
+#: src/Tableur.cc:2868
+msgid "Sort"
+msgstr "Διαλογή(sorting)"
+
+#: src/Tableur.cc:2869
+#, fuzzy
+msgid "Inc col"
+msgstr "Αύξηση/στήλης"
+
+#: src/Tableur.cc:2870
+#, fuzzy
+msgid "Dec col"
+msgstr "Μείωση/στήλης"
+
+#: src/Tableur.cc:2871
+#, fuzzy
+msgid "Inc row"
+msgstr "Αύξηση/γραμμής"
+
+#: src/Tableur.cc:2872
+#, fuzzy
+msgid "Dec row"
+msgstr "Μείωση/γραμμής"
+
+#: src/Tableur.cc:2874
+msgid "Col larger"
+msgstr "Στήλη μεγαλύτερη"
+
+#: src/Tableur.cc:2875
+msgid "Col smaller"
+msgstr "Στήλη μικρότερη"
+
+#: src/Tableur.cc:2879
+#, fuzzy
+msgid "Maths"
+msgstr "Μαθηματικά"
+
+#: src/Tableur.cc:2880 src/Graph.cc:5612
+#, fuzzy
+msgid "Function"
+msgstr "Συνάρτηση"
+
+#: src/Tableur.cc:2881
+msgid "Random values"
+msgstr "Τυχαία τιμή"
+
+#: src/Tableur.cc:2882
+msgid "Sequences"
+msgstr "Ακολουθίες"
+
+#: src/Tableur.cc:2883
+msgid "Recurrent sequence"
+msgstr "Περιοδική ακολουθία"
+
+#: src/Tableur.cc:2884 src/Tableur.cc:2892
+#, fuzzy
+msgid "batons"
+msgstr "Ράβδος"
+
+#: src/Tableur.cc:2885 src/Tableur.cc:2893
+#, fuzzy
+msgid "plotlist"
+msgstr "Σημείο"
+
+#: src/Tableur.cc:2886 src/Tableur.cc:2899
+msgid "Polygonscatterplot"
+msgstr "Αναπαράσταση πολυγωνικού σχήματος"
+
+#: src/Tableur.cc:2887 src/Tableur.cc:2900
+msgid "Scatterplot"
+msgstr "Σύνολο σημείων"
+
+#: src/Tableur.cc:2888 src/Tableur.cc:2901
+msgid "Polygonplot"
+msgstr "Πολυγωνικό σχήμα"
+
+#: src/Tableur.cc:2890
+msgid "1-d stats"
+msgstr "Στατιστικά μίας διάστασης(1-d)"
+
+#: src/Tableur.cc:2891
+#, fuzzy
+msgid "camembert"
+msgstr "σχόλιο"
+
+#: src/Tableur.cc:2894
+msgid "Boxwhisker"
+msgstr "Τετράγωνο σχήμα"
+
+#: src/Tableur.cc:2895
+#, fuzzy
+msgid "Classes (data or data,eff)"
+msgstr "Τάξεις (δεδομένα ή δεδομένα/πραγματτικά)"
+
+#: src/Tableur.cc:2896
+#, fuzzy
+msgid "Histogram (interval,eff)"
+msgstr "Ιστόγραμμα (διαστήματα/πραγμματικά)"
+
+#: src/Tableur.cc:2898
+msgid "2-d stats"
+msgstr "Στατιστικά δύο διαστάσεων(2-d)"
+
+#. end 2-d
+#: src/Tableur.cc:2903
+#, fuzzy
+msgid "Regressions"
+msgstr "Παλινδρομήσεις"
+
+#: src/Tableur.cc:2904
+msgid "Linear"
+msgstr "Γραμμικό"
+
+#: src/Tableur.cc:2905
+#, fuzzy
+msgid "Polynomial"
+msgstr "Πολυωνυμικό"
+
+#: src/Tableur.cc:2906
+msgid "Exponential"
+msgstr "Εκθετικό"
+
+#: src/Tableur.cc:2907
+msgid "Logarithmic"
+msgstr "Λογαριθμικό"
+
+#: src/Tableur.cc:2908
+msgid "Power"
+msgstr "Δύναμη"
+
+#: src/Tableur.cc:2909
+#, fuzzy
+msgid "Logistic"
+msgstr "Λογιστικό(λογαριθμικό)"
+
+#: src/Tableur.cc:3059
+msgid "Too large for cell display"
+msgstr "Πολύ μεγάλο για απεικόνηση στο κελί"
+
+#: src/Tableur.cc:3143
+msgid "CAS is busy"
+msgstr "Το CAS είναι απασχολημένο"
+
+#: src/Tableur.cc:3313
+msgid "Spreadsheet commandline"
+msgstr "Γραμμή εντολών του πίνακα"
+
+#: src/Tableur.cc:3320
+msgid "Selection area"
+msgstr "Ζώνη επιλογής"
+
+#: src/Tableur.cc:3345
+msgid "Reeval current sheet"
+msgstr "Επανεκτίμηση πίνακα"
+
+#: src/Tableur.cc:3349
+msgid "See value instead of formula"
+msgstr "Εμφάνιση της τιμής του πίνακα"
+
+#: src/Tableur.cc:3353
+msgid "Initialize the sheet using init formula"
+msgstr ""
+
+#: src/Tableur.cc:3357
+msgid "View attached graph 2-d"
+msgstr ""
+"Εμφάνιση του  γραφήματος δυο διαστάσεων(2-d) επισυναπτόμενου στον πίνακα"
+
+#: src/Tableur.cc:3361
+msgid "View attached graph 3-d"
+msgstr ""
+"Εμφάνιση του  γραφήματος τριών διαστάσεων(3-d) επισυναπτόμενου στον πίνακα"
+
+#: src/Tableur.cc:3365
+msgid "<Save sheet as text>"
+msgstr "<Αποθήκευση πίνακα ως κείμενο>"
+
+#: src/Tableur.cc:3367
+msgid "Save spreadsheet independently of session"
+msgstr "Αποθήκευση πίνακα ανεξαρτήτως της συνεδρίας"
+
+#: src/Editeur.cc:419
+msgid "No program editor found. Please click in or add one"
+msgstr ""
+
+#: src/Editeur.cc:553
+msgid "File exists. Overwrite?"
+msgstr "Το αρχείο προυπάρχει. Αντικατάσταση?"
+
+#: src/Editeur.cc:1133
+msgid "Syntax compatibility mode: "
+msgstr "Συμβατότητα της σύνταξης:"
+
+#. Not a logo, try to run it inside focus
+#: src/Editeur.cc:1283
+msgid "Should be used inside a Logo level"
+msgstr ""
+
+#: src/Editeur.cc:1321
+msgid "Search"
+msgstr "Αναζήτηση"
+
+#: src/Editeur.cc:1322
+msgid "Word to search"
+msgstr "Εισαγωγή λέξης για αναζήτηση"
+
+#: src/Editeur.cc:1325
+msgid "Replace by"
+msgstr "Αντικατάσταση με"
+
+#: src/Editeur.cc:1332 src/Graph.cc:1021
+msgid "Next"
+msgstr "Επόμενο"
+
+#: src/Editeur.cc:1336
+msgid "Replace"
+msgstr "Αντικατάσταση"
+
+#: src/Editeur.cc:1340
+msgid "Replace all"
+msgstr "Αντικατάσταση όλων"
+
+#: src/Editeur.cc:1656
+#, fuzzy
+msgid "Prog"
+msgstr "Προγραμματισμός"
+
+#: src/Editeur.cc:1659
+msgid "file"
+msgstr "Αρχείο"
+
+#: src/Editeur.cc:1667
+msgid "File extension"
+msgstr "Επέκταση του αρχείου"
+
+#: src/Editeur.cc:1668
+msgid "Export"
+msgstr "Εξαγωγή"
+
+#: src/Editeur.cc:1674
+msgid "Translate"
+msgstr "Μετάφραση"
+
+#: src/Editeur.cc:1678
+#, fuzzy
+msgid "ti"
+msgstr "τi"
+
+#: src/Editeur.cc:1680 src/Graph.cc:6210
+msgid "Export/Print"
+msgstr "Εξαγωγή/Εκτύπωση"
+
+#. {gettext("latex preview"), 0,  (Fl_Callback*)cb_Tableur_LaTeX_Preview, 0, 0, 0, 0, 14, 56},
+#. {gettext("latex printer"), 0,  (Fl_Callback*)cb_Tableur_LaTeX_Print, 0, 0, 0, 0, 14, 56},
+#: src/Editeur.cc:1683
+#, fuzzy
+msgid "Preview"
+msgstr "Προοπτικοποίηση"
+
+#: src/Editeur.cc:1689
+msgid "Search (Ctrl-F)"
+msgstr ""
+
+#: src/Editeur.cc:1690
+msgid "Indent line (Esc)"
+msgstr ""
+
+#: src/Editeur.cc:1691
+#, fuzzy
+msgid "Indent all"
+msgstr "Είσοδος στήλης"
+
+#: src/Editeur.cc:1692
+#, fuzzy
+msgid "Parse"
+msgstr "Επικόλληση"
+
+#: src/Editeur.cc:1693
+#, fuzzy
+msgid "Exec all"
+msgstr "Επιλογή όλων"
+
+#: src/Editeur.cc:1696
+msgid "Func"
+msgstr "Συνάρτηση"
+
+#: src/Editeur.cc:1697
+#, fuzzy
+msgid "function"
+msgstr "Συνάρτηση(ένωση)"
+
+#: src/Editeur.cc:1698
+msgid "local"
+msgstr "Τοπικό"
+
+#: src/Editeur.cc:1699
+msgid "return"
+msgstr "επιστροφή"
+
+#. end Func
+#: src/Editeur.cc:1701
+msgid "Test"
+msgstr "Δοκιμή"
+
+#: src/Editeur.cc:1702
+msgid "si alors sinon"
+msgstr ""
+
+#: src/Editeur.cc:1703
+msgid "if [then] else"
+msgstr "Εαν [τοτε] αλλιώς(if [then] else)"
+
+#: src/Editeur.cc:1704
+#, fuzzy
+msgid "if [then]"
+msgstr "Εαν [τοτε](if [then])"
+
+#: src/Editeur.cc:1705
+msgid "switch"
+msgstr "Εναλλαγή"
+
+#: src/Editeur.cc:1706
+#, fuzzy
+msgid "try catch"
+msgstr "Εμφάνηση"
+
+#. end Test
+#: src/Editeur.cc:1708
+msgid "Loop"
+msgstr "Επανάληψη"
+
+#: src/Editeur.cc:1709
+#, fuzzy
+msgid "pour"
+msgstr "prg"
+
+#: src/Editeur.cc:1710
+#, fuzzy
+msgid "tantque"
+msgstr "περιστροφή"
+
+#: src/Editeur.cc:1711
+msgid "repeter jusqu_a"
+msgstr ""
+
+#: src/Editeur.cc:1712
+msgid "for"
+msgstr "Για(for)"
+
+#: src/Editeur.cc:1713
+msgid "while"
+msgstr "Όσο(while)"
+
+#: src/Editeur.cc:1715
+msgid "continue"
+msgstr "συνέχεια(continue)"
+
+#: src/Editeur.cc:1770
+msgid "nxt"
+msgstr "επόμενο"
+
+#: src/Editeur.cc:1771
+msgid "Find next occurence (defined by Edit->Search)"
+msgstr "Αναζήτηση επόμενης εμφάνησης(που ορίζεται ως Επεξεργασία->Αναζήτηση)"
+
+#: src/Editeur.cc:1777
+msgid "exe"
+msgstr "εκτέλεση(exe)"
+
+#: src/Editeur.cc:1778
+msgid "Exec line in current widget"
+msgstr "Εκτέλεση γραμμής στο τρέχων widget"
+
+#: src/Editeur.cc:1783
+msgid "Parse current program"
+msgstr "Σημασιολογική ανάλυση(Parse)του τρέχοντος κειμένου"
+
+#: src/Editeur.cc:1790
+msgid "Save current program"
+msgstr "Αποθήκευση του τρέχοντος κειμένου"
+
+#: src/Graph.cc:838
+msgid "Rotate Animation"
+msgstr "Περιστρεφόμενη κίνηση(Animation)"
+
+#: src/Graph.cc:936
+msgid "Trace which object?"
+msgstr "Ιχνηλάτηση τίνος αντικειμένου?"
+
+#: src/Graph.cc:1013 src/Help1.cc:159
+msgid "View"
+msgstr "Προβολή"
+
+#: src/Graph.cc:1014 src/Graph.cc:1124 src/Graph.cc:1599
+msgid "Autoscale"
+msgstr "Αυτόματη κλίμακα"
+
+#: src/Graph.cc:1015
+msgid "Orthonormalize (2-d)"
+msgstr "Ορθοκανονικοποίηση δύο διαστάσεων(2-d)"
+
+#: src/Graph.cc:1016 src/Graph.cc:1074
+msgid "Zoom in"
+msgstr "Μεγένθυση"
+
+#: src/Graph.cc:1017 src/Graph.cc:1099
+msgid "Zoom out"
+msgstr "Σμίκρυνση"
+
+#: src/Graph.cc:1018
+#, fuzzy
+msgid "Frame move on"
+msgstr "Διαγραφή"
+
+#: src/Graph.cc:1019
+#, fuzzy
+msgid "Frame move off"
+msgstr "Διαγραφή ίχνών"
+
+#: src/Graph.cc:1020
+msgid "Previous"
+msgstr "προηγούμενο"
+
+#: src/Graph.cc:1022
+#, fuzzy
+msgid "Config"
+msgstr "Διαμόρφωση"
+
+#: src/Graph.cc:1024
+#, fuzzy
+msgid "Trace"
+msgstr "Ίχνος"
+
+#: src/Graph.cc:1025
+msgid "Trace clear"
+msgstr "Διαγραφή ίχνους"
+
+#: src/Graph.cc:1026
+#, fuzzy
+msgid "Trace on"
+msgstr "Ίχνη"
+
+#: src/Graph.cc:1027
+msgid "Trace off"
+msgstr "Διαγραφή ίχνών"
+
+#: src/Graph.cc:1028
+#, fuzzy
+msgid "Trace object"
+msgstr "Εντοπισμός αντικειμένου"
+
+#: src/Graph.cc:1030
+#, fuzzy
+msgid "Animation"
+msgstr "Κίνηση(Animation)"
+
+#: src/Graph.cc:1031
+#, fuzzy
+msgid "Pause"
+msgstr "Επικόλληση"
+
+#: src/Graph.cc:1032 src/Help1.cc:183
+#, fuzzy
+msgid "Stop"
+msgstr "ΣΤΟΠ"
+
+#: src/Graph.cc:1033
+msgid "Restart"
+msgstr "Επανεκκίνηση"
+
+#: src/Graph.cc:1034
+msgid "Faster (2x)"
+msgstr "πιο γρήγορα (2x)"
+
+#: src/Graph.cc:1035
+msgid "Slower (2x)"
+msgstr "Πιο αργά (2x)"
+
+#: src/Graph.cc:1036
+msgid "Build animation"
+msgstr "Δημιουργία κίνησης(animation)"
+
+#: src/Graph.cc:1037
+msgid "Unanimate"
+msgstr "Μη κίνηση(Unanimate)"
+
+#: src/Graph.cc:1039
+msgid "3-d"
+msgstr "Τρεις διαστάσεις(3-d)"
+
+#: src/Graph.cc:1040
+msgid "Mouse plan equation"
+msgstr "Περιοχή που κάνετε κλικ"
+
+#: src/Graph.cc:1041
+msgid "Oyz view (x=cst=depth)"
+msgstr "Πρόσοψη x=cst(Βάθος)"
+
+#: src/Graph.cc:1042
+msgid "Oxz view (y=cst=depth)"
+msgstr "Προφίλ y=cst(Βάθος)"
+
+#: src/Graph.cc:1043
+msgid "upper view (z=cst=depth)"
+msgstr "Κάτοψη z=cst(Βάθος)"
+
+#: src/Graph.cc:1044
+msgid "default view"
+msgstr "Εξ' ορισμού όψη"
+
+#: src/Graph.cc:1045
+msgid "Rotate animation"
+msgstr "Περιστροφική κίνηση (animation)"
+
+#: src/Graph.cc:1046
+msgid "Hide below depth"
+msgstr "Απόκρυψη του σχεδιαγράμματος(Ζ=βάθος)"
+
+#: src/Graph.cc:1047
+msgid "Show below depth"
+msgstr "Εμφάνηση του σχεδιαγράμματος(Ζ=βάθος)"
+
+#. end 3-d
+#: src/Graph.cc:1049
+#, fuzzy
+msgid "Export Print"
+msgstr "Εξαγωγή/Εκτύπωση"
+
+#: src/Graph.cc:1050
+#, fuzzy
+msgid "EPS PNG and preview"
+msgstr "Προοπτικοποιήσn EPS et PNG"
+
+#: src/Graph.cc:1051
+msgid "3-d to PNG"
+msgstr "Τριων διαστάσεων(3-d) σε PNG"
+
+#: src/Graph.cc:1053 src/Graph.cc:6213
+msgid "Preview (with Latex)"
+msgstr "Προοπτικοποίηση (με LaTeX)"
+
+#: src/Graph.cc:1054 src/Graph.cc:6214
+msgid "Print (with Latex)"
+msgstr "Εκτύπωση (με LaTeX)"
+
+#: src/Graph.cc:1078
+msgid "Increase y"
+msgstr "Αύξηση y"
+
+#: src/Graph.cc:1082
+msgid "Increase z (3-d)/Zoom in for y (2-d)"
+msgstr "Αύξηση z τριών διαστάσεων(3-d)/Μεγένθυση στο y δύο διαστάσεων(2-d)"
+
+#: src/Graph.cc:1088
+msgid "Decrease x"
+msgstr "Μείωση x"
+
+#: src/Graph.cc:1091
+msgid "Hide or show below depth"
+msgstr "Εμφάνηση ή απόκρυψη του παρακάτω βάθους"
+
+#: src/Graph.cc:1095
+msgid "Increase x"
+msgstr "Αύξηση x"
+
+#: src/Graph.cc:1103
+msgid "Decrease y"
+msgstr "Μείωση y"
+
+#: src/Graph.cc:1107
+msgid "Decrease z (3-d)/Zoom out in y (2-d)"
+msgstr "Μείωση z τριών διαστάσεων(3-d)/Σμίκρυνση στο y δύο διαστάσεων(2-d)"
+
+#: src/Graph.cc:1111
+msgid "Back in cfg history"
+msgstr "Πίσω στο ιστορικό"
+
+#: src/Graph.cc:1114
+msgid "Forward in cfg history"
+msgstr "Εμπρός στο ιστορικό cfg"
+
+#: src/Graph.cc:1117
+msgid "Configure screen view and axis"
+msgstr "Διαμόρφωση του παραθύρου οπτοκιποίησης και των αξόνων"
+
+#: src/Graph.cc:1121
+msgid "Stop or restart animation"
+msgstr "ΣΤΟΠ ή επανεκκίνηση της κίνησης(animation)"
+
+#: src/Graph.cc:1127
+msgid "Graphic menu"
+msgstr ""
+
+#: src/Graph.cc:1284
+msgid "x position of spot"
+msgstr "συνιστώσα x του σημείου"
+
+#: src/Graph.cc:1286
+msgid "y position of spot"
+msgstr "συνιστώσα y  του σημείου"
+
+#: src/Graph.cc:1288
+msgid "z position of spot"
+msgstr "συνιστώσα z  του σημείου"
+
+#: src/Graph.cc:1290
+msgid "0 directional light source (e.g. sun), 1 position light (e.g. bulb)"
+msgstr "0 Κατευθυντήριο φως(π.χ. Ήλιος), 1 φώς θέσης(π.χ. λάμπα)"
+
+#: src/Graph.cc:1293
+msgid "x direction of spot"
+msgstr "συνιστώσα x της κατεύθυνσης του σημείου"
+
+#: src/Graph.cc:1295
+msgid "y direction of spot"
+msgstr "συνιστώσα y της κατεύθυνσης του σημείου"
+
+#: src/Graph.cc:1297
+msgid "z direction of spot"
+msgstr "συνιστώσα z της κατεύθυνσης του σημείου"
+
+#: src/Graph.cc:1299
+msgid "Turn on/off light"
+msgstr "’νοιγμα/σβήσιμο της πηγής φωτός"
+
+#: src/Graph.cc:1304
+msgid "ambient red component"
+msgstr "Κόκκινη περιβάλλουσα συνιστώσα"
+
+#: src/Graph.cc:1306
+msgid "ambient green component"
+msgstr "Πράσινη περιβάλλουσα συνιστώσα"
+
+#: src/Graph.cc:1308
+msgid "ambient blue component"
+msgstr "Μπλε περιβάλλουσα συνιστώσα"
+
+#: src/Graph.cc:1310
+msgid "ambient alpha component"
+msgstr "Διαφανής περιβάλλουσα συνιστώσα"
+
+#: src/Graph.cc:1313
+msgid "diffuse red component"
+msgstr "Κόκκινη διάχυτη συνιστώσα"
+
+#: src/Graph.cc:1315
+msgid "diffuse green component"
+msgstr "Πράσινη διάχυτη συνιστώσα"
+
+#: src/Graph.cc:1317
+msgid "diffuse blue component"
+msgstr "Μπλε διάχυτη συνιστώσα"
+
+#: src/Graph.cc:1319
+msgid "diffuse alpha component"
+msgstr "Διαφανής διάχυτη συνιστώσα"
+
+#: src/Graph.cc:1322
+msgid "specular red component"
+msgstr "Κόκκινη κατοπτρική συνιστώσα"
+
+#: src/Graph.cc:1324
+msgid "specular green component"
+msgstr "Πράσινη κατοπτρική συνιστώσα"
+
+#: src/Graph.cc:1326
+msgid "specular blue component"
+msgstr "Μπλε κατοπτρική συνιστώσα"
+
+#: src/Graph.cc:1328
+msgid "specular alpha component"
+msgstr "Διαφανής κατοπτρική συνιστώσα"
+
+#: src/Graph.cc:1332
+msgid "Spot attenuation exponent: power of cos(theta), e.g. 1"
+msgstr "Εκθετική εξασθένηση του σημείου: δύναμη του cos(θ)^e, par ex. 1"
+
+#: src/Graph.cc:1334
+msgid "Spot cutoff angle in 0..90 or 180 for no cutoff"
+msgstr "Εύρως γωνίας μεταξύ 0 και 90, ή 180 εξ' ορισμού"
+
+#: src/Graph.cc:1336
+msgid "Attenuation constant coefficient"
+msgstr "Σταθερή συνιστώσα της εξασθένησης"
+
+#: src/Graph.cc:1338
+msgid "Attenuation linear coefficient"
+msgstr "Γραμμική συνιστώσα της εξασθένησης"
+
+#: src/Graph.cc:1340
+msgid "Attenuation quadratic coefficient"
+msgstr "Τεραγωνική συνιστώσα της εξασθένησης"
+
+#: src/Graph.cc:1348 src/Graph.cc:1597
+msgid "Default"
+msgstr "Εξ' ορισμού"
+
+#: src/Graph.cc:1354
+msgid "Light configuration"
+msgstr "Διαμόρφωση των πηγών φωτός"
+
+#: src/Graph.cc:1471
+msgid "Xmax for visualisation"
+msgstr "X-max για την οπτικοποίηση"
+
+#: src/Graph.cc:1474
+msgid "Orthonormal or perspective"
+msgstr "Ορθοκανονικό η προοπτικό"
+
+#: src/Graph.cc:1478
+msgid "Ymin for visualisation"
+msgstr "Ymin για οπτικοποίηση"
+
+#: src/Graph.cc:1481
+msgid "Ymax for visualisation"
+msgstr "Y-max για οπτικοποίηση"
+
+#: src/Graph.cc:1484
+msgid "Enable blending"
+msgstr "Ενέργοποίηση ανάμειξης"
+
+#: src/Graph.cc:1488
+msgid "Zmin for visualisation"
+msgstr "Z-min για οπτικοποίηση"
+
+#: src/Graph.cc:1491
+msgid "Zmax for visualisation"
+msgstr "Z-max για οπτικοποίηση"
+
+#: src/Graph.cc:1494
+msgid "Flat or Gouraud shading"
+msgstr "Επίπεδη ή Gouraud σκίαση"
+
+#: src/Graph.cc:1504
+msgid "Ticks in pixels or units"
+msgstr "Στίξη σε  pixels ή σε μονάδες"
+
+#: src/Graph.cc:1507
+msgid "Number of units or pixels for ticks on X"
+msgstr "Πλήθος μονάδων ή pixels για την στίξη στον άξονα X"
+
+#: src/Graph.cc:1509
+msgid "Number of units or pixels for ticks on Y"
+msgstr "Πλήθος μονάδων ή pixels για την στίξη στον άξονα Y"
+
+#: src/Graph.cc:1512
+msgid "x coefficient of mouse plan equation"
+msgstr "x συνιστώσα του σημείου εισόδου του ποντικιού"
+
+#: src/Graph.cc:1517
+msgid "y coefficient of mouse plan equation"
+msgstr "y συνιστώσα του σημείου εισόδου του ποντικιού"
+
+#: src/Graph.cc:1522
+msgid "z coefficient of mouse plan equation"
+msgstr "z συνιστώσα του σημείου εισόδου του ποντικιού"
+
+#: src/Graph.cc:1527
+msgid "constant coefficient of mouse plan equation"
+msgstr "σταθερά συνιστώσα του σημείου εισόδου του ποντικιού"
+
+#: src/Graph.cc:1532
+#, fuzzy
+msgid "3d rotation"
+msgstr "Περιστροφή τριών διαστάσεων (3-d) στο y"
+
+#: src/Graph.cc:1537
+msgid "Number of latitude divisions for sphere drawing"
+msgstr "Αριθμός του γεωγραφικου πλάτους του σφαιρικού γραφήματος"
+
+#: src/Graph.cc:1542
+msgid "Number of longitude divisions for sphere drawing"
+msgstr "Αριθμός του γεωγραφικου μήκους του σφαιρικού γραφήματος"
+
+#: src/Graph.cc:1547
+msgid "Size in pixels for y graduation printing"
+msgstr "TΜέγεθος σε της βαθμωτής απεικόνησης στο y"
+
+#: src/Graph.cc:1553 src/Graph.cc:1555 src/Graph.cc:1557 src/Graph.cc:1559
+#: src/Graph.cc:1561 src/Graph.cc:1563 src/Graph.cc:1565 src/Graph.cc:1567
+msgid "Configure light"
+msgstr "Διαμόρφωση των φώτων"
+
+#: src/Graph.cc:1569
+msgid "Show scene with lights"
+msgstr "Φωτισμος σκηνής"
+
+#: src/Graph.cc:1572
+msgid "Show names"
+msgstr "Εμφάνηση ονομάτων"
+
+#: src/Graph.cc:1573
+msgid "Show/Hide names of geometric objects"
+msgstr "Εμφάνηση/Απόκρυψη των ονμάτων των γεωμετρικών αντικειμένων"
+
+#: src/Graph.cc:1575
+msgid "Plot names"
+msgstr "Σχεδιασμός ονομάτων"
+
+#: src/Graph.cc:1576
+msgid "Show/Hide names of parametric and function plots"
+msgstr ""
+"Εμφάνηση/Απόκρυψη των ονμάτων των παραμετρικών και συναρτησιακών "
+"σχεδιαγραμμάτων "
+
+#: src/Graph.cc:1578 src/Graph.cc:5606
+msgid "Portrait"
+msgstr "Πορτραίτο"
+
+#: src/Graph.cc:1579
+msgid "Portrait or landscape split"
+msgstr "Διαχωρισμός σε πορτραίτο ή τοπίο"
+
+#: src/Graph.cc:1582
+msgid "Autoname"
+msgstr "Αυτόματο όνομα"
+
+#: src/Graph.cc:1584
+msgid "Show axis"
+msgstr "Εμφάνηση αξόνων"
+
+#: src/Graph.cc:1585
+msgid "Show or hide axis"
+msgstr "Montrer ou cacher les axes"
+
+#: src/Graph.cc:1588
+msgid "Time between image changes for animations"
+msgstr "Χρόνος για την εναλλαγή των εικόνων για κίνηση(animations)"
+
+#: src/Graph.cc:1593
+msgid "Round"
+msgstr "Στρογγυλοποίηση"
+
+#: src/Graph.cc:1594
+msgid "Round xmin/xmax/ymin/ymax/zmin/zmax"
+msgstr "Στρογγυλοποίηση Arrondir xmin/xmax/ymin/ymax/zmin/zmax"
+
+#: src/Graph.cc:1606
+msgid "Current gl_quaternion= value"
+msgstr "Τρέχων gl_τεταρτημόριο=τιμή "
+
+#: src/Graph.cc:1610
+msgid "Rotate what: 1 l1, 2 l2, 4 l3, ..., 128 l8, 256 viewpoint"
+msgstr "Περιστροφή τίνος: 1 l1, 2 l2, 4 l3, ..., 128 l8, 256 σημείο όψης"
+
+#: src/Graph.cc:1613
+msgid "Time for 1 step in s"
+msgstr "Χρόνος για 1 βήμα σε sec"
+
+#: src/Graph.cc:1616
+msgid "Number of steps for animation"
+msgstr "Αριθμός βημάτων για κίνηση(animation)"
+
+#: src/Graph.cc:1619
+msgid "x rotation axis coordinate"
+msgstr "Συνιστώσα x του περιστρεφόμενου άξονα"
+
+#: src/Graph.cc:1622
+msgid "y rotation axis coordinate"
+msgstr "Συνιστώσα y του περιστρεφόμενου άξονα"
+
+#: src/Graph.cc:1625
+msgid "z rotation axis coordinate"
+msgstr "Συνιστώσα z του περιστρεφόμενου άξονα"
+
+#: src/Graph.cc:1628
+msgid "Other animation change (normally 0)"
+msgstr "’λλες αλλαγές στην κίνηση(animation)(κανονικά 0)"
+
+#: src/Graph.cc:2186
+msgid "LaTeX filaneme"
+msgstr "Όνομα αρχείου latex"
+
+#: src/Graph.cc:2615
+msgid "Thickness"
+msgstr "(Επίπεδο)λεπτότητας"
+
+#: src/Graph.cc:2620
+msgid "Point width"
+msgstr "Μέγεθος σημείου"
+
+#: src/Graph.cc:2719
+#, fuzzy
+msgid "Check if mouse clicks in approx mode"
+msgstr "Έλεγχος εάν το κλίκ του ποντικιού έγινε σε προσεγγιστική μέθοδο"
+
+#: src/Graph.cc:2722
+msgid "Make point symbolic"
+msgstr "Μετατροπή του σημείου σε συμβολικές συνιστώσες"
+
+#: src/Graph.cc:2725
+msgid "Remove translation"
+msgstr "Αποκρυψη μετάφρασης"
+
+#: src/Graph.cc:2733
+msgid "Delete"
+msgstr "Διαγραφή"
+
+#: src/Graph.cc:2734
+msgid "Delete current object"
+msgstr "Αφαίρεση του τρέχοντος αντικειμένου"
+
+#: src/Graph.cc:2768
+msgid "Object attributs "
+msgstr "Ορίσματα αντικειμένου "
+
+#: src/Graph.cc:3570 src/Graph.cc:5625 src/Graph.cc:5733
+msgid "Frame"
+msgstr "Πλαίσιο"
+
+#: src/Graph.cc:3572 src/Graph.cc:5626
+msgid "Pointer"
+msgstr "Δείκτης"
+
+#: src/Graph.cc:4470
+msgid "Click "
+msgstr "Κλίκ"
+
+#: src/Graph.cc:4644
+msgid "Save figure"
+msgstr "Αποθήκευση σχήματος"
+
+#: src/Graph.cc:4708
+msgid "Insert figure"
+msgstr "Εισαγωγή σχήματος"
+
+#: src/Graph.cc:4776
+msgid "Parameter minimal value"
+msgstr "Ελάχιστη τιμή της παραμέτρου"
+
+#: src/Graph.cc:4779
+msgid "Parameter maximal value"
+msgstr "Μέγιστη τιμή της παραμέτρου"
+
+#: src/Graph.cc:4782
+msgid "Parameter current value"
+msgstr "Τρέχουσα τιμή της παραμέτρου"
+
+#: src/Graph.cc:4784
+msgid "Parameter step value"
+msgstr "Αξία του παραμέτρικού βήματος"
+
+#: src/Graph.cc:4790
+msgid "Parameter variable name"
+msgstr "Όνομα της μεταβλητής της παραμέτρου"
+
+#: src/Graph.cc:4793
+msgid "Numeric or formal parameter"
+msgstr "Τυπική ή αριθμητική παράμετρος"
+
+#: src/Graph.cc:4804
+msgid "Parameter definition"
+msgstr "Ορισμός της παραμέτρου"
+
+#: src/Graph.cc:4900
+msgid "Draw slopefield"
+msgstr "Σχεδιασμός του πεδίο των εφαπτόμενων(συναρτήσεων)"
+
+#: src/Graph.cc:4903
+msgid "Normalize slopefield"
+msgstr "Κανονικοποίηση των εφαπτόμενων(συναρτήσεων)"
+
+#: src/Graph.cc:4904
+msgid "F(x,y)="
+msgstr "F(x,y)="
+
+#: src/Graph.cc:4906
+msgid "Implicit expression"
+msgstr "Υπονοούμενη έκφραση"
+
+#: src/Graph.cc:4907
+msgid "dy/dt(t,y)="
+msgstr "dy/dt(t,y)"
+
+#: src/Graph.cc:4909
+msgid "Expression of dy/dt in terms of y and t, e.g. sin(t*y)"
+msgstr "Έκφραση του  dy/dt συναρτήσει του y και του t, π.χ. sin(t*y)"
+
+#: src/Graph.cc:4910
+msgid "rho(t)="
+msgstr "rho(t)"
+
+#: src/Graph.cc:4912
+msgid "Expression of modulus rho wrt to angle t (e.g sin(t))"
+msgstr "Έκφραση του υπολοίπου rho συναρτήσει της γωνιας t, π.χ. sin(t)"
+
+#: src/Graph.cc:4913
+msgid "x(t)="
+msgstr "x(t)="
+
+#: src/Graph.cc:4915
+msgid "Expression of x wrt to t (e.g sin(t))"
+msgstr "Έκφραση του x συναρτήσει του t,π.χ. sin(t)"
+
+#: src/Graph.cc:4916
+msgid "y(t)="
+msgstr "y(t)="
+
+#: src/Graph.cc:4918
+msgid "Expression of y wrt to t (e.g cos(t))"
+msgstr "Έκφραση του y συναρτήσει του t,π.χ. cos(t)"
+
+#: src/Graph.cc:4919
+#, fuzzy
+msgid "x="
+msgstr "x="
+
+#: src/Graph.cc:4921
+msgid "Expression of x wrt to u and v (e.g. u+v)"
+msgstr "Έκφραση του x συναρτήσει του u και v, π.χ. u+v"
+
+#: src/Graph.cc:4922 src/Graph.cc:4925
+#, fuzzy
+msgid "y="
+msgstr "y="
+
+#: src/Graph.cc:4924
+msgid "Expression of y wrt to u and v (e.g exp(u)-v)"
+msgstr "Έκφραση του y συναρτήσει του u και v, π.χ. exp(u)-v"
+
+#: src/Graph.cc:4927
+msgid "Expression of z wrt to u and v (e.g u-v)"
+msgstr "Έκφραση του y συναρτήσει του u και v, π.χ. u-v"
+
+#: src/Graph.cc:4928
+#, fuzzy
+msgid "Var"
+msgstr "Μεταβλητή"
+
+#: src/Graph.cc:4930
+msgid "Independant variable name (e.g t)"
+msgstr "Ανεξάρτητη μεταβλητή, π.χ. t"
+
+#: src/Graph.cc:4933
+msgid "First independant variable name (e.g u)"
+msgstr "1η ανεξάρτητη μεταβλητή, πχ. u"
+
+#: src/Graph.cc:4936
+msgid "Second independant variable name (e.g v)"
+msgstr "2η ανεξάρτητη μεταβλητή, πχ. v"
+
+#: src/Graph.cc:4939
+msgid "First independant variable name (e.g x)"
+msgstr "1η ανεξάρτητη μεταβλητή, πχ. x"
+
+#: src/Graph.cc:4943
+msgid "Time var"
+msgstr "Χρονική μεταβλητή"
+
+#: src/Graph.cc:4945
+msgid "Time variable name"
+msgstr "Όνομα χρονικής μεταβλητής"
+
+#: src/Graph.cc:4948
+msgid "Function variable name"
+msgstr "Όνομα της μεταβλητής της συνάρτησης"
+
+#: src/Graph.cc:4949
+#, fuzzy
+msgid "tmin"
+msgstr "tmin"
+
+#: src/Graph.cc:4952
+#, fuzzy
+msgid "tstep"
+msgstr "tstep"
+
+#: src/Graph.cc:4955
+#, fuzzy
+msgid "tmax"
+msgstr "tmax"
+
+#: src/Graph.cc:4958
+#, fuzzy
+msgid "umin"
+msgstr "xmin"
+
+#: src/Graph.cc:4961
+#, fuzzy
+msgid "ustep"
+msgstr "ustep"
+
+#: src/Graph.cc:4964
+#, fuzzy
+msgid "umax"
+msgstr "umax"
+
+#: src/Graph.cc:4967
+#, fuzzy
+msgid "vmin"
+msgstr "min"
+
+#: src/Graph.cc:4970
+#, fuzzy
+msgid "vstep"
+msgstr "vstep"
+
+#: src/Graph.cc:4973
+#, fuzzy
+msgid "vmax"
+msgstr "vmax"
+
+#: src/Graph.cc:5006
+msgid "Polar plot"
+msgstr "Πολικό γράφημα(καπμύλη)"
+
+#: src/Graph.cc:5009
+msgid "Parametric plot"
+msgstr "Παραμετρικό γράφημα(καπμύλη)"
+
+#: src/Graph.cc:5012
+msgid "Field/Odeplot"
+msgstr "Εφαπτόμενος τομέας/δάχυτο γράφημα"
+
+#: src/Graph.cc:5015
+msgid "Implicitplot"
+msgstr "Υπονούμενο γράφημα"
+
+#: src/Graph.cc:5160
+msgid "Click first in a commandline"
+msgstr "Κάντε κλίκ πρώτα στην γραμμή εντολών"
+
+#: src/Graph.cc:5255 src/Graph.cc:5268
+msgid "Point_on_ode_curve"
+msgstr "Σημείο_σε_καπμύλη"
+
+#: src/Graph.cc:5256
+msgid "Click initials conditions in graphic window. Change mode when finished."
+msgstr ""
+"Κάντε κλίκ για τις αρχικές συνθήκες στο παράθυρο γραφήματος. Αλλαγή μεθόδου "
+"όταν τελειώσετε."
+
+#: src/Graph.cc:5329
+msgid "Shade area under a curve"
+msgstr "Σκιαγράφηση περιοχής κάτω από την καμπύλη"
+
+#: src/Graph.cc:5500
+msgid "Center,Point_on_circle,Point_in_plane"
+msgstr "Κέντρο,Σημείο_στον_κύκλο,Σημείο_στην_επιφάνεια"
+
+#: src/Graph.cc:5500
+msgid "Center,Point_on_circle"
+msgstr "Κέντρο,Σημείο_στον_κύκλο"
+
+#: src/Graph.cc:5504
+msgid "Curve1,Curve2"
+msgstr "Κπμύλη1,Καμπύλη2"
+
+#: src/Graph.cc:5508
+#, fuzzy
+msgid "Segment"
+msgstr "τμήμα"
+
+#: src/Graph.cc:5512 src/Graph.cc:5516 src/Graph.cc:5520 src/Graph.cc:5528
+#: src/Graph.cc:5532 src/Graph.cc:5556
+msgid "Point1,Point2"
+msgstr "Σημείο1,Σημείο2"
+
+#: src/Graph.cc:5524 src/Graph.cc:5560 src/Graph.cc:5564 src/Graph.cc:5568
+#: src/Graph.cc:5580
+msgid "Point1,Point2,Point3"
+msgstr "Σημείο1,Σημείο2,Σημείο3"
+
+#: src/Graph.cc:5536 src/Graph.cc:5540
+msgid "Point,Line"
+msgstr "Σημείο,ευθεία"
+
+#: src/Graph.cc:5544 src/Graph.cc:5548
+msgid "Sommet_angle,Point2,Point3"
+msgstr "Γωνία,Σημείο1,Σημείο2"
+
+#: src/Graph.cc:5552
+msgid "Point1,Point2,Point3,Point4"
+msgstr "Σημείο1,Σημείο2,Σημείο3,Σημείο4"
+
+#: src/Graph.cc:5556
+msgid "Point1,Point2,Point_in_plane"
+msgstr "Σημείο1,Σημείο2,Σημείο_στο σχήμα"
+
+#: src/Graph.cc:5572
+msgid "Focus1,Focus2,Point_on_ellipse"
+msgstr "Εστία1,Εστί2,Σημείο_σε_έλλειψη"
+
+#: src/Graph.cc:5576
+msgid "Focus1,Focus2,Point_on_hyperbola"
+msgstr "Εστία1,Εστί2,Σημείο_σε_υπερβολή"
+
+#: src/Graph.cc:5584
+msgid "Center,Point_on_sphere"
+msgstr "Κέντρο,σημείο_σε_σφαίρα"
+
+#: src/Graph.cc:5588
+msgid "Fig"
+msgstr "Σχήμα"
+
+#: src/Graph.cc:5589
+#, fuzzy
+msgid "Save figure as text"
+msgstr "Αποθήκευση σχήματος"
+
+#: src/Graph.cc:5592
+#, fuzzy
+msgid "Export, Print"
+msgstr "Εξαγωγή/Εκτύπωση"
+
+#: src/Graph.cc:5593
+#, fuzzy
+msgid "EPS, PNG and preview"
+msgstr "Προοπτικοποιήσn EPS et PNG"
+
+#: src/Graph.cc:5596
+msgid "latex printer"
+msgstr "εκτύπωση(latex)"
+
+#: src/Graph.cc:5600
+msgid "Add parameter"
+msgstr "Προσθήκη παραμέτρου"
+
+#: src/Graph.cc:5601
+msgid "Add new entry"
+msgstr "Προσθήκη νέας εισόδου"
+
+#: src/Graph.cc:5602
+msgid "Add an object trace"
+msgstr "Προσθήκη ίχνους ενός αντικειμένου"
+
+#: src/Graph.cc:5603
+msgid "Change selection attribut"
+msgstr "Αλλαγή των χαρακτηριστικών επιλογής"
+
+#: src/Graph.cc:5613
+#, fuzzy
+msgid "Tangent"
+msgstr "Εφαπτόμενη"
+
+#: src/Graph.cc:5614
+msgid "Recurrent sequence (2-d)"
+msgstr "Γράφημα αναδρομικής ακολουθίας δύο διαστασεων (2-d)"
+
+#: src/Graph.cc:5616
+#, fuzzy
+msgid "Parametric"
+msgstr "Παραμετρικό"
+
+#: src/Graph.cc:5617
+msgid "Polar (2-d)"
+msgstr "Πολικό γράφημα δ΄θο διαστάσεων (2-d)"
+
+#: src/Graph.cc:5618
+msgid "Implicit"
+msgstr "Υπονούμενος"
+
+#: src/Graph.cc:5619
+msgid "Slopefield/Ode (2-d)"
+msgstr "Περιοχή κλίσης/Ωδή (2-d)"
+
+#: src/Graph.cc:5627
+msgid "point"
+msgstr "Σημείο"
+
+#: src/Graph.cc:5628
+msgid "Lines"
+msgstr "Γραμμές"
+
+#: src/Graph.cc:5629
+msgid "segment"
+msgstr "τμήμα"
+
+#: src/Graph.cc:5630
+#, fuzzy
+msgid "vector"
+msgstr "δείκτης"
+
+#: src/Graph.cc:5631
+msgid "half_line"
+msgstr "ημιευθεία"
+
+#: src/Graph.cc:5632
+msgid "line"
+msgstr "ευθεία"
+
+#: src/Graph.cc:5633
+msgid "parallel"
+msgstr "παράλληλη"
+
+#: src/Graph.cc:5634
+msgid "perpendicular"
+msgstr "κάθετη"
+
+#: src/Graph.cc:5635
+msgid "perpen_bisector"
+msgstr "μεσοκάθετος"
+
+#: src/Graph.cc:5636
+msgid "median_line"
+msgstr "διάμεσος"
+
+#: src/Graph.cc:5637
+msgid "bisector"
+msgstr "τομή"
+
+#. end Lines
+#: src/Graph.cc:5639
+msgid "Polygons"
+msgstr "Πολύγωνο"
+
+#: src/Graph.cc:5640
+msgid "triangle"
+msgstr "τρίγωνο"
+
+#: src/Graph.cc:5641
+msgid "equilateral_triangle"
+msgstr "ισόπλευρο_τρίγωνο"
+
+#: src/Graph.cc:5642
+msgid "square"
+msgstr "τετράγωνο"
+
+#: src/Graph.cc:5643
+msgid "quadrilateral"
+msgstr "τετράπλευρο"
+
+#. end Triangle
+#: src/Graph.cc:5645
+msgid "Circles"
+msgstr "Κύκλοι"
+
+#: src/Graph.cc:5646
+msgid "circle"
+msgstr "κύκλος"
+
+#: src/Graph.cc:5647
+msgid "incircle"
+msgstr "εσωτερική_επιφάνεια_κύκλου"
+
+#: src/Graph.cc:5648
+msgid "excircle"
+msgstr "εξωτερική_επιφάνεια_κύκλου"
+
+#: src/Graph.cc:5649
+msgid "circumcircle"
+msgstr "περιφέρεια_κύκλου"
+
+#: src/Graph.cc:5652
+msgid "ellipse"
+msgstr "έλλειψη"
+
+#: src/Graph.cc:5653
+msgid "hyperbola"
+msgstr "υπερβολή"
+
+#: src/Graph.cc:5654
+#, fuzzy
+msgid "plotode"
+msgstr "σχεδιάγραμμα"
+
+#. end Conics
+#: src/Graph.cc:5656
+#, fuzzy
+msgid "Surfaces (3d)"
+msgstr "Επιφάνεια τριών διαστάσεων (3d)"
+
+#: src/Graph.cc:5657
+msgid "plane"
+msgstr "πλάνο"
+
+#: src/Graph.cc:5658
+#, fuzzy
+msgid "sphere"
+msgstr "σφαίρα"
+
+#. end Surfaces
+#: src/Graph.cc:5660
+#, fuzzy
+msgid "Intersection"
+msgstr "Διασταύρωση"
+
+#: src/Graph.cc:5661
+#, fuzzy
+msgid "Exact"
+msgstr "Ακριβές"
+
+#: src/Graph.cc:5662
+#, fuzzy
+msgid "Approx"
+msgstr "Προσεγγιστικό"
+
+#: src/Graph.cc:5748
+msgid "Color used for next mouse drawings"
+msgstr "Χρώμα που χρησιμοποιείται για την επόμενο σχεδιασμό του ποντικιού"
+
+#: src/Graph.cc:5754
+msgid "Line style used for next mouse drawings"
+msgstr ""
+"Τύπος γραμμής που χρησιμοποιείται για την επόμενο σχεδιασμό του ποντικιού"
+
+#: src/Graph.cc:5759
+msgid "Check for step evaluation"
+msgstr ""
+
+#: src/Graph.cc:5764
+msgid "Save current figure commands independently of the session"
+msgstr "Αποθήκευση του τρέχοντος σχήματος ανεξάρτητα απο την συνεδρία"
+
+#: src/Graph.cc:6204
+msgid "Menu"
+msgstr "Μενού"
+
+#: src/Graph.cc:6205
+#, fuzzy
+msgid "Maillage"
+msgstr "πλέγμα"
+
+#: src/Graph.cc:6206
+msgid "None"
+msgstr "καμία"
+
+#: src/Graph.cc:6207
+msgid "Square"
+msgstr "τετράγωνο πλέγμα"
+
+#: src/Graph.cc:6208
+msgid "Triangle"
+msgstr "Τρίγωνο"
+
+#: src/Graph.cc:6216
+msgid "Color"
+msgstr "Χρώμα"
+
+#: src/Help1.cc:142
+msgid "Finish"
+msgstr "Τέλος"
+
+#: src/Help1.cc:144
+msgid "Searching for "
+msgstr "Αναζήτηση για "
+
+#: src/Help1.cc:159
+msgid "Find"
+msgstr "Εύρεση"
+
+#: src/Help1.cc:173
+msgid "Please select the title of the page"
+msgstr "Επιλογή του τίτλου της σελίδας"
+
+#~ msgid "Calcul formel"
+#~ msgstr "Υπολογισμός σε μορφή1(CAS)"
+
+#~ msgid "Setting Xcas mode"
+#~ msgstr "Σύνταξη σε μέθοδο Xcas "
+
+#, fuzzy
+#~ msgid "Autre"
+#~ msgstr "Ξανά"
+
+#~ msgid "Choose initial configuration"
+#~ msgstr "Επιλέξτε μια αρχική διαμόρφωση"
+
+#~ msgid "Programmation/CAS"
+#~ msgstr "Προγραμματισμός και υπολογισμός σε μορφή1(CAS)"
+
+#~ msgid "New"
+#~ msgstr "Δημιουργία νέου"
+
+#~ msgid "Show keyboard"
+#~ msgstr "Εμφάνηση πληκτρολογίου"
+
+#~ msgid "Hide keyboard"
+#~ msgstr "Απόκρυψη πληκτρολογίου"
+
+#~ msgid "Show msg"
+#~ msgstr "Εμφάνηση μηνυμάτων"
+
+#~ msgid "Show bandeau"
+#~ msgstr "Εμφάνηση επικεφαλίδας"
+
+#~ msgid "Hide bandeau"
+#~ msgstr "Απόκρυψη επικεφαλίδας"
+
+#~ msgid "University"
+#~ msgstr "Πανεπιστήμιο"
+
+#~ msgid "Click to copy the selected example"
+#~ msgstr "Κάντε κλίκ για να αντιγράψετε το επιλεγμένο παράδειγμα"
+
+#~ msgid "Eval selection"
+#~ msgstr "Αξιολόγηση επιλογής"
+
+#~ msgid "Evalf selection"
+#~ msgstr "Αριθμητική αξιολόγηση επιλογής"
+
+#~ msgid "Variable name"
+#~ msgstr "Όνομα της μεταβλητής"
+
+#~ msgid "Indentation works only in Xcas programming mode"
+#~ msgstr "Ηταυτοποίηση λειτουργεί σε προγραμματιστικό συλ Xcas"
+
+#, fuzzy
+#~ msgid "1/"
+#~ msgstr "1/"
+
+#~ msgid "Save this sheet"
+#~ msgstr "Αποθήκευση αυτής της μήτρας(matrix)"
+
+#~ msgid "Save current figure"
+#~ msgstr "Αποθήκευση τρέχοντος σχήματος"
+
+#~ msgid "Conics"
+#~ msgstr "Κώνοι"
+
+#~ msgid "Choose initial level"
+#~ msgstr "Επιλέξτε ένα αρχικό επίπεδο"
+
+#~ msgid "Choose sublevel"
+#~ msgstr "Επιλέξτε ένα υποεπίπεδο"
+
+#~ msgid "20"
+#~ msgstr "20"
+
+#~ msgid "14"
+#~ msgstr "14"
+
+#~ msgid "12"
+#~ msgstr "12"
+
+#~ msgid "History font"
+#~ msgstr "Ιστορικό γραμματοσειράς "
+
+#~ msgid "Font size for history"
+#~ msgstr "Μέγεθος γραμματοσειράς στο ιστορικό"
+
+#~ msgid "Open maple worksheet"
+#~ msgstr "’νοιγμα συνεδρίας maple (mws)"
+
+#~ msgid "Open Voyage 200 program"
+#~ msgstr "’νοιγμα προγράμματος Voyage 200"
+
+#, fuzzy
+#~ msgid "Save current session"
+#~ msgstr "Αποθήκευση τρέχουσας συνεδρίας"
+
+#~ msgid "New font size"
+#~ msgstr "Νέο μέγεθος γραμματοσειράς"
+
+#~ msgid "Fontsize"
+#~ msgstr "Μέγεθος χαρακτήρων"
+
+#~ msgid "Animate"
+#~ msgstr "Κίνηση(Animate)"
+
+#~ msgid "?"
+#~ msgstr "?"
+
+#~ msgid "keyboard on/off"
+#~ msgstr "Ενεργοποίηση/Απενεργοποίηση πληκτρολογίου"
+
+#, fuzzy
+#~ msgid "@menu"
+#~ msgstr "mean"
+
+#~ msgid "Translate selection in TeX to message line"
+#~ msgstr "Μετάφραση της επιλογής σε TeX στην γραμμή μηνυμάτων"
+
+#~ msgid "Interrupt current computation"
+#~ msgstr "Διακοπή του τρέχοντος υπολογισμού"
+
+#~ msgid "Status line"
+#~ msgstr "Κατάσταση γραμμής"
+
+#, fuzzy
+#~ msgid "u0"
+#~ msgstr "u0"
+
+#~ msgid "Please fill the target cell"
+#~ msgstr "Παρακαλώ συμπληρώστε το εύρως κελιού"
+
+#~ msgid "demi_droite"
+#~ msgstr "Ημι_δεξιά"
+
+#~ msgid "droite"
+#~ msgstr "δεξιά"
+
+#~ msgid "mediatrice"
+#~ msgstr "διαχωριστικό"
+
+#~ msgid "triangle_equilateral"
+#~ msgstr "ισόπλευρο τρίγωνο"
+
+#, fuzzy
+#~ msgid "carre"
+#~ msgstr "τεράγωνο"
+
+#~ msgid "cercle"
+#~ msgstr "κύκλος"
+
+#~ msgid "inscrit"
+#~ msgstr "εσωτερική_επιφάνεια"
+
+#~ msgid "exinscrit"
+#~ msgstr "εξωτερική_επιφάνεια"
+
+#~ msgid "circonscrit"
+#~ msgstr "οριοθέτηση"
+
+#~ msgid "Launch tutorial?"
+#~ msgstr "Εκκίνηση εκπαιδευτικού(προγράμματος)?"
+
+#, fuzzy
+#~ msgid "geo2d"
+#~ msgstr "γράφημα τδύο διαστάσεων (geo2d)"
+
+#, fuzzy
+#~ msgid "geo3d"
+#~ msgstr "γράφημα τριών διαστάσεων (geo3d)"
+
+#, fuzzy
+#~ msgid "Math"
+#~ msgstr "Μαθηματικό"
+
+#~ msgid "Function graph"
+#~ msgstr "Γράφημα της συνάρτησης"
+
+#~ msgid "Add parametric plot"
+#~ msgstr "Προσθήκη παραμετρικής καμπύλης"
+
+#, fuzzy
+#~ msgid "dx"
+#~ msgstr "dx"
+
+#, fuzzy
+#~ msgid "Table function"
+#~ msgstr "Πίνακας συνάρτησης"
+
+#~ msgid "Enter searched word"
+#~ msgstr "Εισαγωγή λέξης για αναζήτηση"
+
+#~ msgid "Search result for "
+#~ msgstr "Αποτέλεσμα αναζήτησης για"
+
+#~ msgid "Not a variable name! Try again"
+#~ msgstr "Μη συμβατό όνομα μεταβλητής. Προσπαθήστε ξανά!"
+
+#, fuzzy
+#~ msgid "Horizontal"
+#~ msgstr "Οριζόντιο"
+
+#, fuzzy
+#~ msgid "|/"
+#~ msgstr "|//"
+
+#, fuzzy
+#~ msgid "@7line /"
+#~ msgstr "Lignes"
+
+#, fuzzy
+#~ msgid "lim"
+#~ msgstr "όριο(lim)"
+
+#~ msgid "()"
+#~ msgstr "()"
+
+#, fuzzy
+#~ msgid "int"
+#~ msgstr "στο"
+
+#~ msgid "enter"
+#~ msgstr "είσοδος"
+
+#, fuzzy
+#~ msgid "bnd"
+#~ msgstr "όριο"
+
+#, fuzzy
+#~ msgid "evalf"
+#~ msgstr "αποτίμηση"
+
+#~ msgid "(3-d) Change x rotation angle"
+#~ msgstr "Γράφημα τριών διστάσεων (3-d). Αλλαγή της γωνίας περιστροφής στο x"
+
+#~ msgid "(3-d) Change z-rotation angle"
+#~ msgstr "Γράφημα τριών διστάσεων (3-d). Αλλαγή της γωνίας περιστροφής στο z"
+
+#~ msgid "Increase x rotation angle"
+#~ msgstr "Αύξηση της γωνίας περιστροφής στο x"
+
+#~ msgid "(3-d) Decrease x rotation angle"
+#~ msgstr "Μείωση της γωνίας περιστροφής στο x"
+
+#~ msgid "(3-d) Increase z rotation angle"
+#~ msgstr "Αύξηση της γωνίας περιστροφής στο z"
+
+#~ msgid "(3-d) Decrease z rotation angle"
+#~ msgstr "Μείωση της γωνίας περιστροφής στο z"
+
+#, fuzzy
+#~ msgid "hidden3d"
+#~ msgstr "Απόκρυψη τριών διστάσεων (3-d)"
+
+#~ msgid "Transparent or opaque 3-d surfaces"
+#~ msgstr "Διαφανής ή αδιαφανής επιφάνειες τριών διστάσεων (3-d)"
+
+#~ msgid "Double-click to see complete text"
+#~ msgstr "Κάντε διπλο κλίκ για να δείτε ολόκληρο το κείμενο"
+
+#~ msgid "geometry"
+#~ msgstr "γεωμετρία"
+
+#, fuzzy
+#~ msgid "original rotation"
+#~ msgstr "περιστροφή τριών διαστάσεων(3-d) στο x"
+
+#, fuzzy
+#~ msgid "Points"
+#~ msgstr "Σημεία"
+
+#~ msgid "3d new z-rotation"
+#~ msgstr "περιστροφή τριών διαστάσεων(3-d) στο z"
+
+#~ msgid "3d new new y-rotation"
+#~ msgstr "περιστροφή τριών διαστάσεων(3-d) στο y"
+
+#, fuzzy
+#~ msgid "x=depth rotation"
+#~ msgstr "περιστροφή όσο x=βάθος"
+
+#, fuzzy
+#~ msgid "y=depth rotation"
+#~ msgstr "περιστροφή όσο y=βάθος"
+
+#~ msgid "+-"
+#~ msgstr "+-"
+
+#~ msgid "Change xcas general settings"
+#~ msgstr "Αλλαγή των γενικών παραμέτρων"
+
+#~ msgid "geo"
+#~ msgstr "Γράφημα(geo)"
+
+#~ msgid "Change geometric window settings"
+#~ msgstr "Αλλαγή των παραμέτρων του γεωμετρικού παραθύρου"
+
+#~ msgid "cas"
+#~ msgstr "cas"
+
+#~ msgid "Change cas settings"
+#~ msgstr "Αλλαγή των παραμέτρων του  cas"
+
+#, fuzzy
+#~ msgid "Line type"
+#~ msgstr "Τύπος γραμμής"
+
+#, fuzzy
+#~ msgid "Terminale"
+#~ msgstr "Τρίγωνα"
+
+#, fuzzy
+#~ msgid "Premiere"
+#~ msgstr "Εκτυπωτής"
+
+#~ msgid "e^"
+#~ msgstr "e^"
+
+#, fuzzy
+#~ msgid "HTML"
+#~ msgstr "βοήθεια HTML"
+
+#, fuzzy
+#~ msgid "Auto"
+#~ msgstr "Όσον αφορά"
+
+#~ msgid "Increase z"
+#~ msgstr "Αύξηση z"
+
+#~ msgid "Decrease z"
+#~ msgstr "Μείωση z"
+
+#~ msgid "2-d configuration"
+#~ msgstr "Διαμόρφωση τριών διαστάσεων (2-d)"
+
+#~ msgid "Zoomout for X"
+#~ msgstr "Σμίκρυνση του X"
+
+#~ msgid "Zoomin for X"
+#~ msgstr "Μεγένθυση του X"
+
+#~ msgid "Zoomout for Y"
+#~ msgstr "Σμίκρυνση του Y"
+
+#~ msgid "Zoomin for Y"
+#~ msgstr "Μεγένθυση του Y"
+
+#, fuzzy
+#~ msgid "z-"
+#~ msgstr "z-"
+
+#, fuzzy
+#~ msgid "z+"
+#~ msgstr "z+"
+
+#~ msgid "acos"
+#~ msgstr "acos"
+
+#~ msgid "atan"
+#~ msgstr "atan"
+
+#~ msgid "<-"
+#~ msgstr "<-"
+
+#~ msgid "Auto-recovery file "
+#~ msgstr "Αρχείο αυτόματης αποθήκευσης"
+
+#~ msgid " found. Run it?"
+#~ msgstr " βρέθηκε. Εκτέλεση?"
+
+#~ msgid "Really clear?"
+#~ msgstr "Είστε σίγουροι οτι θέλετε να διαγράψετε?"
+
+#~ msgid "Spreadsheet "
+#~ msgstr "Πίνακας "
+
+#~ msgid "Matrix "
+#~ msgstr "Μήτρα(πίνακας)"
+
+#~ msgid "Save current program?"
+#~ msgstr "Αποθήκευση τρέχοντος προγράμματος"
+
+#~ msgid "not changed"
+#~ msgstr "δεν άλλαξε."
+
+#~ msgid "changed"
+#~ msgstr "άλλαξε."
+
+#~ msgid "Expecting "
+#~ msgstr "Επέκταση "
+
+#~ msgid ""
+#~ " not found. Check best matches above\n"
+#~ "Or try Help->Find word in HTML help"
+#~ msgstr ""
+#~ " δεν βρέθηκε. Ελέξτε τα βέλτιστα ταιριάσματα Ή δοκιμάστε Βοήθεια->Εύρεση "
+#~ "λέξης στην βοήθεια HTML"
+
+#~ msgid " looks like a session archive. Try File->Run xcas session instead"
+#~ msgstr ""
+#~ "μοιάζει με αρχείο συνεδρίας. Δοκιμάστε καλύτερα Αρχείο session->Εκτέλεση "
+#~ "συνεδρίας  xcas"
+
+#~ msgid "Running maple text translation __.map"
+#~ msgstr "Τρέξιμο μετάφρασης κειμένου maple__.map"
+
+#~ msgid "This will replace the current session. Save it before?"
+#~ msgstr "Αυτό θα αντικαταστήσει την τρέχουσα συνεδρία. Αποθήκευση?"
+
+#~ msgid "This will replace the current matrix. Save it before?"
+#~ msgstr "Αυτό θα αντικαταστήσει την τρέχουσα μήτρα(matrix). Αποθήκευση"
+
+#~ msgid " saved"
+#~ msgstr " αποθηκεύτηκε"
+
+#~ msgid "Save changes"
+#~ msgstr "Αποθήκευση αλλαγών"
+
+#~ msgid ""
+#~ "To update, quit xcas first, then run update in Start->Programs->Xcas or "
+#~ "update.bat in the xcas directory"
+#~ msgstr ""
+#~ "Για ενημέρωση, εξέλθετε απο το xcas, και στην συνέχεια εκτελέστε την "
+#~ "ενημέρωση στο Εκκίνηση-Προγράμματα>Xcaς ή εκετλεστε το update.bat στον "
+#~ "κατάλογο  xcas"
+
+#~ msgid "Check Internet connexion. Ready to update xcas?"
+#~ msgstr "Ελέξτε την σύνδεση στο Internet. Έτοιμοι για ενημέρωση xcas?"
+
+#~ msgid "Clear sheet?"
+#~ msgstr "Διαγραφή μήτρας(matrix)? "
+
+#~ msgid "Enter word to search"
+#~ msgstr "Εισαγωγή λέξης για αναζήτηση"
+
+#~ msgid "Run file (read)"
+#~ msgstr "Εκτέλεση αρχείου (read)"
+
+#~ msgid "Run file line by line"
+#~ msgstr "Εκτέλεση αρχείου γραμμή γραμμή"
+
+#~ msgid "Read file (1 history level)"
+#~ msgstr "Διάβασμα αρχείου (read)"
+
+#~ msgid "Save history as"
+#~ msgstr "Αποθήκευση συνεδρίας ως"
+
+#~ msgid "Preview hist to Postscript file"
+#~ msgstr "Προοπτικοποίηση hist σε αρχείο PS"
+
+#~ msgid "Import history from"
+#~ msgstr "Εισαγωγή ιστορικού από"
+
+#~ msgid "Export history as"
+#~ msgstr "Exporter session en"
+
+#~ msgid "TI89 text"
+#~ msgstr "κείμενο ti89"
+
+#~ msgid "Help language"
+#~ msgstr "Γλώσσα βοηθείας"
+
+#~ msgid "eqw (Equationwriter) i/o"
+#~ msgstr "eqw (Επεξεργασία εξίσωσης) i/o"
+
+#~ msgid "Load equation"
+#~ msgstr "Φόρτωση εξίσωσης"
+
+#~ msgid "Store equation"
+#~ msgstr "Αποθήκευση εξίσωσης"
+
+#~ msgid "Store equation as"
+#~ msgstr "Αποθήκευση εξίσωσης ως"
+
+#~ msgid "Insert equation"
+#~ msgstr "Εισαγωγή εξίσωσης"
+
+#~ msgid "Save selection as"
+#~ msgstr "Αποθήκευση επιλογής ως"
+
+#~ msgid "Preview eqw to Postscript file"
+#~ msgstr "Προοπτικοποίηση eqw σε αρχείο PS"
+
+#~ msgid "geo (Geometry) i/o"
+#~ msgstr "geo (Γεωμετρία) i/o"
+
+#~ msgid "Preview 2d plot to Postscript file"
+#~ msgstr "Προοπτικοποίηση γραφήματος δύο δαστάσεων (2-d) σε αρχείο PS"
+
+#~ msgid "Save 2d plot to SVG file"
+#~ msgstr "Αποθήκευση γραφήματος δύο δαστάσεων (2-d) σε αρχείο SVG"
+
+#~ msgid "Save 2d plot as LaTex and PS"
+#~ msgstr "Αποθήκευση γραφήματος δύο δαστάσεων (2-d) σε αρχεία LaTex και PS"
+
+#~ msgid "Save 3d plot as LaTex"
+#~ msgstr "Αποθήκευση γραφήματος δύο δαστάσεων (2-d) σε αρχείο LaTex"
+
+#~ msgid "Save 3-d plot as png"
+#~ msgstr "Αποθήκευση γραφήματος τριών δαστάσεων (3-d) σε αρχείο png"
+
+#~ msgid "Save 3-d plot as svg"
+#~ msgstr "Αποθήκευση γραφήματος τριών δαστάσεων (3-d) σε αρχείο svg"
+
+#~ msgid "Save 3-d plot as emf"
+#~ msgstr "Αποθήκευση γραφήματος τριών δαστάσεων (3-d) σε αρχείο emf"
+
+#~ msgid "mtrw (Matrixwriter) i/o"
+#~ msgstr "mtrw (Επεξεργασία μήτρας) i/o"
+
+#~ msgid "Load sheet"
+#~ msgstr "Φόρτωση πίνακα"
+
+#~ msgid "Store sheet"
+#~ msgstr "Αποθήκευση πίνακα"
+
+#~ msgid "Insert sheet from file"
+#~ msgstr "Εισαγωγή πίνακα από αρχείο"
+
+#~ msgid "Save selection"
+#~ msgstr "Αποθήκευση επιλογής"
+
+#~ msgid "Print sheet"
+#~ msgstr "Εκτύπωση πίνακα"
+
+#~ msgid "Preview sheet to Postscript file"
+#~ msgstr "Προοπτικοποίηση πίνακα σε αρχείο PS"
+
+#~ msgid "prg (Program) i/o"
+#~ msgstr "prg (Πρόγραμμα) i/o"
+
+#~ msgid "Load program"
+#~ msgstr "Φόρτωση προγράμματος"
+
+#~ msgid "Store program"
+#~ msgstr "Αποθήκευση προγράμματος"
+
+#~ msgid "Store program as"
+#~ msgstr "Αποθήκευση προγράμματος ως"
+
+#~ msgid "Preview prog to Postscript file"
+#~ msgstr "Προοπτικοποίηση προγράμματος σε αρχείο  PS"
+
+#~ msgid "Update xcas"
+#~ msgstr "Ενημέρωση xcas"
+
+#~ msgid "Copy to"
+#~ msgstr "Αντιγραφή στο"
+
+#~ msgid "histcmd2eqw"
+#~ msgstr "histcmd2eqw"
+
+#~ msgid "histcmd2mtrw"
+#~ msgstr "histcmd2mtrw"
+
+#~ msgid "Clear"
+#~ msgstr "Διαγραφή"
+
+#~ msgid "Clear history"
+#~ msgstr "Διαγραφή ιστορικού"
+
+#~ msgid "Clear all"
+#~ msgstr "Διαγραφή όλων"
+
+#~ msgid "Clear a..z variables"
+#~ msgstr "Διαγραφή μεταβλητών a..z"
+
+#~ msgid "Clear all variables"
+#~ msgstr "Διαγραφή όλων των μεταβλητών"
+
+#~ msgid "Clear eqw"
+#~ msgstr "Διαγραφή eqw"
+
+#~ msgid "Clear mtrw"
+#~ msgstr "Διαγραφή mtrw"
+
+#~ msgid "Clear program"
+#~ msgstr "Διαγραφή προγράμματος"
+
+#~ msgid "ClrIO"
+#~ msgstr "Διαγραφή οθώνης IO"
+
+#~ msgid "Cancel hist modifs"
+#~ msgstr "Ακύρωση αλλαγών στο ιστορικό"
+
+#~ msgid "Windows"
+#~ msgstr "Παράθυρα"
+
+#~ msgid "2 Windows"
+#~ msgstr "2 Παράθυρα"
+
+#~ msgid "3 Windows"
+#~ msgstr "3 Παράθυρα"
+
+#~ msgid "History"
+#~ msgstr "Ιστορικό"
+
+#~ msgid "Edit program"
+#~ msgstr "Επεξεργασία προγράμματος"
+
+#~ msgid "Horizontal split"
+#~ msgstr "Οριζόντιος διαχωρισμός"
+
+#~ msgid "Vertical split"
+#~ msgstr "Κάθετος διαχωρισμός"
+
+#~ msgid "geo (Geometry)"
+#~ msgstr "geo (Γεωμετρία)"
+
+#~ msgid "hist (History)"
+#~ msgstr "hist (Ιστορικό)"
+
+#~ msgid "Recompute history"
+#~ msgstr "Επανυπολογισμός ιστορικού"
+
+#~ msgid "Insert history level"
+#~ msgstr "Εισαγωγή επιπέδου στο ιστορικό"
+
+#~ msgid "View hist in msg as"
+#~ msgstr "Παρουσίαση ιστορικού στο μήνυμα ως"
+
+#~ msgid "mtrw (Matrixwriter)"
+#~ msgstr "mtrw (Επεξεργαστης μήτρας(matrix))"
+
+#~ msgid "Cell copy"
+#~ msgstr "Αντιγραφή κελιού"
+
+#~ msgid "Fill down"
+#~ msgstr "Γέμισμα κάτω"
+
+#~ msgid "Fill to right"
+#~ msgstr "Γέμισμα δεξιά"
+
+#~ msgid "to selection"
+#~ msgstr "Γέμισμα επιλογής"
+
+#~ msgid "fill selection with 0"
+#~ msgstr "Γέμισμα επιλογής με 0"
+
+#~ msgid "Recompute"
+#~ msgstr "Επανυπολογισμός"
+
+#~ msgid "prg (Program)"
+#~ msgstr "prg (Πρόγραμμα)"
+
+#~ msgid "Find next"
+#~ msgstr "Εύρεση επόμενου"
+
+#~ msgid "Setup"
+#~ msgstr "Εγκατάσταση"
+
+#~ msgid "Cas setup"
+#~ msgstr "Διαμόρφωση Cas"
+
+#~ msgid "General setup"
+#~ msgstr "Γενική Διαμόρφωση "
+
+#~ msgid "Scolaire"
+#~ msgstr "Σχολικό"
+
+#, fuzzy
+#~ msgid "Reglages"
+#~ msgstr "Ρυθμίσεις"
+
+#~ msgid "Deplacements"
+#~ msgstr "Μετακινήσεις"
+
+#, fuzzy
+#~ msgid "avance"
+#~ msgstr "αναίρεση"
+
+#, fuzzy
+#~ msgid "recule"
+#~ msgstr "προηγούμενο"
+
+#, fuzzy
+#~ msgid "saute"
+#~ msgstr "επόμενο"
+
+#, fuzzy
+#~ msgid "pas_de_cote"
+#~ msgstr "ράβδος"
+
+#, fuzzy
+#~ msgid "tourne_droite"
+#~ msgstr "στροφή δεξιά"
+
+#, fuzzy
+#~ msgid "efface"
+#~ msgstr "Αντικατάσταση"
+
+#, fuzzy
+#~ msgid "Positionner"
+#~ msgstr "προοβολή"
+
+#, fuzzy
+#~ msgid "cap"
+#~ msgstr "cap"
+
+#, fuzzy
+#~ msgid "vers"
+#~ msgstr "αντίστροφος"
+
+#, fuzzy
+#~ msgid "rond"
+#~ msgstr "στρογγυλοποίηση"
+
+#, fuzzy
+#~ msgid "disque"
+#~ msgstr "quorem"
+
+#, fuzzy
+#~ msgid "rectangle_plein"
+#~ msgstr "ορθογώνιο"
+
+#, fuzzy
+#~ msgid "triangle_plein"
+#~ msgstr "ισόπλευρο_τρίγωνο"
+
+#, fuzzy
+#~ msgid "dessine_tortue"
+#~ msgstr "factor"
+
+#, fuzzy
+#~ msgid "Crayon"
+#~ msgstr "ακτίνα"
+
+#, fuzzy
+#~ msgid "leve_crayon"
+#~ msgstr "rayon"
+
+#, fuzzy
+#~ msgid "vert"
+#~ msgstr "συνθήκη"
+
+#, fuzzy
+#~ msgid "bleu"
+#~ msgstr "χώρος"
+
+#, fuzzy
+#~ msgid "jaune"
+#~ msgstr "ύψος"
+
+#, fuzzy
+#~ msgid "magenta"
+#~ msgstr "εφαπτόμενο"
+
+#, fuzzy
+#~ msgid "cyan"
+#~ msgstr "ακτίνα"
+
+#, fuzzy
+#~ msgid "noir"
+#~ msgstr "jordan"
+
+#, fuzzy
+#~ msgid "blanc"
+#~ msgstr "ln"
+
+#, fuzzy
+#~ msgid "gomme"
+#~ msgstr "κορυφή"
+
+#, fuzzy
+#~ msgid "crayon"
+#~ msgstr "ακτίνα"
+
+#, fuzzy
+#~ msgid "cache_tortue"
+#~ msgstr "factor"
+
+#, fuzzy
+#~ msgid "si"
+#~ msgstr "sin"
+
+#, fuzzy
+#~ msgid "lis"
+#~ msgstr "im"
+
+#, fuzzy
+#~ msgid "lis_phrase"
+#~ msgstr "series"
+
+#, fuzzy
+#~ msgid "sauve"
+#~ msgstr "αποθήκευση"
+
+#, fuzzy
+#~ msgid "ramene"
+#~ msgstr "mediane"
+
+#, fuzzy
+#~ msgid "expand"
+#~ msgstr "επέκταση"
+
+#~ msgid "left"
+#~ msgstr "αριστερά"
+
+#~ msgid "subst"
+#~ msgstr "αντικατάσταση"
+
+#, fuzzy
+#~ msgid "cSolve"
+#~ msgstr "Επίλυση"
+
+#, fuzzy
+#~ msgid "plotparam"
+#~ msgstr " παραμετρικός σχεδιασμος"
+
+#, fuzzy
+#~ msgid "Constants"
+#~ msgstr "Σταθερά"
+
+#~ msgid "pi"
+#~ msgstr "pi"
+
+#~ msgid "+infinity"
+#~ msgstr "+άπειρο"
+
+#~ msgid "-infinity"
+#~ msgstr "-άπειρο"
+
+#, fuzzy
+#~ msgid "infinity"
+#~ msgstr "άπειρο"
+
+#~ msgid "euler"
+#~ msgstr "euler"
+
+#, fuzzy
+#~ msgid "fracmod"
+#~ msgstr "trace"
+
+#~ msgid "iabcuv"
+#~ msgstr "iabcuv"
+
+#~ msgid "idivis"
+#~ msgstr "ανεξάρτητα"
+
+#~ msgid "iquo"
+#~ msgstr "iquo"
+
+#, fuzzy
+#~ msgid "iquorem"
+#~ msgstr "quorem"
+
+#~ msgid "lcm"
+#~ msgstr "lcm"
+
+#~ msgid "pa2b2"
+#~ msgstr "pa2b2"
+
+#~ msgid "Real"
+#~ msgstr "πραγματικό"
+
+#~ msgid "abs"
+#~ msgstr "abs"
+
+#~ msgid "ceil"
+#~ msgstr "κελί"
+
+#, fuzzy
+#~ msgid "frac"
+#~ msgstr "trace"
+
+#~ msgid "re"
+#~ msgstr "ξανά"
+
+#~ msgid "im"
+#~ msgstr "im"
+
+#, fuzzy
+#~ msgid "evalc"
+#~ msgstr "αποτίμηση"
+
+#~ msgid "conj"
+#~ msgstr "conj"
+
+#~ msgid "arg"
+#~ msgstr "παράμετροι"
+
+#~ msgid "log"
+#~ msgstr "log"
+
+#~ msgid "tanh"
+#~ msgstr "εφαπτομένη (tanh)"
+
+#~ msgid "sinh"
+#~ msgstr "ημίτονο (sinh)"
+
+#~ msgid "cosh"
+#~ msgstr "συνημίτονο (cosh)"
+
+#~ msgid "atanh"
+#~ msgstr "αντίστροφη εφαπτομένη (atanh)"
+
+#~ msgid "asinh"
+#~ msgstr "αντίστροφο ημίτονο (asinh)"
+
+#~ msgid "acosh"
+#~ msgstr "αντίστροφο συνημίτονο (acosh)"
+
+#~ msgid "Trig"
+#~ msgstr "Τρίγωνο"
+
+#~ msgid "acot"
+#~ msgstr "acot"
+
+#~ msgid "csc"
+#~ msgstr "csc"
+
+#~ msgid "sec"
+#~ msgstr "sec"
+
+#~ msgid "cot"
+#~ msgstr "cot"
+
+#~ msgid "Rewrite"
+#~ msgstr "Επανεγραφή"
+
+#, fuzzy
+#~ msgid "ratnormal"
+#~ msgstr "κανονικοποίηση"
+
+#~ msgid "Rew_trig_exp"
+#~ msgstr "Επανεγραφή_τριγωνικής_έκφρασης"
+
+#, fuzzy
+#~ msgid "exp2trig"
+#~ msgstr "Trig_reecriture"
+
+#~ msgid "hyp2exp"
+#~ msgstr "hyp2exp"
+
+#~ msgid "trig2exp"
+#~ msgstr "trig2exp"
+
+#~ msgid "Rew_inv_trig"
+#~ msgstr "Επανεγραφή_αντίστροφης_τριγωνικής_έκφρασης"
+
+#~ msgid "acos2asin"
+#~ msgstr "acos2asin"
+
+#~ msgid "acos2atan"
+#~ msgstr "acos2atan"
+
+#~ msgid "asin2acos"
+#~ msgstr "asin2acos"
+
+#~ msgid "asin2atan"
+#~ msgstr "asin2atan"
+
+#~ msgid "atan2acos"
+#~ msgstr "atan2acos"
+
+#~ msgid "atan2asin"
+#~ msgstr "atan2asin"
+
+#~ msgid "Rew_trig"
+#~ msgstr "Επανεγραφή τριγώνου"
+
+#~ msgid "trigcos"
+#~ msgstr "trigcos"
+
+#~ msgid "trigsin"
+#~ msgstr "trigsin"
+
+#~ msgid "trigtan"
+#~ msgstr "trigtan"
+
+#, fuzzy
+#~ msgid "binomial"
+#~ msgstr "Πολυωνιμικό"
+
+#, fuzzy
+#~ msgid "rand"
+#~ msgstr "τυχαίο"
+
+#, fuzzy
+#~ msgid "randnorm"
+#~ msgstr "Τυχαία κανονικοποίηση"
+
+#~ msgid "median"
+#~ msgstr "μέσος"
+
+#~ msgid "correlation"
+#~ msgstr "συσχέτηση"
+
+#, fuzzy
+#~ msgid "binomial_cdf"
+#~ msgstr "Πολυωνιμικές_cdf"
+
+#, fuzzy
+#~ msgid "binomial_icdf"
+#~ msgstr "Πολυωνιμικές_icdf"
+
+#, fuzzy
+#~ msgid "poisson"
+#~ msgstr "προβολή"
+
+#, fuzzy
+#~ msgid "poisson_cdf"
+#~ msgstr "σημείο_cdf"
+
+#~ msgid "Plot"
+#~ msgstr "Γράφημα"
+
+#~ msgid "Plot_setup"
+#~ msgstr "Γραφική_διαμόρφωση"
+
+#~ msgid "Plot selection"
+#~ msgstr "Σχεδιασμός επιλογής"
+
+#~ msgid "Vect"
+#~ msgstr "Δείκτης"
+
+#~ msgid "cross"
+#~ msgstr "σταυρός"
+
+#~ msgid "dot"
+#~ msgstr "τελεία"
+
+#, fuzzy
+#~ msgid "maxnorm"
+#~ msgstr "Κανονικοποίηση"
+
+#, fuzzy
+#~ msgid "Gestion"
+#~ msgstr "Διαχείρηση"
+
+#~ msgid "display 2d to hist"
+#~ msgstr "Απείκονηση δύο διαστάσεων (2d) στο ιστορικό"
+
+#~ msgid "display 3d to hist"
+#~ msgstr "Απείκονηση τριών διαστάσεων (3d) στο ιστορικό"
+
+#~ msgid "couleur"
+#~ msgstr "χρώμα"
+
+#~ msgid "legende"
+#~ msgstr "λεζάντα"
+
+#, fuzzy
+#~ msgid "barycentre"
+#~ msgstr "isobarycentre"
+
+#~ msgid "centre"
+#~ msgstr "κέντρο"
+
+#~ msgid "element"
+#~ msgstr "στοιχείο"
+
+#~ msgid "isobarycentre"
+#~ msgstr "isobarycentre"
+
+#~ msgid "milieu"
+#~ msgstr "χώρος"
+
+#, fuzzy
+#~ msgid "point2d"
+#~ msgstr "σημείο δύο διαστάσεων (2d)"
+
+#, fuzzy
+#~ msgid "point3d"
+#~ msgstr "σημείο τριών διαστάσεων (3d)"
+
+#~ msgid "sommets"
+#~ msgstr "κορυφή"
+
+#, fuzzy
+#~ msgid "aretes"
+#~ msgstr "Ιδιότητες"
+
+#~ msgid "exbissectrice"
+#~ msgstr "διχωριστικά"
+
+#~ msgid "hauteur"
+#~ msgstr "ύψος"
+
+#~ msgid "lieu"
+#~ msgstr "χώρος"
+
+#, fuzzy
+#~ msgid "perpendiculaire_commune"
+#~ msgstr "κάθετο"
+
+#~ msgid "triangle_isocele"
+#~ msgstr "ισόπλευρο_τρίγωνο"
+
+#~ msgid "triangle_rectangle"
+#~ msgstr "ορθογώνιο_τρίγωνο"
+
+#, fuzzy
+#~ msgid "parallelogramme"
+#~ msgstr "παραλληλόγραμμο"
+
+#~ msgid "rectangle"
+#~ msgstr "ορθογώνιο"
+
+#~ msgid "Conic sections"
+#~ msgstr "Κώνοι"
+
+#~ msgid "parabole"
+#~ msgstr "παραβολή"
+
+#, fuzzy
+#~ msgid "cylindre"
+#~ msgstr "Κύλινδρος"
+
+#, fuzzy
+#~ msgid "demi_cone"
+#~ msgstr "ημι-κωνος"
+
+#, fuzzy
+#~ msgid "Solides"
+#~ msgstr "Στερεά"
+
+#, fuzzy
+#~ msgid "cube"
+#~ msgstr "κύβος"
+
+#, fuzzy
+#~ msgid "pyramide"
+#~ msgstr "πυραμίδα"
+
+#, fuzzy
+#~ msgid "parallelepipede"
+#~ msgstr "παραλληλεπίπεδο"
+
+#, fuzzy
+#~ msgid "polyedre"
+#~ msgstr "Πόλύεδρο"
+
+#, fuzzy
+#~ msgid "Solides_Platon"
+#~ msgstr "re"
+
+#, fuzzy
+#~ msgid "tetraedre_centre"
+#~ msgstr "κέντρο-τετραέδρου"
+
+#, fuzzy
+#~ msgid "cube_centre"
+#~ msgstr "κέντρο_κύβου"
+
+#, fuzzy
+#~ msgid "octaedre"
+#~ msgstr "οκταέδρο"
+
+#~ msgid "Mesures"
+#~ msgstr "Μέτρα"
+
+#, fuzzy
+#~ msgid "abscisse"
+#~ msgstr "Βάση"
+
+#~ msgid "affixe"
+#~ msgstr "affixe"
+
+#, fuzzy
+#~ msgid "aire"
+#~ msgstr "re"
+
+#~ msgid "angle"
+#~ msgstr "γωνία"
+
+#, fuzzy
+#~ msgid "cote"
+#~ msgstr "cot"
+
+#~ msgid "longueur"
+#~ msgstr "μήκος"
+
+#~ msgid "longueur2"
+#~ msgstr "μήκος2"
+
+#, fuzzy
+#~ msgid "Transformations"
+#~ msgstr "Μετασχηματισμός"
+
+#~ msgid "homothetie"
+#~ msgstr "homothetie"
+
+#~ msgid "inversion"
+#~ msgstr "αντιστροφή"
+
+#~ msgid "projection"
+#~ msgstr "προβολή"
+
+#~ msgid "similitude"
+#~ msgstr "ομοιότητα"
+
+#~ msgid "symetrie"
+#~ msgstr "συμμετρία"
+
+#~ msgid "Properties"
+#~ msgstr "Ιδιότητες"
+
+#~ msgid "est_aligne"
+#~ msgstr "είνει_ευθυγραμμισμένο"
+
+#~ msgid "est_cocyclique"
+#~ msgstr "είναι_κυκλικό"
+
+#, fuzzy
+#~ msgid "est_coplanaire"
+#~ msgstr "είναι_συνεπίπεδο"
+
+#, fuzzy
+#~ msgid "est_element"
+#~ msgstr "είναι_αντικείμενο"
+
+#~ msgid "est_parallele"
+#~ msgstr "είναι_παράλληλο"
+
+#~ msgid "est_perpendiculaire"
+#~ msgstr "είναι_κάθετο"
+
+#, fuzzy
+#~ msgid "est_isocele"
+#~ msgstr "είναι ισόπλευρο"
+
+#, fuzzy
+#~ msgid "est_rectangle"
+#~ msgstr "είναι_ορθογώνιο"
+
+#, fuzzy
+#~ msgid "est_losange"
+#~ msgstr "είναι_ευθυγραμμισμένο"
+
+#, fuzzy
+#~ msgid "est_parallelogramme"
+#~ msgstr "είναι_παραληλόγραμμο"
+
+#, fuzzy
+#~ msgid "est_conjugue"
+#~ msgstr "είναι_συνδιασμένο"
+
+#, fuzzy
+#~ msgid "est_faisceau_cercle"
+#~ msgstr "είναι_κυκλικής_πορείας"
+
+#, fuzzy
+#~ msgid "est_faisceau_droite"
+#~ msgstr "είναι_δεξιάς_πορείας"
+
+#, fuzzy
+#~ msgid "Advanced"
+#~ msgstr "Προχωρημένο"
+
+#, fuzzy
+#~ msgid "birapport"
+#~ msgstr "point"
+
+#, fuzzy
+#~ msgid "pole"
+#~ msgstr "Maple"
+
+#, fuzzy
+#~ msgid "polaire"
+#~ msgstr "re"
+
+#, fuzzy
+#~ msgid "div_harmonique"
+#~ msgstr "est_cocyclique"
+
+#, fuzzy
+#~ msgid "point_div"
+#~ msgstr "point"
+
+#, fuzzy
+#~ msgid "_G_"
+#~ msgstr "_G_"
+
+#, fuzzy
+#~ msgid "_NA_"
+#~ msgstr "Οχι"
+
+#, fuzzy
+#~ msgid "_R_"
+#~ msgstr "_R_"
+
+#, fuzzy
+#~ msgid "_Vm_"
+#~ msgstr "_Vm_"
+
+#, fuzzy
+#~ msgid "_StdP_"
+#~ msgstr "Ensemble"
+
+#, fuzzy
+#~ msgid "_StdT_"
+#~ msgstr "Ensemble"
+
+#, fuzzy
+#~ msgid "_alpha_"
+#~ msgstr "_alpha_"
+
+#, fuzzy
+#~ msgid "_c_"
+#~ msgstr "Special"
+
+#, fuzzy
+#~ msgid "_epsilon0_"
+#~ msgstr "epsilon(ε)"
+
+#, fuzzy
+#~ msgid "_F_"
+#~ msgstr "_F_"
+
+#, fuzzy
+#~ msgid "_g_"
+#~ msgstr "_g_"
+
+#, fuzzy
+#~ msgid "_h_"
+#~ msgstr "_h_"
+
+#, fuzzy
+#~ msgid "_hbar_"
+#~ msgstr "brent"
+
+#, fuzzy
+#~ msgid "_k_"
+#~ msgstr "_k_"
+
+#, fuzzy
+#~ msgid "_me_"
+#~ msgstr "m"
+
+#, fuzzy
+#~ msgid "_mp_"
+#~ msgstr "m"
+
+#, fuzzy
+#~ msgid "_mpme_"
+#~ msgstr "m"
+
+#, fuzzy
+#~ msgid "_phi_"
+#~ msgstr "h"
+
+#, fuzzy
+#~ msgid "_q_"
+#~ msgstr "_"
+
+#, fuzzy
+#~ msgid "_qme_"
+#~ msgstr "m"
+
+#, fuzzy
+#~ msgid "_sigma_"
+#~ msgstr "image"
+
+#, fuzzy
+#~ msgid "mksa"
+#~ msgstr "mkisom"
+
+#, fuzzy
+#~ msgid "ufactor"
+#~ msgstr "factor"
+
+#, fuzzy
+#~ msgid "Y"
+#~ msgstr "Y-"
+
+#, fuzzy
+#~ msgid "Z"
+#~ msgstr "Z-"
+
+#, fuzzy
+#~ msgid "P"
+#~ msgstr "_"
+
+#, fuzzy
+#~ msgid "K"
+#~ msgstr "OK"
+
+#, fuzzy
+#~ msgid "H"
+#~ msgstr "_"
+
+#, fuzzy
+#~ msgid "micro"
+#~ msgstr "cross"
+
+#, fuzzy
+#~ msgid "_m"
+#~ msgstr "m"
+
+#, fuzzy
+#~ msgid "_cm"
+#~ msgstr "lcm"
+
+#, fuzzy
+#~ msgid "_mm"
+#~ msgstr "m"
+
+#, fuzzy
+#~ msgid "_km"
+#~ msgstr "k"
+
+#, fuzzy
+#~ msgid "_au"
+#~ msgstr "a"
+
+#, fuzzy
+#~ msgid "_lyr"
+#~ msgstr "r"
+
+#, fuzzy
+#~ msgid "_pc"
+#~ msgstr "Special"
+
+#, fuzzy
+#~ msgid "_Angstrom"
+#~ msgstr "sum"
+
+#, fuzzy
+#~ msgid "_chain"
+#~ msgstr " έχει αλλάξει."
+
+#, fuzzy
+#~ msgid "_fath"
+#~ msgstr "Math"
+
+#, fuzzy
+#~ msgid "_fm"
+#~ msgstr "m"
+
+#, fuzzy
+#~ msgid "_fermi"
+#~ msgstr "pmin"
+
+#, fuzzy
+#~ msgid "_yd"
+#~ msgstr "d"
+
+#, fuzzy
+#~ msgid "_ft"
+#~ msgstr "ifte"
+
+#, fuzzy
+#~ msgid "_in"
+#~ msgstr "στο"
+
+#, fuzzy
+#~ msgid "_mi"
+#~ msgstr "min"
+
+#, fuzzy
+#~ msgid "_mile"
+#~ msgstr "μεσαία"
+
+#, fuzzy
+#~ msgid "_mille"
+#~ msgstr "μεσαία"
+
+#, fuzzy
+#~ msgid "_mil"
+#~ msgstr "μεσαία"
+
+#, fuzzy
+#~ msgid "_nmi"
+#~ msgstr "min"
+
+#, fuzzy
+#~ msgid "_rod"
+#~ msgstr "jordan"
+
+#, fuzzy
+#~ msgid "_m^2"
+#~ msgstr "m"
+
+#, fuzzy
+#~ msgid "_cm^2"
+#~ msgstr "τετραγωνικό μέτρο(cm^2)"
+
+#, fuzzy
+#~ msgid "_ha"
+#~ msgstr "a"
+
+#, fuzzy
+#~ msgid "_a"
+#~ msgstr "a"
+
+#, fuzzy
+#~ msgid "_acre"
+#~ msgstr "trace"
+
+#, fuzzy
+#~ msgid "_b"
+#~ msgstr "iabcuv"
+
+#, fuzzy
+#~ msgid "_in^2"
+#~ msgstr "στο"
+
+#, fuzzy
+#~ msgid "_mi^2"
+#~ msgstr "min"
+
+#, fuzzy
+#~ msgid "_miUS^2"
+#~ msgstr "min"
+
+#, fuzzy
+#~ msgid "Volume"
+#~ msgstr "όγκος"
+
+#, fuzzy
+#~ msgid "_cm^3"
+#~ msgstr "κυβικό μέτρο(cm^3)"
+
+#, fuzzy
+#~ msgid "_l"
+#~ msgstr "l"
+
+#, fuzzy
+#~ msgid "_ml"
+#~ msgstr "l"
+
+#, fuzzy
+#~ msgid "_st"
+#~ msgstr "sst"
+
+#, fuzzy
+#~ msgid "_in^3"
+#~ msgstr "στο"
+
+#, fuzzy
+#~ msgid "_bu"
+#~ msgstr "iabcuv"
+
+#, fuzzy
+#~ msgid "_buUS"
+#~ msgstr "iabcuv"
+
+#, fuzzy
+#~ msgid "_cu"
+#~ msgstr "curl"
+
+#, fuzzy
+#~ msgid "_qt"
+#~ msgstr "q"
+
+#, fuzzy
+#~ msgid "_liqpt"
+#~ msgstr "q"
+
+#, fuzzy
+#~ msgid "_ptUK"
+#~ msgstr "p"
+
+#, fuzzy
+#~ msgid "_pk"
+#~ msgstr "k"
+
+#, fuzzy
+#~ msgid "_galUS"
+#~ msgstr "local"
+
+#, fuzzy
+#~ msgid "_galC"
+#~ msgstr "local"
+
+#, fuzzy
+#~ msgid "_galUK"
+#~ msgstr "local"
+
+#, fuzzy
+#~ msgid "_s"
+#~ msgstr "s"
+
+#, fuzzy
+#~ msgid "_min"
+#~ msgstr "min"
+
+#, fuzzy
+#~ msgid "_h"
+#~ msgstr "h"
+
+#, fuzzy
+#~ msgid "_d"
+#~ msgstr "d"
+
+#, fuzzy
+#~ msgid "_yr"
+#~ msgstr "r"
+
+#, fuzzy
+#~ msgid "_Hz"
+#~ msgstr "z"
+
+#, fuzzy
+#~ msgid "Speed"
+#~ msgstr "Ταχύτητα"
+
+#, fuzzy
+#~ msgid "χιλιόμετρα_ανα_ώρα(km/h)"
+#~ msgstr "_(km/h)"
+
+#, fuzzy
+#~ msgid "_mph"
+#~ msgstr "m"
+
+#, fuzzy
+#~ msgid "_knot"
+#~ msgstr "cot"
+
+#, fuzzy
+#~ msgid "_(rad/s)"
+#~ msgstr "ακτίνια_ανα_δευτερόλεπτα(rad/s)"
+
+#, fuzzy
+#~ msgid "_(tr/min)"
+#~ msgstr "_(tr/min)"
+
+#, fuzzy
+#~ msgid "Mass"
+#~ msgstr "basis"
+
+#, fuzzy
+#~ msgid "_kg"
+#~ msgstr "κιλά_kg"
+
+#, fuzzy
+#~ msgid "_g"
+#~ msgstr "γραμμάρια_g"
+
+#, fuzzy
+#~ msgid "_grain"
+#~ msgstr "radian"
+
+#, fuzzy
+#~ msgid "_lb"
+#~ msgstr "b"
+
+#, fuzzy
+#~ msgid "_lbt"
+#~ msgstr "b"
+
+#, fuzzy
+#~ msgid "_oz"
+#~ msgstr "o"
+
+#, fuzzy
+#~ msgid "_ozt"
+#~ msgstr "cot"
+
+#, fuzzy
+#~ msgid "_slug"
+#~ msgstr "lu"
+
+#, fuzzy
+#~ msgid "_ton"
+#~ msgstr "tan"
+
+#, fuzzy
+#~ msgid "_tonUK"
+#~ msgstr "tan"
+
+#, fuzzy
+#~ msgid "_u"
+#~ msgstr "u"
+
+#, fuzzy
+#~ msgid "_t"
+#~ msgstr "t"
+
+#, fuzzy
+#~ msgid "_ct"
+#~ msgstr "cot"
+
+#, fuzzy
+#~ msgid "_mol"
+#~ msgstr "l"
+
+#, fuzzy
+#~ msgid "Acceleration"
+#~ msgstr "Επιτάχυνση"
+
+#, fuzzy
+#~ msgid "_Gal"
+#~ msgstr "local"
+
+#, fuzzy
+#~ msgid "Force"
+#~ msgstr "Δύναμη"
+
+#, fuzzy
+#~ msgid "_N"
+#~ msgstr "Όχι"
+
+#, fuzzy
+#~ msgid "_dyn"
+#~ msgstr "idn"
+
+#, fuzzy
+#~ msgid "_gf"
+#~ msgstr "f"
+
+#, fuzzy
+#~ msgid "_lbf"
+#~ msgstr "b"
+
+#, fuzzy
+#~ msgid "_J"
+#~ msgstr "_"
+
+#, fuzzy
+#~ msgid "_Wh"
+#~ msgstr "h"
+
+#, fuzzy
+#~ msgid "_kWh"
+#~ msgstr "h"
+
+#, fuzzy
+#~ msgid "_Kcal"
+#~ msgstr "local"
+
+#, fuzzy
+#~ msgid "_cal"
+#~ msgstr "local"
+
+#, fuzzy
+#~ msgid "_eV"
+#~ msgstr "e"
+
+#, fuzzy
+#~ msgid "_MeV"
+#~ msgstr "e"
+
+#, fuzzy
+#~ msgid "_erg"
+#~ msgstr "arg"
+
+#, fuzzy
+#~ msgid "_toe"
+#~ msgstr "tan"
+
+#, fuzzy
+#~ msgid "_tec"
+#~ msgstr "t"
+
+#, fuzzy
+#~ msgid "_lep"
+#~ msgstr "l"
+
+#, fuzzy
+#~ msgid "_boe"
+#~ msgstr "iabcuv"
+
+#, fuzzy
+#~ msgid "_cf"
+#~ msgstr "Special"
+
+#, fuzzy
+#~ msgid "_W"
+#~ msgstr "_"
+
+#, fuzzy
+#~ msgid "_MW"
+#~ msgstr "_"
+
+#, fuzzy
+#~ msgid "_hp"
+#~ msgstr "βοήθεια"
+
+#, fuzzy
+#~ msgid "Pressure"
+#~ msgstr "Πίεση"
+
+#, fuzzy
+#~ msgid "_Pa"
+#~ msgstr "a"
+
+#, fuzzy
+#~ msgid "_bar"
+#~ msgstr "brent"
+
+#, fuzzy
+#~ msgid "_psi"
+#~ msgstr "psi"
+
+#, fuzzy
+#~ msgid "_torr"
+#~ msgstr "jordan"
+
+#, fuzzy
+#~ msgid "_inHg"
+#~ msgstr "dans"
+
+#, fuzzy
+#~ msgid "_inH2O"
+#~ msgstr "dans"
+
+#, fuzzy
+#~ msgid "_K"
+#~ msgstr "OK"
+
+#, fuzzy
+#~ msgid "_Rankine"
+#~ msgstr "rank"
+
+#, fuzzy
+#~ msgid "_A"
+#~ msgstr "_A"
+
+#, fuzzy
+#~ msgid "_V"
+#~ msgstr "_V"
+
+#, fuzzy
+#~ msgid "_C"
+#~ msgstr "_C"
+
+#, fuzzy
+#~ msgid "_F"
+#~ msgstr "_F"
+
+#, fuzzy
+#~ msgid "_Wb"
+#~ msgstr "b"
+
+#, fuzzy
+#~ msgid "_H"
+#~ msgstr "_H"
+
+#, fuzzy
+#~ msgid "_S"
+#~ msgstr "_S"
+
+#, fuzzy
+#~ msgid "_T"
+#~ msgstr "_T"
+
+#, fuzzy
+#~ msgid "Light"
+#~ msgstr "Φώς"
+
+#, fuzzy
+#~ msgid "_cd"
+#~ msgstr "c"
+
+#, fuzzy
+#~ msgid "Angle"
+#~ msgstr "Γωνία"
+
+#, fuzzy
+#~ msgid "_rad"
+#~ msgstr "_ακτίνια"
+
+#, fuzzy
+#~ msgid "_grad"
+#~ msgstr "ranm"
+
+#, fuzzy
+#~ msgid "_gon"
+#~ msgstr "tan"
+
+#, fuzzy
+#~ msgid "_arcmin"
+#~ msgstr "arg"
+
+#, fuzzy
+#~ msgid "_arcs"
+#~ msgstr "tester"
+
+#, fuzzy
+#~ msgid "_tr"
+#~ msgstr "t"
+
+#, fuzzy
+#~ msgid "Viscosity"
+#~ msgstr "inscrit"
+
+#, fuzzy
+#~ msgid "_(m^2/s)"
+#~ msgstr "τεραγωνικά_μέτρε_ανα_δευτερόλεπτο(m^2/s)"
+
+#, fuzzy
+#~ msgid "_P"
+#~ msgstr "_P"
+
+#, fuzzy
+#~ msgid "_St"
+#~ msgstr "Ensemble"
+
+#, fuzzy
+#~ msgid "_Bq"
+#~ msgstr "q"
+
+#, fuzzy
+#~ msgid "_Ci"
+#~ msgstr "i"
+
+#, fuzzy
+#~ msgid "_Gy"
+#~ msgstr "y"
+
+#, fuzzy
+#~ msgid "_rd"
+#~ msgstr "jordan"
+
+#, fuzzy
+#~ msgid "_rem"
+#~ msgstr "rem"
+
+#, fuzzy
+#~ msgid "_Sv"
+#~ msgstr "v"
+
+#, fuzzy
+#~ msgid "_R"
+#~ msgstr "R"
+
+#, fuzzy
+#~ msgid "Monetary"
+#~ msgstr "Geometrie"
+
+#, fuzzy
+#~ msgid "_FF"
+#~ msgstr "_"
+
+#, fuzzy
+#~ msgid "_E"
+#~ msgstr "_"
+
+#~ msgid "Alg"
+#~ msgstr "Αλγόριθμος"
+
+#, fuzzy
+#~ msgid "coeff"
+#~ msgstr "συντελεστής"
+
+#, fuzzy
+#~ msgid "factors"
+#~ msgstr "παράγοντες"
+
+#~ msgid "fcoeff"
+#~ msgstr "συντελεστής παραγόντων"
+
+#, fuzzy
+#~ msgid "genpoly"
+#~ msgstr "geo"
+
+#, fuzzy
+#~ msgid "lcoeff"
+#~ msgstr "fcoeff"
+
+#~ msgid "pcoeff"
+#~ msgstr "pcoeff"
+
+#~ msgid "peval"
+#~ msgstr "peval"
+
+#~ msgid "ranm"
+#~ msgstr "ranm"
+
+#, fuzzy
+#~ msgid "tcoeff"
+#~ msgstr "fcoeff"
+
+#~ msgid "Poly. arit."
+#~ msgstr "Aριθμητικό πολυώνυμο."
+
+#~ msgid "abcuv"
+#~ msgstr "abcuv"
+
+#~ msgid "divis"
+#~ msgstr "divis"
+
+#~ msgid "quo"
+#~ msgstr "quo"
+
+#~ msgid "rem"
+#~ msgstr "rem"
+
+#, fuzzy
+#~ msgid "sturm"
+#~ msgstr "sum"
+
+#, fuzzy
+#~ msgid "sturmab"
+#~ msgstr "sum"
+
+#~ msgid "Ortho. poly"
+#~ msgstr "ορθογώνιο πολυώνυμο"
+
+#~ msgid "legendre"
+#~ msgstr "ετικέτα"
+
+#, fuzzy
+#~ msgid "Groebner"
+#~ msgstr "romberg"
+
+#, fuzzy
+#~ msgid "gbasis"
+#~ msgstr "basis"
+
+#, fuzzy
+#~ msgid "current_sheet"
+#~ msgstr "Εκτύπωση_πίνακα"
+
+#~ msgid "ncols"
+#~ msgstr "ncols"
+
+#~ msgid "Linalg"
+#~ msgstr "Alglin"
+
+#~ msgid "basis"
+#~ msgstr "basis"
+
+#~ msgid "idn"
+#~ msgstr "idn"
+
+#~ msgid "image"
+#~ msgstr "εικόνα"
+
+#~ msgid "rank"
+#~ msgstr "τάξη"
+
+#, fuzzy
+#~ msgid "trn"
+#~ msgstr "tan"
+
+#, fuzzy
+#~ msgid "tran"
+#~ msgstr "tan"
+
+#~ msgid "Eigenvect"
+#~ msgstr "Διαγωνιοποίηση"
+
+#, fuzzy
+#~ msgid "companion"
+#~ msgstr "συσχέτιση"
+
+#~ msgid "jordan"
+#~ msgstr "jordan"
+
+#~ msgid "pmin"
+#~ msgstr "pmin"
+
+#~ msgid "Matrix_factor"
+#~ msgstr "Παραγοντοποίηση_μήτρας (matrix)"
+
+#~ msgid "cholesky"
+#~ msgstr "cholesky"
+
+#, fuzzy
+#~ msgid "lll"
+#~ msgstr "Alg"
+
+#~ msgid "lu"
+#~ msgstr "lu"
+
+#~ msgid "qr"
+#~ msgstr "qr"
+
+#~ msgid "svd"
+#~ msgstr "svd"
+
+#~ msgid "Quadratic"
+#~ msgstr "τετραγωνική_μορφή"
+
+#~ msgid "a2q"
+#~ msgstr "a2q"
+
+#~ msgid "gauss"
+#~ msgstr "gauss"
+
+#~ msgid "q2a"
+#~ msgstr "q2a"
+
+#~ msgid "Isometries"
+#~ msgstr "ισομετρία"
+
+#~ msgid "isom"
+#~ msgstr "isom"
+
+#~ msgid "mkisom"
+#~ msgstr "mkisom"
+
+#, fuzzy
+#~ msgid "Permutations"
+#~ msgstr "Μεταλλαγή(εξίσωση)"
+
+#, fuzzy
+#~ msgid "c1op2"
+#~ msgstr "αντιγραφή"
+
+#, fuzzy
+#~ msgid "est_cycle"
+#~ msgstr "είναι_κυκλικό"
+
+#, fuzzy
+#~ msgid "perminv"
+#~ msgstr "pmin"
+
+#, fuzzy
+#~ msgid "randperm"
+#~ msgstr "ranm"
+
+#, fuzzy
+#~ msgid "ibpu"
+#~ msgstr "iabcuv"
+
+#~ msgid "preval"
+#~ msgstr "προαποτίμηση"
+
+#~ msgid "laplacian"
+#~ msgstr "laplacian"
+
+#, fuzzy
+#~ msgid "Limit series"
+#~ msgstr "περιορισμένες ακολουθίες"
+
+#~ msgid "Exact_solve"
+#~ msgstr "ακριβής_λύση"
+
+#~ msgid "Numeric"
+#~ msgstr "Αριθμητικό"
+
+#, fuzzy
+#~ msgid "epsilon2zero"
+#~ msgstr "epsilon"
+
+#, fuzzy
+#~ msgid "float2rational"
+#~ msgstr "rotation"
+
+#~ msgid "newton"
+#~ msgstr "newton"
+
+#~ msgid "newton_solver"
+#~ msgstr "επίλυση_newton"
+
+#~ msgid "steffenson_solver"
+#~ msgstr "επίλυση_steffenson"
+
+#~ msgid "Spec"
+#~ msgstr "Ειδική"
+
+#~ msgid "gamma"
+#~ msgstr "gamma(γ)"
+
+#~ msgid "psi"
+#~ msgstr "psi(y)"
+
+#~ msgid "zeta"
+#~ msgstr "zeta(z)"
+
+#~ msgid "Transform"
+#~ msgstr "Μετατροπή"
+
+#, fuzzy
+#~ msgid "fft"
+#~ msgstr "ifte"
+
+#~ msgid "fourier_an"
+#~ msgstr "ανάλυση_fourier"
+
+#~ msgid "fourier_bn"
+#~ msgstr "fourier_bn"
+
+#~ msgid "fourier_cn"
+#~ msgstr "fourier_cn"
+
+#~ msgid "laplace"
+#~ msgstr "laplace"
+
+#~ msgid "{ }"
+#~ msgstr "{ }"
+
+#~ msgid "ifte"
+#~ msgstr "ifte"
+
+#~ msgid "else"
+#~ msgstr "αλλιώς (else)"
+
+#~ msgid "case"
+#~ msgstr "περίπτωση (case)"
+
+#, fuzzy
+#~ msgid "try_catch"
+#~ msgstr "Προβολή"
+
+#~ msgid "concat"
+#~ msgstr "concat"
+
+#, fuzzy
+#~ msgid "mid"
+#~ msgstr "min"
+
+#, fuzzy
+#~ msgid "revlist"
+#~ msgstr "preval"
+
+#, fuzzy
+#~ msgid "rotate"
+#~ msgstr "περιστροφή"
+
+#, fuzzy
+#~ msgid "shift"
+#~ msgstr "ifte"
+
+#, fuzzy
+#~ msgid "size"
+#~ msgstr "μέγεθος"
+
+#, fuzzy
+#~ msgid "sizes"
+#~ msgstr "σειρές"
+
+#~ msgid "sort"
+#~ msgstr "ταξινόμηση"
+
+#, fuzzy
+#~ msgid "about"
+#~ msgstr "Όσον αφορά"
+
+#, fuzzy
+#~ msgid "assume"
+#~ msgstr "άθροισμα"
+
+#, fuzzy
+#~ msgid "purge"
+#~ msgstr "εξάλειψη"
+
+#~ msgid "Set"
+#~ msgstr "ομάδα"
+
+#~ msgid "minus"
+#~ msgstr "μείον"
+
+#~ msgid "union"
+#~ msgstr "ένωση"
+
+#, fuzzy
+#~ msgid "Strings"
+#~ msgstr "Αλφαριθμητικό"
+
+#, fuzzy
+#~ msgid "asc"
+#~ msgstr "Cas"
+
+#, fuzzy
+#~ msgid "inString"
+#~ msgstr "triangle"
+
+#, fuzzy
+#~ msgid "ord"
+#~ msgstr "jordan"
+
+#, fuzzy
+#~ msgid "string"
+#~ msgstr "triangle"
+
+#, fuzzy
+#~ msgid "input"
+#~ msgstr "είσοδος"
+
+#, fuzzy
+#~ msgid "and"
+#~ msgstr "λογικό και(and)"
+
+#, fuzzy
+#~ msgid "or"
+#~ msgstr "λογικό ή (or)"
+
+#, fuzzy
+#~ msgid "not"
+#~ msgstr "λογικό όχι(not)"
+
+#, fuzzy
+#~ msgid "xor"
+#~ msgstr "αποκλειστικό ή(xor)"
+
+#, fuzzy
+#~ msgid "=="
+#~ msgstr "=="
+
+#, fuzzy
+#~ msgid "!="
+#~ msgstr "!="
+
+#, fuzzy
+#~ msgid "<="
+#~ msgstr "<="
+
+#, fuzzy
+#~ msgid ">="
+#~ msgstr ">="
+
+#, fuzzy
+#~ msgid "breakpoint"
+#~ msgstr "σημείο στοπ(breakpoint)"
+
+#, fuzzy
+#~ msgid "rmwatch"
+#~ msgstr "Προβολή"
+
+#~ msgid "Help screen"
+#~ msgstr "Βοήθεια οθόνης"
+
+#~ msgid "Programming"
+#~ msgstr "Προγραμματισμός"
+
+#, fuzzy
+#~ msgid "Tortue logo"
+#~ msgstr "Κατηγοριοποίηση"
+
+#~ msgid "fill"
+#~ msgstr "γέμισμα"
+
+#~ msgid "down"
+#~ msgstr "κάτω"
+
+#, fuzzy
+#~ msgid "1d"
+#~ msgstr "1d"
+
+#~ msgid "Cumulated frequencies"
+#~ msgstr "Συσωρευμένες συγχνότητες"
+
+#~ msgid "Histogram"
+#~ msgstr "Ιστορικό"
+
+#~ msgid "Statistics_values"
+#~ msgstr "Στατιστικές_τιμές"
+
+#, fuzzy
+#~ msgid "2d"
+#~ msgstr "δύο διαστάσεις(2d)"
+
+#, fuzzy
+#~ msgid "inf"
+#~ msgstr "dans"
+
+#~ msgid "To be implemented"
+#~ msgstr "Για υλοποίηση"
+
+#~ msgid "Parse error at "
+#~ msgstr "Γραμματικό λάθος στο"
+
+#~ msgid ""
+#~ "Hint: you can use the gen configuration button to get help automatically"
+#~ msgstr ""
+#~ "Συμβουλή: χρησιμοποιήστε την γενική διαμόρφωση (κουμπί gen) για αυτόματη "
+#~ "βοήθεια"
+
+#~ msgid "Symmetric"
+#~ msgstr "Συμμετρικό"
+
+#~ msgid "Antisymmetric"
+#~ msgstr "Αντισυμμετρικό"
+
+#~ msgid "Hermitian"
+#~ msgstr "Ερμητιανό"
+
+#~ msgid "Antihermitian"
+#~ msgstr "Αντιερμητιανό"
+
+#, fuzzy
+#~ msgid "Universite"
+#~ msgstr "αντιστροφή"
+
+#~ msgid "save"
+#~ msgstr "Αποθήκευση"
+
+#~ msgid "Copy to commandline"
+#~ msgstr "Αντιγραφή στην γραμμή εντολών"
+
+#~ msgid "@-1<-"
+#~ msgstr "@-1<-"
+
+#~ msgid "Exchange selection to the left"
+#~ msgstr "Αλλαλή επιλογής στα δεξιά"
+
+#~ msgid "@-1->"
+#~ msgstr "@-1->"
+
+#~ msgid "copy"
+#~ msgstr "αντιγραφή"
+
+#~ msgid "Copy selection to clipboard"
+#~ msgstr "Αντιγραφή επιλογής στο πρόχειρο(clipboard)"
+
+#~ msgid "undo"
+#~ msgstr "ακύρωση"
+
+#~ msgid "Undo one operation"
+#~ msgstr "Ακύρωση μιας πράξης"
+
+#~ msgid "exec"
+#~ msgstr "εκτέλεση"
+
+#~ msgid "Copy selection to commandline and execute"
+#~ msgstr "Αντιγραφή επιλογής στην γραμμή εντολών και εκτέλεση"
+
+#~ msgid "@-12"
+#~ msgstr "@-12"
+
+#~ msgid "Copy arguments to commandline"
+#~ msgstr "Αντιγραφή παραμέτρων στην γραμμή εντολών"
+
+#~ msgid "->hist"
+#~ msgstr "->ιστορικό"
+
+#~ msgid "Include geometry screen in history for printing"
+#~ msgstr "Τοποθέτηση γεωμετρικού σχήματος στο ιστορικό για εκτύπωση"
+
+#~ msgid "@-18"
+#~ msgstr "@-18"
+
+#~ msgid "Erase geometry screen (confirm with enter)"
+#~ msgstr "Διαγραφή γεωμετριού πλαισίου(επιβεβαίωση με enter)"
+
+#~ msgid "axes"
+#~ msgstr "άξονες"
+
+#~ msgid "Switch axes on or off"
+#~ msgstr "Εμφάνηση ή απόκρυψη αξόνων"
+
+#~ msgid "ia"
+#~ msgstr "ia"
+
+#~ msgid "Switch from interactive screen to io screen"
+#~ msgstr "Μετάβαση απο αλληλεπιδραστικό σε io πλαίσιο"
+
+#, fuzzy
+#~ msgid "av"
+#~ msgstr "a"
+
+#, fuzzy
+#~ msgid "td"
+#~ msgstr "d"
+
+#, fuzzy
+#~ msgid "tg"
+#~ msgstr "g"
+
+#, fuzzy
+#~ msgid "pc"
+#~ msgstr "Special"
+
+#, fuzzy
+#~ msgid "sa"
+#~ msgstr "mkisom"
+
+#, fuzzy
+#~ msgid "cr"
+#~ msgstr "c"
+
+#, fuzzy
+#~ msgid "ro"
+#~ msgstr "Ligne/crois"
+
+#, fuzzy
+#~ msgid "di"
+#~ msgstr "i"
+
+#, fuzzy
+#~ msgid "rp"
+#~ msgstr "p"
+
+#, fuzzy
+#~ msgid "Rectangle plein"
+#~ msgstr "πλήρες_ορθογώνιο"
+
+#, fuzzy
+#~ msgid "tp"
+#~ msgstr "p"
+
+#, fuzzy
+#~ msgid "Triangle plein"
+#~ msgstr "ισόπλευρο_τρίγωνο"
+
+#, fuzzy
+#~ msgid "ef"
+#~ msgstr "e"
+
+#~ msgid "Show last line execution status"
+#~ msgstr "Εμφάνηση της κατάστασης μετά την εκτέλεση της τελευταίας γραμμής"
+
+#~ msgid "Copy selection to equationwriter"
+#~ msgstr "Αντιγραφή επιλογής στον εγραφέα εξίσωσης"
+
+#~ msgid "Select one level up in history"
+#~ msgstr "Επιλογή του ανώτερου επιπέδου στο ιστορικό"
+
+#~ msgid "Select one level down in history"
+#~ msgstr "Επιλογή του κατωτέρου επιπέδου στο ιστορικό"
+
+#, fuzzy
+#~ msgid "Select question"
+#~ msgstr "Επιλογή ερώτησης"
+
+#, fuzzy
+#~ msgid "Select answer"
+#~ msgstr "Επιλογή απάντησης"
+
+#~ msgid "Roll levels in history"
+#~ msgstr "Εγγύκλιος μετατροπή στο ιστορικό"
+
+#~ msgid "Roll levels down in history"
+#~ msgstr "Αντίστροφη εγγύκλιος μετατροπή στο ιστορικό"
+
+#~ msgid "Modify current history level"
+#~ msgstr "Αλλαγή του τρέχοντος επιπέδου στο ιστορικό "
+
+#, fuzzy
+#~ msgid "->tex"
+#~ msgstr "->κείμενο"
+
+#~ msgid "Switch interactive history/io screen"
+#~ msgstr "Αλλαγή αλληλεπιδραστικού/οθόνη io"
+
+#~ msgid "output:"
+#~ msgstr "έξοδος:"
+
+#~ msgid "Copy current cell to clipboard"
+#~ msgstr "Αντιγραφή του τρέχοντος κελιού στο πρόχειρο(clipboard)"
+
+#~ msgid "Recompute the spreadsheet"
+#~ msgstr "Επανεκτίμηση πίνακα"
+
+#~ msgid "r+"
+#~ msgstr "r+"
+
+#~ msgid "Insert row"
+#~ msgstr "Προσθήκη γραμμής"
+
+#~ msgid "load"
+#~ msgstr "φόρτωση"
+
+#~ msgid "Load a new program"
+#~ msgstr "Φόρτωση ενός άλλου προγράμματος"
+
+#, fuzzy
+#~ msgid "Read program in history"
+#~ msgstr "Διαγραφή προγράμματος στο ιστορικό"
+
+#~ msgid "parse"
+#~ msgstr "συντακτικό"
+
+#~ msgid "Test the program syntax"
+#~ msgstr "Συντακτικός έλεγχος του προγράμματος"
+
+#~ msgid "Enter a word to find"
+#~ msgstr "Είσοδος λέξης για αναζήτησης"
+
+#, fuzzy
+#~ msgid "next"
+#~ msgstr "επόμενο"
+
+#~ msgid "Find next occurence"
+#~ msgstr "Εύρεση επόμενης εμφάνησης"
+
+#~ msgid "Enter replacement for the word to find"
+#~ msgstr "Είσοδος της λέξης που θα αντικαταστήσει την λέξη για αναζήτηση"
+
+#~ msgid "Program filename"
+#~ msgstr "Όνομα αρχείου προγράμματος"
+
+#~ msgid "Equationwriter window"
+#~ msgstr "eqw (Επεξεργαστής εξίσωσης)"
+
+#~ msgid "Geometry and graphic windows"
+#~ msgstr "Γεωμετρικά και γραφικά παράθυρα"
+
+#~ msgid "help"
+#~ msgstr "βοήθεια"
+
+#~ msgid "Help windows"
+#~ msgstr "Παράθυρο βοήθειας"
+
+#~ msgid "History windows"
+#~ msgstr "Παράθυρο ιστορικού"
+
+#~ msgid "Message windows"
+#~ msgstr "Παράθυρο μηνυμάτων"
+
+#~ msgid "Matrixwriter/Spreadsheet windows"
+#~ msgstr "Παράθυρα επεξεργαστή μήτρας(matrix)/πίνακα"
+
+#~ msgid "Program editor windows"
+#~ msgstr "Παράθυρα επεξεργαστή προγράμματος"
+
+#~ msgid "Back to initial window"
+#~ msgstr "Επιστριοφή στο αρχικό παράθυρο"
+
+#~ msgid "In:"
+#~ msgstr "Στο:"
+
+#~ msgid "Commandline"
+#~ msgstr "Γραμμή εντολών"
+
+#~ msgid "Interrupt computation"
+#~ msgstr "Διακοπή υπολογισμού"
+
+#~ msgid "->"
+#~ msgstr "->"
+
+#~ msgid "Switch keyboard on or off"
+#~ msgstr "Ενεργοποίηση/Απενεργοποίηση πληκτρολογίου"
+
+#, fuzzy
+#~ msgid "Erase one character to the left"
+#~ msgstr "Διαγραφή επιλογής στα αριστερά"
+
+#, fuzzy
+#~ msgid "Alphabetic keyboard switch (abc or shift key)"
+#~ msgstr "Αλλαγή πληκτρολογίου σε εππιστημονικό/αλφαβητικό"
+
+#~ msgid "Completion key"
+#~ msgstr "Κλειδι ολοκλήρωσης"
+
+#~ msgid "ee"
+#~ msgstr "ee"
+
+#~ msgid "X-min for visualization"
+#~ msgstr "X-min για οπτικοποίηση"
+
+#~ msgid "X-max for visualization"
+#~ msgstr "X-max για οπτικοποίηση"
+
+#~ msgid "Y-min for visualization (in fullscreen mode)"
+#~ msgstr "Y-min για οπτικοποίηση (σε μορφή πλήρους οθόνης)"
+
+#~ msgid "Y-max for visualization"
+#~ msgstr "Y-max για οπτικοποίηση"
+
+#~ msgid "->W"
+#~ msgstr "->W"
+
+#~ msgid "Copy computation parameters to visualization"
+#~ msgstr "Ανριγραφή των παραμέτρων υπολογισμού για οπτικοποίηση"
+
+#~ msgid "Display axes"
+#~ msgstr "Εμφάνηση αξόνων"
+
+#~ msgid "Adjust geo window orthonormally"
+#~ msgstr "Προσθήκη του παραθύρου οπτικποίησηςpour για ορθή προβολή"
+
+#, fuzzy
+#~ msgid "->XY"
+#~ msgstr "->XY"
+
+#~ msgid "Copy visualization parameters to computation"
+#~ msgstr "Αντιγραφή συνάρτησης και παραμέτρων στν γραμμή εντολών"
+
+#~ msgid "Talk with gnuplot with pipes (windows NT and XP)"
+#~ msgstr "Μέθοδος gnuplot για windows NT και XP"
+
+#~ msgid "Save_var"
+#~ msgstr "Αποθήκευση μεταβλητής"
+
+#~ msgid "Save variables to files or not"
+#~ msgstr "Αποθήκευση μεταβλητών σε ένα φάκελο ή μονο στην μνήμη"
+
+#~ msgid "Center"
+#~ msgstr "Κέντρο"
+
+#~ msgid "History answer are centered or right justified"
+#~ msgstr ""
+#~ "Οι απαντήσεις του ιστορικού έχουν τοποθετηθεί ή δικαιολογηθεί στα δεξιά"
+
+#, fuzzy
+#~ msgid "Pretty in"
+#~ msgstr "Ωραίο μέσα"
+
+#~ msgid "Pretty print or text in history questions"
+#~ msgstr "Προβολή ιστορικού σε όμορφη μορφή εκτύπωσης ή σε μορφή κειμένου"
+
+#, fuzzy
+#~ msgid "Pretty out"
+#~ msgstr "Ωραίο έξω"
+
+#~ msgid "Pretty print or text output in history"
+#~ msgstr ""
+#~ "Προβολή ιστορικού σε όμορφη μορφή εκτύπωσης ή σε μορφή κειμένου εξόδου"
+
+#~ msgid "Recompute hist"
+#~ msgstr "Επανυπολογισμός ιστορικού"
+
+#~ msgid "RPN mode"
+#~ msgstr "Μέθοδος RPN"
+
+#~ msgid "RPN or algebraic mode"
+#~ msgstr "RPN ή αλεβρική μέθοδος"
+
+#~ msgid "History freezed"
+#~ msgstr "Μη αλλαγμένο ιστορικό"
+
+#~ msgid "Allow edit directly in history"
+#~ msgstr "Επίτρεψη επεξεργασίας στο ιστορικό"
+
+#~ msgid "Widget font"
+#~ msgstr "Γενική γραμματοσειρά"
+
+#~ msgid "Font size for all widgets"
+#~ msgstr "Μέγεθος όλων των γραμματοσειρών"
+
+#~ msgid "Number of rows in the spreadsheet"
+#~ msgstr "Πλήθος γραμμών στο πίνακα"
+
+#~ msgid "Number of columns in the spreadsheet"
+#~ msgstr "Πλήθος στηλών στον πίνακα"
+
+#~ msgid "Spread."
+#~ msgstr "Πίνακας"
+
+#~ msgid "Matrix fill cells"
+#~ msgstr "Γέμισμα μήτρας(matrix) με κελιά"
+
+#~ msgid ""
+#~ "Matrix entered in commandline will fill many cells or only 1 cell in mtrw"
+#~ msgstr "Μία μήτρα(matrix) θα γεμίσει ένα ή περισσότερα κελιά του πίνακα "
+
+#~ msgid "Automatically recompute the spreadsheet or not"
+#~ msgstr "Αυτόμστος επανυπολογισμός του πίνακα"
+
+#~ msgid "Font size for help"
+#~ msgstr "Μέγεθος γραμματοσειράς της βοήθειας"
+
+#~ msgid "Automatically display help"
+#~ msgstr "Αυτόματη προβολή της βοήθειαςt"
+
+#~ msgid "Show a calculator-like button bar"
+#~ msgstr "Προβολή πίνακα κουμπιών-όπως στα κομπιουτεράκια"
+
+#~ msgid "Fullscreen mode or not (hide keyboard)"
+#~ msgstr "Μορφή πλήρους οθόνης ή με πληκτρολόγιο"
+
+#~ msgid "Number of windows displayed"
+#~ msgstr "Αριθμός απεικονισμένων παραθύρων"
+
+#~ msgid "How to split the screen if more than 1 window displayed"
+#~ msgstr "Διαχωρισμός παραθύρων όταν απεικονίζονται [ερισσότερα του ενός"
+
+#~ msgid "Save program changes?"
+#~ msgstr "Αποθήκευση των αλλαγών του προγράμματος"
+
+#~ msgid "Save history changes?"
+#~ msgstr "Αποθήκευση των αλλαγών του ιστορικού"
+
+#, fuzzy
+#~ msgid "Xcas Bandeau"
+#~ msgstr "Γραφική διαμόρφωση"
+
+#~ msgid "Please click in Xcas DispG Window"
+#~ msgstr "Παρακαλώ πατήστε κλίκ στο παράθυρο Xcas DispG"
+
+#, fuzzy
+#~ msgid "absolu"
+#~ msgstr "Όσον αφορά"
+
+#~ msgid "Use absolute or relative submatrix"
+#~ msgstr "Χρήση σχετικής αναφοράς ή  ή της τιμής της υπομήτρας(submatrix)"
+
+#, fuzzy
+#~ msgid "Configuration menu"
+#~ msgstr "Αποθήκευση επιλογών"
+
+#~ msgid "Complex mode"
+#~ msgstr "Σύνθετη μορφή"
+
+#~ msgid "real"
+#~ msgstr "πραγματικό"
+
+#~ msgid "complex"
+#~ msgstr "σύνθετο"
+
+#, fuzzy
+#~ msgid "Exact/approx"
+#~ msgstr "Ακριβέσ/προσεγγιστικό"
+
+#~ msgid "with sqrt"
+#~ msgstr "με τεραγωνική ρίζα"
+
+#~ msgid "without sqrt"
+#~ msgstr "χωρίς τεραγωνική ρίζα"
+
+#~ msgid "Run file (several history levels)"
+#~ msgstr "Έκτελεση προγράμματος(πλήθος ιστορικών επιπέδων)"
+
+#, fuzzy
+#~ msgid "lc"
+#~ msgstr "lcm"
+
+#, fuzzy
+#~ msgid "Leve le crayon"
+#~ msgstr "διαχωριστικό"
+
+#, fuzzy
+#~ msgid "bc"
+#~ msgstr "abc"
+
+#, fuzzy
+#~ msgid "Tourner"
+#~ msgstr "Κατηγοριοποίηση"
+
+#, fuzzy
+#~ msgid "Nostalgie"
+#~ msgstr "είναι_ευθυγραμμισμένο"
+
+#, fuzzy
+#~ msgid "est_faisceau"
+#~ msgstr "είναι_κυκλικό"
+
+#, fuzzy
+#~ msgid "Logo"
+#~ msgstr "Logo"
+
+#~ msgid "Cmplx"
+#~ msgstr "Σύνθετο"
+
+#, fuzzy
+#~ msgid "Save eqw as PS"
+#~ msgstr "Αποθήκευση μήτρας ως(matrix)"
+
+#, fuzzy
+#~ msgid "Save prog as PS"
+#~ msgstr "Αποθήκευση πίνακα δύο διαστάσεων(2-d) ως LaTeX&PS"
+
+#~ msgid "transpose"
+#~ msgstr "ανταπόκριση"
+
+#, fuzzy
+#~ msgid "Run session in history"
+#~ msgstr "Τρέξιμο συνεδρίας στο ιστορικό"
+
+#, fuzzy
+#~ msgid "Load script"
+#~ msgstr "Φόρτωση σεναριου(script) στο επεξεργαστή εξίσωσης(eqw)"
+
+#, fuzzy
+#~ msgid "Save session script"
+#~ msgstr "Αποθήκευση συνεδρίας"
+
+#, fuzzy
+#~ msgid "Save session script as"
+#~ msgstr "Αποθήκευση σεναριου(script) συνεδρίας ως"
+
+#~ msgid "Import session as"
+#~ msgstr "Εισαγωγή συνεδρίας ως"
+
+#~ msgid "Print session"
+#~ msgstr "Εκτύπωση συνεδρίας"
+
+#, fuzzy
+#~ msgid "geo (Geometry) export"
+#~ msgstr "geo (Γεωμετρία) εξαγωγή"
+
+#, fuzzy
+#~ msgid "_USbu"
+#~ msgstr "iabcuv"
+
+#, fuzzy
+#~ msgid "_UKpt"
+#~ msgstr "p"
+
+#, fuzzy
+#~ msgid "_gal"
+#~ msgstr "local"
+
+#, fuzzy
+#~ msgid "_mn"
+#~ msgstr "min"
+
+#, fuzzy
+#~ msgid "_ba"
+#~ msgstr "a"
+
+#, fuzzy
+#~ msgid "_r"
+#~ msgstr "r"
+
+#, fuzzy
+#~ msgid "_pq"
+#~ msgstr "p"
+
+#, fuzzy
+#~ msgid "_ cal"
+#~ msgstr "local"
+
+#, fuzzy
+#~ msgid "G (gravitation)"
+#~ msgstr "G (βαρύτητα)"
+
+#, fuzzy
+#~ msgid "me (electron mass)"
+#~ msgstr "Sauver selection en"
+
+#, fuzzy
+#~ msgid "qe (electron charg)"
+#~ msgstr "Sauver selection en"
+
+#~ msgid "Matr"
+#~ msgstr "Μήτρα(Matrix)"
+
+#~ msgid "Matrix_eigenv"
+#~ msgstr "Μήτρα_καθαρών τιμών(Matrix(valeurs propres)"
+
+#~ msgid "Cas"
+#~ msgstr "Cas"
+
+#~ msgid "sincos"
+#~ msgstr "sincos"
+
+#~ msgid "Solve system (num.)"
+#~ msgstr "Επίλυση συστήματος"
+
+#~ msgid "try"
+#~ msgstr "try"
+
+#~ msgid "AB"
+#~ msgstr "AB"
+
+#~ msgid "msg (Messages) about"
+#~ msgstr "msg (Μηνύματα) που αφορούν"
+
+#~ msgid "Copy ->"
+#~ msgstr "Αντιγραφή ->"
+
+#~ msgid " not changed, "
+#~ msgstr " ΔΕνάλλαξε, "
+
+#~ msgid " saved."
+#~ msgstr " αποθηκεύτηκε."
+
+#, fuzzy
+#~ msgid "xcas 0.3"
+#~ msgstr "xcas 0.3"
+
+#~ msgid "Exec script"
+#~ msgstr "Εκτέλεση αρχείου βήμα βήμα"
+
+#~ msgid "History as xcas"
+#~ msgstr "Ιστορικό στο xcas"
+
+#~ msgid "History as Maple"
+#~ msgstr "Ιστορικό στο Maple"
+
+#~ msgid "History as Mupad"
+#~ msgstr "Ιστορικό στο Mupad"
+
+#~ msgid "History as TI89"
+#~ msgstr "Ιστορικό στοTI89"
+
+#~ msgid "out"
+#~ msgstr "έξοδος"
+
+#~ msgid "infer"
+#~ msgstr "infer"
+
+#, fuzzy
+#~ msgid "Matrices"
+#~ msgstr "Μήτρες(Matrices)"
+
+#~ msgid "Prefs"
+#~ msgstr "Επιλογές"
+
+#~ msgid "Reduction"
+#~ msgstr "Μείωση"
+
+#~ msgid "Clear sheet"
+#~ msgstr "Διαγραφή πινάκων"
+
+#~ msgid "Editors"
+#~ msgstr "Επεξεργαστές"
+
+#~ msgid "Edit matrix"
+#~ msgstr "Επεξεργασία μήτρας(matrix)"
+
+#~ msgid "Edit equation"
+#~ msgstr "Επεξεργασία εξίσωση"
+
+#~ msgid "r-"
+#~ msgstr "r-"
+
+#~ msgid "c-"
+#~ msgstr "c-"
+
+#~ msgid "Copy"
+#~ msgstr "Αντιγραφή"
+
+#~ msgid "ok"
+#~ msgstr "ok"
+
+#~ msgid "full"
+#~ msgstr "πλήρες"
+
+#~ msgid "newtonf"
+#~ msgstr "newtonf"
+
+#~ msgid "hybrid"
+#~ msgstr "hybrid"
+
+#~ msgid "io"
+#~ msgstr "io"
+
+#~ msgid "setup"
+#~ msgstr "Διαμόρφωση"
+
+#~ msgid "Hyperbolic"
+#~ msgstr "Υπερβολικό"
+
+#~ msgid "Exp and Log"
+#~ msgstr "Εκθετική et Ln"
+
+#~ msgid "Arit"
+#~ msgstr "Αριθμιτικό"
+
+#~ msgid "repl"
+#~ msgstr "αντικατάσταση"
+
+#~ msgid "NXT"
+#~ msgstr "ΕΠΟΜΕΝΟ"
+
+#~ msgid "PRV"
+#~ msgstr "ΠΡΟΗΓΟΎΜΕΝΟ"
+
+#~ msgid "TOOL"
+#~ msgstr "ΕΡΓΑΛΕΊΟ"
+
+#~ msgid "VAR"
+#~ msgstr "ΜΕΤΑΝΛΗΤΉ"
+
+#~ msgid "C-"
+#~ msgstr "C-"
+
+#~ msgid "R-"
+#~ msgstr "R-"

@@ -1,0 +1,15 @@
+# List of files which containing translatable strings.
+# Copyright (C) 1995, 1998, 2001-2002 Free Software Foundation, Inc.
+
+# Package source files
+src/hist.cxx
+src/History.cc
+src/Input.cc
+src/Xcas1.cc
+src/Cfg.cc
+src/Equation.cc
+src/Print.cc
+src/Tableur.cc
+src/Editeur.cc
+src/Graph.cc
+src/Help1.cc

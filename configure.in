@@ -1,0 +1,348 @@
+dnl Process this file with autoconf to produce a configure script.
+dnl  acinclude.m4 ---<aclocal> --->> aclocal.m4
+dnl
+dnl               <autoheader> --->> config.h.in
+dnl
+dnl  configure.in ---<autoconf>--->> configure
+dnl
+dnl  Makefile.am  ---<automake>--->> Makefile.in
+dnl            src/Makefile.am --->> src/Makefile.in
+dnl
+dnl  configure    ---<sh>--->> config.status
+dnl          Makefile.in --->> Makefile
+dnl      src/Makefile.in --->> src/Makefile
+dnl
+dnl  Makefile   ---<make>--->> libgiac.la
+dnl
+dnl  All of the above can be done by the script autogen.sh.
+
+AC_INIT(src/index.h)
+AC_PREREQ(2.12)
+
+dnl version information.
+dnl
+dnl Making releases:
+dnl   GIACLIB_MICRO_VERSION += 1;
+dnl   GIACLIB_INTERFACE_AGE += 1;
+dnl   GIACLIB_BINARY_AGE += 1;
+dnl if any functions have been added, set GIACLIB_INTERFACE_AGE to 0.
+dnl if backwards compatibility has been broken,
+dnl set GIACLIB_BINARY_AGE and GIACLIB_INTERFACE_AGE to 0.
+dnl
+dnl NOTE: these can't be renamed to GIAC_MAJOR_VERSION etc. because
+dnl autoconf sees "AC_MAJOR_VERSION" and complains about an undefined macro
+dnl (don't we all *love* M4?)...
+
+GIACLIB_MAJOR_VERSION=0
+GIACLIB_MINOR_VERSION=8
+GIACLIB_MICRO_VERSION=4
+GIACLIB_INTERFACE_AGE=0
+GIACLIB_BINARY_AGE=0
+GIACLIB_VERSION=$GIACLIB_MAJOR_VERSION.$GIACLIB_MINOR_VERSION.$GIACLIB_MICRO_VERSION
+
+AC_SUBST(GIACLIB_MAJOR_VERSION)
+AC_SUBST(GIACLIB_MINOR_VERSION)
+AC_SUBST(GIACLIB_MICRO_VERSION)
+AC_SUBST(GIACLIB_INTERFACE_AGE)
+AC_SUBST(GIACLIB_BINARY_AGE)
+AC_SUBST(GIACLIB_VERSION)
+
+dnl This defines PACKAGE and VERSION.
+ALL_LINGUAS="es de fr fi el"
+AM_GNU_GETTEXT
+AM_CONFIG_HEADER(config.h)
+AM_INIT_AUTOMAKE([giac], $GIACLIB_VERSION)
+AM_MAINTAINER_MODE
+
+dnl Optimization or debug
+DEBUG_CONSTANT=yes
+AC_ARG_ENABLE(debug,[  --enable-debug enables debug support [default=no]],DEBUG_CONSTANT=$enableval,DEBUG_CONSTANT=yes)
+if test "x$DEBUG_CONSTANT" = "xyes" ;
+then 
+  GIAC_WARNING([Enabling debug support])
+  AC_DEFINE(DEBUG_SUPPORT)
+else
+  GIAC_WARNING([Disabling debug support])
+fi
+
+dnl Garbage collector
+GC_CONSTANT=no
+AC_ARG_ENABLE(gc,[  --enable-gc enables gc support [default=no]],GC_CONSTANT=$enableval,GC_CONSTANT=no)
+if test "x$GC_CONSTANT" = "xyes" ;
+then 
+  GIAC_WARNING([Enabling gc support])
+  AC_CHECK_LIB(gc,GC_malloc_atomic)
+else
+  GIAC_WARNING([Disabling gc support])
+fi
+
+dnl Include semi-classical
+AC_ARG_ENABLE(sscl,[  --enable-sscl enables support for semi-classical algorithms [default=no]],SSCL_CONSTANT=$enableval,SSCL_CONSTANT=no)
+if test "x$SSCL_CONSTANT" = "xyes" ;
+then 
+  GIAC_WARNING([Adding semi-classical routines])
+  AC_DEFINE(HAVE_SSCL)
+else
+  GIAC_WARNING([Disabling semi-classical routines])
+fi
+
+
+dnl Check for the compiler and all the utilities needed for the build.
+dnl CXXFLAGS='-g'
+AC_PROG_CXX
+AC_PROG_CXXCPP
+AC_PROG_INSTALL
+AC_LANG_CPLUSPLUS
+AM_PROG_LEX
+dnl AC_PROG_LEX
+AC_PROG_YACC
+m4_pattern_allow(AM_PROG_LIBTOOL)
+AM_PROG_LIBTOOL
+./ltconfig ltmain.sh
+dnl LIBTOOL=libtool
+dnl AC_SUBST(LIBTOOL)
+dnl Always use our own libtool.
+LIBTOOL='$(SHELL) $(top_builddir)/libtool'
+AC_SUBST(LIBTOOL) 
+
+
+AC_CHECK_LIB(m,main)
+
+dnl Checking for dl
+AC_ARG_ENABLE(dl,[  --enable-dl enables DL support [default=yes]],DL_CONSTANT=$enableval,DL_CONSTANT=yes)
+if test "x$DL_CONSTANT" = "xno" ;
+then 
+GIAC_WARNING([DL support disabled, not checked])
+else
+AC_CHECK_LIB(dl,dlopen)
+fi
+
+AC_CHECK_SIZEOF(int, 4)
+AC_CHECK_SIZEOF(long long, 8)
+
+dnl Check for stuff needed for building the Giac interactive shell (cas).
+AC_CHECK_HEADERS(unistd.h)
+AC_CHECK_HEADERS(readline/readline.h readline/history.h)
+if test "x${ac_cv_header_readline_readline_h}" != "xyes" -o "x${ac_cv_header_readline_history_h}" != "xyes"; then
+  GIAC_WARNING([I could not find the headers for libreadline for cas.])
+fi
+GIAC_TERMCAP
+LIBS="$LIBTERMCAP $LIBS"
+AC_CHECK_LIB(readline, readline)
+if test "x${ac_cv_lib_readline_readline}" = "xyes"; then
+  GIAC_LIB_READLINE_VERSION
+else
+  GIAC_WARNING([I could not find libreadline for cas])
+fi
+
+dnl Make sure all the necessary standard headers are installed on the system.
+AC_CHECK_HEADER(iostream, , GIAC_ERROR([The standard <iostream> header file could not be found.]))
+AC_CHECK_HEADER(vector, , GIAC_ERROR([The standard <vector> header file could not be found.]))
+AC_CHECK_HEADER(list, , GIAC_ERROR([The standard <list> header file could not be found.]))
+AC_CHECK_HEADER(map, , GIAC_ERROR([The standard <map> header file could not be found.]))
+AC_CHECK_HEADER(string, , GIAC_ERROR([The standard <string> header file could not be found.]))
+AC_CHECK_HEADER(stdexcept, , GIAC_ERROR([The standard <stdexcept> header file could not be found.]))
+AC_CHECK_HEADER(algorithm, , GIAC_ERROR([The standard <algorithm> header file could not be found.]))
+
+dnl Checking for Gnu Sci Lib
+AC_ARG_ENABLE(gsl,[  --enable-gsl enables GSL support [default=yes]],GSL_CONSTANT=$enableval,GSL_CONSTANT=yes)
+if test "x$GSL_CONSTANT" = "xno" ;
+then 
+ GIAC_WARNING([GSL support disabled, not checked])
+else
+AC_CHECK_HEADERS(gsl/gsl_blas.h,AC_CHECK_LIB(gslcblas,main))
+AC_CHECK_HEADERS(gsl/gsl_eigen.h,AC_CHECK_LIB(gsl,gsl_sf_gamma))
+fi
+
+AC_ARG_ENABLE(gui,[  --enable-gui enables GUI [default=yes]],GUI_CONSTANT=$enableval,GUI_CONSTANT=yes)
+if test "x$GUI_CONSTANT" = "xno" ;
+then 
+GIAC_WARNING([GUI check disabled])
+else
+dnl Check for X11 anf fltk or cygwin and fltk...
+AC_CYGWIN
+if test x$CYGWIN = xyes; then
+AC_CHECK_LIB(GL,main)
+AC_CHECK_LIB(GLU,main)
+AC_CHECK_LIB(fltk_gl,main)
+AC_CHECK_LIB(fltk,main)
+AC_CHECK_LIB(z,main)
+AC_CHECK_HEADERS(png.h,AC_CHECK_LIB(png,main))
+AC_CHECK_LIB(jpeg,main)
+AC_CHECK_LIB(fltk_images,main)
+if test $HAVE_LIBFLTK="1" ;
+then
+AC_DEFINE([HAVE_LIBFLVW],1,[Now defined if fltk is available])
+fi
+LIBS="$LIBS -mwindows -lole32 -luuid -lcomctl32 -lwsock32"
+CXXFLAGS="$CXXFLAGS -DWIN32"
+AC_CHECK_LIB(intl.dll,main)
+AC_CHECK_LIB(intl,main)
+dnl end cygwin stuff
+else
+AC_PATH_XTRA
+if test x$no_x = xyes; then
+dnl xlibs not installed, probably mac os 
+AC_MSG_RESULT([X libraries not found, checking for FLTK])
+AC_CHECK_LIB(fltk_gl,main)
+AC_CHECK_LIB(fltk,main)
+if test $HAVE_LIBFLTK="1" ;
+then
+AC_DEFINE([HAVE_LIBFLVW],1,[Now defined if fltk is available])
+fi
+dnl AC_CHECK_LIB(flvw,main)
+AC_CHECK_LIB(z,main)
+AC_CHECK_HEADERS(png.h,AC_CHECK_LIB(png,main))
+AC_CHECK_LIB(jpeg,main)
+AC_CHECK_LIB(fltk_images,main)
+dnl end mac os
+else
+AC_MSG_RESULT([X libraries found, checking for GUI])
+dnl X11, check for opengl, fltk
+AC_CHECK_LIB(GL,main)
+AC_CHECK_LIB(GLU,main)
+AC_CHECK_LIB(fltk_gl,main)
+AC_CHECK_LIB(fltk,main)
+if test $HAVE_LIBFLTK="1" ;
+then
+AC_DEFINE([HAVE_LIBFLVW],1,[Now defined if fltk is available])
+fi
+dnl AC_CHECK_LIB(flvw,main)
+AC_CHECK_LIB(z,main)
+AC_CHECK_HEADERS(png.h,AC_CHECK_LIB(png,main))
+AC_CHECK_LIB(jpeg,main)
+AC_CHECK_LIB(fltk_images,main)
+LIBS="$LIBS$X_LIBS -lX11"
+fi
+dnl end X11 alternative
+fi
+dnl end cygwin alternative
+fi
+dnl end GUI
+
+dnl Checking for PARI
+AC_ARG_ENABLE(pari,[  --enable-pari enables PARI support [default=yes]],PARI_CONSTANT=$enableval,PARI_CONSTANT=yes)
+if test "x$PARI_CONSTANT" = "xno" ;
+then 
+GIAC_WARNING([PARI support disabled, not checked])
+else
+AC_CHECK_HEADERS(pari/pari.h,AC_CHECK_LIB(pari,main))
+fi
+
+dnl Checking for NTL
+AC_ARG_ENABLE(ntl,[  --enable-ntl enables NTL support [default=yes]],NTL_CONSTANT=$enableval,NTL_CONSTANT=yes)
+if test "x$NTL_CONSTANT" = "xno" ;
+then 
+GIAC_WARNING([NTL support disabled, not checked])
+else
+AC_CHECK_HEADERS(NTL/ZZ.h,AC_CHECK_LIB(ntl,main))
+fi
+
+AC_CHECK_LIB(pthread,main)
+AC_CHECK_HEADERS(pthread.h)
+AC_CHECK_HEADERS(malloc.h)
+AC_CHECK_FUNCS(sysconf)
+
+dnl Some local macros, inherited throuh aclocal.m4 from acinclude.m4:
+GIAC_GMP_H_VERSION
+GIAC_GMP_CHECK
+AC_CHECK_HEADERS(mpfr.h,AC_CHECK_LIB(mpfr,main))
+AC_CHECK_FUNCS(mpfr_set_str_raw)
+AC_ARG_ENABLE(gmpxx,[  --enable-gmpxx enables GMPXX support [default=no]],GMPXX_CONSTANT=$enableval,GMPXX_CONSTANT=no)
+if test "x$GMPXX_CONSTANT" = "xno" ;
+then 
+GIAC_WARNING([GMPXX support not checked (disabled)])
+else
+AC_CHECK_HEADERS(gmpxx.h,AC_CHECK_LIB(gmpxx,main))
+fi
+dnl FIXME Can not link with mpfi I don't know why
+dnl AC_CHECK_LIB(mpfi,main)
+
+
+AC_CHECK_HEADERS(CoCoA/ZZ.H,AC_CHECK_LIB(cocoa,main))
+
+dnl AC_PATH_PROG(GNUPLOT, gnuplot, "no")
+dnl if test "x$GNUPLOT" = "xno" ;
+dnl then
+dnl GIAC_WARNING([gnuplot not found])
+dnl else
+dnl AC_DEFINE(WITH_GNUPLOT,"$GNUPLOT")
+dnl fi
+
+dnl Checking for hash_map
+AC_CHECK_HEADER(ext/hash_map, AC_DEFINE(EXT_HASH_MAP,1))
+AC_CHECK_HEADER(tr1/unordered_map, AC_DEFINE(UNORDERED_MAP,1))
+AC_CHECK_HEADER(hash_map,AC_DEFINE(HASH_MAP,1))
+AC_CHECK_HEADERS(pwd.h,,AC_DEFINE(HAVE_NO_PWD_H,1))
+AC_CHECK_HEADERS(locale.h)
+AC_CHECK_HEADERS(unistd.h)
+AC_CHECK_HEADERS(sys/time.h)
+AC_CHECK_HEADERS(sys/times.h, , AC_DEFINE(HAVE_NO_SYS_TIMES_H,1))
+AC_CHECK_HEADERS(sys/resource.h, , AC_DEFINE(HAVE_NO_SYS_RESOURCE_WAIT_H,1, [Set if <sys/resource.h> is NOT available]))
+AC_CHECK_HEADERS(sys/types.h)
+AC_CHECK_HEADERS(signal.h)
+AC_CHECK_FUNCS(getpid, , AC_DEFINE(HAVE_NO_SIGNAL_H,1))
+AC_CHECK_FUNCS(getcwd, , AC_DEFINE(HAVE_NO_CWD,1))
+AC_CHECK_FUNCS(getpwuid, , AC_DEFINE(HAVE_NO_HOME_DIRECTORY,1))
+AC_CHECK_FUNCS(system, , AC_DEFINE(HAVE_NO_SYSTEM,1))
+
+
+dnl Checking for sstream for mathml
+AC_CHECK_HEADER(sstream, AC_DEFINE(HAVE_SSTREAM,1), )
+
+dnl Output makefiles etc.
+AC_OUTPUT([
+Makefile
+src/Makefile
+check/Makefile
+doc/Makefile
+doc/en/Makefile
+doc/es/Makefile
+doc/fr/Makefile
+doc/local/Makefile
+intl/Makefile
+po/Makefile.in
+examples/Makefile
+examples/arit/Makefile
+examples/codage/Makefile
+examples/geo/Makefile
+examples/lewisw/Makefile
+examples/morley/Makefile
+examples/simulation/Makefile
+examples/polyfact/Makefile
+examples/linalg/Makefile
+examples/recur/Makefile
+examples/demo/Makefile
+examples/tortue/Makefile
+examples/groebner/Makefile
+examples/Exemples/Makefile
+examples/Exemples/analyse/Makefile
+examples/Exemples/arit/Makefile
+examples/Exemples/capes2006/Makefile
+examples/Exemples/climat/Makefile
+examples/Exemples/crypto/Makefile
+examples/Exemples/demo/Makefile
+examples/Exemples/geo3d/Makefile
+examples/Exemples/geometrie/Makefile
+examples/Exemples/logo/Makefile
+examples/Exemples/poly/Makefile
+examples/Exemples/prog/Makefile
+examples/Exemples/opengl/Makefile
+debianold/Makefile
+debian/Makefile
+])
+
+if test -z $prefix ;
+then prefix="/usr/local"
+fi
+                                                                                      
+echo "#define giac_html_location \"$prefix/share/giac/doc/\"" > src/path.h
+echo "#define giac_aide_location \"$prefix/share/giac/aide_cas\"" >> src/path.h
+echo "#define giac_locale_location \"$prefix/share/locale/\"" >> src/path.h
+echo "#define giac_gnuplot_location \"$GNUPLOT\"" >> src/path.h
+echo "Adding link . to giac in src"
+rm -f src/giac && ln -s . src/giac
+rm -f src/config.h && cp config.h src
+
+dnl Display a final warning if there has been a GIAC_ERROR or a GIAC_WARNING
+GIAC_CHECK_ERRORS
