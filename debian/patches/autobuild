@@ -1,0 +1,171 @@
+Index: giac-0.8.4-dfsg1/configure.in
+===================================================================
+--- giac-0.8.4-dfsg1.orig/configure.in	2009-11-12 21:59:55.000000000 +0100
++++ giac-0.8.4-dfsg1/configure.in	2009-11-12 23:49:35.000000000 +0100
+@@ -18,6 +18,7 @@
+ 
+ AC_INIT(src/index.h)
+ AC_PREREQ(2.12)
++AC_USE_SYSTEM_EXTENSIONS
+ 
+ dnl version information.
+ dnl
+@@ -50,6 +51,7 @@
+ dnl This defines PACKAGE and VERSION.
+ ALL_LINGUAS="es de fr fi el"
+ AM_GNU_GETTEXT
++AM_GNU_GETTEXT_VERSION(0.10.35)
+ AM_CONFIG_HEADER(config.h)
+ AM_INIT_AUTOMAKE([giac], $GIACLIB_VERSION)
+ AM_MAINTAINER_MODE
+@@ -96,9 +98,7 @@
+ AM_PROG_LEX
+ dnl AC_PROG_LEX
+ AC_PROG_YACC
+-m4_pattern_allow(AM_PROG_LIBTOOL)
+-AM_PROG_LIBTOOL
+-./ltconfig ltmain.sh
++AC_PROG_LIBTOOL
+ dnl LIBTOOL=libtool
+ dnl AC_SUBST(LIBTOOL)
+ dnl Always use our own libtool.
+@@ -328,8 +328,6 @@
+ examples/Exemples/poly/Makefile
+ examples/Exemples/prog/Makefile
+ examples/Exemples/opengl/Makefile
+-debianold/Makefile
+-debian/Makefile
+ ])
+ 
+ if test -z $prefix ;
+Index: giac-0.8.4-dfsg1/autogen.sh
+===================================================================
+--- giac-0.8.4-dfsg1.orig/autogen.sh	2009-11-12 21:59:56.000000000 +0100
++++ giac-0.8.4-dfsg1/autogen.sh	2009-11-12 23:49:48.000000000 +0100
+@@ -1,6 +1,4 @@
+-#! /bin/sh
+-aclocal -I /usr/local/share/aclocal
+-autoheader
+-autoconf
+-automake
+-./configure $*
++#! /bin/sh -e
++cp /usr/share/gettext/config.rpath .
++autoreconf -f -i
++CXX=g++-4.1 ./configure $*
+Index: giac-0.8.4-dfsg1/acinclude.m4
+===================================================================
+--- giac-0.8.4-dfsg1.orig/acinclude.m4	2009-11-12 21:59:55.000000000 +0100
++++ giac-0.8.4-dfsg1/acinclude.m4	2009-11-12 23:49:35.000000000 +0100
+@@ -1,8 +1,8 @@
+ dnl old names
+-AM_LC_MESSAGES
+-AM_WITH_NLS
+-AM_GNU_GETTEXT
+-AM_PATH_PROG_WITH_TEST
++dnl gt_LC_MESSAGES
++dnl AM_NLS
++dnl AM_GNU_GETTEXT
++dnl AM_PATH_PROG_WITH_TEST
+ dnl AC_DEFUN([AM_PROG_LIBTOOL],   [AC_PROG_LIBTOOL])
+ dnl AC_DEFUN([AM_ENABLE_SHARED],  [AC_ENABLE_SHARED($@)])
+ dnl AC_DEFUN([AM_ENABLE_STATIC],  [AC_ENABLE_STATIC($@)])
+@@ -18,7 +18,7 @@
+ dnl they don't export the version to the preprocessor so we could kluge around 
+ dnl incomatiblities.  The only reliable way to figure out the version is by 
+ dnl checking the extern variable rl_library_version at runtime.  &#@$%*!
+-AC_DEFUN(GIAC_LIB_READLINE_VERSION,
++AC_DEFUN([GIAC_LIB_READLINE_VERSION],
+ [AC_CACHE_CHECK([for version of libreadline], giac_cv_rlversion, [
+ AC_TRY_RUN([
+ #include <stdio.h>
+@@ -49,7 +49,7 @@
+ dnl tgoto() in libc, some have it in libtermcap, some have it in libncurses.
+ dnl When both libtermcap and libncurses exist, we prefer the latter, because
+ dnl libtermcap is being phased out.
+-AC_DEFUN(GIAC_TERMCAP,
++AC_DEFUN([GIAC_TERMCAP],
+ [LIBTERMCAP=
+ AC_CHECK_FUNCS(tgetent)
+ if test "x$ac_cv_func_tgetent" = "xyes"; then
+@@ -65,7 +65,7 @@
+ 
+ 
+ # Is the gmp header file new enough? (should be implemented with an argument)
+-AC_DEFUN(GIAC_GMP_H_VERSION,
++AC_DEFUN([GIAC_GMP_H_VERSION],
+ [AC_CACHE_CHECK([for recent enough gmp.h], cl_cv_new_gmp_h, [
+   AC_TRY_CPP([#include <gmp.h>
+ #if !defined(__GNU_MP_VERSION) || (__GNU_MP_VERSION < 2)
+@@ -76,7 +76,7 @@
+ ])])dnl
+ 
+ # Does libgmp provide some functionality introduced in version 3.0?
+-AC_DEFUN(GIAC_GMP_CHECK,
++AC_DEFUN([GIAC_GMP_CHECK],
+ [AC_CACHE_CHECK([for working libgmp], cl_cv_new_libgmp, [
+     SAVELIBS=$LIBS
+     LIBS="$LIBS -lgmp"
+@@ -88,7 +88,7 @@
+ dnl Usage: GIAC_ERROR(message)
+ dnl This macro displays the warning "message" and sets the flag giac_error
+ dnl to yes.
+-AC_DEFUN(GIAC_ERROR,[
++AC_DEFUN([GIAC_ERROR],[
+ giac_error_txt="$giac_error_txt
+ ** $1
+ "
+@@ -97,7 +97,7 @@
+ dnl Usage: GIAC_WARNING(message)
+ dnl This macro displays the warning "message" and sets the flag giac_warning
+ dnl to yes.
+-AC_DEFUN(GIAC_WARNING,[
++AC_DEFUN([GIAC_WARNING],[
+ giac_warning_txt="$giac_warning_txt
+ == $1
+ "
+@@ -107,7 +107,7 @@
+ dnl (preferably to be put at end of configure.in)
+ dnl This macro displays a warning message if GIAC_ERROR or GIAC_WARNING
+ dnl has occured previously.
+-AC_DEFUN(GIAC_CHECK_ERRORS,[
++AC_DEFUN([GIAC_CHECK_ERRORS],[
+ if test "x${giac_error}" = "xyes"; then
+     echo "**** The following problems have been detected by configure."
+     echo "**** Please check the messages below before running \"make\"."
+Index: giac-0.8.4-dfsg1/src/Makefile.am
+===================================================================
+--- giac-0.8.4-dfsg1.orig/src/Makefile.am	2009-11-12 21:59:55.000000000 +0100
++++ giac-0.8.4-dfsg1/src/Makefile.am	2009-11-12 23:49:35.000000000 +0100
+@@ -42,7 +42,7 @@
+ #mycas_SOURCES = mycas.cc 
+ #mycas_LDFLAGS = -s -L../src/.libs 
+ #mycas_LDADD = -lgiac -lgmp #-lcurses
+-aide_SOURCES = help.cc aide.cc
++aide_SOURCES = aide.cc
+ aide_LDADD = -lgiac -lgmp#-lcurses
+ aide_LDFLAGS = -L../src/.libs 
+ # If you want a static binary remove the hash below and comment -lcurses
+@@ -55,7 +55,7 @@
+ 
+ INCLUDES = -I$(srcdir) -I$(top_srcdir)
+ #LFLAGS = -Pgiac_yy -olex.yy.c
+-YFLAGS = -p giac_yy -d
++AM_YFLAGS = -p giac_yy -d
+ EXTRA_DIST = .gdbinit xgiac pgiac prime.table gen_user \
+ 	input_parser.h softmath.h softmath.cc\
+ 	mkxcas mkwcas mkgcas mkaout Makefile.wince\
+Index: giac-0.8.4-dfsg1/Makefile.am
+===================================================================
+--- giac-0.8.4-dfsg1.orig/Makefile.am	2009-11-12 21:59:55.000000000 +0100
++++ giac-0.8.4-dfsg1/Makefile.am	2009-11-12 23:49:35.000000000 +0100
+@@ -1,7 +1,7 @@
+ PACKAGE = giac
+ VERSION = 0.8.4
+-SUBDIRS = 	src check intl po debianold debian doc examples 
+-DIST_SUBDIRS = 	src check intl po debianold debian doc examples 
++SUBDIRS = 	src check intl po doc examples 
++DIST_SUBDIRS = 	src check intl po doc examples 
+ EXTRA_DIST = autogen.sh setup inst acconfig.h TROUBLES config.h config.h.in Init.scm config.h.win config.h.ipaq config.h.gc config.h.osx compte INSTALACION LEAME.WIN LEAME.ipaq libtool giac.specs giac.specs32 fltk.1.1.changes README.MACOSX pariinl.h changeversion mkosx config.h.wince depcomp configure.in.debian mkdebian mkdebian2 win2unix.cc addu.cc xcas.nsi xcas.desktop xcas.xpm xcas.applications README.visualcpp
+ 
+ # Rule to build tar-bzipped distribution package

@@ -1,0 +1,7 @@
+version=3
+# dversionmangle is used to remove the dfsg from the local debian version
+opts="dversionmangle=s/-dfsg.*//" \
+ftp://ftp-fourier.ujf-grenoble.fr/xcas/giac-(.*)\.tar\.gz \
+	debian debian/orig-tar.sh
+
+

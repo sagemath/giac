@@ -1,0 +1,30 @@
+Source: giac
+Section: science
+Priority: extra
+Maintainer: Gilles Filippini <gilles.filippini@free.fr>
+Build-Depends: quilt (>= 0.46-7~), debhelper (>= 7), automake, libtool, cvs, libgmp3-dev, libreadline-dev, g++-4.1
+Standards-Version: 3.8.3
+Homepage: http://www-fourier.ujf-grenoble.fr/~parisse/giac.html
+
+Package: libgiac
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: <insert up to 60 chars description>
+ <insert long description, indented with spaces>
+
+Package: libgiac-dev
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: <insert up to 60 chars description>
+ <insert long description, indented with spaces>
+
+Package: xcas
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: <insert up to 60 chars description>
+ <insert long description, indented with spaces>
+
+Package: giac-doc
+Architecture: all
+Description: documentation for giac
+ <insert long description, indented with spaces>
