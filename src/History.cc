@@ -52,6 +52,7 @@
 #endif
 #endif
 
+
 using namespace std;
 using namespace giac;
 
@@ -184,12 +185,24 @@ namespace xcas {
 	int spos=s->yposition();
 	int chpos=ch->y()-y();
 	if (chpos<spos)
+#ifdef _HAVE_FL_UTF8_HDR_
+	  s->scroll_to(0,max(0,min(chpos,h()-s->h())));
+#else
 	  s->position(0,max(0,min(chpos,h()-s->h())));
+#endif
 	else {
 	  if (chpos+gr->h()>spos+s->h())
+#ifdef _HAVE_FL_UTF8_HDR_
+	    s->scroll_to(0,chpos+gr->h()-s->h());
+#else
 	    s->position(0,chpos+gr->h()-s->h());
+#endif
 	  else
+#ifdef _HAVE_FL_UTF8_HDR_
+	    s->scroll_to(0,spos);
+#else
 	    s->position(0,spos);
+#endif
 	}
 	s->redraw();
       }
@@ -359,6 +372,19 @@ namespace xcas {
 	  wid=g->child(0);
       xcas::set_gen_value(wid,g,exec);
     }
+  }
+
+  Fl_Group * History_Pack::widget_group(int n){
+    int m=children();
+    if (n<0 || n>=m)
+      return 0;
+    Fl_Widget * wid = child(n);
+    if (Fl_Scroll * s=dynamic_cast<Fl_Scroll *>(wid))
+      if(s->children())
+	wid=s->child(0);
+    if (Fl_Group * g=dynamic_cast<Fl_Group *>(wid))
+      return g;
+    return 0;
   }
 
   bool set_value(Fl_Widget * w,const std::string & s,bool exec){
@@ -686,7 +712,13 @@ namespace xcas {
     }
     // H -= _spacing;
     // New horizontal size is therefore _printlevel_w+W
-    int newh=min(max(H,1),1<<14);
+    int newh=min(max(H,1),
+#ifdef _HAVE_FL_UTF8_HDR_
+		 1<<30
+#else
+		 1<<14
+#endif
+		 );
     if (newh<H){
       cerr << "Too many large widgets. Compressing" << endl;
       double ratio=double(newh)/H;
@@ -955,9 +987,17 @@ namespace xcas {
       if (Fl_Scroll * s=dynamic_cast<Fl_Scroll *>(parent())){
 	int mousey=my-y(),Y=s->yposition(),dh=h()-s->h();
 	if (mousey>Y+s->h() && dh>Y)
+#ifdef _HAVE_FL_UTF8_HDR_
+	  s->scroll_to(s->xposition(),min(mousey-s->h(),dh));
+#else
 	  s->position(s->xposition(),min(mousey-s->h(),dh));
+#endif
 	if (mousey<Y && Y>0)
+#ifdef _HAVE_FL_UTF8_HDR_
+	  s->scroll_to(s->xposition(),max(0,mousey));
+#else
 	  s->position(s->xposition(),max(0,mousey));
+#endif
       }
     }
     int n=children();
@@ -1940,7 +1980,11 @@ namespace xcas {
 	  s1=p->child(N+1)->y()+2*p->labelsize()-p->y()-s->h();
 	}
 	s1=min(p->h()-s->h(),s1);
+#ifdef _HAVE_FL_UTF8_HDR_
+	s->scroll_to(0,max(0,s1));
+#else
 	s->position(0,max(0,s1));
+#endif
 	if (!p->doing_eval && s->parent())
 	  s->parent()->redraw();
       }
@@ -3176,7 +3220,7 @@ namespace xcas {
       */
       mode_s += ' ';
       // mode_s += label();
-      if (mode_s!= current_status->label()){
+      if (!current_status->label() || mode_s!= current_status->label()){
 	if (mode)
 	  delete [] mode;
 	mode = new char[mode_s.size()+1];
@@ -3615,7 +3659,11 @@ namespace xcas {
 	if (Fl_Scroll * s = dynamic_cast<Fl_Scroll *>(hp->parent())){
 	  int spos=s->yposition();
 	  if (spos+s->h()>hp->h()){
+#ifdef _HAVE_FL_UTF8_HDR_
+	    s->scroll_to(0,max(min(hp->h()-s->h(),spos+dhlog),0));
+#else
 	    s->position(0,max(min(hp->h()-s->h(),spos+dhlog),0));
+#endif
 	  }
 	  s->redraw();
 	}

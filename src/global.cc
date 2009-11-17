@@ -21,7 +21,8 @@
 using namespace std;
 #include "config.h"
 #include "global.h"
-#include <time.h>
+// #include <time.h>
+#include <signal.h>
 #include <math.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -2819,11 +2820,19 @@ namespace giac {
 
 #ifdef __APPLE__
   bool my_isnan(double d){
+#ifdef __IPHONE_2_0
+    return isnan(d);
+#else
     return __isnand(d);
+#endif
   }
 
   bool my_isinf(double d){
+#ifdef __IPHONE_2_0
+    return isinf(d);
+#else
     return __isinfd(d);
+#endif
   }
 
 #else // __APPLE__

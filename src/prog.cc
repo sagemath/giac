@@ -4253,10 +4253,27 @@ namespace giac {
   }
 
   gen _convert(const gen & args,const context * contextptr){
-    if (args.type!=_VECT)
+    if (args.type!=_VECT){
+      if (args.type==_POLY)
+	return _convert(vecteur(1,args),contextptr);
       setsizeerr();
+    }
     vecteur & v=*args._VECTptr;
     int s=v.size();
+    if (s>=1 && v.front().type==_POLY){
+      int dim=v.front()._POLYptr->dim;
+      vecteur idx(dim);
+      vector< monomial<gen> >::const_iterator it=v.front()._POLYptr->coord.begin(),itend=v.front()._POLYptr->coord.end();
+      vecteur res;
+      res.reserve(itend-it);
+      for (;it!=itend;++it){
+	index_t & j=*it->index.iptr;
+	for (int k=0;k<dim;k++)
+	  idx[k]=j[k];
+	res.push_back(makevecteur(it->value,idx));
+      }
+      return res;
+    }
     if (s<2)
       setsizeerr();
     gen & f=v[1];
@@ -4318,6 +4335,36 @@ namespace giac {
     if (f.type==_INT_ && f.val>=0) {
       int i=f.val;
       if (f.val==_POLY1__VECT){ // remove order_size
+	if (g.type==_VECT && !g._VECTptr->empty()){
+	  // check if g is a list of [coeff,[index]]
+	  vecteur & w=*g._VECTptr;
+	  if (w.front().type==_VECT && w.front()._VECTptr->size()==2 && w.front()._VECTptr->back().type==_VECT){
+	    unsigned dim=w.front()._VECTptr->back()._VECTptr->size();
+	    iterateur it=w.begin(),itend=w.end();
+	    polynome res(dim);
+	    vector< monomial<gen> > & coord =res.coord;
+	    coord.reserve(itend-it);
+	    index_t i(dim);
+	    for (;it!=itend;++it){
+	      if (it->type!=_VECT || it->_VECTptr->size()!=2 || it->_VECTptr->back().type!=_VECT)
+		break;
+	      vecteur & idx = *it->_VECTptr->back()._VECTptr;
+	      if (idx.size()!=dim)
+		break;
+	      const_iterateur jt=idx.begin(),jtend=idx.end();
+	      for (int k=0;jt!=jtend;++jt,++k){
+		if (jt->type!=_INT_)
+		  break;
+		i[k]=jt->val;
+	      }
+	      if (jt!=jtend)
+		break;
+	      coord.push_back(monomial<gen>(it->_VECTptr->front(),i));
+	    }
+	    if (it==itend)
+	      return res;
+	  }
+	}
 	vecteur l(lop(g,at_order_size));
 	vecteur lp(l.size(),zero);
 	g=subst(g,l,lp,false,contextptr);

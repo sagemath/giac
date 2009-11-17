@@ -720,8 +720,8 @@ namespace giac {
   gen::gen(polynome * pptr){
     subtype=0;
     type = _POLY;
-    _POLYptr = pptr ;
     ptr_val.ref_count = new int(1);
+    _POLYptr = pptr ;
   }
 
   // WARNING coerce *mptr to an int if possible, in this case delete mptr
@@ -877,6 +877,7 @@ namespace giac {
     else {
       type =_CPLX;
       subtype=0;
+      ptr_val.ref_count = new int(1);
       _CPLXptr = new gen[2];
       _CPLXptr->type=_INT_;
       _CPLXptr->val=a;
@@ -884,7 +885,6 @@ namespace giac {
       _CPLXptr->type=_INT_;
       _CPLXptr->val =b;
       --_CPLXptr;
-      ptr_val.ref_count = new int(1);
     }
   }
 
@@ -898,6 +898,7 @@ namespace giac {
     else {
       type =_CPLX;
       subtype=3;
+      ptr_val.ref_count = new int(1);
       _CPLXptr = new gen[2];
       _CPLXptr->type=_DOUBLE_;
       _CPLXptr->_DOUBLE_val=a;
@@ -905,7 +906,6 @@ namespace giac {
       _CPLXptr->type=_DOUBLE_;
       _CPLXptr->_DOUBLE_val =b;
       --_CPLXptr;
-      ptr_val.ref_count = new int(1);
     }
   }
   
@@ -939,12 +939,12 @@ namespace giac {
     else {
       type =_CPLX;
       subtype= (a.type==_DOUBLE_) + (b.type==_DOUBLE_)*2;
+      ptr_val.ref_count = new int(1);
       _CPLXptr = new gen[2];
       * _CPLXptr = a;
       ++_CPLXptr;
       * _CPLXptr = b;
       --_CPLXptr;
-      ptr_val.ref_count = new int(1);
     }
   }
   
@@ -1005,6 +1005,7 @@ namespace giac {
     if (s[0]=='#' || s[0]=='0') {
       if (s[1]=='x' || s[1]=='X'){
 	s[0]='0';
+	s[1]='0';
 	base=16;
       }
       if (s[1]=='o' || s[1]=='O'){
@@ -1014,6 +1015,7 @@ namespace giac {
       }
     }
     if (s[1]=='b' || s[1]=='B'){
+      s[0]='0';
       s[1]='0';
       base=2;
     }
@@ -1023,7 +1025,7 @@ namespace giac {
      errno = 0;
 #endif
     char * endchar;
-    long ll=strtol(s,&endchar,base);
+    longlong ll=strtoll(s,&endchar,base);
     int l =strlen(s);
     if (*endchar) {// non integer
       if (decimal_digits(contextptr)>14){
@@ -1075,6 +1077,9 @@ namespace giac {
       return gen(d);
     }
     if (!errno ){
+      // this converts 0xFFFFFFFF to -1, because we want two's complement, if possible
+      // it makes positive numbers 0x80000000 to 0xFFFFFFFF unavailable (only in base-2 notation),
+      // but I am aware of that
       if (ll==int(ll) || 
 	  ( (base == 2 ||base == 8 || base == 16) && 
 	    ll == (unsigned int)(ll) )
@@ -4887,10 +4892,10 @@ namespace giac {
   }
 
   real_object real_object::exp() const {
+    real_object res(*this);
 #ifdef USE_GMP_REPLACEMENTS
     *res.inf = ::exp(*res.inf);
 #else
-    real_object res(*this);
 #ifdef HAVE_LIBMPFR
     mpfr_exp(res.inf,res.inf,GMP_RNDN);
 #else
@@ -4901,10 +4906,10 @@ namespace giac {
   }
 
   real_object real_object::log() const {
+    real_object res(*this);
 #ifdef USE_GMP_REPLACEMENTS
     *res.inf = ::log(*res.inf);
 #else
-    real_object res(*this);
 #ifdef HAVE_LIBMPFR
     mpfr_log(res.inf,res.inf,GMP_RNDN);
 #else
@@ -4915,10 +4920,10 @@ namespace giac {
   }
 
   real_object real_object::sin() const {
+    real_object res(*this);
 #ifdef USE_GMP_REPLACEMENTS
     *res.inf = ::sin(*res.inf);
 #else
-    real_object res(*this);
 #ifdef HAVE_LIBMPFR
     mpfr_sin(res.inf,res.inf,GMP_RNDN);
 #else
@@ -4929,10 +4934,10 @@ namespace giac {
   }
 
   real_object real_object::cos() const {
+    real_object res(*this);
 #ifdef USE_GMP_REPLACEMENTS
     *res.inf = ::cos(*res.inf);
 #else
-    real_object res(*this);
 #ifdef HAVE_LIBMPFR
     mpfr_cos(res.inf,res.inf,GMP_RNDN);
 #else
@@ -4943,10 +4948,10 @@ namespace giac {
   }
 
   real_object real_object::tan() const {
+    real_object res(*this);
 #ifdef USE_GMP_REPLACEMENTS
     *res.inf = ::tan(*res.inf);
 #else
-    real_object res(*this);
 #ifdef HAVE_LIBMPFR
     mpfr_tan(res.inf,res.inf,GMP_RNDN);
 #else
@@ -4957,10 +4962,10 @@ namespace giac {
   }
 
   real_object real_object::sinh() const {
+    real_object res(*this);
 #ifdef USE_GMP_REPLACEMENTS
     *res.inf = ::sinh(*res.inf);
 #else
-    real_object res(*this);
 #ifdef HAVE_LIBMPFR
     mpfr_sinh(res.inf,res.inf,GMP_RNDN);
 #else
@@ -4971,10 +4976,10 @@ namespace giac {
   }
 
   real_object real_object::cosh() const {
+    real_object res(*this);
 #ifdef USE_GMP_REPLACEMENTS
     *res.inf = ::cosh(*res.inf);
 #else
-    real_object res(*this);
 #ifdef HAVE_LIBMPFR
     mpfr_cosh(res.inf,res.inf,GMP_RNDN);
 #else
@@ -4985,10 +4990,10 @@ namespace giac {
   }
 
   real_object real_object::tanh() const {
+    real_object res(*this);
 #ifdef USE_GMP_REPLACEMENTS
     *res.inf = ::tanh(*res.inf);
 #else
-    real_object res(*this);
 #ifdef HAVE_LIBMPFR
     mpfr_tanh(res.inf,res.inf,GMP_RNDN);
 #else
@@ -4999,10 +5004,10 @@ namespace giac {
   }
 
   real_object real_object::asin() const {
+    real_object res(*this);
 #ifdef USE_GMP_REPLACEMENTS
     *res.inf = ::asin(*res.inf);
 #else
-    real_object res(*this);
 #ifdef HAVE_LIBMPFR
     mpfr_asin(res.inf,res.inf,GMP_RNDN);
 #else
@@ -5013,10 +5018,10 @@ namespace giac {
   }
 
   real_object real_object::acos() const {
+    real_object res(*this);
 #ifdef USE_GMP_REPLACEMENTS
     *res.inf = ::acos(*res.inf);
 #else
-    real_object res(*this);
 #ifdef HAVE_LIBMPFR
     mpfr_acos(res.inf,res.inf,GMP_RNDN);
 #else
@@ -5027,10 +5032,10 @@ namespace giac {
   }
 
   real_object real_object::atan() const {
+    real_object res(*this);
 #ifdef USE_GMP_REPLACEMENTS
     *res.inf = ::atan(*res.inf);
 #else
-    real_object res(*this);
 #ifdef HAVE_LIBMPFR
     mpfr_atan(res.inf,res.inf,GMP_RNDN);
 #else
@@ -5041,10 +5046,10 @@ namespace giac {
   }
 
   real_object real_object::asinh() const {
+    real_object res(*this);
 #ifdef USE_GMP_REPLACEMENTS
     *res.inf = ::asinh(*res.inf);
 #else
-    real_object res(*this);
 #ifdef HAVE_LIBMPFR
     mpfr_asinh(res.inf,res.inf,GMP_RNDN);
 #else
@@ -5055,10 +5060,10 @@ namespace giac {
   }
 
   real_object real_object::acosh() const {
+    real_object res(*this);
 #ifdef USE_GMP_REPLACEMENTS
     *res.inf = ::acosh(*res.inf);
 #else
-    real_object res(*this);
 #ifdef HAVE_LIBMPFR
     mpfr_acosh(res.inf,res.inf,GMP_RNDN);
 #else
@@ -5069,10 +5074,10 @@ namespace giac {
   }
 
   real_object real_object::atanh() const {
+    real_object res(*this);
 #ifdef USE_GMP_REPLACEMENTS
     *res.inf = ::atanh(*res.inf);
 #else
-    real_object res(*this);
 #ifdef HAVE_LIBMPFR
     mpfr_atanh(res.inf,res.inf,GMP_RNDN);
 #else
@@ -6272,6 +6277,7 @@ namespace giac {
   }
 
   gen inv(const gen & a,GIAC_CONTEXT){
+    control_c();
     if ( a.type==_DOUBLE_ ? a==0 : is_exactly_zero(a))
       return unsigned_inf;
     switch (a.type ) {
@@ -7046,6 +7052,7 @@ namespace giac {
   }
 
   std::string printmpf_t(const mpf_t & inf,GIAC_CONTEXT){
+#ifndef USE_GMP_REPLACEMENTS
     bool negatif=mpf_sgn(inf)<0;
     mp_exp_t expo;
 #ifdef VISUALC
@@ -7073,6 +7080,11 @@ namespace giac {
       return "-"+res;
     else
       return res;
+#else // USE_GMP_REPLACEMENTS
+    std::ostringstream out;
+    out << std::setprecision(decimal_digits(contextptr)) << *inf;
+    return out.str();
+#endif // USE_GMP_REPLACEMENTS
   }
 
 
@@ -8317,7 +8329,7 @@ namespace giac {
   gen sign(const gen & a,GIAC_CONTEXT){
     if (is_equal(a))
       return apply_to_equal(a,sign,contextptr);
-    if (is_zero(a)){
+    if (is_exactly_zero(a)){
       if (a.type==_DOUBLE_)
 	return 0.0;
       else
@@ -8331,6 +8343,7 @@ namespace giac {
       return a;
     if (is_inf(a))
       return undef;
+    double eps=epsilon(contextptr);
     switch (a.type){
     case _INT_: case _ZINT: 
       if (is_positive(a,contextptr))
@@ -8338,14 +8351,14 @@ namespace giac {
       else
 	return -1;
     case _DOUBLE_:
-      if (a._DOUBLE_val>0)
+      if (a._DOUBLE_val>eps)
 	return 1.0;
-      else
+      if (a._DOUBLE_val<-eps)      
 	return -1.0;
+      return 0.0;
     }
     gen b=evalf_double(a,1,contextptr);
     if (b.type==_DOUBLE_){
-      double eps=epsilon(contextptr);
       if (b._DOUBLE_val>eps)
 	return plus_one;
       if (b._DOUBLE_val<-eps)

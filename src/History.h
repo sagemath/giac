@@ -177,6 +177,7 @@ namespace xcas {
     giac::gen parse(int n); // return the gen value of the n-th entry
     std::string value(int n) const; // return the string value of the n-th entry
     void set_gen_value(int n,const giac::gen & g,bool exec=true); // set n-th entry value
+    Fl_Group * widget_group(int n); // group corresponding to position n
     void set_value(int n,const std::string & s,bool exec=true);
     bool remove_entry(int n,bool check=true); // does not update, call resize() and update()
     bool remove_selected_levels(bool check_in_history_fold);

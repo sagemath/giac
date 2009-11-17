@@ -338,7 +338,7 @@ extern int giac_yylex \
 #undef YY_DECL
 #endif
 
-#line 970 "input_lexer.ll"
+#line 971 "input_lexer.ll"
 
 
 #line 345 "lexer.h"

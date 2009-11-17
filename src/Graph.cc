@@ -202,6 +202,7 @@ namespace xcas {
       cerr << "// " << setlocale (LC_MESSAGES, "") << endl;
       cerr << "// " << bindtextdomain (PACKAGE, xcas_locale.c_str()) << endl;
       cerr << "// " << textdomain (PACKAGE) << endl;
+      cerr << "// " << bind_textdomain_codeset (PACKAGE, "UTF-8") << endl;
     };
   };
   objet_bidon mon_objet_bidon;
@@ -6329,7 +6330,11 @@ namespace xcas {
     Fl_Tile::draw();
     if (scroll_position>0 && hp){
       if (Fl_Scroll * scroll = dynamic_cast<Fl_Scroll *>(hp->parent())){
+#ifdef _HAVE_FL_UTF8_HDR_
+	scroll->scroll_to(0,scroll_position);
+#else
 	scroll->position(0,scroll_position);
+#endif
 	scroll_position=-1;
 	Fl_Tile::draw();
       }
@@ -6459,7 +6464,7 @@ namespace xcas {
 	    if (ff.type==_VECT && !ff._VECTptr->empty())
 	      ff = ff._VECTptr->front();
 	    // Change gt value with parameter
-	    ff = symbolic(at_element,makevecteur(ff,value()));
+	    ff = symbolic(at_element,makevecteur(ff,value(),Fl_Valuator::step()));
 	    gt=symbolic(at_sto,makevecteur(ff,gt._SYMBptr->feuille._VECTptr->back()));
 	    do_cb=true;
 	  }
@@ -6507,6 +6512,15 @@ namespace xcas {
 	  hp->update_pos=position;
 	  if (pos==-2)
 	    hp->eval_below=true;
+	  // check how to update (parameter in a figure or in history)
+	  Fl_Group * gr = hp->widget_group(position);
+	  if (gr && gr->children()>=3){
+	    if (dynamic_cast<Fl_Output*>(gr->child(2))){
+	      hp->update_pos=position;
+	      hp->set_gen_value(position,gt,true);
+	      return;
+	    }
+	  }
 	  hp->set_gen_value(position,gt,false);
 	  protecteval(gt,1,hp->contextptr);
 	  if (eval_hp && hp->children()>position+1){

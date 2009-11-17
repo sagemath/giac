@@ -748,7 +748,11 @@ namespace xcas {
 	int scy=sc->yposition()+labelsize()*Fl::e_dy;
 	if (scy<0)
 	  scy=0;
+#ifdef _HAVE_FL_UTF8_HDR_
+	sc->scroll_to(sc->xposition(),scy);
+#else
 	sc->position(sc->xposition(),scy);
+#endif
 	return 1;
       }
     }

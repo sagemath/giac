@@ -164,6 +164,10 @@ AC_CYGWIN
 if test x$CYGWIN = xyes; then
 AC_CHECK_LIB(GL,main)
 AC_CHECK_LIB(GLU,main)
+AC_CHECK_LIB(Xinerama, main)
+AC_CHECK_LIB(fontconfig, main)
+AC_CHECK_LIB(Xft, main)
+AC_CHECK_LIB(Xext, main)
 AC_CHECK_LIB(fltk_gl,main)
 AC_CHECK_LIB(fltk,main)
 AC_CHECK_LIB(z,main)
@@ -201,6 +205,10 @@ AC_MSG_RESULT([X libraries found, checking for GUI])
 dnl X11, check for opengl, fltk
 AC_CHECK_LIB(GL,main)
 AC_CHECK_LIB(GLU,main)
+AC_CHECK_LIB(Xinerama, main)
+AC_CHECK_LIB(fontconfig, main)
+AC_CHECK_LIB(Xft, main)
+AC_CHECK_LIB(Xext, main)
 AC_CHECK_LIB(fltk_gl,main)
 AC_CHECK_LIB(fltk,main)
 if test $HAVE_LIBFLTK="1" ;

@@ -409,6 +409,7 @@ distdir: $(DISTFILES)
 	    || cp -p $$d/$$file $(distdir)/$$file || :; \
 	  fi; \
 	done
+aide.o: aide.cc first.h config.h help.h
 alg_ext.lo alg_ext.o : alg_ext.cc first.h config.h gen.h dispatch.h \
 	global.h help.h vecteur.h fraction.h gausspol.h poly.h index.h \
 	monomial.h identificateur.h usual.h sym2poly.h symbolic.h \
@@ -428,6 +429,14 @@ Cfg.lo Cfg.o : Cfg.cc giac/first.h giac/config.h giac/global.h \
 	giac/quater.h giac/desolve.h Xcas1.h Graph.h Input.h \
 	giac/identificateur.h giac/giacintl.h config.h Editeur.h \
 	giac/input_lexer.h Cfg.h
+cocoa.lo cocoa.o : cocoa.cc first.h config.h TmpFGLM.H cocoa.h \
+	gausspol.h poly.h fraction.h index.h monomial.h gen.h \
+	dispatch.h global.h help.h vecteur.h identificateur.h
+csturm.lo csturm.o : csturm.cc first.h config.h gen.h dispatch.h \
+	global.h help.h vecteur.h fraction.h csturm.h modpoly.h unary.h \
+	index.h symbolic.h usual.h sym2poly.h poly.h monomial.h \
+	identificateur.h gausspol.h series.h solve.h prog.h subst.h \
+	permu.h alg_ext.h ti89.h plot.h plot3d.h modfactor.h
 derive.lo derive.o : derive.cc first.h config.h derive.h gen.h \
 	dispatch.h global.h help.h vecteur.h fraction.h \
 	identificateur.h usual.h symbolic.h unary.h index.h poly.h \
@@ -470,6 +479,28 @@ ezgcd.lo ezgcd.o : ezgcd.cc first.h config.h ezgcd.h gausspol.h poly.h \
 	fraction.h index.h monomial.h gen.h dispatch.h global.h help.h \
 	vecteur.h sym2poly.h identificateur.h symbolic.h unary.h \
 	series.h
+first.lo first.o : first.cc first.h config.h
+Flv_CStyle.lo Flv_CStyle.o : Flv_CStyle.cc giac/first.h giac/config.h \
+	Flv_CStyle.H Flv_Style.H
+Flv_Data_Source.lo Flv_Data_Source.o : Flv_Data_Source.cc
+Flv_List.lo Flv_List.o : Flv_List.cc giac/first.h giac/config.h \
+	Flv_List.H Flv_Style.H
+Flv_Style.lo Flv_Style.o : Flv_Style.cc giac/first.h giac/config.h \
+	Flv_Style.H
+Flv_Table.lo Flv_Table.o : Flv_Table.cc giac/first.h giac/config.h \
+	Flv_Table.H Flv_List.H Flv_Style.H
+Flve_Check_Button.lo Flve_Check_Button.o : Flve_Check_Button.cc \
+	giac/first.h giac/config.h Flve_Check_Button.H Flv_List.H \
+	Flv_Style.H
+Flve_Combo.lo Flve_Combo.o : Flve_Combo.cc giac/first.h giac/config.h \
+	Flve_Combo.H Flv_List.H Flv_Style.H
+Flve_Input.lo Flve_Input.o : Flve_Input.cc giac/first.h giac/config.h \
+	Flve_Input.H Flv_List.H Flv_Style.H
+gauss.lo gauss.o : gauss.cc first.h config.h gauss.h gen.h dispatch.h \
+	global.h help.h vecteur.h fraction.h derive.h identificateur.h \
+	subst.h usual.h sym2poly.h poly.h index.h monomial.h symbolic.h \
+	unary.h gausspol.h series.h solve.h ti89.h plot.h plot3d.h \
+	misc.h ifactor.h prog.h
 gausspol.lo gausspol.o : gausspol.cc first.h config.h gausspol.h poly.h \
 	fraction.h index.h monomial.h gen.h dispatch.h global.h help.h \
 	vecteur.h modpoly.h modfactor.h solve.h alg_ext.h sym2poly.h \
@@ -481,6 +512,7 @@ gen.lo gen.o : gen.cc first.h config.h gen.h dispatch.h global.h help.h \
 	unary.h series.h modpoly.h alg_ext.h prog.h rpn.h plot.h \
 	plot3d.h intg.h subst.h derive.h threaded.h ezgcd.h maple.h \
 	solve.h
+gl2ps.lo gl2ps.o : gl2ps.c giac/first.h giac/config.h gl2ps.h
 global.lo global.o : global.cc first.h config.h global.h help.h gen.h \
 	dispatch.h vecteur.h fraction.h identificateur.h symbolic.h \
 	unary.h index.h sym2poly.h poly.h monomial.h gausspol.h \
@@ -517,6 +549,19 @@ Graph3d.lo Graph3d.o : Graph3d.cc Graph3d.h giac/giac.h giac/first.h \
 	giac/path.h giac/misc.h Equation.h Print.h gl2ps.h
 help.lo help.o : help.cc first.h config.h path.h help.h global.h \
 	input_lexer.h
+Help1.lo Help1.o : Help1.cc Help1.h giac/first.h giac/config.h \
+	giac/gen.h giac/first.h giac/dispatch.h giac/global.h \
+	giac/help.h giac/vecteur.h giac/fraction.h \
+	giac/identificateur.h giac/giacintl.h config.h Xcas1.h \
+	History.h giac/giac.h giac/poly.h giac/index.h giac/monomial.h \
+	giac/gen.h giac/identificateur.h giac/unary.h giac/symbolic.h \
+	giac/modpoly.h giac/modfactor.h giac/gausspol.h giac/sym2poly.h \
+	giac/series.h giac/derive.h giac/solve.h giac/subst.h \
+	giac/usual.h giac/intg.h giac/lin.h giac/moyal.h giac/maple.h \
+	giac/ti89.h giac/mathml.h giac/tex.h giac/ifactor.h \
+	giac/alg_ext.h giac/gauss.h giac/isom.h giac/plot.h \
+	giac/plot3d.h giac/rpn.h giac/prog.h giac/pari.h giac/quater.h \
+	giac/desolve.h Graph.h Input.h Editeur.h giac/input_lexer.h
 History.lo History.o : History.cc giac/first.h giac/config.h History.h \
 	giac/giac.h giac/first.h giac/global.h giac/help.h giac/poly.h \
 	giac/fraction.h giac/index.h giac/monomial.h giac/gen.h \
@@ -553,6 +598,10 @@ identificateur.lo identificateur.o : identificateur.cc first.h config.h \
 	identificateur.h global.h help.h gen.h dispatch.h vecteur.h \
 	fraction.h sym2poly.h poly.h index.h monomial.h symbolic.h \
 	unary.h gausspol.h series.h rpn.h prog.h
+ifactor.lo ifactor.o : ifactor.cc first.h config.h path.h ifactor.h \
+	global.h help.h gen.h dispatch.h vecteur.h fraction.h unary.h \
+	index.h symbolic.h identificateur.h pari.h usual.h sym2poly.h \
+	poly.h monomial.h gausspol.h series.h rpn.h prog.h misc.h
 index.lo index.o : index.cc first.h config.h index.h
 Input.lo Input.o : Input.cc giac/first.h giac/config.h Input.h \
 	giac/gen.h giac/first.h giac/dispatch.h giac/global.h \
@@ -569,13 +618,13 @@ Input.lo Input.o : Input.cc giac/first.h giac/config.h Input.h \
 	giac/desolve.h Xcas1.h Graph.h Editeur.h giac/input_lexer.h \
 	Tableur.h Flv_Table.H Flv_List.H Flv_Style.H Flve_Input.H \
 	Graph3d.h Help1.h giac/plot.h giac/help.h giac/global.h
-input_lexer.o: input_lexer.cc first.h config.h input_lexer.h global.h \
-	help.h gen.h dispatch.h vecteur.h fraction.h identificateur.h \
-	usual.h derive.h series.h intg.h sym2poly.h poly.h index.h \
-	monomial.h symbolic.h unary.h gausspol.h moyal.h subst.h \
-	modpoly.h lin.h solve.h ifactor.h alg_ext.h gauss.h isom.h \
-	plot.h plot3d.h prog.h rpn.h ezgcd.h tex.h risch.h \
-	input_parser.h
+input_lexer.lo input_lexer.o : input_lexer.cc first.h config.h \
+	input_lexer.h global.h help.h gen.h dispatch.h vecteur.h \
+	fraction.h identificateur.h usual.h derive.h series.h intg.h \
+	sym2poly.h poly.h index.h monomial.h symbolic.h unary.h \
+	gausspol.h moyal.h subst.h modpoly.h lin.h solve.h ifactor.h \
+	alg_ext.h gauss.h isom.h plot.h plot3d.h prog.h rpn.h ezgcd.h \
+	tex.h risch.h input_parser.h
 input_parser.lo input_parser.o : input_parser.cc first.h config.h \
 	index.h gen.h dispatch.h global.h help.h vecteur.h fraction.h \
 	lexer.h input_lexer.h usual.h derive.h identificateur.h \
@@ -593,6 +642,10 @@ intgab.lo intgab.o : intgab.cc first.h config.h sym2poly.h poly.h \
 	series.h usual.h intgab.h subst.h derive.h lin.h plot.h \
 	plot3d.h prog.h modpoly.h tex.h ifactor.h risch.h solve.h \
 	intg.h desolve.h alg_ext.h misc.h maple.h rpn.h
+isom.lo isom.o : isom.cc first.h config.h isom.h gen.h dispatch.h \
+	global.h help.h vecteur.h fraction.h derive.h identificateur.h \
+	subst.h usual.h symbolic.h unary.h index.h sym2poly.h poly.h \
+	monomial.h gausspol.h series.h
 lin.lo lin.o : lin.cc first.h config.h sym2poly.h poly.h fraction.h \
 	index.h monomial.h gen.h dispatch.h global.h help.h vecteur.h \
 	identificateur.h symbolic.h unary.h gausspol.h series.h usual.h \
@@ -668,6 +721,12 @@ prog.lo prog.o : prog.cc first.h config.h prog.h gen.h dispatch.h \
 	gausspol.h series.h subst.h plot.h plot3d.h tex.h \
 	input_parser.h input_lexer.h rpn.h ti89.h permu.h modpoly.h \
 	maple.h
+quater.lo quater.o : quater.cc first.h config.h quater.h gen.h \
+	dispatch.h global.h help.h vecteur.h fraction.h unary.h index.h \
+	sym2poly.h poly.h monomial.h identificateur.h symbolic.h \
+	gausspol.h series.h usual.h intg.h subst.h derive.h lin.h \
+	plot.h plot3d.h prog.h modpoly.h tex.h ifactor.h risch.h \
+	solve.h
 risch.lo risch.o : risch.cc first.h config.h sym2poly.h poly.h \
 	fraction.h index.h monomial.h gen.h dispatch.h global.h help.h \
 	vecteur.h identificateur.h symbolic.h unary.h gausspol.h \
@@ -731,6 +790,9 @@ ti89.lo ti89.o : ti89.cc first.h config.h misc.h global.h help.h gen.h \
 	ifactor.h solve.h modpoly.h permu.h plot.h plot3d.h lin.h \
 	desolve.h alg_ext.h moyal.h ti89.h maple.h input_parser.h \
 	input_lexer.h
+TmpFGLM.lo TmpFGLM.o : TmpFGLM.C config.h TmpFGLM.H TmpLESystemSolver.H
+TmpLESystemSolver.lo TmpLESystemSolver.o : TmpLESystemSolver.C config.h \
+	TmpLESystemSolver.H
 unary.lo unary.o : unary.cc first.h config.h unary.h gen.h dispatch.h \
 	global.h help.h vecteur.h fraction.h index.h usual.h rpn.h \
 	tex.h input_lexer.h symbolic.h
@@ -745,6 +807,21 @@ vecteur.lo vecteur.o : vecteur.cc first.h config.h gen.h dispatch.h \
 	symbolic.h usual.h sym2poly.h poly.h monomial.h \
 	identificateur.h gausspol.h series.h solve.h prog.h subst.h \
 	permu.h plot.h plot3d.h misc.h
+xcas.o: xcas.cc config.h hist.cxx giac/giacintl.h giac/first.h \
+	giac/config.h config.h hist.h Xcas1.h giac/first.h History.h \
+	giac/giac.h giac/first.h giac/global.h giac/help.h giac/poly.h \
+	giac/fraction.h giac/index.h giac/monomial.h giac/gen.h \
+	giac/dispatch.h giac/vecteur.h giac/identificateur.h \
+	giac/unary.h giac/symbolic.h giac/modpoly.h giac/modfactor.h \
+	giac/gausspol.h giac/sym2poly.h giac/series.h giac/derive.h \
+	giac/solve.h giac/subst.h giac/usual.h giac/intg.h giac/lin.h \
+	giac/moyal.h giac/maple.h giac/ti89.h giac/mathml.h giac/tex.h \
+	giac/ifactor.h giac/alg_ext.h giac/gauss.h giac/isom.h \
+	giac/plot.h giac/plot3d.h giac/rpn.h giac/prog.h giac/pari.h \
+	giac/quater.h giac/desolve.h Graph.h giac/config.h Input.h \
+	giac/gen.h giac/identificateur.h giac/giacintl.h Editeur.h \
+	giac/input_lexer.h Help1.h Equation.h Tableur.h Flv_Table.H \
+	Flv_List.H Flv_Style.H Flve_Input.H Graph3d.h Cfg.h giac/misc.h
 Xcas1.lo Xcas1.o : Xcas1.cc giac/first.h giac/config.h Xcas1.h History.h \
 	giac/giac.h giac/first.h giac/global.h giac/help.h giac/poly.h \
 	giac/fraction.h giac/index.h giac/monomial.h giac/gen.h \

@@ -1301,7 +1301,7 @@ namespace giac {
 	// check for sin/cos
 	if (temp__SYMB.sommet==at_cos || temp__SYMB.sommet==at_sin){
 	  // split the series expansion in two parts, one tending -> 0
-	  sparse_poly1::const_iterator it=s.begin(),itend=s.end();
+	  sparse_poly1::iterator it=s.begin(),itend=s.end();
 	  for (;it!=itend;++it){
 	    if (ck_is_strictly_greater(it->exponent,zero,contextptr))
 	      break;

@@ -195,7 +195,7 @@ Function {a_propos()} {return_type void
   s += "Tablor by Guillaume Connan, Pgiac by Jean-Michel Sarlat\\n";
   s += "FreeBSD port and agreg tests by Frederic Han\\n";
   s += "Windows port suggestions and tests by Mike Ady\\n";
-  s += "Xcas early testers: Christiane Serret (lyc�e de Crest),\\nMich�le Gandit (lyc�e international de Grenoble)\\nStephane Lejoly, Jean-Joel Bataille, Jean-Eric Visca, Thierry Xuereb\\nPaul Magnien, Denis Le Fur, Phil Pham\\nS�bastien Celles, G�rard Vinel, Robert Rolland, Robert S�tif\\nJuan Antonio Martinez Rojas, Nicolas Rosillo (Spain)\\n";
+  s += "Xcas early testers: Christiane Serret (lycée de Crest),\\nMichèle Gandit (lycée international de Grenoble)\\nStephane Lejoly, Jean-Joel Bataille, Jean-Eric Visca, Thierry Xuereb\\nPaul Magnien, Denis Le Fur, Phil Pham\\nSébastien Celles, Gérard Vinel, Robert Rolland, Robert Sétif\\nJuan Antonio Martinez Rojas, Nicolas Rosillo (Spain)\\n";
   s += "Francois Maltey (Mupacs)\\nFrederic Faure, Emilien Kia, Andreas Thillosen (giac)\\n";
   s += "Francois Boisson (grace a lui xcas est utilisable a l'agregation de maths)\\n";
   s += "Uses GMP, (c) T. Granlund & al.\\n";
@@ -1678,7 +1678,7 @@ if (xcas::use_external_browser)
           menuitem Xcas_help_load {
             label {Update help}
             callback {\#ifdef WIN32
-  fl_message("Xcas will launch your browser to get the help archive giacshare.tgz.\\nAfter the download is completed, please unarchive casdoc.tgz\\nin the Xcas directory (c:�s by default)");
+  fl_message("Xcas will launch your browser to get the help archive giacshare.tgz.\\nAfter the download is completed, please unarchive casdoc.tgz\\nin the Xcas directory (c:Ês by default)");
  xcas::system_browser(giac::browser_command("http://www-fourier.ujf-grenoble.fr/~parisse/giac/casdoc.tgz").c_str());
  return;
 \#endif
@@ -2531,6 +2531,36 @@ if (f && plotparam_dialog(f,arg,2)){
   Xcas_x_key->label("x");
   Xcas_y_key->label("y");
   Xcas_z_key->label("z");
+\#ifdef _HAVE_FL_UTF8_HDR_
+if (Xcas_Greek_key->label()==std::string("A")){
+  Xcas_a_key->label("α");
+  Xcas_b_key->label("β");
+  Xcas_g_key->label("γ");
+  Xcas_d_key->label("δ");
+  Xcas_e_key->label("ε");
+  Xcas_z_key->label("ζ");
+  Xcas_h_key->label("η");
+  Xcas_q_key->label("θ");
+  Xcas_i_key->label("ι");
+  Xcas_k_key->label("κ");
+  Xcas_l_key->label("λ");
+  Xcas_m_key->label("μ");
+  Xcas_n_key->label("ν");
+  Xcas_x_key->label("ξ");
+  Xcas_o_key->label("ο");
+  Xcas_p_key->label("π");
+  Xcas_r_key->label("ρ");
+  Xcas_s_key->label("σ");
+  Xcas_t_key->label("τ");
+  Xcas_u_key->label("υ");
+  Xcas_f_key->label("φ");
+  Xcas_c_key->label("χ");
+  Xcas_y_key->label("ψ"); // FIXME
+  Xcas_w_key->label("ω");
+  Xcas_j_key->label("ϒ"); // FIXME
+  Xcas_v_key->label("ϖ"); // FIXME
+}
+\#endif
 }
 else {
   Xcas_Majuscule_key->label("min");
@@ -2560,6 +2590,36 @@ else {
   Xcas_x_key->label("X");
   Xcas_y_key->label("Y");
   Xcas_z_key->label("Z");
+\#ifdef _HAVE_FL_UTF8_HDR_
+if (Xcas_Greek_key->label()==std::string("A")){
+  Xcas_a_key->label("Α");
+  Xcas_b_key->label("Β");
+  Xcas_g_key->label("Γ");
+  Xcas_d_key->label("Δ");
+  Xcas_e_key->label("Ε");
+  Xcas_z_key->label("Ζ");
+  Xcas_h_key->label("Η");
+  Xcas_q_key->label("Θ");
+  Xcas_i_key->label("Ι");
+  Xcas_k_key->label("Κ");
+  Xcas_l_key->label("Λ");
+  Xcas_m_key->label("Μ");
+  Xcas_n_key->label("Ν");
+  Xcas_x_key->label("Ξ");
+  Xcas_o_key->label("Ο");
+  Xcas_p_key->label("Π");
+  Xcas_r_key->label("Ρ");
+  Xcas_s_key->label("Σ");
+  Xcas_t_key->label("Τ");
+  Xcas_u_key->label("Υ");
+  Xcas_f_key->label("Φ");
+  Xcas_c_key->label("Χ");
+  Xcas_y_key->label("Ψ"); // FIXME
+  Xcas_w_key->label("Ω");
+  Xcas_j_key->label("ϒ"); // FIXME
+  Xcas_v_key->label("ϖ"); // FIXME
+}
+\#endif
 }
 Xcas_Alpha_Keyboard->redraw();}
           xywh {0 490 30 25} color 1 labelsize 10
@@ -2577,7 +2637,21 @@ Xcas_Alpha_Keyboard->redraw();}
         }
         Fl_Button Xcas_Greek_key {
           label a
-          callback {if (Xcas_Greek_key->label()==std::string("a")){
+          callback {
+\#ifdef _HAVE_FL_UTF8_HDR_
+if (Xcas_Greek_key->label()==std::string("α")){
+  Xcas_Greek_key->label("A");
+}
+else {
+  Xcas_Greek_key->label("α");
+}
+if (Xcas_Majuscule_key->label()==std::string("min"))
+  Xcas_Majuscule_key->label("Maj");
+else
+  Xcas_Majuscule_key->label("min");
+cb_Xcas_Majuscule_key(0,0);
+\#else // _HAVE_FL_UTF8_HDR_
+if (Xcas_Greek_key->label()==std::string("a")){
   Xcas_Greek_key->label("A");
   Xcas_a_key->labelfont(FL_SYMBOL);
   Xcas_b_key->labelfont(FL_SYMBOL);
@@ -2635,6 +2709,7 @@ else {
   Xcas_y_key->labelfont(FL_HELVETICA);
   Xcas_z_key->labelfont(FL_HELVETICA);
 }
+\#endif
 Xcas_Alpha_Keyboard->redraw();}
           xywh {280 490 25 25} color 1 selection_color 0 labelfont 12
           class {xcas::No_Focus_Button}
@@ -2752,7 +2827,7 @@ Xcas_input_0arg(Xcas_Cst_i,giac::printi(contextptr).c_str());}
             class {xcas::No_Focus_Button}
           }
           Fl_Button Xcas_Cst_pi {
-            label p
+            label π
             callback {Xcas_input_0arg(Xcas_Cst_pi,"pi");}
             xywh {220 415 30 25} labelfont 12 labelsize 10
             class {xcas::No_Focus_Button}
@@ -3573,13 +3648,17 @@ Fl_Bitmap * Xcas_Racine_carree_image=new Fl_Bitmap(Xcas_racine_carree_bitmap,8,8
 Xcas_Racine_carree->image(Xcas_Racine_carree_image);
 \#else
 \#ifndef __APPLE__
-Xcas_Keyboard_infinity->label("�");
+\#ifndef _HAVE_FL_UTF8_HDR_
+Xcas_Keyboard_infinity->label("¥");
 Xcas_Keyboard_infinity->labelfont(FL_SYMBOL);
 \#endif
-Xcas_Racine_carree->label("�");
+\#endif
+\#ifndef _HAVE_FL_UTF8_HDR_
+Xcas_Racine_carree->label("Ö");
 Xcas_Racine_carree->labelfont(FL_SYMBOL);
-Xcas_approx_key->label("�");
+Xcas_approx_key->label("»");
 Xcas_approx_key->labelfont(FL_SYMBOL);
+\#endif
 \#endif} {}
   code {// First take control of signals
 signal(SIGINT,giac::ctrl_c_signal_handler);
