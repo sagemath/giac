@@ -45,7 +45,7 @@ namespace giac {
   gen cst_pi(_IDNT_pi);
   string string_infinity("infinity");
   identificateur & _IDNT_infinity(){
-    static identificateur * ans=new identificateur(string_infinity);
+    static identificateur * ans=new identificateur("infinity");
     return * ans;
   }
   gen unsigned_inf(_IDNT_infinity());
@@ -62,7 +62,7 @@ namespace giac {
   */
   string string_undef("undef");
   identificateur & _IDNT_undef(){
-    static identificateur * ans=new identificateur(string_undef);
+    static identificateur * ans=new identificateur("undef");
     return * ans;
   }
   gen undef(_IDNT_undef());

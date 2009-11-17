@@ -136,8 +136,8 @@
 	/* Abbreviations */
 D	[0-9]
 E	[eE][eE]?[-+]?{D}+
-A	[a-zA-Z~µáàäãâéèêëîíìïóòöôõúùüûıÿñÀÁÃÂÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜİç½]
-AN	[0-9a-zA-Z_.~µáàäãâéèêëîíìïóòöôõúùüûıÿñÀÁÃÂÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜİç½] 
+A	[a-zA-Z~\200-\376]
+AN	[0-9a-zA-Z_.~\200-\376] 
         /* If changed, modify isalphan in help.cc FIXME is . allowed inside alphanumeric */
 
 %x comment
@@ -199,7 +199,7 @@ AN	[0-9a-zA-Z_.~µáàäãâéèêëîíìïóòöôõúùüûıÿñÀÁÃÂÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜİç½]
 "_"                     return T_UNIT;
 "'"                     if (opened_quote(yyextra)) { opened_quote(yyextra)=0; return T_QUOTE; } if (index_status(yyextra) && !in_rpn(yyextra) && xcas_mode(yyextra)!= 1) return T_PRIME; opened_quote(yyextra)=1; return T_QUOTE;
 ";"			index_status(yyextra)=0; if (xcas_mode(yyextra)==3) return TI_SEMI; (*yylval)=0; return T_SEMI;
-"§"                  index_status(yyextra)=0; if (xcas_mode(yyextra)==3) return T_SEMI; return TI_SEMI;
+"Â§"                  index_status(yyextra)=0; if (xcas_mode(yyextra)==3) return T_SEMI; return TI_SEMI;
 ":"			if (spread_formula(yyextra)) return T_DEUXPOINTS; if ( xcas_mode(yyextra)==3 ) { index_status(yyextra)=0; return TI_DEUXPOINTS; }  index_status(yyextra)=0; if (xcas_mode(yyextra)>0) { (*yylval)=1; return T_SEMI; } else return T_DEUXPOINTS;
 ":;"                    (*yylval)=1; return T_SEMI;
 "::"                    return T_DOUBLE_DEUX_POINTS;
@@ -212,6 +212,7 @@ AN	[0-9a-zA-Z_.~µáàäãâéèêëîíìïóòöôõúùüûıÿñÀÁÃÂÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜİç½]
 "%e"			index_status(yyextra)=1; (*yylval) = symbolic(at_exp,1); return T_LITERAL;
 "%pi"			index_status(yyextra)=1; (*yylval) = cst_pi; return T_LITERAL;
 "pi"			index_status(yyextra)=1; (*yylval) = cst_pi; return T_LITERAL;
+"Ï€"			index_status(yyextra)=1; (*yylval) = cst_pi; return T_LITERAL;
 "Pi"			index_status(yyextra)=1; (*yylval) = cst_pi; return T_LITERAL;
 "PI"			index_status(yyextra)=1; (*yylval) = cst_pi; return T_LITERAL;
 "euler_gamma"		index_status(yyextra)=1; (*yylval) = cst_euler_gamma; return T_LITERAL;
@@ -221,7 +222,7 @@ AN	[0-9a-zA-Z_.~µáàäãâéèêëîíìïóòöôõúùüûıÿñÀÁÃÂÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜİç½]
 "plus_inf"		index_status(yyextra)=1; (*yylval) = plus_inf; return T_LITERAL;
 "minus_inf"		index_status(yyextra)=1; (*yylval) = minus_inf; return T_LITERAL;
 "undef"		        index_status(yyextra)=1; (*yylval) = undef; return T_LITERAL;
-"¤"                     return T_END_INPUT;
+"Ã¿"                     return T_END_INPUT;
 
                /* integer values */
 "DOM_int"                  index_status(yyextra)=0; (*yylval) = _INT_; (*yylval).subtype=_INT_TYPE; return T_TYPE_ID;
@@ -604,8 +605,8 @@ AN	[0-9a-zA-Z_.~µáàäãâéèêëîíìïóòöôõúùüûıÿñÀÁÃÂÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜİç½]
 "-="                    index_status(yyextra)=0; (*yylval)=gen(at_decrement,1); return T_PLUS;
 ".+"                    index_status(yyextra)=0; (*yylval)=gen(at_plus,2); return T_PLUS;
 "&"                     index_status(yyextra)=0; (*yylval)=gen(at_plus,2); return T_PLUS;
-"²"                     index_status(yyextra)=0; (*yylval)=2; return T_SQ;
-"³"                     index_status(yyextra)=0; (*yylval)=3; return T_SQ;
+"Â²"                     index_status(yyextra)=0; (*yylval)=2; return T_SQ;
+"Â³"                     index_status(yyextra)=0; (*yylval)=3; return T_SQ;
   /* "','"                   index_status(yyextra)=0; (*yylval)=gen(at_makevector,2); return T_QUOTED_BINARY; commented because of f('a','b') */
 "'+'"                   index_status(yyextra)=0; (*yylval)=gen(at_plus,2); return T_QUOTED_BINARY;
 "_plus"                   index_status(yyextra)=0; (*yylval)=gen(at_plus,2); return T_QUOTED_BINARY;
@@ -1247,7 +1248,7 @@ AN	[0-9a-zA-Z_.~µáàäãâéèêëîíìïóòöôõúùüûıÿñÀÁÃÂÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜİç½]
 	    ss+=s[i];
 	}
       }
-      lexer_string = ss+"\n¤";
+      lexer_string = ss+"\nÃ¿";
       yylex_init(&scanner);
       yyset_extra(contextptr, scanner);
       YY_BUFFER_STATE state=yy_scan_string(lexer_string.c_str(),scanner);

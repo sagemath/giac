@@ -303,10 +303,18 @@ namespace xcas {
     for (;ypos<h;){
       if (ypos)
 	print_newpage(p);
+#ifdef _HAVE_FL_UTF8_HDR_
+      s->scroll_to(0,0);
+#else
       s->position(0,0);
+#endif
       newpos=scan(g,ypos+hp,hp);
       s->resize(0,0,wp,newpos-ypos);
+#ifdef _HAVE_FL_UTF8_HDR_
+      s->scroll_to(0,ypos);
+#else
       s->position(0,ypos);
+#endif
       p->place(0.0,0, margin,margin, pixel_scale);
       fl_draw(s);
       ypos = newpos;

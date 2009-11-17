@@ -1058,7 +1058,11 @@ namespace xcas {
       if (Fl_Scroll * s = dynamic_cast<Fl_Scroll *>(hp->parent())){
 	int spos=s->yposition();
 	if (spos+s->h()>hp->h()){
+#ifdef _HAVE_FL_UTF8_HDR_
+	  s->scroll_to(0,max(min(hp->h()-s->h(),spos+dy),0));
+#else
 	  s->position(0,max(min(hp->h()-s->h(),spos+dy),0));
+#endif
 	}
 	s->redraw();
       }
@@ -1353,7 +1357,11 @@ namespace xcas {
       int ypos=0;
       if (Fl_Scroll * s=(Fl_Scroll *) dynamic_cast<const Fl_Scroll *>(g)){
 	ypos=s->yposition();
+#ifdef _HAVE_FL_UTF8_HDR_
+	s->scroll_to(s->xposition(),0);
+#else
 	s->position(s->xposition(),0);
+#endif
       }
       // call widget_sprint on children
       int n=g->children();
@@ -1366,12 +1374,16 @@ namespace xcas {
       }
       res += "]\n";
       if (Fl_Scroll * s=(Fl_Scroll *) dynamic_cast<const Fl_Scroll *>(g)){
+#ifdef _HAVE_FL_UTF8_HDR_
+	s->scroll_to(s->xposition(),ypos);
+#else
 	s->position(s->xposition(),ypos);
+#endif
       }
       return res;
     }
     if (const Gen_Value_Slider *g=dynamic_cast<const Gen_Value_Slider *>(o)){
-      res += "\n" + giac::print_INT_(g->pos)+" "+print_DOUBLE_(g->minimum())+" "+print_DOUBLE_(g->maximum())+" "+print_DOUBLE_(g->value())+" "+string(g->label())+"\n";
+      res += "\n" + giac::print_INT_(g->pos)+" "+print_DOUBLE_(g->minimum())+" "+print_DOUBLE_(g->maximum())+" "+print_DOUBLE_(g->value())+" "+string(g->label())+" "+print_DOUBLE_(g->Fl_Valuator::step())+"\n";
       return res;
     }
     return res + "\n[]\n";
@@ -2081,17 +2093,21 @@ namespace xcas {
       if (pos>0 && pos<tmps){
 	next_line_nonl(s,L,line,i);
 #ifdef HAVE_SSTREAM
-    istringstream is(line);
+	istringstream is(line);
 #else
-    istrstream is(line.c_str());
+	istrstream is(line.c_str());
 #endif
-	double m,M,val;
+	double m,M,val,step=0.1;
 	int pos;
 	string name;
 	// is >> name ; // this is not the name but //, name is read below
-	is >> pos >> m >> M >> val >> name;
+	try {
+	  is >> pos >> m >> M >> val >> name >> step;
+	} catch(std::runtime_error & e) { 
+	}
 	Gen_Value_Slider * res=new Gen_Value_Slider(x+3*lsize,y,w-3*lsize,h,pos,m,M,(M-m)/100.,name,name.c_str());
 	res->value(val);
+	res->step(step);
 	res->label(name.c_str());
 	res->labelfont(police);
 	res->labelsize(lsize);

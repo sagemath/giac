@@ -3354,6 +3354,10 @@ namespace giac {
   // expression,t,vars,init_values,t=tmin..tmax
   // expression,[t,vars],[t0,init_values],t1
   gen odesolve(const vecteur & w,GIAC_CONTEXT){
+#ifndef HAVE_LIBGSL
+    settypeerr("GSL not available");
+    return undef;
+#endif
     vecteur v(w);
     int vs=v.size();
     if (vs<3)

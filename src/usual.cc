@@ -2622,7 +2622,7 @@ namespace giac {
     if (b.type==_INT_){
 #ifdef COMPILE_FOR_STABILITY
       if (b.val > FACTORIAL_SIZE_LIMIT)
-	setstabilityerr("pow");
+	setstabilityerr(contextptr);
 #endif
       if (b.val==1)
 	return a;

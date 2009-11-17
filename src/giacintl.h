@@ -2,6 +2,7 @@
 #define _GIACINTL_H
 
 #include "first.h"
+#include "config.h"
 
 #if defined(__APPLE__) || defined(__FreeBSD__)
 #include <libintl.h>

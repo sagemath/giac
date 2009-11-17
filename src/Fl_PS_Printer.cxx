@@ -1230,32 +1230,495 @@ int Fl_PS_Printer::height(){
 
 ///////////////////////////////  text ////////////////////////////////////
 
-void Fl_PS_Printer::transformed_draw(const char* str, int n, double x, double y){
+/* a pathetic quick & dirty UTF-8 parser 
+ *
+ * adapted from Markus Kuhn -- Public Domain --
+ * (Get uniset from <http://www.cl.cam.ac.uk/~mgk25/download/uniset.tar.gz>.)
+ */
 
-  if (!n||!str||!*str)return;
+// convert UTF-8 string to wchar_t *, return adjusted length
+unsigned int wchar_convert(wchar_t * wline,const char * line,unsigned int n){
+  unsigned int i=0,j=0,c;
+  for (;i<n;i++){
+    c=line[i];
+    if ( (c & 0xc0) == 0x80)
+      continue;
+    if (c < 128){
+      wline[j]=c;
+      j++;
+      continue;
+    }
+    if ( (c & 0xe0) == 0xc0) {
+      i++;
+      c = (c & 0x1f) << 6 | (line[i] & 0x3f);
+      wline[j]=c;
+      j++;
+      continue;
+    } 
+    if ( (c & 0xf0) == 0xe0) {
+      i++;
+      c = (c & 0x0f) << 6 | (line[i] & 0x3f);
+      i++;
+      c = c << 6 | (line[i] & 0x3f);
+      wline[j]=c;
+      j++;
+      continue;
+    } 
+    if ( (c & 0xf1) == 0xf0) {
+      i++;
+      c = (c & 0x0f) << 6 | (line[i] & 0x3f);
+      i++;
+      c = c << 6 | (line[i] & 0x3f);
+      i++;
+      c = c << 6 | (line[i] & 0x3f);
+    } else 
+      c = 0xfffd;
+    wline[j]=c;
+    j++;
+  }
+  wline[j]=0;
+  return j;
+}
+
+
+#define GRAVE        " (\301) "
+#define ACUTE        " (\302) "
+#define CIRCUMFLEX   " (\303) "
+#define TILDE        " (\304) "
+#define MACRON       " (\305) "
+#define BREVE        " (\306) "
+#define DOTACCENT    " (\307) "
+#define DIERESIS     " (\310) "
+#define RING         " (\312) "
+#define CEDILLA      " (\313) "
+#define HUNGARUMLAUT " (\315) "
+#define OGONEK       " (\316) "
+#define CARON        " (\317) "
+#define DOTLESSI     "(\365)"
+
+struct charentry {
+  unsigned short ucs;
+  char execute; /* 0: s is a glyphname, 1: s is executable code */ 
+  const char *s;
+} chartab[] ={
+  { 0x0027, 0, "quotesingle" },
+  { 0x0060, 0, "grave" },
+  { 0x00A0, 0, "space" },
+  { 0x00A1, 0, "exclamdown" },
+  { 0x00A2, 0, "cent" },
+  { 0x00A3, 0, "sterling" },
+  { 0x00A4, 0, "currency" },
+  { 0x00A5, 0, "yen" },
+  { 0x00A6, 0, "brokenbar" },
+  { 0x00A7, 0, "section" },
+  { 0x00A8, 0, "dieresis" },
+  { 0x00A9, 0, "copyright" },
+  { 0x00AA, 0, "ordfeminine" },
+  { 0x00AB, 0, "guillemotleft" },
+  { 0x00AC, 0, "logicalnot" },
+  { 0x00AD, 0, "hyphen" },
+  { 0x00AE, 0, "registered" },
+  { 0x00AF, 0, "macron" },
+  { 0x00B0, 0, "degree" },
+  { 0x00B1, 0, "plusminus" },
+  { 0x00B2, 0, "twosuperior" },
+  { 0x00B3, 0, "threesuperior" },
+  { 0x00B4, 0, "acute" },
+  { 0x00B5, 0, "mu" },
+  { 0x00B6, 0, "paragraph" },
+  { 0x00B7, 0, "periodcentered" },
+  { 0x00B8, 0, "cedilla" },
+  { 0x00B9, 0, "onesuperior" },
+  { 0x00BA, 0, "ordmasculine" },
+  { 0x00BB, 0, "guillemotright" },
+  { 0x00BC, 0, "onequarter" },
+  { 0x00BD, 0, "onehalf" },
+  { 0x00BE, 0, "threequarters" },
+  { 0x00BF, 0, "questiondown" },
+  { 0x00C0, 0, "Agrave" },
+  { 0x00C1, 0, "Aacute" },
+  { 0x00C2, 0, "Acircumflex" },
+  { 0x00C3, 0, "Atilde" },
+  { 0x00C4, 0, "Adieresis" },
+  { 0x00C5, 0, "Aring" },
+  { 0x00C6, 0, "AE" },
+  { 0x00C7, 0, "Ccedilla" },
+  { 0x00C8, 0, "Egrave" },
+  { 0x00C9, 0, "Eacute" },
+  { 0x00CA, 0, "Ecircumflex" },
+  { 0x00CB, 0, "Edieresis" },
+  { 0x00CC, 0, "Igrave" },
+  { 0x00CD, 0, "Iacute" },
+  { 0x00CE, 0, "Icircumflex" },
+  { 0x00CF, 0, "Idieresis" },
+  { 0x00D0, 0, "Eth" },
+  { 0x00D1, 0, "Ntilde" },
+  { 0x00D2, 0, "Ograve" },
+  { 0x00D3, 0, "Oacute" },
+  { 0x00D4, 0, "Ocircumflex" },
+  { 0x00D5, 0, "Otilde" },
+  { 0x00D6, 0, "Odieresis" },
+  { 0x00D7, 0, "multiply" },
+  { 0x00D8, 0, "Oslash" },
+  { 0x00D9, 0, "Ugrave" },
+  { 0x00DA, 0, "Uacute" },
+  { 0x00DB, 0, "Ucircumflex" },
+  { 0x00DC, 0, "Udieresis" },
+  { 0x00DD, 0, "Yacute" },
+  { 0x00DE, 0, "Thorn" },
+  { 0x00DF, 0, "germandbls" },
+  { 0x00E0, 0, "agrave" },
+  { 0x00E1, 0, "aacute" },
+  { 0x00E2, 0, "acircumflex" },
+  { 0x00E3, 0, "atilde" },
+  { 0x00E4, 0, "adieresis" },
+  { 0x00E5, 0, "aring" },
+  { 0x00E6, 0, "ae" },
+  { 0x00E7, 0, "ccedilla" },
+  { 0x00E8, 0, "egrave" },
+  { 0x00E9, 0, "eacute" },
+  { 0x00EA, 0, "ecircumflex" },
+  { 0x00EB, 0, "edieresis" },
+  { 0x00EC, 0, "igrave" },
+  { 0x00ED, 0, "iacute" },
+  { 0x00EE, 0, "icircumflex" },
+  { 0x00EF, 0, "idieresis" },
+  { 0x00F0, 0, "eth" },
+  { 0x00F1, 0, "ntilde" },
+  { 0x00F2, 0, "ograve" },
+  { 0x00F3, 0, "oacute" },
+  { 0x00F4, 0, "ocircumflex" },
+  { 0x00F5, 0, "otilde" },
+  { 0x00F6, 0, "odieresis" },
+  { 0x00F7, 0, "divide" },
+  { 0x00F8, 0, "oslash" },
+  { 0x00F9, 0, "ugrave" },
+  { 0x00FA, 0, "uacute" },
+  { 0x00FB, 0, "ucircumflex" },
+  { 0x00FC, 0, "udieresis" },
+  { 0x00FD, 0, "yacute" },
+  { 0x00FE, 0, "thorn" },
+  { 0x00FF, 0, "ydieresis" },
+  { 0x0100, 1, "(A)" MACRON "Cp"},
+  { 0x0101, 1, "(a)" MACRON "cp"},
+  { 0x0102, 1, "(A)" BREVE  "Cp"},
+  { 0x0103, 1, "(a)" BREVE  "cp"},
+  { 0x0104, 1, "(A)" OGONEK "cp" },
+  { 0x0105, 1, "(a)" OGONEK "cp" },
+  { 0x0106, 1, "(C)" ACUTE "Cp" },
+  { 0x0107, 1, "(c)" ACUTE "cp" },
+  { 0x0108, 1, "(C)" CIRCUMFLEX "Cp" },
+  { 0x0109, 1, "(c)" CIRCUMFLEX "cp" },
+  { 0x010A, 1, "(C)" DOTACCENT "Cp" },
+  { 0x010B, 1, "(c)" DOTACCENT "cp" },
+  { 0x010C, 1, "(C)" CARON "Cp" },
+  { 0x010D, 1, "(c)" CARON "cp" },
+  { 0x010E, 1, "(D)" CARON "Cp" },
+  { 0x010F, 1, "(d)" CARON "Cp" },
+  { 0x0110, 0, "Eth" },
+  { 0x0111, 1, "(d) (-) 0.1 0.2 scp" },
+  { 0x0112, 1, "(E)" MACRON "Cp" },
+  { 0x0113, 1, "(e)" MACRON "cp" },
+  { 0x0114, 1, "(E)" BREVE "Cp" },
+  { 0x0115, 1, "(e)" BREVE "cp" },
+  { 0x0116, 1, "(E)" DOTACCENT "Cp" },
+  { 0x0117, 1, "(e)" DOTACCENT "cp" },
+  { 0x0118, 1, "(E)" OGONEK "cp" },
+  { 0x0119, 1, "(e)" OGONEK "cp" },
+  { 0x011A, 1, "(E)" CARON "Cp" },
+  { 0x011B, 1, "(e)" CARON "cp" },
+  { 0x011C, 1, "(G)" CIRCUMFLEX "Cp" },
+  { 0x011D, 1, "(g)" CIRCUMFLEX "cp" },
+  { 0x011E, 1, "(G)" BREVE "Cp" },
+  { 0x011F, 1, "(g)" BREVE "cp" },
+  { 0x0120, 1, "(G)" DOTACCENT "Cp" },
+  { 0x0121, 1, "(g)" DOTACCENT "cp" },
+  { 0x0122, 1, "(G)" CEDILLA "cp" },
+  { 0x0124, 1, "(H)" CIRCUMFLEX "Cp" },
+  { 0x0125, 1, "(h)" CIRCUMFLEX "Cp" },
+  { 0x0126, 1, "(H) (-) 0 0.15 scp" },
+  { 0x0127, 1, "(h) (-) -0.1 0.2 scp" },
+  { 0x0128, 1, "(I)" TILDE "Cp" },
+  { 0x0129, 1, DOTLESSI TILDE "cp" },
+  { 0x012A, 1, "(I)" MACRON "Cp" },
+  { 0x012B, 1, DOTLESSI MACRON "cp" },
+  { 0x012C, 1, "(I)" BREVE "Cp" },
+  { 0x012D, 1, DOTLESSI BREVE "cp" },
+  { 0x012E, 1, "(I)" OGONEK "cp" },
+  { 0x012F, 1, "(i)" OGONEK "cp" },
+  { 0x0130, 1, "(I)" DOTACCENT "Cp" },
+  { 0x0131, 0, "dotlessi" },
+  { 0x0134, 1, "(J)" CIRCUMFLEX "Cp" },
+  { 0x0135, 1, "(j)" CIRCUMFLEX "cp" },
+  { 0x0136, 1, "(K)" CEDILLA "cp" },
+  { 0x0137, 1, "(k)" CEDILLA "cp" },
+  { 0x0138, 1, "gsave currentpoint translate 1 0.7 scale (K) show grestore "
+    "(K) stringwidth rmoveto" },
+  { 0x0139, 1, "(L)" ACUTE "Cp" },
+  { 0x013A, 1, "(l)" ACUTE "Cp" },
+  { 0x013B, 1, "(L)" CEDILLA "cp" },
+  { 0x013C, 1, "(l)" CEDILLA "cp" },
+  { 0x013D, 1, "(L)" CARON "Cp" },
+  { 0x013E, 1, "(l)" CARON "Cp" },
+  { 0x0141, 0, "Lslash" },
+  { 0x0142, 0, "lslash" },
+  { 0x0143, 1, "(N)" ACUTE "Cp" },
+  { 0x0144, 1, "(n)" ACUTE "cp" },
+  { 0x0145, 1, "(N)" CEDILLA "cp" },
+  { 0x0146, 1, "(n)" CEDILLA "cp" },
+  { 0x0147, 1, "(N)" CARON "Cp" },
+  { 0x0148, 1, "(n)" CARON "cp" },
+  { 0x014C, 1, "(O)" MACRON "Cp" },
+  { 0x014D, 1, "(o)" MACRON "cp" },
+  { 0x014E, 1, "(O)" BREVE "Cp" },
+  { 0x014F, 1, "(o)" BREVE "cp" },
+  { 0x0150, 1, "(O)" HUNGARUMLAUT "Cp" },
+  { 0x0151, 1, "(o)" HUNGARUMLAUT "cp" },
+  { 0x0152, 0, "OE" },
+  { 0x0153, 0, "oe" },
+  { 0x0154, 1, "(R)" ACUTE "Cp" },
+  { 0x0155, 1, "(r)" ACUTE "cp" },
+  { 0x0156, 1, "(R)" CEDILLA "cp" },
+  { 0x0157, 1, "(r)" CEDILLA "cp" },
+  { 0x0158, 1, "(R)" CARON "Cp" },
+  { 0x0159, 1, "(r)" CARON "cp" },
+  { 0x015A, 1, "(S)" ACUTE "Cp" },
+  { 0x015B, 1, "(s)" ACUTE "cp" },
+  { 0x015C, 1, "(S)" CIRCUMFLEX "Cp" },
+  { 0x015D, 1, "(s)" CIRCUMFLEX "cp" },
+  { 0x015E, 1, "(S)" CEDILLA "cp" },
+  { 0x015F, 1, "(s)" CEDILLA "cp" },
+  { 0x0160, 0, "Scaron" },
+  { 0x0161, 0, "scaron" },
+  { 0x0162, 1, "(T)" CEDILLA "cp" },
+  { 0x0163, 1, "(t)" CEDILLA "cp" },
+  { 0x0164, 1, "(T)" CARON "Cp" },
+  { 0x0165, 1, "(t)" CARON "Cp" },
+  { 0x0166, 1, "(T) (-) cp" },
+  { 0x0167, 1, "(t) (-) -0.1 0 scp" },
+  { 0x0168, 1, "(U)" TILDE "Cp" },
+  { 0x0169, 1, "(u)" TILDE "cp" },
+  { 0x016A, 1, "(U)" MACRON "Cp" },
+  { 0x016B, 1, "(u)" MACRON "cp" },
+  { 0x016C, 1, "(U)" BREVE "Cp" },
+  { 0x016D, 1, "(u)" BREVE "cp" },
+  { 0x016E, 1, "(U)" RING "Cp" },
+  { 0x016F, 1, "(u)" RING "cp" },
+  { 0x0170, 1, "(U)" HUNGARUMLAUT "Cp" },
+  { 0x0171, 1, "(u)" HUNGARUMLAUT "cp" },
+  { 0x0172, 1, "(U)" OGONEK "cp" },
+  { 0x0173, 1, "(u)" OGONEK "cp" },
+  { 0x0174, 1, "(W)" CIRCUMFLEX "Cp" },
+  { 0x0175, 1, "(w)" CIRCUMFLEX "cp" },
+  { 0x0176, 1, "(Y)" CIRCUMFLEX "Cp" },
+  { 0x0177, 1, "(y)" CIRCUMFLEX "cp" },
+  { 0x0178, 0, "Ydieresis" },
+  { 0x0179, 1, "(Z)" ACUTE "Cp" },
+  { 0x017A, 1, "(z)" ACUTE "cp" },
+  { 0x017B, 1, "(Z)" DOTACCENT "Cp" },
+  { 0x017C, 1, "(z)" DOTACCENT "cp" },
+  { 0x017D, 0, "Zcaron" },
+  { 0x017E, 0, "zcaron" },
+  { 0x0189, 0, "Eth" },
+  { 0x0192, 0, "florin" },
+  { 0x02C6, 0, "circumflex" },
+  { 0x02C7, 0, "caron" },
+  { 0x02C9, 0, "macron" },
+  { 0x02D8, 0, "breve" },
+  { 0x02D9, 0, "dotaccent" },
+  { 0x02DA, 0, "ring" },
+  { 0x02DB, 0, "ogonek" },
+  { 0x02DC, 0, "tilde" },
+  { 0x02DD, 0, "hungarumlaut" },
+  { 0x0391, 3, "A"},
+  { 0x0392, 3, "B"},
+  { 0x0393, 3, "G"},
+  { 0x0394, 3, "D"},
+  { 0x0395, 3, "E"},
+  { 0x0396, 3, "Z"},
+  { 0x0397, 3, "H"},
+  { 0x0398, 3, "Q"},
+  { 0x0399, 3, "I"},
+  { 0x039A, 3, "K"},
+  { 0x039B, 3, "L"},
+  { 0x039C, 3, "M"},
+  { 0x039D, 3, "N"},
+  { 0x039E, 3, "X"},
+  { 0x039F, 3, "O"},
+  { 0x03A0, 3, "P"},
+  { 0x03A1, 3, "R"},
+  { 0x03A3, 3, "S"},
+  { 0x03A4, 3, "T"},
+  { 0x03A5, 3, "U"},
+  { 0x03A6, 3, "F"},
+  { 0x03A7, 3, "C"},
+  { 0x03A8, 3, "Y"},
+  { 0x03A9, 3, "W"},
+  { 0x03AC, 2, "aacute"},
+  { 0x03B1, 3, "a"},
+  { 0x03B2, 3, "b"},
+  { 0x03B3, 3, "g"},
+  { 0x03B4, 3, "d"},
+  { 0x03B5, 3, "e"},
+  { 0x03B6, 3, "z"},
+  { 0x03B7, 3, "h"},
+  { 0x03B8, 3, "q"},
+  { 0x03B9, 3, "i"},
+  { 0x03BA, 3, "k"},
+  { 0x03BB, 3, "l"},
+  { 0x03BC, 3, "m" },
+  { 0x03BD, 3, "n"},
+  { 0x03BE, 3, "x"},
+  { 0x03BF, 3, "o"},
+  { 0x03C0, 3, "p"},
+  { 0x03C1, 3, "r"},
+  { 0x03C2, 3, "V"},
+  { 0x03C3, 3, "s"},
+  { 0x03C4, 3, "t"},
+  { 0x03C5, 3, "u"},
+  { 0x03C6, 3, "f"},
+  { 0x03C7, 3, "c"},
+  { 0x03C8, 3, "y"},
+  { 0x03C9, 3, "w"},
+  { 0x03D1, 3, "J"},
+  { 0x03D2, 3, "j"},
+  { 0x03D6, 3, "v"},
+  { 0x2000, 0, "space" },
+  { 0x2001, 0, "space" },
+  { 0x2002, 0, "space" },
+  { 0x2003, 0, "space" },
+  { 0x2004, 0, "space" },
+  { 0x2005, 0, "space" },
+  { 0x2006, 0, "space" },
+  { 0x2007, 1, "(0) stringwidth rmoveto" },
+  { 0x2008, 1, "(.) stringwidth rmoveto" },
+  { 0x2009, 0, "space" },
+  { 0x200A, 0, "space" },
+  { 0x200B, 1, "" },
+  { 0x2010, 0, "hyphen" },
+  { 0x2011, 0, "hyphen" },
+  { 0x2012, 0, "endash" },
+  { 0x2013, 0, "endash" },
+  { 0x2014, 0, "emdash" },
+  { 0x2015, 0, "emdash" },
+  { 0x2018, 0, "quoteleft" },
+  { 0x2019, 0, "quoteright" },
+  { 0x201A, 0, "quotesinglbase" },
+  { 0x201B, 1, "(\047) rev" },
+  { 0x201C, 0, "quotedblleft" },
+  { 0x201D, 0, "quotedblright" },
+  { 0x201E, 0, "quotedblbase" },
+  { 0x201F, 1, "(\272) rev" },
+  { 0x2020, 0, "dagger" },
+  { 0x2021, 0, "daggerdbl" },
+  { 0x2022, 0, "bullet" },
+  { 0x2026, 0, "ellipsis" },
+  { 0x2030, 0, "perthousand" },
+  { 0x2039, 0, "guilsinglleft" },
+  { 0x203A, 0, "guilsinglright" },
+  { 0x203D, 1, "(!) (?) cp" },
+  { 0x2044, 0, "fraction" },
+  { 0x20AC, 1, "(C) (=) -0.1 0 scp" },
+  { 0x2122, 0, "trademark" },
+  { 0x2212, 0, "minus" },
+  { 0x2215, 0, "slash" },
+  { 0x2219, 0, "periodcentered" },
+  { 0x2259, 1, "(=)" CIRCUMFLEX "cp" },
+  { 0x2260, 1, "(=) (/) cp" },
+  { 0x2264, 1, "(<) (-) 0 -0.3 scp" },
+  { 0x2265, 1, "(>) (-) 0 -0.3 scp" },
+  { 0x226E, 1, "(<) (/) cp" },
+  { 0x226F, 1, "(>) (/) cp" },
+  { 0x2500, 1, "{0.05 setlinewidth 0 1 moveto 1 1 lineto stroke} bgr" },
+  { 0x2501, 1, "{0.2 setlinewidth 0 1 moveto 1 1 lineto stroke} bgr" },
+  { 0x2502, 1, "{0.05 setlinewidth 0.5 0 moveto 0.5 2 lineto stroke} bgr" },
+  { 0x2503, 1, "{0.2 setlinewidth 0.5 0 moveto 0.5 2 lineto stroke} bgr" },
+  { 0x250C, 1, "{0.05 setlinewidth 0.5 0 moveto 0.5 1 lineto 1 1 lineto stroke} bgr" },
+  { 0x2510, 1, "{0.05 setlinewidth 0.5 0 moveto 0.5 1 lineto 0 1 lineto stroke} bgr" },
+  { 0x2514, 1, "{0.05 setlinewidth 0.5 2 moveto 0.5 1 lineto 1 1 lineto stroke} bgr" },
+  { 0x2518, 1, "{0.05 setlinewidth 0.5 2 moveto 0.5 1 lineto 0 1 lineto stroke} bgr" },
+  { 0x253C, 1, "{0.05 setlinewidth 0.5 0 moveto 0.5 2 lineto stroke "
+    "0 1 moveto 1 1 lineto stroke} bgr" },
+  { 0x254B, 1, "{0.2 setlinewidth 0.5 0 moveto 0.5 2 lineto stroke "
+    "0 1 moveto 1 1 lineto stroke} bgr" },
+  { 0xFB01, 0, "fi" },
+  { 0xFB02, 0, "fl" }
+};
+
+
+int get_charentry(wchar_t c)
+{
+  int min = 0;
+  int max = sizeof(chartab) / sizeof(struct charentry) - 1;
+  int mid;
+
+  /* binary search in table */
+  while (max >= min) {
+    mid = (min + max) / 2;
+    if (chartab[mid].ucs < c)
+      min = mid + 1;
+    else if (chartab[mid].ucs > c)
+      max = mid - 1;
+    else {
+      /* found it */
+      return mid;
+    }
+  }
+
+  return -1;
+}
+
+void show_line(wchar_t *line,FILE * output,int font_,int size_)
+{
+  int i, g;
+
+  fprintf(output,"(");
+  for (i = 0; line[i]; i++) {
+    if (line[i] == '(' || line[i] == ')' || line[i] == '\\'){
+      fprintf(output,"\\%c", (int) line[i]);
+      continue;
+    }
+    if (line[i] > 128 || line[i] == '\'' || line[i] == '`') {
+      g = get_charentry(line[i]);
+      if (g < 0){
+	fprintf(output,"?");
+	continue;
+      }
+      if (chartab[g].execute==1){
+	fprintf(output,") show %s (", chartab[g].s);
+	continue;
+      }
+      if (chartab[g].execute==0){
+	fprintf(output,") show /%s glyphshow (", chartab[g].s);
+	continue;
+      }
+      if (chartab[g].execute==3){
+	fprintf(output,") show /Symbol SF %d FS (%s) show /%s SF %d FS (",size_,chartab[g].s,_fontNames[font_],size_);
+	continue;
+      }
+      if (chartab[g].execute==2){
+	fprintf(output,") show /Symbol SF %d FS /%s glyphshow /%s SF %d FS (",size_,chartab[g].s,_fontNames[font_],size_);
+	continue;
+      }
+    } 
+    else
+      fprintf(output,"%c", (int) line[i]);
+  } // end for
+  fprintf(output,") show\n");
+}
+
+void Fl_PS_Printer::transformed_draw(const char* STR, int n, double x, double y){
+
+  if (!n||!STR||!*STR)return;
+  wchar_t * str=new wchar_t[n+1];
+  n=wchar_convert(str,STR,n);
   fprintf(output, "GS\n");
   fprintf(output,"%g %g moveto\n", x , y);
   fprintf(output, "[1 0 0 -1 0 0] concat\n");
   int i=1;
-  fprintf(output, "\n(");
-  for(int j=0;j<n;j++){
-    if(i>240){
-      fprintf(output, "\\\n");
-
-      i=0;
-    }
-    i++;
-    switch (*str) {
-      case '(': case ')':
-        fprintf(output, "\\%c" , *str);
-        break;
-      default:
-        fprintf(output, "%c", *str);
-    }
-    str++;
-  }
-  fprintf(output, ") show\n");
+  show_line(str,output,font_,size_);
   fprintf(output, "GR\n");
+  delete [] str;
 }
 
 
