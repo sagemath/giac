@@ -4,7 +4,7 @@ Priority: extra
 Maintainer: Debian Science Maintainers <debian-science-maintainers@lists.alioth.debian.org>
 Uploaders: Gilles Filippini <gilles.filippini@free.fr>
 DM-Upload-Allowed: yes
-Build-Depends: quilt (>= 0.46-7~), debhelper (>= 7), automake, libtool, cvs, libgmp3-dev, libreadline-dev, libntl-dev, libmpfr-dev, libpari-dev, texinfo
+Build-Depends: quilt (>= 0.46-7~), debhelper (>= 7), automake, libtool, cvs, libgmp3-dev, libreadline-dev, libntl-dev, libmpfr-dev, libpari-dev, texinfo, texlive-math-extra, texlive-pstricks, texlive-latex-recommended, latex2html
 Standards-Version: 3.8.3
 Homepage: http://www-fourier.ujf-grenoble.fr/~parisse/giac.html
 
