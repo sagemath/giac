@@ -1,3 +1,4 @@
+destdir
 gcc-4.3
 autobuild
 checks_equivs
