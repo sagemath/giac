@@ -1,7 +1,7 @@
 Index: giac/Makefile.am
 ===================================================================
---- giac.orig/Makefile.am	2009-11-23 11:49:31.000000000 +0100
-+++ giac/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/Makefile.am	2009-11-23 22:14:13.000000000 +0100
++++ giac/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -8,11 +8,11 @@
  $(PACKAGE)-$(VERSION).tar.gz: dist
  
@@ -24,8 +24,8 @@ Index: giac/Makefile.am
 +	cp xcas.applications $(DESTDIR)$(prefix)/share/application-registry/xcas.applications
 Index: giac/doc/Makefile.am
 ===================================================================
---- giac.orig/doc/Makefile.am	2009-11-23 11:49:31.000000000 +0100
-+++ giac/doc/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/doc/Makefile.am	2009-11-23 22:14:13.000000000 +0100
++++ giac/doc/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -2,12 +2,12 @@
  DIST_SUBDIRS = 	en es fr local
  EXTRA_DIST = aide_cas  README index.html dxcas/* pari/*
@@ -50,8 +50,8 @@ Index: giac/doc/Makefile.am
 +	cp -f pari/* $(DESTDIR)$(prefix)/share/giac/doc/pari
 Index: giac/doc/en/Makefile.am
 ===================================================================
---- giac.orig/doc/en/Makefile.am	2009-11-23 11:49:31.000000000 +0100
-+++ giac/doc/en/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/doc/en/Makefile.am	2009-11-23 22:14:13.000000000 +0100
++++ giac/doc/en/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -14,22 +14,22 @@
  	latex cas
  #	latex giacxcas
@@ -94,8 +94,8 @@ Index: giac/doc/en/Makefile.am
 +	cp -f xcasmenu xcasex keywords $(DESTDIR)$(prefix)/share/giac/doc/en/
 Index: giac/doc/es/Makefile.am
 ===================================================================
---- giac.orig/doc/es/Makefile.am	2009-11-23 11:49:31.000000000 +0100
-+++ giac/doc/es/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/doc/es/Makefile.am	2009-11-23 22:14:12.000000000 +0100
++++ giac/doc/es/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -5,17 +5,17 @@
  dvi: cas_es.tex 
  	latex cas_es
@@ -130,75 +130,33 @@ Index: giac/doc/es/Makefile.am
 +	cp -f xcasmenu xcasex keywords $(DESTDIR)$(prefix)/share/giac/doc/es/
 Index: giac/doc/fr/Makefile.am
 ===================================================================
---- giac.orig/doc/fr/Makefile.am	2009-11-23 11:49:31.000000000 +0100
-+++ giac/doc/fr/Makefile.am	2009-11-23 14:20:53.000000000 +0100
-@@ -40,16 +40,16 @@
- 	latex castor.tex
- 	latex permutation
+--- giac.orig/doc/fr/Makefile.am	2009-11-23 23:07:15.000000000 +0100
++++ giac/doc/fr/Makefile.am	2009-11-23 23:08:52.000000000 +0100
+@@ -5,14 +5,14 @@
+ 	latex tutoriel.tex
+ 	latex2html -local_icons -no_math -html_version 3.2,math tutoriel.tex --address 'Documentation de <A HREF="http://www-fourier.ujf-grenoble.fr/~parisse/giac_fr.html">giac</A> &eacute;crite par Ren&eacute;e De Graeve, Bernard Parisse et Bernard Ycart'
  install-exec-hook: html 
 -	../../mkinstalldirs $(prefix)/share/giac/doc/fr
 -	../../mkinstalldirs $(prefix)/share/giac/doc/fr/tutoriel
--	../../mkinstalldirs $(prefix)/share/giac/doc/fr/casinter
--	../../mkinstalldirs $(prefix)/share/giac/doc/fr/casrouge
--	../../mkinstalldirs $(prefix)/share/giac/doc/fr/casexo
--	../../mkinstalldirs $(prefix)/share/giac/doc/fr/cascas
--	../../mkinstalldirs $(prefix)/share/giac/doc/fr/casgeo
--	../../mkinstalldirs $(prefix)/share/giac/doc/fr/cascmd_fr
--	../../mkinstalldirs $(prefix)/share/giac/doc/fr/cassim
--	../../mkinstalldirs $(prefix)/share/giac/doc/fr/castor
 +	../../mkinstalldirs $(DESTDIR)$(prefix)/share/giac/doc/fr
 +	../../mkinstalldirs $(DESTDIR)$(prefix)/share/giac/doc/fr/tutoriel
-+	../../mkinstalldirs $(DESTDIR)$(prefix)/share/giac/doc/fr/casinter
-+	../../mkinstalldirs $(DESTDIR)$(prefix)/share/giac/doc/fr/casrouge
-+	../../mkinstalldirs $(DESTDIR)$(prefix)/share/giac/doc/fr/casexo
-+	../../mkinstalldirs $(DESTDIR)$(prefix)/share/giac/doc/fr/cascas
-+	../../mkinstalldirs $(DESTDIR)$(prefix)/share/giac/doc/fr/casgeo
-+	../../mkinstalldirs $(DESTDIR)$(prefix)/share/giac/doc/fr/cascmd_fr
-+	../../mkinstalldirs $(DESTDIR)$(prefix)/share/giac/doc/fr/cassim
-+	../../mkinstalldirs $(DESTDIR)$(prefix)/share/giac/doc/fr/castor
  	rm -f tutoriel/*.old
- 	rm -f casinter/*.old
- 	rm -f casrouge/*.old
-@@ -57,20 +57,20 @@
- 	rm -f cascmd_fr/*.old
- 	rm -f cassim/*.old
- 	rm -f castor/*.old
 -	cp -f tutoriel/* $(prefix)/share/giac/doc/fr/tutoriel
--	cp -f casinter/* $(prefix)/share/giac/doc/fr/casinter
--	cp -f casrouge/* $(prefix)/share/giac/doc/fr/casrouge
--	cp -f casgeo/* $(prefix)/share/giac/doc/fr/casgeo
--	cp -f cascmd_fr/* $(prefix)/share/giac/doc/fr/cascmd_fr
--	cp -f cassim/* $(prefix)/share/giac/doc/fr/cassim
--	cp -f castor/* $(prefix)/share/giac/doc/fr/castor
--	cp -f casexo/* $(prefix)/share/giac/doc/fr/casexo
--	cp -f cascas/* $(prefix)/share/giac/doc/fr/cascas
 -	cp -f algo.html $(prefix)/share/giac/doc/fr/
--	cp -f html_* $(prefix)/share/giac/doc/fr/
--	cp -f xcasmenu xcasex keywords $(prefix)/share/giac/doc/fr/
+-	cp -f keywords $(prefix)/share/giac/doc/fr/
 +	cp -f tutoriel/* $(DESTDIR)$(prefix)/share/giac/doc/fr/tutoriel
-+	cp -f casinter/* $(DESTDIR)$(prefix)/share/giac/doc/fr/casinter
-+	cp -f casrouge/* $(DESTDIR)$(prefix)/share/giac/doc/fr/casrouge
-+	cp -f casgeo/* $(DESTDIR)$(prefix)/share/giac/doc/fr/casgeo
-+	cp -f cascmd_fr/* $(DESTDIR)$(prefix)/share/giac/doc/fr/cascmd_fr
-+	cp -f cassim/* $(DESTDIR)$(prefix)/share/giac/doc/fr/cassim
-+	cp -f castor/* $(DESTDIR)$(prefix)/share/giac/doc/fr/castor
-+	cp -f casexo/* $(DESTDIR)$(prefix)/share/giac/doc/fr/casexo
-+	cp -f cascas/* $(DESTDIR)$(prefix)/share/giac/doc/fr/cascas
 +	cp -f algo.html $(DESTDIR)$(prefix)/share/giac/doc/fr/
-+	cp -f html_* $(DESTDIR)$(prefix)/share/giac/doc/fr/
-+	cp -f xcasmenu xcasex keywords $(DESTDIR)$(prefix)/share/giac/doc/fr/
++	cp -f keywords $(DESTDIR)$(prefix)/share/giac/doc/fr/
  #	../../mkinstalldirs /usr/
  #	../../mkinstalldirs /usr/local
  #	../../mkinstalldirs /usr/local/share
  #	rm -rf /usr/local/share/giac
 -#	ln -s $(prefix)/share/giac /usr/local/share/giac
-\ No newline at end of file
 +#	ln -s $(DESTDIR)$(prefix)/share/giac /usr/local/share/giac
-\ No newline at end of file
 Index: giac/doc/local/Makefile.am
 ===================================================================
---- giac.orig/doc/local/Makefile.am	2009-11-23 11:49:31.000000000 +0100
-+++ giac/doc/local/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/doc/local/Makefile.am	2009-11-23 22:14:13.000000000 +0100
++++ giac/doc/local/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -1,15 +1,15 @@
  EXTRA_DIST = xcasmenu xcasex keywords html_* 
  install-exec-hook: 
@@ -230,8 +188,8 @@ Index: giac/doc/local/Makefile.am
 +	ln -sf ../en/casinter $(DESTDIR)$(prefix)/share/giac/doc/local/casinter
 Index: giac/examples/Exemples/Makefile.am
 ===================================================================
---- giac.orig/examples/Exemples/Makefile.am	2009-11-23 11:49:29.000000000 +0100
-+++ giac/examples/Exemples/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/examples/Exemples/Makefile.am	2009-11-23 22:14:11.000000000 +0100
++++ giac/examples/Exemples/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -2,8 +2,8 @@
  DIST_SUBDIRS = 	analyse capes2006 crypto geo3d logo prog arit climat demo geometrie poly opengl
  ## Process this file with automake to produce Makefile.in
@@ -246,8 +204,8 @@ Index: giac/examples/Exemples/Makefile.am
  
 Index: giac/examples/Exemples/analyse/Makefile.am
 ===================================================================
---- giac.orig/examples/Exemples/analyse/Makefile.am	2009-11-23 11:49:29.000000000 +0100
-+++ giac/examples/Exemples/analyse/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/examples/Exemples/analyse/Makefile.am	2009-11-23 22:14:11.000000000 +0100
++++ giac/examples/Exemples/analyse/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -1,7 +1,7 @@
  EXTRA_DIST = newton.xws series_alt.xws ode.xws toile.xws
  install-exec-hook:
@@ -263,8 +221,8 @@ Index: giac/examples/Exemples/analyse/Makefile.am
 +	cp -f *.xws $(DESTDIR)$(prefix)/share/giac/examples/Exemples/analyse
 Index: giac/examples/Exemples/arit/Makefile.am
 ===================================================================
---- giac.orig/examples/Exemples/arit/Makefile.am	2009-11-23 11:49:30.000000000 +0100
-+++ giac/examples/Exemples/arit/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/examples/Exemples/arit/Makefile.am	2009-11-23 22:14:12.000000000 +0100
++++ giac/examples/Exemples/arit/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -2,8 +2,8 @@
  		premier.xws powmod.xws
  
@@ -281,8 +239,8 @@ Index: giac/examples/Exemples/arit/Makefile.am
 +	cp -f *.xws $(DESTDIR)$(prefix)/share/giac/examples/Exemples/arit
 Index: giac/examples/Exemples/capes2006/Makefile.am
 ===================================================================
---- giac.orig/examples/Exemples/capes2006/Makefile.am	2009-11-23 11:49:29.000000000 +0100
-+++ giac/examples/Exemples/capes2006/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/examples/Exemples/capes2006/Makefile.am	2009-11-23 22:14:11.000000000 +0100
++++ giac/examples/Exemples/capes2006/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -1,8 +1,8 @@
  EXTRA_DIST = 2906.xws 3006.xws 0107.xws 0207.xws 0307.xws 0707.xws 0807.xws 1407.xws 1707.xws 2007.xws 2107.xws
  
@@ -299,8 +257,8 @@ Index: giac/examples/Exemples/capes2006/Makefile.am
 +	cp -f *.xws $(DESTDIR)$(prefix)/share/giac/examples/Exemples/capes2006
 Index: giac/examples/Exemples/climat/Makefile.am
 ===================================================================
---- giac.orig/examples/Exemples/climat/Makefile.am	2009-11-23 11:49:29.000000000 +0100
-+++ giac/examples/Exemples/climat/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/examples/Exemples/climat/Makefile.am	2009-11-23 22:14:11.000000000 +0100
++++ giac/examples/Exemples/climat/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -1,8 +1,8 @@
  EXTRA_DIST = glace.xws soleil.xws terre.xws terre.jpg insol.xws vostok.xws  co2.xws energie.xws co2t150.xws edc.xws global_temp.xws
  
@@ -317,8 +275,8 @@ Index: giac/examples/Exemples/climat/Makefile.am
 +	cp -f *.xws *.jpg $(DESTDIR)$(prefix)/share/giac/examples/Exemples/climat
 Index: giac/examples/Exemples/crypto/Makefile.am
 ===================================================================
---- giac.orig/examples/Exemples/crypto/Makefile.am	2009-11-23 11:49:29.000000000 +0100
-+++ giac/examples/Exemples/crypto/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/examples/Exemples/crypto/Makefile.am	2009-11-23 22:14:11.000000000 +0100
++++ giac/examples/Exemples/crypto/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -1,8 +1,8 @@
  EXTRA_DIST = cesar.xws codage.xws rsa.xws reed_s.xws
  
@@ -335,8 +293,8 @@ Index: giac/examples/Exemples/crypto/Makefile.am
 +	cp -f *.xws $(DESTDIR)$(prefix)/share/giac/examples/Exemples/crypto
 Index: giac/examples/Exemples/demo/Makefile.am
 ===================================================================
---- giac.orig/examples/Exemples/demo/Makefile.am	2009-11-23 11:49:30.000000000 +0100
-+++ giac/examples/Exemples/demo/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/examples/Exemples/demo/Makefile.am	2009-11-23 22:14:11.000000000 +0100
++++ giac/examples/Exemples/demo/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -1,8 +1,8 @@
  EXTRA_DIST = calcform.xws arit.xws anniversaire.xws milieu.xws milieux.xws napoleon.xws oct06.xws polylogo.xws apmep.xws
  
@@ -353,8 +311,8 @@ Index: giac/examples/Exemples/demo/Makefile.am
 +	cp -f *.xws $(DESTDIR)$(prefix)/share/giac/examples/Exemples/demo
 Index: giac/examples/Exemples/geo3d/Makefile.am
 ===================================================================
---- giac.orig/examples/Exemples/geo3d/Makefile.am	2009-11-23 11:49:29.000000000 +0100
-+++ giac/examples/Exemples/geo3d/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/examples/Exemples/geo3d/Makefile.am	2009-11-23 22:14:11.000000000 +0100
++++ giac/examples/Exemples/geo3d/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -1,7 +1,7 @@
  EXTRA_DIST = cone.xws circon3d.xws
  install-exec-hook:
@@ -370,8 +328,8 @@ Index: giac/examples/Exemples/geo3d/Makefile.am
 +	cp -f *.xws $(DESTDIR)$(prefix)/share/giac/examples/Exemples/geo3d
 Index: giac/examples/Exemples/geometrie/Makefile.am
 ===================================================================
---- giac.orig/examples/Exemples/geometrie/Makefile.am	2009-11-23 11:49:30.000000000 +0100
-+++ giac/examples/Exemples/geometrie/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/examples/Exemples/geometrie/Makefile.am	2009-11-23 22:14:12.000000000 +0100
++++ giac/examples/Exemples/geometrie/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -1,8 +1,8 @@
  EXTRA_DIST = lieu_s05.xws capes.xws napoleon.xws simson.xws atelier.xws rouepoly.xws hexagone.xws astroide.xws morley_puzzle.xws morley_demo.xws
  
@@ -388,8 +346,8 @@ Index: giac/examples/Exemples/geometrie/Makefile.am
 +	cp -f *.xws $(DESTDIR)$(prefix)/share/giac/examples/Exemples/geometrie
 Index: giac/examples/Exemples/logo/Makefile.am
 ===================================================================
---- giac.orig/examples/Exemples/logo/Makefile.am	2009-11-23 11:49:30.000000000 +0100
-+++ giac/examples/Exemples/logo/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/examples/Exemples/logo/Makefile.am	2009-11-23 22:14:11.000000000 +0100
++++ giac/examples/Exemples/logo/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -1,8 +1,8 @@
  EXTRA_DIST = sapin.xws neige.xws jeu.xws tulipe.xws fleur.xws poule.xws
  
@@ -406,8 +364,8 @@ Index: giac/examples/Exemples/logo/Makefile.am
 +	cp -f *.xws $(DESTDIR)$(prefix)/share/giac/examples/Exemples/logo
 Index: giac/examples/Exemples/opengl/Makefile.am
 ===================================================================
---- giac.orig/examples/Exemples/opengl/Makefile.am	2009-11-23 11:49:29.000000000 +0100
-+++ giac/examples/Exemples/opengl/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/examples/Exemples/opengl/Makefile.am	2009-11-23 22:14:11.000000000 +0100
++++ giac/examples/Exemples/opengl/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -1,7 +1,7 @@
  EXTRA_DIST = sphere.xws surface.xws
  install-exec-hook:
@@ -423,8 +381,8 @@ Index: giac/examples/Exemples/opengl/Makefile.am
 +	cp -f *.xws $(DESTDIR)$(prefix)/share/giac/examples/Exemples/opengl
 Index: giac/examples/Exemples/poly/Makefile.am
 ===================================================================
---- giac.orig/examples/Exemples/poly/Makefile.am	2009-11-23 11:49:30.000000000 +0100
-+++ giac/examples/Exemples/poly/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/examples/Exemples/poly/Makefile.am	2009-11-23 22:14:12.000000000 +0100
++++ giac/examples/Exemples/poly/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -1,8 +1,8 @@
  EXTRA_DIST = cardan.xws horner.xws racine.xws pgcd.xws berle.xws yun.xws hensel.xws reed_sol.xws
  
@@ -441,8 +399,8 @@ Index: giac/examples/Exemples/poly/Makefile.am
 +	cp -f *.xws $(DESTDIR)$(prefix)/share/giac/examples/Exemples/poly
 Index: giac/examples/Exemples/prog/Makefile.am
 ===================================================================
---- giac.orig/examples/Exemples/prog/Makefile.am	2009-11-23 11:49:29.000000000 +0100
-+++ giac/examples/Exemples/prog/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/examples/Exemples/prog/Makefile.am	2009-11-23 22:14:11.000000000 +0100
++++ giac/examples/Exemples/prog/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -1,8 +1,8 @@
  EXTRA_DIST = exemple.xws conformal.xws gauss_jordan.xws arbre.xws
  
@@ -459,8 +417,8 @@ Index: giac/examples/Exemples/prog/Makefile.am
 +	cp -f *.xws $(DESTDIR)$(prefix)/share/giac/examples/Exemples/prog
 Index: giac/examples/Makefile.am
 ===================================================================
---- giac.orig/examples/Makefile.am	2009-11-23 11:49:30.000000000 +0100
-+++ giac/examples/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/examples/Makefile.am	2009-11-23 22:14:12.000000000 +0100
++++ giac/examples/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -2,6 +2,6 @@
  DIST_SUBDIRS = Exemples arit codage demo geo lewisw linalg morley polyfact recur simulation tortue groebner
  ## Process this file with automake to produce Makefile.in
@@ -472,8 +430,8 @@ Index: giac/examples/Makefile.am
  
 Index: giac/examples/arit/Makefile.am
 ===================================================================
---- giac.orig/examples/arit/Makefile.am	2009-11-23 11:49:30.000000000 +0100
-+++ giac/examples/arit/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/examples/arit/Makefile.am	2009-11-23 22:14:12.000000000 +0100
++++ giac/examples/arit/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -1,5 +1,5 @@
  EXTRA_DIST =	numeration estpremier horner \
  		nbrediviseur  puissancerapide  rsa.cxx inpg.cas codage.cas
@@ -484,8 +442,8 @@ Index: giac/examples/arit/Makefile.am
 +	cp * $(DESTDIR)$(prefix)/share/giac/examples/arit
 Index: giac/examples/codage/Makefile.am
 ===================================================================
---- giac.orig/examples/codage/Makefile.am	2009-11-23 11:49:29.000000000 +0100
-+++ giac/examples/codage/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/examples/codage/Makefile.am	2009-11-23 22:14:10.000000000 +0100
++++ giac/examples/codage/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -1,4 +1,4 @@
  EXTRA_DIST =	chiffrementaffine  group2lettres  julescesar  rsa
  install-exec-hook:
@@ -495,8 +453,8 @@ Index: giac/examples/codage/Makefile.am
 +	cp * $(DESTDIR)$(prefix)/share/giac/examples/codage
 Index: giac/examples/demo/Makefile.am
 ===================================================================
---- giac.orig/examples/demo/Makefile.am	2009-11-23 11:49:30.000000000 +0100
-+++ giac/examples/demo/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/examples/demo/Makefile.am	2009-11-23 22:14:12.000000000 +0100
++++ giac/examples/demo/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -2,5 +2,5 @@
  	 pgcd.cpp e05.tex mediane.cxx napoleon.cxx pgcd.cc \
  	simpson.cas random.tab algos_integrale.cxx
@@ -507,8 +465,8 @@ Index: giac/examples/demo/Makefile.am
 +	cp * $(DESTDIR)$(prefix)/share/giac/examples/demo
 Index: giac/examples/geo/Makefile.am
 ===================================================================
---- giac.orig/examples/geo/Makefile.am	2009-11-23 11:49:30.000000000 +0100
-+++ giac/examples/geo/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/examples/geo/Makefile.am	2009-11-23 22:14:12.000000000 +0100
++++ giac/examples/geo/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -13,5 +13,5 @@
  envelopt            geo8        minimum.cxx     Ngone.cas \
  simpson.cxx feuerbach.cxx carres.cxx terre.cas orbite.cas
@@ -519,8 +477,8 @@ Index: giac/examples/geo/Makefile.am
 +	cp * $(DESTDIR)$(prefix)/share/giac/examples/geo
 Index: giac/examples/groebner/Makefile.am
 ===================================================================
---- giac.orig/examples/groebner/Makefile.am	2009-11-23 11:49:30.000000000 +0100
-+++ giac/examples/groebner/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/examples/groebner/Makefile.am	2009-11-23 22:14:12.000000000 +0100
++++ giac/examples/groebner/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -1,4 +1,4 @@
  EXTRA_DIST = cyclic3 cyclic4 cyclic5 cyclic6
  install-exec-hook:
@@ -530,8 +488,8 @@ Index: giac/examples/groebner/Makefile.am
 +	cp * $(DESTDIR)$(prefix)/share/giac/examples/groebner
 Index: giac/examples/lewisw/Makefile.am
 ===================================================================
---- giac.orig/examples/lewisw/Makefile.am	2009-11-23 11:49:30.000000000 +0100
-+++ giac/examples/lewisw/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/examples/lewisw/Makefile.am	2009-11-23 22:14:12.000000000 +0100
++++ giac/examples/lewisw/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -1,4 +1,4 @@
  EXTRA_DIST =	lwA lwB lwC lwD lwE lwF lwG lwHL lwM lwM2 lwN lwN1 lwO lwPQ lwX lw4 fermat_gcd_*1var fermat_gcd_*4var
  install-exec-hook:
@@ -541,8 +499,8 @@ Index: giac/examples/lewisw/Makefile.am
 +	cp * $(DESTDIR)$(prefix)/share/giac/examples/lewisw
 Index: giac/examples/linalg/Makefile.am
 ===================================================================
---- giac.orig/examples/linalg/Makefile.am	2009-11-23 11:49:30.000000000 +0100
-+++ giac/examples/linalg/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/examples/linalg/Makefile.am	2009-11-23 22:14:12.000000000 +0100
++++ giac/examples/linalg/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -1,4 +1,4 @@
  EXTRA_DIST = 	gaussjordan_noyau1.cas  gaussjordan_noyau.cas
  install-exec-hook:
@@ -552,8 +510,8 @@ Index: giac/examples/linalg/Makefile.am
 +	cp * $(DESTDIR)$(prefix)/share/giac/examples/linalg
 Index: giac/examples/morley/Makefile.am
 ===================================================================
---- giac.orig/examples/morley/Makefile.am	2009-11-23 11:49:29.000000000 +0100
-+++ giac/examples/morley/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/examples/morley/Makefile.am	2009-11-23 22:14:11.000000000 +0100
++++ giac/examples/morley/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -3,5 +3,5 @@
  		demonfig2    equimore   fiqure1  morley18   puzzel \
  		trisectfig morley morleynum
@@ -564,8 +522,8 @@ Index: giac/examples/morley/Makefile.am
 +	cp * $(DESTDIR)$(prefix)/share/giac/examples/morley
 Index: giac/examples/polyfact/Makefile.am
 ===================================================================
---- giac.orig/examples/polyfact/Makefile.am	2009-11-23 11:49:29.000000000 +0100
-+++ giac/examples/polyfact/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/examples/polyfact/Makefile.am	2009-11-23 22:14:11.000000000 +0100
++++ giac/examples/polyfact/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -1,4 +1,4 @@
  EXTRA_DIST =	zimmer1 zimmer2 zimmer3 zimmer4 zimmer5 zimmer6 zimmer7
  install-exec-hook:
@@ -575,8 +533,8 @@ Index: giac/examples/polyfact/Makefile.am
 +	cp * $(DESTDIR)$(prefix)/share/giac/examples/polyfact
 Index: giac/examples/recur/Makefile.am
 ===================================================================
---- giac.orig/examples/recur/Makefile.am	2009-11-23 11:49:29.000000000 +0100
-+++ giac/examples/recur/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/examples/recur/Makefile.am	2009-11-23 22:14:11.000000000 +0100
++++ giac/examples/recur/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -1,4 +1,4 @@
  EXTRA_DIST = 	peano.cxx peanoarc.cas trisierpinski.cas sphynx.cxx permutation.cxx autres.cxx  flocon.cxx       plantes.cxx   sphinx.cxx carre.cxx        polygone.cxx  dragon.cxx   session.cxx   triangle.cxx
  install-exec-hook:
@@ -586,8 +544,8 @@ Index: giac/examples/recur/Makefile.am
 +	cp * $(DESTDIR)$(prefix)/share/giac/examples/recur
 Index: giac/examples/simulation/Makefile.am
 ===================================================================
---- giac.orig/examples/simulation/Makefile.am	2009-11-23 11:49:29.000000000 +0100
-+++ giac/examples/simulation/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/examples/simulation/Makefile.am	2009-11-23 22:14:10.000000000 +0100
++++ giac/examples/simulation/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -1,4 +1,4 @@
  EXTRA_DIST = 	deplacement  pains 
  install-exec-hook:
@@ -597,8 +555,8 @@ Index: giac/examples/simulation/Makefile.am
 +	cp * $(DESTDIR)$(prefix)/share/giac/examples/simulation
 Index: giac/examples/tortue/Makefile.am
 ===================================================================
---- giac.orig/examples/tortue/Makefile.am	2009-11-23 11:49:30.000000000 +0100
-+++ giac/examples/tortue/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/examples/tortue/Makefile.am	2009-11-23 22:14:12.000000000 +0100
++++ giac/examples/tortue/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -1,5 +1,5 @@
  EXTRA_DIST =	arbre.cxx  dragon.cxx  gosper.cxx  hilbert.cxx  koch.cxx  \
  		peano.cxx  sapin.cxx
@@ -609,8 +567,8 @@ Index: giac/examples/tortue/Makefile.am
 +	cp * $(DESTDIR)$(prefix)/share/giac/examples/tortue
 Index: giac/src/Makefile.am
 ===================================================================
---- giac.orig/src/Makefile.am	2009-11-23 11:49:28.000000000 +0100
-+++ giac/src/Makefile.am	2009-11-23 14:20:53.000000000 +0100
+--- giac.orig/src/Makefile.am	2009-11-23 22:14:10.000000000 +0100
++++ giac/src/Makefile.am	2009-11-23 23:07:23.000000000 +0100
 @@ -71,18 +71,18 @@
  	casce.cc xcasce.cc xcasctrl.cc casctrl.cc config.h.vcc Makefile.vcc giac_oo.cpp giaclib.vcproj
  
