@@ -4,29 +4,29 @@ Priority: extra
 Maintainer: Debian Science Maintainers <debian-science-maintainers@lists.alioth.debian.org>
 Uploaders: Gilles Filippini <gilles.filippini@free.fr>
 DM-Upload-Allowed: yes
-Build-Depends: quilt (>= 0.46-7~), debhelper (>= 7), automake, libtool, cvs, libgmp3-dev, libreadline-dev, libntl-dev, libmpfr-dev, libpari-dev, texinfo, texlive-math-extra, texlive-pstricks, texlive-latex-recommended, latex2html
+Build-Depends: quilt (>= 0.46-7~), debhelper (>= 7), automake, libtool, cvs, libgmp3-dev, libreadline-dev, libntl-dev, libmpfr-dev, libpari-dev, texinfo, texlive-math-extra, texlive-pstricks, texlive-latex-recommended, latex2html, libfltk1.1-dev, libglu1-mesa-dev, libxinerama-dev, libfontconfig1-dev, libxft-dev, libxext-dev, libgsl0-dev, zlib1g-dev, libpng12-dev, libjpeg7-dev
 Standards-Version: 3.8.3
 Homepage: http://www-fourier.ujf-grenoble.fr/~parisse/giac.html
 
 Package: libgiac
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: <insert up to 60 chars description>
+Description: Computer Algebra System C++ library
  <insert long description, indented with spaces>
 
 Package: libgiac-dev
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: <insert up to 60 chars description>
+Description: Computer Algebra System C++ library - Development files
  <insert long description, indented with spaces>
 
 Package: xcas
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: <insert up to 60 chars description>
+Description: Giac based graphical calculator
  <insert long description, indented with spaces>
 
 Package: giac-doc
 Architecture: all
-Description: documentation for giac
+Description: Documentation for giac and xcas
  <insert long description, indented with spaces>
