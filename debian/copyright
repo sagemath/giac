@@ -1,6 +1,6 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: giac
-Upstream-Contact: Gilles Filippini <gilles.filippini@free.fr>
+Upstream-Contact: Bernard Parisse <parisse@fourier.ujf-grenoble.fr>
 Source: ftp://ftp-fourier.ujf-grenoble.fr/xcas/
 Files-Excluded:
 # Embedded libraries
