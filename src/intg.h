@@ -1,6 +1,6 @@
 // -*- mode:C++ ; compile-command: "g++ -I.. -g -c intg.cc" -*-
 /*
- *  Copyright (C) 2000 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
+ *  Copyright (C) 2000,2014 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -13,8 +13,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #ifndef _GIAC_INTG_H
 #define _GIAC_INTG_H
@@ -26,11 +25,27 @@ namespace giac {
 #endif // ndef NO_NAMESPACE_GIAC
   class gen;
   class identificateur;
-  class unary_function_ptr;
+  struct unary_function_ptr;
+  gen complex_subst(const gen & e,const vecteur & substin,const vecteur & substout,GIAC_CONTEXT);
+  gen complex_subst(const gen & e,const gen & x,const gen & newx,GIAC_CONTEXT);
+  vecteur lvarxwithinv(const gen &e,const gen & x,GIAC_CONTEXT);
+  bool is_constant_wrt(const gen & e,const gen & x,GIAC_CONTEXT);
+  bool is_linear_wrt(const gen & e,const gen &x,gen & a,gen & b,GIAC_CONTEXT);
+  bool is_quadratic_wrt(const gen & e,const gen &x,gen & a,gen & b,gen & c,GIAC_CONTEXT);
+  gen linear_apply(const gen & e,const gen & x,gen & remains, GIAC_CONTEXT, gen (* f)(const gen &,const gen &,gen &,const context *));
+  gen lnabs(const gen & x,GIAC_CONTEXT);
+  extern const unary_function_ptr * const  at_surd ;
+  gen surd(const gen & c,int n,GIAC_CONTEXT);
+  gen _surd(const gen & args,GIAC_CONTEXT);
+  // find surd/NTHROOT inside e, set subst1 to list of surd/NTHROOT and subst2
+  // to replacement by pow
+  void surd2pow(const gen & e,vecteur & subst1,vecteur & subst2,GIAC_CONTEXT);
+  gen invexptoexpneg(const gen& g,GIAC_CONTEXT);
+  bool is_rewritable_as_f_of(const gen & fu,const gen & u,gen & fx,const gen & gen_x,GIAC_CONTEXT);
 
   gen firstcoefftrunc(const gen & e);
   // special version of lvarx that does not remove cst powers
-  vecteur lvarxpow(const gen &e,const identificateur & x);
+  vecteur lvarxpow(const gen &e,const gen & x);
 
   // Check for hypergeometric e, if true
   // write e(x+1)/e(x) as P(n+1)/P(n)*Q(x)/R(x+1) 
@@ -40,75 +55,90 @@ namespace giac {
   void AB2PQR(const polynome & A,const polynome & B,polynome & P,polynome & Q, polynome & R);
   polynome taylor(const polynome & P,const gen & g);
 
-  bool is_rewritable_as_f_of(const gen & fu,const gen & u,gen & fx,const identificateur & x,GIAC_CONTEXT);
-  bool in_is_rewritable_as_f_of(const gen & fu,const gen & u,gen & fx,const identificateur & x,GIAC_CONTEXT);
-  bool is_constant_wrt(const gen & e,const identificateur & x,GIAC_CONTEXT);
-  bool is_linear_wrt(const gen & e,const identificateur &x,gen & a,gen & b,GIAC_CONTEXT);
-  bool is_quadratic_wrt(const gen & e,const identificateur &x,gen & a,gen & b,gen & c,GIAC_CONTEXT);
-  gen linear_apply(const gen & e,const identificateur & x,gen & remains, GIAC_CONTEXT, gen (* f)(const gen &,const identificateur &,gen &,const context *));
-
+  // int(ratfrac,x=-inf..inf)
+  bool intgab_ratfrac(const gen & e,const gen & x,gen & value,GIAC_CONTEXT);
   // integr. of rat. fcns.
-  gen integrate(const gen & e, const gen & x, gen & remains_to_integrate,GIAC_CONTEXT);
-  gen integrate(const gen & e, const identificateur & x, gen & remains_to_integrate,GIAC_CONTEXT);
-  gen linear_integrate(const gen & e,const identificateur & x,gen & remains_to_integrate,GIAC_CONTEXT);
-  gen integrate(const gen & e,const identificateur & x,GIAC_CONTEXT);
-  gen integrate(const gen & e,const gen & f,GIAC_CONTEXT);
+  gen integrate_gen_rem(const gen & e, const gen & x, gen & remains_to_integrate,GIAC_CONTEXT);
+  gen integrate_id_rem(const gen & e, const gen & x, gen & remains_to_integrate,GIAC_CONTEXT,int intmode); // intmode bit 0 is used for sqrt int control, bit 1 control step/step info
+  gen integrate_id_rem(const gen & e, const gen & x, gen & remains_to_integrate,GIAC_CONTEXT);
+  gen linear_integrate(const gen & e,const gen & x,gen & remains_to_integrate,GIAC_CONTEXT);
+  gen integrate_id(const gen & e,const identificateur & x,GIAC_CONTEXT);
+  gen integrate_gen(const gen & e,const gen & f,GIAC_CONTEXT);
   gen _integrate(const gen & args,GIAC_CONTEXT);
-  extern unary_function_ptr at_integrate ;
+  extern const unary_function_ptr * const  at_integrate ;
+  bool tegral(const gen & f,const gen & x,const gen & a,const gen &b,const gen & eps,int nmax,gen & value,GIAC_CONTEXT);
   double rombergo(const gen & f,const gen & x, const gen & a, const gen & b, int n,GIAC_CONTEXT);
   double rombergt(const gen & f,const gen & x, const gen & a, const gen & b, int n,GIAC_CONTEXT);
+  gen romberg(const gen & f0,const gen & x0,const gen & a,const gen &b,const gen & eps,int nmax,GIAC_CONTEXT);
+  gen evalf_int(const gen & f0,const gen & x0,const gen & a,const gen &b,const gen & eps,int nmax,bool romberg_method,GIAC_CONTEXT);
   gen symb_romberg(const gen & a,const gen & b);
-  extern const std::string _romberg_s;
   gen _romberg(const gen & args,GIAC_CONTEXT);
-  extern unary_function_ptr at_romberg;
+  gen _gaussquad(const gen & args,GIAC_CONTEXT);
+  gen ggb_var(const gen & f); // return vx_var or the first var in f if vx_var not there
+  extern const unary_function_ptr * const  at_romberg;
 
   // remove quote inside a maple-like sum/product argument vector
   // returns true if maple syntax was used
   bool maple_sum_product_unquote(vecteur & v,GIAC_CONTEXT);
   // replace x=a..b by x,a,b in the second vector arg
-  void adjust_int_sum_arg(vecteur & v,int & s);
-  gen prodsum(const gen & g,bool isprod);
+  bool adjust_int_sum_arg(vecteur & v,int & s);
+  bool rational_sum(const gen & e,const gen & x,gen & res,gen& remains_to_sum,bool allow_psi,GIAC_CONTEXT);
+  gen prodsum(const gen & g,bool isprod);  
+  polynome taylor(const polynome & P,const gen & g);
+  bool gosper(const polynome & P,const polynome & Q,const polynome & R,polynome & Y,gen & deno,GIAC_CONTEXT);
+  bool is_hypergeometric(const gen & e,const identificateur &x,vecteur &v,polynome & P,polynome & Q,polynome & R,GIAC_CONTEXT);
+  gen sum(const gen & e,const gen & x,gen & remains_to_sum,GIAC_CONTEXT);
+  gen sum_loop(const gen & e,const gen & x,int i,int j,GIAC_CONTEXT);
+  gen sum(const gen & e,const gen & x,const gen & a,const gen &b,GIAC_CONTEXT);
+  gen _sum(const gen & args,GIAC_CONTEXT) ;
+  gen _Sum(const gen & args,GIAC_CONTEXT) ;
+  gen bernoulli(const gen & x);
+  gen _bernoulli(const gen & args,GIAC_CONTEXT) ;
+  vecteur double2vecteur(const double * y,int dim);
+
   // type=0 for seq, 1 for prod, 2 for sum
   gen seqprod(const gen & g,int type,GIAC_CONTEXT);
-  extern const std::string _sum_s;
   bool rational_sum(const gen & e,const gen & x,gen & res,gen& remains_to_sum,bool allow_psi,GIAC_CONTEXT);
   gen sum(const gen & e,const gen & x,gen & remains_to_sum,GIAC_CONTEXT);
   gen sum(const gen & e,const gen & x,const gen & a,const gen &b,GIAC_CONTEXT);
   gen _sum(const gen & args,GIAC_CONTEXT);
-  extern unary_function_ptr at_sum;
+  extern const unary_function_ptr * const  at_sum;
   gen sum_loop(const gen & e,const gen & x,int i,int j,GIAC_CONTEXT);
 
-  void decompose_plus(const vecteur & arg,const identificateur & x,vecteur & non_constant,gen & plus_constant,GIAC_CONTEXT);
-  void decompose_prod(const vecteur & arg,const identificateur & x,vecteur & non_constant,gen & prod_constant,GIAC_CONTEXT);
+  void decompose_plus(const vecteur & arg,const gen & x,vecteur & non_constant,gen & plus_constant,GIAC_CONTEXT);
+  void decompose_prod(const vecteur & arg,const gen & x,vecteur & non_constant,gen & prod_constant,bool signcst,GIAC_CONTEXT);
 
   gen bernoulli(const gen & x);
-  extern const std::string _bernoulli_s;
-  gen _bernoulli(const gen & args);
-  extern unary_function_ptr at_bernoulli;
+  gen _bernoulli(const gen & args,GIAC_CONTEXT);
+  extern const unary_function_ptr * const  at_bernoulli;
 
   // solve dy/dt=f(t,y) with initial value y(t0)=y0 to final value t1
   // returns by default y[t1] or a std::vector of [t,y[t]]
   // if return_curve is true stop as soon as y is outside ymin,ymax
   // f is eitheir a prog (t,y) -> f(t,y) or a comp [f(t,y) t y]
   gen odesolve(const gen & t0orig,const gen & t1orig,const gen & f,const gen & y0orig,double tstep,bool return_curve,double * ymin,double * ymax,int maxstep,GIAC_CONTEXT);
-  extern const std::string _odesolve_s;
   gen _odesolve(const gen & args,GIAC_CONTEXT);
-  extern unary_function_ptr at_odesolve;
+  extern const unary_function_ptr * const  at_odesolve;
 
   gen preval(const gen & f,const gen & x,const gen & a,const gen & b,GIAC_CONTEXT);
-  extern const std::string _ibpdv_s;
   gen _ibpdv(const gen & args,GIAC_CONTEXT);
-  extern unary_function_ptr at_ibpdv;
+  extern const unary_function_ptr * const  at_ibpdv;  
+
+  gen fourier_an(const gen & f,const gen & x,const gen & T,const gen & n,const gen & a,GIAC_CONTEXT);
+  gen fourier_bn(const gen & f,const gen & x,const gen & T,const gen & n,const gen & a,GIAC_CONTEXT);
+  gen fourier_cn(const gen & f,const gen & x,const gen & T,const gen & n,const gen & a,GIAC_CONTEXT);
+
 
   gen _fourier_an(const gen & args,GIAC_CONTEXT);
-  extern unary_function_ptr at_fourier_an ;
+  extern const unary_function_ptr * const  at_fourier_an ;
 
   gen _fourier_bn(const gen & args,GIAC_CONTEXT);
-  extern unary_function_ptr at_fourier_bn ;
+  extern const unary_function_ptr * const  at_fourier_bn ;
    
   gen _fourier_cn(const gen & args,GIAC_CONTEXT);
-  extern unary_function_ptr at_fourier_cn ;
+  extern const unary_function_ptr * const  at_fourier_cn ;
 
+  void comprim(vecteur & v);
 
 #ifndef NO_NAMESPACE_GIAC
 } // namespace giac

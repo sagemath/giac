@@ -1,7 +1,8 @@
-// -*- mode:C++ ; compile-command: "g++ -I.. -I../include -g -c -Wall csturm.cc" -*-
-#include "first.h"
+// -*- mode:C++ ; compile-command: "g++ -I.. -I../include -g -c -Wall -DHAVE_CONFIG_H -DIN_GIAC csturm.cc" -*-
+#include "giacPCH.h"
+
 /*
- *  Copyright (C) 2000,7 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
+ *  Copyright (C) 2000,14 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -14,8 +15,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 using namespace std;
 #include <cmath>
@@ -38,6 +38,7 @@ using namespace std;
 #include "ti89.h"
 #include "plot.h"
 #include "modfactor.h"
+#include"giacintl.h"
 
 #ifndef NO_NAMESPACE_GIAC
 namespace giac {
@@ -69,14 +70,18 @@ namespace giac {
     modpoly a(r0),b(r1),quo,r;
     gen b0(1);
     for (int loop_counter=0;;++loop_counter){
-      int m=a.size()-1;
-      int n=b.size()-1;
+      int m=int(a.size())-1;
+      int n=int(b.size())-1;
       int ddeg=m-n; // should be 1 generically
       if (!n) { // if b is constant, gcd=1
 	return 1;
       }
-      if (ddeg%2) // ddeg should be even if b0 is a _POLY1
-	b0=b.front();
+      b0=b.front();
+      if (b.front().type==_VECT) {
+	// ddeg should be even if b0 is a _POLY1
+	if (ddeg%2==0)
+	  *logptr(contextptr) << gettext("Singular parametric Sturm sequence ") << a << "/" << b << endl;
+      }
       else
 	b0=abs(b.front(),contextptr); 
       coeffP.push_back(pow(b0,ddeg+1));
@@ -95,11 +100,40 @@ namespace giac {
     } // end while loop
   }
 
-  int csturm_vertex_ab(const modpoly & r0,const modpoly & r1,const vecteur & listquo,const vecteur & coeffP, const vecteur & coeffR,const gen & a,int start,GIAC_CONTEXT){
-    int n=listquo.size(),j,k,res=0;
+  static gen csturm_horner(const modpoly & p,const gen & a){
+    if (p.size()==1 && p.front().type==_POLY && p.front()._POLYptr->dim==1){
+      // patch for "sparse modpoly"
+      vector< monomial<gen> >::const_iterator it=p.front()._POLYptr->coord.begin(),itend=p.front()._POLYptr->coord.end();
+      gen res=0,anum=a,aden=1,den=1;
+      int oldpui=0,pui;
+      if (a.type==_FRAC){
+	anum=a._FRACptr->num;
+	aden=a._FRACptr->den;
+      }
+      for (;it!=itend;++it){
+	pui=it->index.front();
+	if (oldpui){
+	  res = res * pow(anum,oldpui-pui,context0);
+	  den = den * pow(aden,oldpui-pui,context0);
+	}
+	res += it->value*den;
+	oldpui=pui;
+      }
+      if (oldpui){
+	res = res *pow(a,oldpui,context0);
+	den = den *pow(a,oldpui,context0);
+      }
+      return res/den;
+    }
+    else
+      return horner(p,a);
+  }
+
+  static int csturm_vertex_ab(const modpoly & r0,const modpoly & r1,const vecteur & listquo,const vecteur & coeffP, const vecteur & coeffR,const gen & a,int start,GIAC_CONTEXT){
+    int n=int(listquo.size()),j,k,res=0;
     vecteur R(n+2);
-    R[0]=horner(r0,a);
-    R[1]=horner(r1,a);
+    R[0]=csturm_horner(r0,a);
+    R[1]=csturm_horner(r1,a);
     for (j=0;j<n;j++)
       R[j+2]=(-coeffP[j]*R[j]+R[j+1]*horner(listquo[j],a))/coeffR[j];
     // signes
@@ -108,7 +142,9 @@ namespace giac {
     }
     for (k=j+1;k<n+2;k++){
       if (is_zero(R[k])) continue;
-      if (is_positive(-R[j]*R[k],contextptr)){
+      if (fastsign(R[j],context0)*fastsign(R[k],context0)<0 
+	  // is_positive(-R[j]*R[k],contextptr)
+	  ){
 	res++;
 	j=k;
       }
@@ -116,8 +152,9 @@ namespace giac {
     return res;
   }
 
+#if 0
   // compute vertex index at a (==0 unless s(a)==0) 
-  int csturm_vertex_a(const modpoly & s,const modpoly & r,const gen & a,int direction,GIAC_CONTEXT){
+  static int csturm_vertex_a(const modpoly & s,const modpoly & r,const gen & a,int direction,GIAC_CONTEXT){
     int j;
     modpoly s1,s2;
     gen sa=horner(s,a,0,s1);
@@ -132,12 +169,22 @@ namespace giac {
     gen tmp=sign(sa,contextptr)*sign(horner(r,a),contextptr);
     return tmp.val*((j%2)?-1:1);
   }
+#endif
 
   void change_scale(modpoly & p,const gen & l){
-    int n=p.size();
+    int n=int(p.size());
     gen lton(l);
     for (int i=n-2;i>=0;--i){
       p[i] = p[i] * lton;
+      lton = lton * l;
+    }
+  }
+
+  void back_change_scale(modpoly & p,const gen & l){
+    int n=int(p.size());
+    gen lton(l);
+    for (int i=n-2;i>=0;--i){
+      p[i] = p[i] / lton;
       lton = lton * l;
     }
   }
@@ -161,43 +208,89 @@ namespace giac {
 
   // Find roots of R, S=R' at precision eps, returns number of roots
   // if eps==0 does not compute intervals for roots
-  int csturm_realroots(const modpoly & S,const modpoly & R,const vecteur & listquo,const vecteur & coeffP, const vecteur & coeffR,const gen & a,const gen & b,const gen & t0, const gen & t1,vecteur & realroots,double eps,GIAC_CONTEXT){
+  static int csturm_realroots(const modpoly & S,const modpoly & R,const vecteur & listquo,const vecteur & coeffP, const vecteur & coeffR,const gen & a,const gen & b,const gen & t0, const gen & t1,vecteur & realroots,double eps,GIAC_CONTEXT){
+    if (is_inf(t0)) // replace with max(R)
+      return csturm_realroots(S,R,listquo,coeffP,coeffR,a,b,-linfnorm(R,contextptr),t1,realroots,eps,contextptr);
+    if (is_inf(t1)) // replace with max(R)
+      return csturm_realroots(S,R,listquo,coeffP,coeffR,a,b,t0,linfnorm(R,contextptr),realroots,eps,contextptr);    
     int n1=csturm_vertex_ab(S,R,listquo,coeffP,coeffR,t0,1,contextptr);
     int n2=csturm_vertex_ab(S,R,listquo,coeffP,coeffR,t1,1,contextptr);
     int n=(n2-n1);
     if (!eps || !n)
       return n;
+    /* disabled localization of roots, do isolation of roots instead
     if (is_strictly_greater(eps,(t1-t0)*abs(b,contextptr),contextptr)){
       realroots.push_back(makevecteur(makevecteur(a+t0*b,a+t1*b),n));
       return n;
     }
-    gen t01=(t0+t1)/2;
-    csturm_realroots(S,R,listquo,coeffP,coeffR,a,b,t0,t01,realroots,eps,contextptr);
-    csturm_realroots(S,R,listquo,coeffP,coeffR,a,b,t01,t1,realroots,eps,contextptr);
+    */
+    if (n==1){
+      gen T0=t0,T1=t1,T2;
+      int s0=fastsign(csturm_horner(R,T0),contextptr);
+      // int s1=fastsign(csturm_horner(R,T1),contextptr);
+      int s2;
+      gen delta=evalf_double(log((T1-T0)*abs(b,contextptr)/eps,contextptr)/log(2.,contextptr),1,contextptr);
+      if (delta.type!=_DOUBLE_){
+	realroots=vecteur(1,gentypeerr(contextptr));
+	return -2;
+      }
+      int nstep=int(delta._DOUBLE_val+1);
+      for (int step=0;step<nstep;++step){
+	T2=(T0+T1)/2;
+	s2=fastsign(csturm_horner(R,T2),contextptr);
+	if (!s2){
+	  realroots.push_back(makevecteur(a+T2*b,n));
+	  return n;
+	}
+	if (s2==s0)
+	  T0=T2;
+	else
+	  T1=T2;
+      }
+      realroots.push_back(makevecteur(makevecteur(a+T0*b,a+T1*b),n));
+      return n;
+    }
+    gen T0=t0,T1=t1,t01;
+    for (;;){
+      t01=(T0+T1)/2;
+      int n01=csturm_vertex_ab(S,R,listquo,coeffP,coeffR,t01,1,contextptr);
+      if (n01!=n1 && n01!=n2)
+	break;
+      if (n01==n1)
+	T0=t01;
+      else
+	T1=t01;
+    }
+    if (csturm_realroots(S,R,listquo,coeffP,coeffR,a,b,T0,t01,realroots,eps,contextptr)==-2)
+      return -2;
+    if (csturm_realroots(S,R,listquo,coeffP,coeffR,a,b,t01,T1,realroots,eps,contextptr)==-2)
+      return -2;
     return n;
   }
 
   // Find complex sturm sequence for P(a+(b-a)*x)
   // If P is "pseudo"-real on [a,b] and eps>0 put roots in [a,b]
   // at precision eps inside realroots
-  // returns a,b,R,S,g,listquo,coeffP,coeffR
-  // and typeseq=0 (complex Sturm) or 1 (limit)
+  // returns a,b,R,S,g,listquo,coeffP,coeffR,typeseq
+  // with typeseq=0 (complex Sturm) or 1 (limit)
   // If b-a is real and horiz_sturm is not empty, it tries to replace
   // the variable by im(a)*i in horiz_sturm and if no quotient in horiz_sturm
   // has a leading 0 coefficient, 
-  // it returns im(a)*i,im(a)*i+1,R,S,g,listquo,coeffP,coeffR
+  // it returns im(a)*i,im(a)*i+1,R,S,g,listquo,coeffP,coeffR,typeseq
   // If b-a is pure imaginary and vert_sturm is not empty, it tries to replace
-  // the variable by re(a) and returns re(a),re(a)+i,R,S,g,listquo,coeffP,coeffR
-  vecteur csturm_segment_seq(const modpoly & P,const gen & a,const gen & b,vecteur & realroots,double eps,vecteur & horiz_sturm,vecteur & vert_sturm,GIAC_CONTEXT){
+  // the variable by re(a) and returns re(a),re(a)+i,R,S,g,listquo,coeffP,coeffR,typeseq
+  static vecteur csturm_segment_seq(const modpoly & P,const gen & a,const gen & b,vecteur & realroots,double eps,vecteur & horiz_sturm,vecteur & vert_sturm,GIAC_CONTEXT){
     // try with horiz_sturm and vert_sturm
     gen ab(b-a);
-    // /*
+    /* // Optimization fails for sturmab(x^3-1,-1-i,1+i)
     if (is_zero(re(ab,contextptr))){ // b-a is pure imaginary
       if (vert_sturm.empty()){
 	gen A=gen(makevecteur(1,0),_POLY1__VECT);
 	vert_sturm.push_back(undef);
 	vecteur tmp;
 	vert_sturm=csturm_segment_seq(P,A,A+cst_i,tmp,eps,horiz_sturm,vert_sturm,contextptr);
+	if (is_undef(vert_sturm))
+	  return vert_sturm;
       }
       if (vert_sturm.size()==9){
 	vecteur res(vert_sturm);
@@ -217,20 +310,20 @@ namespace giac {
 	if (res[6].type==_VECT && !equalposcomp(*res[6]._VECTptr,0))
 	  return res;
 	else
-	  cerr << "list of quotients is not regular" << endl;
+	  CERR << "list of quotients is not regular" << endl;
       }
     }
-    // */
+    */
     modpoly Q(taylor(P,a));
     change_scale(Q,b-a);
     // now x is in 0..1
     gen gtmp=apply(Q,re,contextptr);
     if (gtmp.type!=_VECT)
-      setsizeerr();
+      return vecteur(1,gensizeerr(contextptr));
     modpoly R=trim(*gtmp._VECTptr,0);
     gtmp=apply(Q,im,contextptr);
     if (gtmp.type!=_VECT)
-      setsizeerr();
+      return vecteur(1,gensizeerr(contextptr));
     modpoly S=trim(*gtmp._VECTptr,0);
     modpoly listquo,coeffP,coeffR;
     gen g=csturm_seq(S,R,listquo,coeffP,coeffR,contextptr);
@@ -245,6 +338,8 @@ namespace giac {
       S=derivative(R);
       g=csturm_seq(S,R,listquo,coeffP,coeffR,contextptr);
       typeseq=csturm_realroots(S,R,listquo,coeffP,coeffR,a,b-a,0,1,realroots,eps,contextptr);
+      if (typeseq==-2)
+	return realroots;
     }
     if (g.type==_VECT)
       g=inv_linear_changevar(*g._VECTptr,b-a,a);
@@ -262,22 +357,22 @@ namespace giac {
   // on an interval, S can vanish as many times as long as R keeps
   // the same sign, without modifying the algebraic number of Im=0
   // cuts if S has the same sign on both end)
-  int csturm_segment(const vecteur & seq,const gen & a,const gen & b,GIAC_CONTEXT){
+  static int csturm_segment(const vecteur & seq,const gen & a,const gen & b,GIAC_CONTEXT){
     gen t0,t1;
     if (seq.size()!=9)
-      setsizeerr();
+      return -(RAND_MAX/2);
     gen aseq=seq[0];
     gen bseq=seq[1];
     gen directeur=(b-a)/(bseq-aseq);
     t0=(a-aseq)/(bseq-aseq);
     if ( !is_zero(im(directeur,contextptr)) || !is_zero(im(t0,contextptr)) )
-      setsizeerr();
+      return -(RAND_MAX/2);
     t0=re(t0,contextptr); // t0=normal(t0);
     t1=re(t0+directeur,contextptr); // t1=normal(t0+directeur);
     int signe=1;
     if (is_strictly_greater(t0,t1,contextptr)){
       signe=-1;
-      std::swap<gen>(t0,t1);
+      swapgen(t0,t1);
     } 
     const modpoly & R=*seq[2]._VECTptr;
     const modpoly & S=*seq[3]._VECTptr;
@@ -298,28 +393,36 @@ namespace giac {
     return res;
   }
 
-  bool csturm_square_seq(const modpoly & P,const gen & a0,const gen & b0,const gen & a1,const gen & b1,gen & pgcd,vecteur & realroots,double eps,vecteur & seq1,vecteur & seq2,vecteur & seq3,vecteur & seq4,vecteur & horiz_sturm,vecteur & vert_sturm,GIAC_CONTEXT){
+  static bool csturm_square_seq(const modpoly & P,const gen & a0,const gen & b0,const gen & a1,const gen & b1,gen & pgcd,vecteur & realroots,double eps,vecteur & seq1,vecteur & seq2,vecteur & seq3,vecteur & seq4,vecteur & horiz_sturm,vecteur & vert_sturm,GIAC_CONTEXT){
     gen A=a0+cst_i*b0,B=a1+cst_i*b0;
     vecteur rroots;
     seq1=csturm_segment_seq(P,A,B,rroots,eps,horiz_sturm,vert_sturm,contextptr);
+    if (is_undef(seq1))
+      return false;
     pgcd=seq1[4];
     if (!is_one(pgcd)){
       return false;
     }
     A=a1+cst_i*b0; B=a1+cst_i*b1;
     seq2=csturm_segment_seq(P,A,B,rroots,eps,horiz_sturm,vert_sturm,contextptr);
+    if (is_undef(seq2))
+      return false;
     pgcd=seq2[4];
     if (!is_one(pgcd)){
       return false;
     }
     A=a1+cst_i*b1; B=a0+cst_i*b1;
     seq3=csturm_segment_seq(P,A,B,rroots,eps,horiz_sturm,vert_sturm,contextptr);
+    if (is_undef(seq3))
+      return false;
     pgcd=seq3[4];
     if (!is_one(pgcd)){
       return false;
     }
     A=a0+cst_i*b1; B=a0+cst_i*b0;
     seq4=csturm_segment_seq(P,A,B,rroots,eps,horiz_sturm,vert_sturm,contextptr);
+    if (is_undef(seq4))
+      return false;
     pgcd=seq4[4];
     if (!is_one(pgcd)){
       return false;
@@ -331,26 +434,35 @@ namespace giac {
   // find 2* number of roots of P inside the square of vertex of affixes a,b
   // roots on the square are not counted. P must not vanish at the vertices.
   // The complex Sturm sequences must be known
-  int csturm_square(const modpoly & P,const gen & a0,const gen & b0,const gen & a1,const gen & b1,const vecteur & seq1,const vecteur & seq2,const vecteur & seq3,const vecteur & seq4,GIAC_CONTEXT){
+  // returns -1 on error
+  static int csturm_square(const modpoly & P,const gen & a0,const gen & b0,const gen & a1,const gen & b1,const vecteur & seq1,const vecteur & seq2,const vecteur & seq3,const vecteur & seq4,GIAC_CONTEXT){
     int ind,tmp;
     ind = 0;
     gen A=a0+cst_i*b0,B=a1+cst_i*b0;
     tmp = csturm_segment(seq1,A,B,contextptr);
+    if (tmp==-(RAND_MAX/2))
+      return -1;
     ind += tmp;
     A=a1+cst_i*b0; B=a1+cst_i*b1;
     tmp = csturm_segment(seq2,A,B,contextptr);
+    if (tmp==-(RAND_MAX/2))
+      return -1;
     ind += tmp;
     A=a1+cst_i*b1; B=a0+cst_i*b1;
     tmp = csturm_segment(seq3,A,B,contextptr);
+    if (tmp==-(RAND_MAX/2))
+      return -1;
     ind += tmp;
     A=a0+cst_i*b1; B=a0+cst_i*b0;
     tmp = csturm_segment(seq4,A,B,contextptr);
+    if (tmp==-(RAND_MAX/2))
+      return -1;
     ind += tmp;
     return ind;
   }
 
-  void csturm_normalize(modpoly & p,const gen & a0,const gen & b0,const gen & a1,const gen & b1,vecteur & roots){
-    int n=p.size()-1;
+  static void csturm_normalize(modpoly & p,const gen & a0,const gen & b0,const gen & a1,const gen & b1,vecteur & roots){
+    int n=int(p.size())-1;
     // Make sure that x->a+i*x does not return a multiple 
     // of a real polynomial with the multiple non real
     // If degree of p is even the multiple will be a real (because of lcoeff)
@@ -364,7 +476,7 @@ namespace giac {
       modpoly q(taylor(p,shift));
       gen q0;
       // remove valuation
-      int qs=q.size();
+      int qs=int(q.size());
       int n1=0;
       for (;qs>0;--qs,++n1){
 	if (!is_zero(q0=q[qs-1]))
@@ -387,8 +499,8 @@ namespace giac {
   void ab2a0b0a1b1(const gen & a,const gen & b,gen & a0,gen & b0,gen & a1,gen & b1,GIAC_CONTEXT){
     a0=re(a,contextptr); b0=im(a,contextptr);
     a1=re(b,contextptr); b1=im(b,contextptr);
-    if (ck_is_greater(a0,a1,contextptr)) std::swap<gen>(a0,a1);
-    if (ck_is_greater(b0,b1,contextptr)) std::swap<gen>(b0,b1);
+    if (ck_is_greater(a0,a1,contextptr)) swapgen(a0,a1);
+    if (ck_is_greater(b0,b1,contextptr)) swapgen(b0,b1);
   }
 
   // find 2* number of roots of P inside the square of vertex of affixes a,b
@@ -443,14 +555,17 @@ namespace giac {
 	return -1;
       return evident+n1+n2;
     }
-    return evident+csturm_square(P,a0,b0,a1,b1,seq1,seq2,seq3,seq4,contextptr);
+    int tmp=csturm_square(P,a0,b0,a1,b1,seq1,seq2,seq3,seq4,contextptr);
+    if (tmp==-1)
+      return tmp;
+    return evident+tmp;
   }
 
-  void complex_roots(const modpoly & P,const gen & a0,const gen & b0,const gen & a1,const gen & b1,vecteur & realroots,vecteur & complexroots,double eps);
+  static void complex_roots(const modpoly & P,const gen & a0,const gen & b0,const gen & a1,const gen & b1,vecteur & realroots,vecteur & complexroots,double eps);
 
-  void complex_roots_split(const modpoly & P,const gen & pgcd,const gen & a0,const gen & b0,const gen & a1,const gen & b1,vecteur & realroots,vecteur & complexroots,double eps){
+  static bool complex_roots_split(const modpoly & P,const gen & pgcd,const gen & a0,const gen & b0,const gen & a1,const gen & b1,vecteur & realroots,vecteur & complexroots,double eps){
     if (pgcd.type!=_VECT)
-      setsizeerr("csturm.cc"+pgcd.print());
+      return false;
     modpoly g=(*pgcd._VECTptr)/pgcd[0];
     // true factorization found, restart with each factor
     modpoly p1=P/g;
@@ -458,35 +573,304 @@ namespace giac {
     csturm_normalize(g,a0,b0,a1,b1,realroots);
     complex_roots(p1,a0,b0,a1,b1,realroots,complexroots,eps);
     complex_roots(g,a0,b0,a1,b1,realroots,complexroots,eps);
+    return true;
+  }
+
+#if 0
+  // check that arg is >=pi/8 (assumes im(g)>=0)
+  static bool arg_geq_pi_8(const gen & g){
+    gen gr=re(g,context0),gi=im(g,context0);
+    if (is_positive(-gr,context0))
+      return true;
+    // ? gi/gr>=sqrt(2)-1
+    gen r=gi/gr+1;
+    if (is_positive(r*r-2,context0))
+      return true;
+    return false;
+  }
+
+  // is im(b/a)>=0, tested without quotient
+  static bool arg_in_0_pi(const gen & a,const gen & b){
+    gen A(a),B(b);
+    if (A.type==_FRAC && is_integer(A._FRACptr->den) && is_positive(A._FRACptr->den,context0))
+      A=A._FRACptr->num;
+    if (B.type==_FRAC && is_integer(B._FRACptr->den) && is_positive(B._FRACptr->den,context0))
+      B=B._FRACptr->num;
+    gen c=re(A,context0)*im(B,context0)+re(B,context0)*im(A,context0);
+    return is_positive(c,context0);
+  }
+
+  static gen hornerarg(const modpoly & p,const gen & x){
+    if (p.empty())
+      return 0;
+    if (x.type!=_FRAC || !is_integer(x._FRACptr->den))
+      return horner(p,x);
+    fraction & f =*x._FRACptr;
+    gen num=f.num,den=f.den,d=den;
+    if (is_positive(-f.den,context0)){
+      num=-num; den=-den; d=den;
+    }
+    modpoly::const_iterator it=p.begin(),itend=p.end();
+    gen res(*it);
+    ++it;
+    if (it==itend)
+      return res;
+    for (;;){
+      res=res*num+(*it)*d;
+      ++it;
+      if (it==itend)
+	break;
+      d=d*den;   
+    }
+    return res;
+  }  
+
+  // Find one complex root inside a0,b0->a1,b1, return false if not found
+  static bool complex_1root(const modpoly & P,const gen & a0,const gen & b0,const gen & a1,const gen & b1,vecteur & complexroots,double eps){
+    return false; // disabled since it is not faster!!
+    int step,nstep =int(evalf_double(log(max(a1-a0,b1-b0,context0)/eps,context0)/log(2.0,context0),1,context0)._DOUBLE_val+0.5);
+    if (nstep<4)
+      return false;
+    // First compute P at the 4 vertex and check whether P[vertex_n+1]/P[vertex_n] is in C^+
+    gen P0=hornerarg(P,a0+cst_i*b0),P2=hornerarg(P,a1+cst_i*b0),
+      P4=hornerarg(P,a1+cst_i*b1),P6=hornerarg(P,a0+cst_i*b1);
+    if (!(arg_in_0_pi(P0,P2) && arg_in_0_pi(P2,P4) && arg_in_0_pi(P4,P6) && arg_in_0_pi(P6,P0)))
+      return false;
+    gen A0(a0),A2(a1),B0(b0),B2(b1),A1,B1;
+    for (step=0;step<2*nstep;step++){
+      A1=(A0+A2)/2;
+      B1=(B0+B2)/2;
+      gen P1=hornerarg(P,A1+cst_i*B0),P7=hornerarg(P,A0+cst_i*B1),P8=hornerarg(P,A1+cst_i*B1),P3,P5;
+      bool found=false;
+    /*
+      P6(A0,B2) - P5(A1,B2) - P4(A2,B2)  
+         |            |           |      
+      P7(A0,B1) - P8(A1,B1) - P3(A2,B1) 
+         |            |            |      
+      P0(A0,B0) - P1(A1,B0) - P2(A2,B0)  
+     */
+      // ? P0, P1, P8, P7
+      if (arg_in_0_pi(P0,P1) && arg_in_0_pi(P1,P8) && arg_in_0_pi(P8,P7) && arg_in_0_pi(P7,P0)){
+	A2=A1;
+	B2=B1;
+	P2=P1;
+	P4=P8;
+	P6=P7;
+	if (step<nstep)
+	  continue;
+	found=true;
+      }
+      if (!found){
+	P3=hornerarg(P,A2+cst_i*B1);
+	// ? P1, P2, P3, P8
+	if (arg_in_0_pi(P1,P2) && arg_in_0_pi(P2,P3) && arg_in_0_pi(P3,P8) && arg_in_0_pi(P8,P1)){
+	  A0=A1;
+	  B2=B1;
+	  P0=P1;
+	  P4=P3;
+	  P6=P8;
+	  if (step<nstep)
+	    continue;
+	  found=true;
+	}
+      }
+      if (!found){
+	// P8, P3, P4, P5
+	P5=hornerarg(P,A1+cst_i*B2);
+	if (arg_in_0_pi(P8,P3) && arg_in_0_pi(P3,P4) && arg_in_0_pi(P4,P5) && arg_in_0_pi(P5,P8)){
+	  A0=A1;
+	  B0=B1;
+	  P0=P8;
+	  P2=P3;
+	  P6=P5;
+	  if (step<nstep)
+	    continue;
+	  found=true;
+	}
+      }
+      if (!found){
+	// P7 P8 P5 P6
+	if (arg_in_0_pi(P7,P8) && arg_in_0_pi(P8,P5) && arg_in_0_pi(P5,P6) && arg_in_0_pi(P6,P7)){
+	  A2=A1;
+	  B0=B1;
+	  P0=P7;
+	  P2=P8;
+	  P4=P5;
+	  if (step<nstep)
+	    continue;
+	  found=true;
+	}
+      }
+      if (!found)
+	return false;
+      // Final check that there is indeed a root inside rectangle
+      // args must be >= pi/8 and degree of (P)*max square length/distance to original square <= pi/8
+      gen dist=min(min(A0-a0,a1-A2,context0),min(B0-b0,b1-B2,context0),context0);
+      if (is_zero(dist))
+	continue;
+      gen max_sq=max(A2-A0,B2-B0,context0);
+      if (is_greater((int(P.size())-2)*max_sq/dist,cst_pi/8,context0))
+	continue;
+      gen r1=P2/P0, r2=P4/P2, r3=P6/P4, r4=P0/P6;
+      if (arg_geq_pi_8(r1) && arg_geq_pi_8(r2) && arg_geq_pi_8(r3) && arg_geq_pi_8(r4)){
+	complexroots.push_back(makevecteur(makevecteur(A0+cst_i*B0,A2+cst_i*B2),1));
+	return true;
+      }
+    }
+    return false;
+  }
+#endif
+
+  static gen round2util(const gen & num,const gen & den,int n){
+    if (num.type==_CPLX){
+      gen r=round2util(*num._CPLXptr,den,n);
+      gen i=round2util(*(num._CPLXptr+1),den,n);
+      return r+cst_i*i;
+    }
+    // num must be a _ZINT
+    mpz_t tmp1,tmp2;
+    mpz_init_set(tmp1,*num._ZINTptr);
+    mpz_mul_2exp(tmp1,tmp1,n+1); // tmp1=2^(n+1)*num
+    mpz_add(tmp1,tmp1,*den._ZINTptr); //      + den
+    mpz_init_set(tmp2,*den._ZINTptr);
+    mpz_mul_ui(tmp2,tmp2,2); // tmp2=2*den
+    mpz_fdiv_q(tmp1,tmp1,tmp2);
+    gen res=tmp1;
+    mpz_clear(tmp1); mpz_clear(tmp2);
+    return res;
+  }
+
+  void in_round2(gen & x,const gen & deuxn, int n){
+    if (x.type==_INT_ || x.type==_ZINT)
+      return ;
+    if (x.type==_FRAC && x._FRACptr->den.type==_CPLX)
+      x=fraction(x._FRACptr->num*conj(x._FRACptr->den,context0),x._FRACptr->den.squarenorm(context0));
+    if (x.type==_FRAC && x._FRACptr->den.type==_ZINT && 
+	(x._FRACptr->num.type==_ZINT || 
+	 (x._FRACptr->num.type==_CPLX && x._FRACptr->num._CPLXptr->type==_ZINT && (x._FRACptr->num._CPLXptr+1)->type==_ZINT)) 
+	){
+      gen num=x._FRACptr->num,d=x._FRACptr->den;
+      x=round2util(num,d,n);
+      x=x/deuxn;
+      return;
+    }
+    x=_floor(x*deuxn+plus_one_half,context0)/deuxn;
+  }
+
+  void round2(gen & x,int n){
+    if (x.type==_INT_ || x.type==_ZINT)
+      return ;
+    gen deuxn;
+    if (n<30)
+      deuxn = (1<<n);
+    else {
+      mpz_t tmp;
+      mpz_init_set_si(tmp,1);
+      mpz_mul_2exp(tmp,tmp,n);
+      deuxn=tmp;
+      mpz_clear(tmp);
+    }
+    in_round2(x,deuxn,n);
+  }
+
+  void round2(gen & x,const gen & deuxn,GIAC_CONTEXT){
+    if (x.type==_INT_ || x.type==_ZINT)
+      return;
+    if (x.type!=_FRAC)
+      x=_floor(x*deuxn+plus_one_half,context0)/deuxn;
+    else {
+      gen n=x._FRACptr->num,d=x._FRACptr->den;
+      if (d.type==_INT_){
+	int di=d.val,ni=1;
+	while (di>1){ di=di>>1; ni=ni<<1;}
+	if (ni==d.val)
+	  return;
+      }
+      n=2*n*deuxn+d;
+      x=iquo(n,2*d)/deuxn;
+    }
+  }
+
+  // Find one complex root inside a0,b0->a1,b1, return false if not found
+  // algo: Newton method in exact mode starting from center
+  bool newton_complex_1root(const modpoly & P,const gen & a0,const gen & b0,const gen & a1,const gen & b1,vecteur & complexroots,double eps){
+    if (is_positive(a1-a0-0.01,context0) ||
+	is_positive(b1-b0-0.01,context0))
+      return false;
+    gen x0=(a0+a1)/2+cst_i*(b0+b1)/2;
+    modpoly Pprime=derivative(P);
+    int n=int(-std::log(eps)/std::log(2.0)+.5); // for rounding
+    gen eps2=pow(2,-(n+1),context0);
+    for (int ii=0;ii<n;ii++){
+      gen Pprimex0=horner(Pprime,x0,0,false);
+      if (is_zero(Pprimex0,context0))
+	return false;
+      gen dx=horner(P,x0,0,false)/Pprimex0;
+      gen absdx=dx*conj(dx,context0);
+      x0=x0-dx;
+      gen r=re(x0,context0),i=im(x0,context0);
+      if (is_positive(a0-r,context0) || is_positive(r-a1,context0) || 
+	  is_positive(b0-i,context0) || is_positive(i-b1,context0))
+	return false;
+      round2(r,n+4);
+      round2(i,n+4);
+      x0=r+cst_i*i;
+      if (is_positive(absdx-eps2*eps2,context0))
+	continue;
+      // make a small square around x0 
+      // and check that there is indeed a root inside
+      gen A0=r-eps2;
+      gen A1=r+eps2;
+      gen B0=i-eps2;
+      gen B1=i+eps2;
+      gen tmp;
+      if (csturm_square(P,A0+cst_i*B0,A1+cst_i*B1,tmp,context0)==2){
+	complexroots.push_back(makevecteur(makevecteur(A0+cst_i*B0,A1+cst_i*B1),1));
+	return true;
+      }
+    }
+    return false;
   }
 
   // Find complex roots of P in a0,b0 -> a1,b1
-  void complex_roots(const modpoly & P,const gen & a0,const gen & b0,const gen & a1,const gen & b1,const vecteur & seq1,const vecteur & seq2,const vecteur & seq3,const vecteur & seq4,vecteur & realroots,vecteur & complexroots,double eps,vecteur & horiz_sturm,vecteur & vert_sturm){
+  static int complex_roots(const modpoly & P,const gen & a0,const gen & b0,const gen & a1,const gen & b1,const vecteur & seq1,const vecteur & seq2,const vecteur & seq3,const vecteur & seq4,vecteur & realroots,vecteur & complexroots,double eps,vecteur & horiz_sturm,vecteur & vert_sturm){
     int n=csturm_square(P,a0,b0,a1,b1,seq1,seq2,seq3,seq4,context0);
     if (debug_infolevel && n)
-      cerr << a0 << "," << b0 << ".." << a1 << "," << b1 << ":" << n/2 << endl;
-    if (!n)
-      return;
-    if (eps<=0)
-      setsizeerr("Bad precision "+print_DOUBLE_(eps,14));
+      CERR << a0 << "," << b0 << ".." << a1 << "," << b1 << ":" << n/2 << endl;
+    if (n<=0)
+      return 2*n;
+    if (eps<=0){
+      *logptr(context0) << gettext("Bad precision, using 1e-12 instead of ")+print_DOUBLE_(eps,14) << endl;
+      eps=1e-12;
+    }
     if (is_strictly_greater(eps,a1-a0,context0) && is_strictly_greater(eps,b1-b0,context0)){
       gen r(makevecteur(a0+cst_i*b0,a1+cst_i*b1));
       complexroots.push_back(makevecteur(r,gen(n)/2));
-      return;
+      return n;
     }
+    if (n==2 && newton_complex_1root(P,a0,b0,a1,b1,complexroots,eps))
+      return n;
     gen a01=(a0+a1)/2,b01=(b0+b1)/2,pgcd;
     vecteur seqvert,seqhoriz;
     gen A=a0+cst_i*b01,B=a1+cst_i*b01;
     seqhoriz=csturm_segment_seq(P,A,B,realroots,eps,horiz_sturm,vert_sturm,context0);
+    if (is_undef(seqhoriz)){
+      realroots=seqhoriz;
+      return -2;
+    }
     pgcd=seqhoriz[4];
     if (is_one(pgcd)){
       A=a01+cst_i*b0; B=a01+cst_i*b1;
       seqvert=csturm_segment_seq(P,A,B,realroots,eps,horiz_sturm,vert_sturm,context0);
+      if (is_undef(seqvert)){
+	realroots=seqvert;
+	return -2;
+      }
       pgcd=seqvert[4];
     }
     if (!is_one(pgcd)){
       complex_roots_split(P,pgcd,a0,b0,a1,b1,realroots,complexroots,eps);
-      return;
+      return n;
     }
     /*
       (a0,b1)  - (a01,b1)  -  (a1,b1)         seq3                seq3
@@ -495,14 +879,29 @@ namespace giac {
          |     n1   |     n2    |        seq4   n1      seqvert   n2      seq2
       (a0,b0)  - (a01,b0)  -  (a1,b0)         seq1                seq1
      */
-    complex_roots(P,a0,b0,a01,b01,seq1,seqvert,seqhoriz,seq4,realroots,complexroots,eps,horiz_sturm,vert_sturm);
-    complex_roots(P,a01,b0,a1,b01,seq1,seq2,seqhoriz,seqvert,realroots,complexroots,eps,horiz_sturm,vert_sturm);
-    complex_roots(P,a01,b01,a1,b1,seqhoriz,seq2,seq3,seqvert,realroots,complexroots,eps,horiz_sturm,vert_sturm);
-    complex_roots(P,a0,b01,a01,b1,seqhoriz,seqvert,seq3,seq4,realroots,complexroots,eps,horiz_sturm,vert_sturm);
+    int n1=complex_roots(P,a0,b0,a01,b01,seq1,seqvert,seqhoriz,seq4,realroots,complexroots,eps,horiz_sturm,vert_sturm),nadd;
+    if (n1==-2)
+      return -2;
+    if (n1==n)
+      return n;
+    n1 += (nadd=complex_roots(P,a01,b0,a1,b01,seq1,seq2,seqhoriz,seqvert,realroots,complexroots,eps,horiz_sturm,vert_sturm));
+    if (nadd==-2)
+      return -2;
+    if (n1==n)
+      return n;
+    n1 += (nadd=complex_roots(P,a01,b01,a1,b1,seqhoriz,seq2,seq3,seqvert,realroots,complexroots,eps,horiz_sturm,vert_sturm));
+    if (nadd==-2)
+      return -2;
+    if (n1==n)
+      return n;
+    n1 += (nadd=complex_roots(P,a0,b01,a01,b1,seqhoriz,seqvert,seq3,seq4,realroots,complexroots,eps,horiz_sturm,vert_sturm));
+    if (nadd==-2)
+      return -2;
+    return n;
   }
 
   // Find complex roots of P in a0,b0 -> a1,b1
-  void complex_roots(const modpoly & P,const gen & a0,const gen & b0,const gen & a1,const gen & b1,vecteur & realroots,vecteur & complexroots,double eps){
+  static void complex_roots(const modpoly & P,const gen & a0,const gen & b0,const gen & a1,const gen & b1,vecteur & realroots,vecteur & complexroots,double eps){
     if (P.size()<2)
       return;
     vecteur Seq1,Seq2,Seq3,Seq4,horiz_sturm,vert_sturm;
@@ -517,6 +916,8 @@ namespace giac {
   bool complex_roots(const modpoly & P,const gen & a0,const gen & b0,const gen & a1,const gen & b1,gen & pgcd,vecteur & roots,double eps){
     vecteur realroots,complexroots;
     complex_roots(P,a0,b0,a1,b1,realroots,complexroots,eps);
+    if (is_undef(realroots))
+      return false;
     roots=mergevecteur(roots,mergevecteur(realroots,complexroots));
     return true;
   }
@@ -528,7 +929,8 @@ namespace giac {
     environment * env= new environment;
     env->complexe=complexe || !is_zero(im(p,context0));
     vecteur w;
-    do_linearfind(p,env,qrem,v,w,i);
+    if (!do_linearfind(p,env,qrem,v,w,i))
+      w.clear();
     delete env;
     p=qrem;
     return w;
@@ -545,24 +947,263 @@ namespace giac {
     return roots;
   }
 
-  // find roots of polynomial P at precision eps using complex Sturm sequences
+  gen square_modulus(const gen & g,GIAC_CONTEXT){
+    return g.squarenorm(contextptr);
+  }
+
+  // P is the polynomial, P1 derivative, v list of approx roots 
+  // (initially should have at least n bits precision), 
+  // epsn is the target number of bits precision int(std::log(eps)/std::log(2.)-.5);
+  // epsg2surdeg2 is eps^2/degree(P)^2 as a gen, epsg is the target precision
+  // v[i] is set by newton_improve to be at distance at most vradius[i] of a root
+  // kmax is the maximal number of Newton iterations
+  bool newton_improve(const vecteur & P,const vecteur & P1,bool Preal,vecteur & v,vecteur & vradius,int i,int kmax,int n,int epsn,const gen & epsg2surdeg2,const gen & epsg){
+    gen r=v[i];
+    bool nextconj=false;
+    if (Preal && i+1<int(v.size()))
+      nextconj=is_exactly_zero(r-conj(v[i+1],context0));
+    if (r.type==_FRAC || is_cinteger(r))
+      return true;
+    // find nearest root from v
+    gen deltar=plus_inf,delta;
+    for (unsigned j=0;j<v.size();++j){
+      if (int(j)==i)
+	continue;
+      gen tmp=abs(r-v[j],context0);
+      if (is_strictly_greater(deltar,tmp,context0))
+	deltar=tmp;
+    }
+    if (is_zero(deltar))
+      return false;
+    deltar=deltar/3;
+    gen sumdr2=0;
+    int N=n; // effective value of number of bits for computation
+#ifdef HAVE_LIBMPFR
+    if (r.type==_REAL && mpfr_get_prec(r._REALptr->inf)>N)
+      N=mpfr_get_prec(r._REALptr->inf);
+    if (r.type==_CPLX && r._CPLXptr->type==_REAL && mpfr_get_prec(r._CPLXptr->_REALptr->inf)>N)
+      N=mpfr_get_prec(r._CPLXptr->_REALptr->inf);
+#endif
+#if 0 // def HAVE_LIBMPFI
+    gen deuxN=pow(2,N,context0);
+    gen rr,ri,dr,di;
+    reim(r,rr,ri,context0);
+    if (Preal && !nextconj)
+      r=eval(gen(makevecteur(rr-plus_one/deuxN,rr+plus_one/deuxN),_INTERVAL__VECT),1,context0);
+    else
+      r=eval(gen(makevecteur(rr-plus_one/deuxN,rr+plus_one/deuxN),_INTERVAL__VECT),1,context0)+cst_i*eval(gen(makevecteur(ri-plus_one/deuxN,ri+plus_one/deuxN),_INTERVAL__VECT),1,context0);
+    for (int k=0;k<kmax;++k){
+      // check if root precision is ok
+      // otherwise try to improve root precision with Newton method
+      gen P1r=horner(P1,r,0,false);
+      if (is_exactly_zero(P1r)){
+	delta=plus_inf;
+	break;
+      }
+      gen Pr=horner(P,r,0,false);
+      delta=Pr/P1r;
+      bool test;
+      if (Preal && ! nextconj){
+	test=contains(delta,dr);
+	delta=abs(delta,context0);
+      }
+      else {
+	reim(delta,dr,di,context0);
+	test= contains(rr,dr) && contains(ri,di);
+	delta=square_modulus(delta,context0);
+      }
+      if (test){
+	v[i]=r; // we can certify there is a root in r by Brouwer fixed thm
+	vradius[i]=-1;
+	if (nextconj){
+	  v[i+1]=conj(r,context0);
+	  vradius[i+1]=vradius[i];
+	  ++i;
+	}
+	break;
+      }
+      if (delta.type==_REAL){
+	if (real_interval * ptr=dynamic_cast<real_interval *>(delta._REALptr)){
+	  mpfr_t tmp; mpfr_init(tmp);
+	  mpfi_get_right(tmp,ptr->infsup);
+	  delta=real_object(tmp);
+	  mpfr_clear(tmp);
+	}
+      }
+      sumdr2 += delta;
+      if (!is_greater(deltar*deltar,sumdr2,context0)){
+	CERR << "Unable to certify " << v[i] << endl ;
+	return false;
+      }
+      if (N<P.size()-epsn){
+	// add 10 bits of precision or double it
+	if (N<-epsn/2){
+	  deuxN=deuxN*deuxN;
+	  N*=2;
+	}
+	else {
+	  deuxN=1024*deuxN;
+	  N+=10;
+	}
+      }
+      r -= Pr/P1r;
+      // change precision to N
+      reim(r,rr,ri,context0);
+      if (rr.type==_REAL){
+	if (real_interval * ptr=dynamic_cast<real_interval *>(rr._REALptr))
+	  mpfi_set_prec(ptr->infsup,N);
+      }
+      if (ri.type==_REAL){
+	if (real_interval * ptr=dynamic_cast<real_interval *>(ri._REALptr))
+	  mpfi_set_prec(ptr->infsup,N);
+      }
+      r=rr+cst_i*ri;
+    } // end for k
+#else
+    if (N>int(P.size())/4-epsn/2)
+      N=int(P.size())/4-epsn/2;
+    gen deuxN=pow(2,N,context0);
+    for (int k=0;k<kmax;++k){
+      in_round2(r,deuxN,N); // round2(r,deuxN,context0);
+      // check if root precision is ok
+      // otherwise try to improve root precision with Newton method
+      gen P1r=horner(P1,r,0,false);
+      if (is_exactly_zero(P1r)){
+	delta=plus_inf;
+	break;
+      }
+      gen Pr=horner(P,r,0,false);
+      delta=square_modulus(Pr,context0)/square_modulus(P1r,context0);
+      if (is_greater(epsg2surdeg2,delta,context0)){
+	v[i]=r; // we can certify there is a root at distance <= eps from r
+	if (is_exactly_zero(Pr))
+	  vradius[i]=0;
+	else
+	  vradius[i]=n*sqrt(accurate_evalf(delta,100),context0);
+	// problem with double underflow
+	if (!is_exactly_zero(vradius[i]))
+	  vradius[i]=min(epsg,pow(plus_two,int(evalf_double(ln(vradius[i],context0),1,context0)._DOUBLE_val/std::log(2.))+1),context0);
+	if (debug_infolevel)
+	  CERR << CLOCK() << " isolated " << r << " radius " << vradius[i] << endl;
+	if (nextconj){
+	  v[i+1]=conj(r,context0);
+	  vradius[i+1]=vradius[i];
+	  ++i;
+	}
+	break;
+      }
+      sumdr2 += delta;
+      if (!is_greater(deltar*deltar,sumdr2,context0)){
+	CERR << "Unable to certify " << v[i] << endl ;
+	return false;
+      }
+      if (N<int(P.size())-epsn){
+	// add 10 bits of precision or double it
+	if (N<-epsn){
+	  deuxN=deuxN*deuxN;
+	  N*=2;
+	}
+	else {
+	  deuxN=1024*deuxN;
+	  N+=10;
+	}
+      }
+      in_round2(Pr,deuxN,N); in_round2(P1r,deuxN,N); // round2(Pr,deuxN,context0); round2(P1r,deuxN,context0);
+      r -= Pr/P1r;
+    } // end for k
+#endif
+    if (!is_greater(epsg*epsg,delta,context0))
+      return false;
+    return true;
+  }
+
+  // find roots of polynomial P at precision eps using proot or 
+  // complex Sturm sequences
   // P must have numeric coefficients, in Q[i]
-  vecteur complex_roots(const modpoly & P,const gen & a0,const gen & b0,const gen & a1,const gen & b1,bool complexe,double eps){
+  vecteur complex_roots(const modpoly & P,const gen & a0,const gen & b0,const gen & a1,const gen & b1,bool complexe,double eps,bool use_proot){
     if (P.empty())
       return P;
     eps=std::abs(eps);
+    if (eps>1e-6)
+      eps=1e-6;
+    if (use_proot){
+      int epsn=int(std::log(eps)/std::log(2.)-.5);
+      gen epsg=pow(2,epsn,context0);
+      gen epsg2surdeg2=(epsg*epsg)/int((P.size()+1)*(P.size()+1));	
+      // first try proot with double precision, if it's not enough increase
+      int n=45;
+      bool Preal=is_zero(im(P,context0));
+      modpoly P1=derivative(P);
+      for (;n<400;n*=2){
+	double cureps=std::pow(2.0,-n);
+	if (debug_infolevel)
+	  CERR << CLOCK() << " proot at precision " << cureps << endl;
+	vecteur v=proot(P,cureps,n);
+	if (debug_infolevel)
+	  CERR << CLOCK() << " proot end at precision " << cureps << endl;
+	vecteur vradius(v.size());
+	unsigned i=0;
+	int kmax=int(std::log(eps)/std::log(cureps))+4;
+	for (;i<v.size();++i){
+	  newton_improve(P,P1,Preal,v,vradius,i,kmax,n,epsn,epsg2surdeg2,epsg);
+	} // end for i
+	if (i==v.size()){
+	  vecteur res;
+	  for (unsigned j=0;j<v.size();++j){
+	    if (Preal && is_zero(im(v[j],context0))){
+	      if (is_exactly_zero(vradius[j]) || vradius[j]==-1){
+		if (is_greater(v[j],a0,context0) && is_greater(a1,v[j],context0) && is_greater(0,b0,context0) && is_greater(b1,0,context0))
+		  res.push_back(makevecteur(v[j],1));
+		continue;
+	      }
+	      gen P1=horner(P,v[j]-vradius[j],0,false),P2=horner(P,v[j]+vradius[j],0,false);
+	      if (P1.type==_FRAC) P1=P1._FRACptr->num;
+	      if (P2.type==_FRAC) P2=P2._FRACptr->num;
+	      if (is_strictly_positive(-P1*P2,context0)){
+		if (is_greater(v[j],a0,context0) && is_greater(a1,v[j],context0) && is_greater(0,b0,context0) && is_greater(b1,0,context0))
+		  res.push_back(makevecteur(eval(change_subtype(makevecteur(v[j]-vradius[j],v[j]+vradius[j]),_INTERVAL__VECT),1,context0),1));
+		continue;
+	      }
+	    }
+	    gen R,I;
+	    reim(v[j],R,I,context0);
+	    if (is_greater(R,a0,context0) && is_greater(a1,R,context0) && is_greater(I,b0,context0) && is_greater(b1,I,context0)){
+	      if (is_exactly_zero(vradius[j]))
+		res.push_back(makevecteur(v[j],1));
+	      else {
+#ifdef HAVE_LIBMPFI
+		gen a,b;
+		reim(v[j],a,b,context0);
+		res.push_back(makevecteur(eval(change_subtype(makevecteur(a-vradius[j],a+vradius[j]),_INTERVAL__VECT),1,context0)+cst_i*eval(change_subtype(makevecteur(b-vradius[j],b+vradius[j]),_INTERVAL__VECT),1,context0),1));
+#else
+		res.push_back(makevecteur(makevecteur(ratnormal(v[j]-vradius[j]*(1+cst_i)),ratnormal(v[j]+vradius[j]*(1+cst_i))),1));
+#endif
+	      }
+	    }
+	  }
+	  return res;
+	} // end if i==v.size()
+      } // end for n
+      CERR << "proot isolation did not work, trying complex Sturm sequences" << endl;
+    }
     bool aplati=(a0==a1) && (b0==b1);
     if (!aplati && complexe && (a0==a1 || b0==b1) )
-      setsizeerr("Square is flat!");
+      return vecteur(1,gensizeerr(gettext("Square is flat!")));
     gen A0(a0),B0(b0),A1(a1),B1(b1);
-    // initial rectangle: |roots|< 1+ max(|a_i|)/|a_n|
-    if (aplati){
+    {
+      // initial rectangle: |roots|< 1+ max(|a_i|)/|a_n|
       gen maxai=_max(*apply(P,abs,context0)._VECTptr,context0);
       gen tmp=1+maxai/abs(P.front(),context0);
-      A0=-tmp;
-      B0=-tmp;
-      A1=tmp;
-      B1=tmp;
+      if (aplati){
+	A0=-tmp;
+	B0=-tmp;
+	A1=tmp;
+	B1=tmp;
+      }
+      if (is_inf(A0)) A0=-tmp;
+      if (is_inf(B0)) B0=-tmp;
+      if (is_inf(A1)) A1=tmp;
+      if (is_inf(B1)) B1=tmp;
     }
     gen tmp;
     modpoly p(*apply(P,exact,context0)._VECTptr);
@@ -585,43 +1226,87 @@ namespace giac {
       modpoly S=derivative(R);
       vecteur listquo,coeffP,coeffR;
       csturm_seq(S,R,listquo,coeffP,coeffR,context0);
+      // sparse polynomial patch
+      if (pp.coord.size()<p.size()/10.){
+	R=vecteur(1,poly12polynome(R,1,1));
+	S=vecteur(1,poly12polynome(S,1,1));
+      }
       csturm_realroots(S,R,listquo,coeffP,coeffR,0,1,A0,A1,roots,eps,context0);
       return roots;
     }
     csturm_normalize(p,A0,B0,A1,B1,roots);
     gen pgcd;
     if (!complex_roots(p,A0,B0,A1,B1,pgcd,roots,eps))
-      setsizeerr();
+      return vecteur(1,gensizeerr(context0));
     return roots;
   }
 
 
   gen complexroot(const gen & g,bool complexe,GIAC_CONTEXT){
-    if (g.type!=_VECT || (g._VECTptr->size()<2) )
-      setsizeerr();
-    vecteur & v(*g._VECTptr);
+    vecteur v=gen2vecteur(g);
+    bool use_vas=!complexe ,use_proot=true;
+#ifndef HAVE_LIBMPFR
+    use_proot=false;
+#endif
+    bool isolation=false;
+    if (!v.empty() && v[0]==at_sturm){
+      use_vas=false;
+      use_proot=false;
+      v.erase(v.begin());
+    }
+    if (v.empty())
+      return gensizeerr(contextptr);
+    if (v.size()<2){
+      isolation=true;
+      v.push_back(epsilon(contextptr));
+    }
+    if (v.size()==3)
+      v.insert(v.begin()+1,epsilon(contextptr));
     gen p=v.front(),prec=evalf_double(v[1],1,contextptr);
     if (prec.type!=_DOUBLE_)
-      settypeerr();
+      return gentypeerr(contextptr);
     double eps=prec._DOUBLE_val;
-    unsigned vs=v.size();
-    gen A(0),B(0);
+    if (eps>=1.0)
+      eps=std::pow(10.,-eps);
+    if (eps<=0)
+      eps=epsilon(contextptr);
+    if (eps<=0)
+      eps=1e-12;
+    if (v[0].type==_VECT && has_num_coeff(v[0])){
+      v=proot(*v[0]._VECTptr,eps);
+      vecteur w;
+      for (unsigned i=0;i<v.size();++i){
+	if (is_zero(im(v[i],contextptr)))
+	  w.push_back(makevecteur(v[i],1));
+      }
+      return w;
+    }
+    unsigned vs=unsigned(v.size());
+    gen A(0),B(0),a0(minus_inf),b0(minus_inf),a1(plus_inf),b1(plus_inf);
     if (vs>3){
       A=v[2];
       B=v[3];
+      a0=re(A,contextptr); b0=im(A,contextptr);
+      a1=re(B,contextptr);b1=im(B,contextptr);
     }
-    gen a0=re(A,contextptr),b0=im(A,contextptr),a1=re(B,contextptr),b1=im(B,contextptr);
     if (is_greater(a0,a1,contextptr))
-      std::swap<gen>(a0,a1);
+      swapgen(a0,a1);
     if (is_greater(b0,b1,contextptr))
-      std::swap<gen>(b0,b1);
-    if (p.type==_VECT)
-      return complex_roots(*p._VECTptr,a0,b0,a1,b1,complexe,eps);
-    vecteur l;
-    lvar(p,l);
-    if (l.size()!=1)
-      settypeerr();
-    gen px=_e2r(makevecteur(p,l),contextptr);
+      swapgen(b0,b1);
+    vecteur vas_res;
+    if (p.type==_VECT){
+      if (use_vas && vas(*p._VECTptr,a0,a1,isolation?1e300:eps,vas_res,true,contextptr))
+	return vas_res;
+      return complex_roots(*p._VECTptr,a0,b0,a1,b1,complexe,eps,use_proot);
+    }
+    if (use_vas && vas(symb2poly_num(v[0],contextptr),a0,a1,isolation?1e300:eps,vas_res,true,contextptr))
+      return vas_res;
+    vecteur l,l0;
+    lidnt(p,l0,false);
+    if (l0.size()!=1)
+      return gentypeerr(contextptr);
+    l=alg_lvar(p);
+    gen px=_e2r(makesequence(p,l),contextptr);
     if (px.type==_FRAC)
       px=px._FRACptr->num;
     if (px.type!=_POLY)
@@ -630,7 +1315,13 @@ namespace giac {
     factorization::const_iterator it=f.begin(),itend=f.end();
     vecteur res;
     for (;it!=itend;++it){
-      vecteur tmp=complex_roots(polynome2poly1(it->fact),a0,b0,a1,b1,complexe,eps);
+      gen P=_poly2symb(makesequence(it->fact,l),contextptr);
+      P=_e2r(makesequence(P,l0.front()),contextptr);
+      if (P.type!=_VECT)
+	continue;
+      vecteur tmp=complex_roots(*P._VECTptr,a0,b0,a1,b1,complexe,eps,use_proot);
+      if (is_undef(tmp))
+	return tmp;
       iterateur jt=tmp.begin(),jtend=tmp.end();
       for (;jt!=jtend;++jt){
 	if (jt->type==_VECT && jt->_VECTptr->size()==2)
@@ -642,26 +1333,59 @@ namespace giac {
   }
 
   gen _complexroot(const gen & g,GIAC_CONTEXT){
-    return complexroot(g,true,contextptr);
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
+    gen res=complexroot(g,true,contextptr);
+    if (res.type==_VECT)
+      gen_sort_f_context(res._VECTptr->begin(),res._VECTptr->end(),complex_sort,contextptr);
+    return res;
+    // return _sorta(complexroot(g,true,contextptr),contextptr);
   }
-  const string _complexroot_s("complexroot");
-  unary_function_eval __complexroot(&giac::_complexroot,_complexroot_s);
-  unary_function_ptr at_complexroot (&__complexroot,0,true);
+  static const char _complexroot_s []="complexroot";
+  static define_unary_function_eval (__complexroot,&giac::_complexroot,_complexroot_s);
+  define_unary_function_ptr5( at_complexroot ,alias_at_complexroot,&__complexroot,0,true);
 
   gen _realroot(const gen & g,GIAC_CONTEXT){
-    return complexroot(g,false,contextptr);
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
+    gen res; bool evalf_after=false;
+    if (g.type==_VECT && !g._VECTptr->empty() && g._VECTptr->back()==at_evalf){
+      res=complexroot(gen(vecteur(g._VECTptr->begin(),g._VECTptr->end()-1),g.subtype),false,contextptr);
+      evalf_after=true;
+    }
+    else
+      res=complexroot(g,false,contextptr);
+    if (res.type!=_VECT)
+      return res;
+    vecteur v=*res._VECTptr;
+    for (unsigned i=0;i<v.size();++i){
+      if (v[i].type==_VECT && v[i]._VECTptr->size()==2){
+	gen a=v[i]._VECTptr->front(),b=v[i]._VECTptr->back();
+	if (a.type==_VECT && a.subtype==_INTERVAL__VECT){
+	  if (evalf_after)
+	    v[i]=evalf((a._VECTptr->front()+a._VECTptr->back())/2,1,contextptr);
+	  else {
+	    a=eval(a,1,contextptr);
+	    v[i]=makevecteur(a,b);
+	  }
+	}
+	else {
+	  if (evalf_after)
+	    v[i]=evalf(a,1,contextptr);
+	}
+      }
+    }
+    return v;
   }
-  const string _realroot_s("realroot");
-  unary_function_eval __realroot(&giac::_realroot,_realroot_s);
-  unary_function_ptr at_realroot (&__realroot,0,true);
+  static const char _realroot_s []="realroot";
+  static define_unary_function_eval (__realroot,&giac::_realroot,_realroot_s);
+  define_unary_function_ptr5( at_realroot ,alias_at_realroot,&__realroot,0,true);
 
-  vecteur crationalroot(const gen & g0,bool complexe){
+  static vecteur crationalroot(const gen & g0,bool complexe){
     gen g(g0),a,b;
     if (g.type==_VECT){
       if (g.subtype==_SEQ__VECT){
 	vecteur & tmp=*g._VECTptr;
 	if (tmp.size()!=3)
-	  setdimerr();
+	  return vecteur(1,gendimerr(context0));
 	g=tmp[0];
 	a=tmp[1];
 	b=tmp[2];
@@ -674,8 +1398,10 @@ namespace giac {
     ab2a0b0a1b1(a,b,a0,b0,a1,b1,context0);
     vecteur l;
     lvar(g,l);
+    if (l.empty())
+      return vecteur(0);
     if (l.size()!=1)
-      settypeerr();
+      return vecteur(1,gentypeerr(context0));
     gen px=_e2r(makevecteur(g,l),context0);
     if (px.type==_FRAC)
       px=px._FRACptr->num;
@@ -694,18 +1420,620 @@ namespace giac {
     return res;
   }
   gen _crationalroot(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
     return crationalroot(g,true);
   }
-  const string _crationalroot_s("crationalroot");
-  unary_function_eval __crationalroot(&giac::_crationalroot,_crationalroot_s);
-  unary_function_ptr at_crationalroot (&__crationalroot,0,true);
+  static const char _crationalroot_s []="crationalroot";
+  static define_unary_function_eval (__crationalroot,&giac::_crationalroot,_crationalroot_s);
+  define_unary_function_ptr5( at_crationalroot ,alias_at_crationalroot,&__crationalroot,0,true);
 
   gen _rationalroot(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
     return crationalroot(g,false);
   }
-  const string _rationalroot_s("rationalroot");
-  unary_function_eval __rationalroot(&giac::_rationalroot,_rationalroot_s);
-  unary_function_ptr at_rationalroot (&__rationalroot,0,true);
+  static const char _rationalroot_s []="rationalroot";
+  static define_unary_function_eval (__rationalroot,&giac::_rationalroot,_rationalroot_s);
+  define_unary_function_ptr5( at_rationalroot ,alias_at_rationalroot,&__rationalroot,0,true);
+
+  // convert numerator of g to a list
+  vecteur symb2poly_num(const gen & g_,GIAC_CONTEXT){
+    gen g(g_);
+    if (g.type!=_VECT)
+      g=makesequence(g,ggb_var(g));
+    gen tmp=_symb2poly(g,contextptr);
+    if (tmp.type==_FRAC)
+      tmp=tmp._FRACptr->num;
+    if (tmp.type!=_VECT)
+      return vecteur(1,gensizeerr(contextptr));
+    return *tmp._VECTptr;
+  }
+  // VAS implementation. Based on Xcas implementation by  Alkiviadis G. Akritas,
+  // A first C++ implementation was written by Spyros Kehagias and others
+  // but it was too close to the Xcas code 
+  // This implementation is much faster, using basic data structures of giac
+  // number of sign changes of the coefficients of P, returns -1 on error
+  int variations(const modpoly & P,GIAC_CONTEXT){
+    int res=0,n=int(P.size());
+    if (!n)
+      return -1;
+    int previous=fastsign(P.front(),contextptr);
+    if (previous==0)
+      return -1;
+    for (int i=1;i<n;i++){
+      if (is_exactly_zero(P[i]))
+	continue;
+      int current=fastsign(P[i],contextptr);
+      if (!current)
+	return -1;
+      if (current!=previous){
+	++res;
+	previous=current;
+      }
+    }
+    return res;
+  }
+
+#ifndef M_LN2
+#define M_LN2 0.6931471805599454
+#endif
+
+  // like (ln(n/d)+shift*ln2)/expo, but faster for large integers
+  gen LMQ_evalf(const gen & n,const gen & d,double shift,int expo,GIAC_CONTEXT){
+#ifndef USE_GMP_REPLACEMENTS
+    if (is_integer(n) && is_integer(d)){
+      long int nexp=0,dexp=0;
+      double nmant,dmant;
+      if (n.type==_INT_)
+	nmant=n.val;
+      else
+	nmant=mpz_get_d_2exp (&nexp,*n._ZINTptr);
+      if (d.type==_INT_)
+	dmant=d.val;
+      else
+	dmant=mpz_get_d_2exp (&dexp,*d._ZINTptr);
+      return ( std::log(-nmant/dmant) + (nexp-dexp+shift)*M_LN2 )/expo;
+    }
+#endif
+    return ( ln(evalf(-n/d,1,contextptr),contextptr) + shift*M_LN2 )/gen(expo);
+  }
+
+  static bool compute_lnabsmantexpo(const vecteur & cl,vector<double> & cllnabsmant,vector<long int> & clexpo,vector<short int> & clsign,GIAC_CONTEXT){
+    int k=int(cl.size());
+    cllnabsmant.resize(k);
+    clexpo.resize(k);
+    clsign.resize(k);
+    for (int i=0;i<k;++i){
+      gen tmp=sign(cl[i],contextptr);
+      if (tmp.type!=_INT_)
+	return false;
+      clsign[i]=tmp.val;
+      double mant;
+      long int expo=0;
+      if (is_integer(cl[i])){
+	if (cl[i].type==_ZINT){
+#ifdef USE_GMP_REPLACEMENTS
+	  mant=evalf_double(cl[i],1,contextptr)._DOUBLE_val;
+#else
+	  mant=mpz_get_d_2exp (&expo,*cl[i]._ZINTptr);
+#endif
+	}
+	else mant=cl[i].val;
+      }
+      else {
+	if (cl[i].type==_DOUBLE_){
+	  mant=cl[i]._DOUBLE_val;
+	}
+	else {
+	  mant=evalf_double(cl[i],1,contextptr)._DOUBLE_val;
+	}
+      }
+      mant=std::log(std::abs(mant));
+      cllnabsmant[i]=mant;
+      clexpo[i]=expo;
+    }
+    return true;
+  }
+
+
+  gen posubLMQ(const modpoly & P,GIAC_CONTEXT){
+    //---implements the Local_Max_Quadratic method (LMQ) to compute an
+    //---upper bound on the values of the POSITIVE roots of p(x).
+    
+    //---Reference:"Linear and Quadratic Complexity Bounds on the Values of the 
+    //---Positive Roots of Polynomials" by Alkiviadis G. Akritas. 
+    //---Journal of Universal Computer Science, Vol. 15, No. 3, 523-537, 2009. 
+    int k=int(P.size());
+    if (k<=1)
+      return 0;
+    vecteur cl;
+    if (is_strictly_positive(P.front(),contextptr))
+      cl=P;
+    else
+      cl=-P;
+    reverse(cl.begin(),cl.end());
+    vector<double> cllnabsmant; 
+    vector<long int> clexpo;
+    vector<short int> clsign;
+    if (!compute_lnabsmantexpo(cl,cllnabsmant,clexpo,clsign,contextptr))
+      return gensizeerr(contextptr);
+    gen tempmax=minus_inf;
+    vector<int> timesused(k+1,1);
+    for (int m=k-1;m>=1;--m){
+      if (clsign[m-1]==-1){ // is_strictly_positive(-cl[m-1],contextptr)
+	gen tempmin=plus_inf;
+	for (int n=k;n>m;--n){
+	  if (clsign[n-1]==1){ // is_strictly_positive(cl[n-1],contextptr)
+	    gen temp= (cllnabsmant[m-1]-cllnabsmant[n-1] + (clexpo[m-1]-clexpo[n-1]+timesused[n-1])*M_LN2)/(n-m);// LMQ_evalf(cl[m-1],cl[n-1],timesused[n-1],n-m,contextptr);
+	    // gen temp=pow(-cl[m-1]/cl[n-1]*pow(plus_two,timesused[n-1]),inv(n-m,contextptr),contextptr);
+	    // temp=evalf(temp,1,contextptr);
+	    ++timesused[n-1];
+	    if (is_strictly_greater(tempmin,temp,contextptr))
+	      tempmin=temp;
+	  }
+	}
+	if (is_strictly_greater(tempmin,tempmax,contextptr))
+	  tempmax=tempmin;
+      }
+    }
+    return _ceil(65*exp(tempmax,contextptr)/64,contextptr); // small margin
+  }
+
+  gen _posubLMQ(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
+    vecteur v;
+    if (g.type==_VECT && g.subtype!=_SEQ__VECT)
+      v=*g._VECTptr;
+    else
+      v=symb2poly_num(g,contextptr);
+    return posubLMQ(v,contextptr);
+  }
+  static const char _posubLMQ_s []="posubLMQ";
+  static define_unary_function_eval (__posubLMQ,&giac::_posubLMQ,_posubLMQ_s);
+  define_unary_function_ptr5( at_posubLMQ ,alias_at_posubLMQ,&__posubLMQ,0,true);
+
+  gen poslbdLMQ(const modpoly & P,GIAC_CONTEXT){
+    //---implements the Local_Max_Quadratic method (LMQ) to compute a
+    //---lower bound on the values of the POSITIVE roots of p(x).
+    
+    //---Reference:"Linear and Quadratic Complexity Bounds on the Values of the 
+    //---Positive Roots of Polynomials" by Alkiviadis G. Akritas. 
+    //---Journal of Universal Computer Science, Vol. 15, No. 3, 523-537, 2009. 
+    int k=int(P.size());
+    if (k<=1)
+      return 0;
+    vecteur cl(P);
+    reverse(cl.begin(),cl.end());
+    if (is_strictly_positive(-cl.front(),contextptr))
+      cl=-cl;
+    vector<double> cllnabsmant; 
+    vector<long int> clexpo;
+    vector<short int> clsign;
+    if (!compute_lnabsmantexpo(cl,cllnabsmant,clexpo,clsign,contextptr))
+      return gensizeerr(contextptr);
+    gen tempmax=minus_inf;
+    vector<int> timesused(k,1);
+    for (int m=1;m<k;++m){
+      if (clsign[m]==-1){ // is_strictly_positive(-cl[m],contextptr)
+	gen tempmin=plus_inf;
+	for (int n=0;n<m;++n){
+	  if (clsign[n]==1){ // is_strictly_positive(cl[n],contextptr)
+	    // gen temp=pow(-cl[m]/cl[n]*pow(plus_two,timesused[n]),inv(m-n,contextptr),contextptr);
+	    // temp=evalf(temp,1,contextptr);
+	    gen temp= (cllnabsmant[m]-cllnabsmant[n] + (clexpo[m]-clexpo[n]+timesused[n])*M_LN2)/(m-n);// LMQ_evalf(cl[m],cl[n],timesused[n],m-n,contextptr);
+	    ++timesused[n];
+	    if (is_strictly_greater(tempmin,temp,contextptr))
+	      tempmin=temp;
+	  }
+	}
+	if (is_strictly_greater(tempmin,tempmax,contextptr))
+	  tempmax=tempmin;
+      }
+    }
+    tempmax=tempmax/M_LN2;
+    tempmax=-_ceil(tempmax,contextptr);
+    tempmax=pow(plus_two,tempmax,contextptr);
+    return tempmax; 
+  }
+  
+  gen _poslbdLMQ(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
+    vecteur v;
+    if (g.type==_VECT && g.subtype!=_SEQ__VECT)
+      v=*g._VECTptr;
+    else
+      v=symb2poly_num(g,contextptr);
+    return poslbdLMQ(v,contextptr);
+  }
+  static const char _poslbdLMQ_s []="poslbdLMQ";
+  static define_unary_function_eval (__poslbdLMQ,&giac::_poslbdLMQ,_poslbdLMQ_s);
+  define_unary_function_ptr5( at_poslbdLMQ ,alias_at_poslbdLMQ,&__poslbdLMQ,0,true);
+
+  vecteur makeinterval(const gen & a,const gen & b){
+    if (is_strictly_greater(a,b,context0))
+      return makevecteur(b,a);
+    else
+      return makevecteur(a,b);
+  }
+
+  bool vas_sort(const gen & a,const gen &b){
+    gen a1(a),b1(b);
+    if (a.type==_VECT && a._VECTptr->size()==2)
+      a1=a._VECTptr->front();
+    if (b.type==_VECT && b._VECTptr->size()==2)
+      b1=b._VECTptr->front();
+    return is_strictly_greater(b1,a1,context0);
+  }
+
+  // P is assumed to be squarefree and without rational roots
+  // find roots of P((ax+b)/(cx+d))
+  vecteur VAS_positive_roots(const modpoly & P,const gen & ap,const gen & bp,const gen & cp,const gen & dp,GIAC_CONTEXT){
+    //---The steps below correspond to the steps described in the reference below.
+    
+    //---Reference:	"A Comparative Study of Two Real Root Isolation Methods" 
+    //---by Alkiviadis G. Akritas and Adam W. Strzebonski. 
+    //---Nonlinear Analysis: Modelling and Control, Vol. 10, No. 4, 297-304, 2005.
+    vecteur res; // root isolation intervals
+    vecteur intervals_to_process;
+    // STEP 1
+    int v0=variations(P,contextptr);
+    if (!v0)
+      return res;
+    gen ub=posubLMQ(P,contextptr);
+    if (v0==1)
+      return vecteur(1,makeinterval(0,ap*ub));
+    intervals_to_process.push_back(makevecteur(ap, bp, cp, dp, P,v0));
+
+    // STEP 2
+    while (!intervals_to_process.empty()){
+      gen tmp=intervals_to_process.back();
+      intervals_to_process.pop_back();
+      if (tmp.type!=_VECT || tmp._VECTptr->size()!=6)
+	return vecteur(1,gensizeerr("VAS interval"+tmp.print()));
+      vecteur & tmpv=*tmp._VECTptr;
+      gen a=tmpv[0],b=tmpv[1],c=tmpv[2],d=tmpv[3], genf=tmpv[4],genv=tmpv[5];
+      if (genf.type!=_VECT || genv.type!=_INT_)
+	return vecteur(1,gensizeerr("VAS interval"+tmp.print()));
+      int v=genv.val;
+      modpoly f = *genf._VECTptr;
+
+      // STEP 3
+      gen lb=poslbdLMQ(f,contextptr);
+
+      // STEP 4
+      if (is_strictly_greater(lb,16,contextptr)){
+	change_scale(f,lb);
+	a=lb*a; c=lb*c; lb=1;
+      }
+      
+      // STEP 5
+      if (is_greater(lb,1,contextptr)){
+	// f=taylor(f,lb);
+	change_scale(f,lb);
+	f=taylor(f,1);
+	back_change_scale(f,lb);
+	b = lb*a + b; d = lb*c + d;
+	if (is_zero(f.back())){
+	  res.push_back(b/d);
+	  f.pop_back();
+	}
+	v=variations(f,contextptr);
+	if (!v)
+	  continue;
+	if (v==1){
+	  if (!is_zero(c))
+	    res.push_back(makeinterval(a/c,b/d));
+	  else
+	    res.push_back(makeinterval(b,b+a*posubLMQ(f,contextptr)));
+	  continue;
+	}
+      }
+
+      // STEP 6
+      modpoly f1=taylor(f,1),f2;
+      gen a1=a, b1=a+b, c1=c, d1=c+d;
+      int r=0;
+      if (is_zero(f1.back())){
+	f1.pop_back();
+	res.push_back(b1/d1);
+	r=1;
+      }
+      int v1=variations(f1,contextptr);
+      int v2=v-v1-r; 
+      gen a2=b, b2=a+b, c2=d, d2=c+d;
+      
+      // STEP 7
+      if (v2>1){
+	f2=f;
+	reverse(f2.begin(),f2.end());
+	f2=taylor(f2,1);
+	if (is_zero(f2.back()))
+	  f2.pop_back();
+	v2=variations(f2,contextptr);
+      }
+
+      // STEP 8
+      if (v1<v2){
+	swapgen(a1,a2);
+	swapgen(b1,b2);
+	swapgen(c1,c2);
+	swapgen(d1,d2);
+	swap(f1,f2);
+	int i=v1; v1=v2; v2=i;
+      }
+
+      // STEP 9
+      if (v1==0) continue;
+      if (v1==1){
+	if (!is_zero(c1))
+	  res.push_back(makeinterval(a1/c1,b1/d1));
+	else 
+	  res.push_back(makeinterval(b1,b1 + a1*posubLMQ(f1,contextptr)));
+      }
+      else 
+	intervals_to_process.push_back(makevecteur(a1,b1,c1,d1,f1,v1));
+
+      // STEP 10
+      if (v2==0) continue;
+      if (v2==1){
+	if (!is_zero(c2))
+	  res.push_back(makeinterval(a2/c2,b2/d2));
+	else 
+	  res.push_back(makeinterval(b2,b2 + a2*posubLMQ(f2,contextptr)));
+      }
+      else 
+	intervals_to_process.push_back(makevecteur(a2,b2,c2,d2,f2,v2));
+    }
+    gen_sort_f(res.begin(),res.end(),vas_sort);
+    return res;
+  }
+
+  gen _VAS_positive(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
+    vecteur v;
+    if (g.type==_VECT && g.subtype!=_SEQ__VECT)
+      v=*g._VECTptr;
+    else
+      v=symb2poly_num(g,contextptr);
+    return VAS_positive_roots(v,1,0,0,1,contextptr);
+  }
+  static const char _VAS_positive_s []="VAS_positive";
+  static define_unary_function_eval (__VAS_positive,&giac::_VAS_positive,_VAS_positive_s);
+  define_unary_function_ptr5( at_VAS_positive ,alias_at_VAS_positive,&__VAS_positive,0,true);
+
+  // square-free factorization of p, then remove all exponents
+  // optionally remove factors with even multiplicities
+  modpoly remove_multiplicities(const modpoly & p,factorization & f,bool odd_only,GIAC_CONTEXT){
+    vecteur res(1,1),tmp;
+    polynome P;
+    poly12polynome(p,1,P,1);
+    P=P/lgcd(P);
+    f=sqff(P);
+    factorization::const_iterator it=f.begin(),itend=f.end();
+    for (;it!=itend;++it){
+      if (odd_only && it->mult%2==0)
+	continue;
+      polynome2poly1(it->fact,1,tmp);
+      res=operator_times(res,tmp,0);
+    }
+    return res;
+  }
+
+  gen vas(const modpoly & p,GIAC_CONTEXT){
+    vecteur v(p);
+    vecteur res;
+    bool has_zero=false;
+    if (is_zero(v.back())){
+      has_zero=true;
+      v.pop_back();
+    }
+    res=VAS_positive_roots(v,1,0,0,1,contextptr);
+    vecteur w(v);
+    change_scale(w,-1);
+    if (w.size()%2==0)
+      w=-w;
+    if (w==v){
+      v=-res;
+      reverse(v.begin(),v.end());
+      iterateur it=v.begin(),itend=v.end();
+      for (;it!=itend;++it){
+	if (it->type==_VECT)
+	  reverse(it->_VECTptr->begin(),it->_VECTptr->end());
+      }
+      if (has_zero)
+	v.push_back(0);
+      res=mergevecteur(v,res);
+    }
+    else {
+      v=VAS_positive_roots(w,-1,0,0,1,contextptr);
+      if (has_zero)
+	v.push_back(0);
+      res=mergevecteur(v,res);
+    }
+    return res;
+  }
+  gen _VAS(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
+    vecteur v;
+    if (g.type==_VECT && g.subtype!=_SEQ__VECT)
+      v=*g._VECTptr;
+    else
+      v=symb2poly_num(g,contextptr);
+    factorization f;
+    v=remove_multiplicities(v,f,false,contextptr);
+    return vas(v,contextptr);
+  }
+  static const char _VAS_s []="VAS";
+  static define_unary_function_eval (__VAS,&giac::_VAS,_VAS_s);
+  define_unary_function_ptr5( at_VAS ,alias_at_VAS,&__VAS,0,true);
+
+  static const double bisection_newton_eps=1e-3;
+
+  // returns true if a root of p is found by Newton method, such that res-eps>a0
+  // res+eps<b0 and sign of p changes between res-eps and res+eps
+  static bool bisection_newton(const modpoly & P,const modpoly & Pprime,const gen & a0,const gen & a1,gen & x0,double eps,gen & eps2,GIAC_CONTEXT){
+    if (is_greater(bisection_newton_eps,x0-a0,contextptr) || is_greater(bisection_newton_eps,a1-x0,contextptr))
+      return false; // bisection is faster if the root is too close to the isolation interval boundaries
+    int n=int(-std::log(eps)/std::log(2.0)+.5); // for rounding
+    eps2=pow(2,-(n+1),contextptr);
+    gen deuxn4(pow(2,n+4,contextptr));
+    in_round2(x0,deuxn4,n+4); // round2(x0,deuxn4,contextptr);
+    for (int ii=0;ii<n;ii++){
+      gen Pprimex0=horner(Pprime,x0,0,false);
+      if (is_zero(Pprimex0,contextptr))
+	return false;
+      gen Px0=horner(P,x0,0,false);
+      in_round2(Px0,deuxn4,n+4); // round2(Px0,deuxn4,contextptr);
+      in_round2(Pprimex0,deuxn4,n+4); // round2(Pprimex0,deuxn4,contextptr);
+      gen dx=Px0/Pprimex0;
+      in_round2(dx,deuxn4,n+4); // round2(dx,deuxn4,contextptr);
+      x0=x0-dx;
+      if (is_positive(a0-x0,contextptr) || is_positive(x0-a1,contextptr))
+	return false;
+      if (is_greater(abs(dx,contextptr),eps2,contextptr))
+	continue;
+      if (is_positive(-horner(P,x0-eps2,0,false)*horner(P,x0+eps2,0,false),contextptr))
+	return true;
+    }
+    return false;
+    
+  }
+
+  gen bisection(const modpoly & p,const gen & a0,const gen &b0,double eps,GIAC_CONTEXT){
+    int nsteps=int(std::ceil(std::log(evalf_double(b0-a0,1,contextptr)._DOUBLE_val/eps)/M_LN2));
+    int trynewtonstep=int(nsteps-std::log(bisection_newton_eps/eps)/M_LN2);
+    gen a(a0),b(b0),m,eps2;
+    modpoly dp=derivative(p);
+    int s1=fastsign(horner(p,a,0,false),contextptr);
+    if (s1==0)
+      s1=fastsign(horner(dp,a,0,false),contextptr);
+    int s2=fastsign(horner(p,b,0,false),contextptr);
+    if (s2==0)
+      s2=-fastsign(horner(dp,b,0,false),contextptr);
+    if (s1==s2)
+      return undef;
+    for (int i=0;i<nsteps;++i){
+      m=(a+b)/2;
+      if (i==trynewtonstep && bisection_newton(p,dp,a0,b0,m,eps,eps2,contextptr))
+	return makevecteur(m-eps2,m+eps2);
+      int s=fastsign(horner(p,m,0,false),contextptr);
+      if (s==0)
+	return m;
+      if (s==s1)
+	a=m;
+      else
+	b=m;
+    }
+    return makevecteur(a,b);
+  }
+
+  int multiplicity(const factorization & f,const gen & interval,GIAC_CONTEXT){
+    factorization::const_iterator it=f.begin(),itend=f.end();
+    if (interval.type==_VECT && interval._VECTptr->size()==2){
+      for (;it!=itend;++it){
+	if (is_strictly_positive(-it->fact(interval._VECTptr->front())*it->fact(interval._VECTptr->back()),contextptr))
+	  return it->mult;
+      }
+      for (it=f.begin();it!=itend;++it){
+	if (is_positive(-it->fact(interval._VECTptr->front())*it->fact(interval._VECTptr->back()),contextptr))
+	  return it->mult;
+      }
+    }
+    else {
+      for (;it!=itend;++it){
+	if (is_zero(it->fact(interval)))
+	  return it->mult;
+      }
+    }
+    return 0;
+  }
+
+  static void add_vasres(vecteur & vasres,const gen & a,const gen & a0,const gen & b0,int mult,bool with_mult,GIAC_CONTEXT){
+    if (a0==b0 || (is_greater(a,a0,contextptr) && is_greater(b0,a,contextptr)) )
+      vasres.push_back(with_mult?gen(makevecteur(a,mult)):a);
+  }
+
+  // isolate and find real roots of P at precision eps between a and b
+  // returns a list of intervals or of rationals
+  bool vas(const modpoly & P,const gen & a0,const gen &b0,double eps,vecteur & vasres,bool with_mult,GIAC_CONTEXT){
+    if (P.size()<=3){
+      if (P.size()<2)
+	return true;
+      gen a(P[0]),b(P[1]);
+      if (P.size()==2){
+	a=-b/a;
+	add_vasres(vasres,a,a0,b0,1,with_mult,contextptr);
+	return true;
+      }
+      gen c(P[2]);
+      gen delta=b*b-4*a*c;
+      if (is_zero(delta)){
+	a=-b/a/2;
+	add_vasres(vasres,a,a0,b0,2,with_mult,contextptr);
+	return true;	
+      }
+      if (is_positive(delta,contextptr)){
+	delta=sqrt(delta,contextptr)/a/2;
+	c=-b/a/2;
+	add_vasres(vasres,c-delta,a0,b0,1,with_mult,contextptr);
+	add_vasres(vasres,c+delta,a0,b0,1,with_mult,contextptr);
+      }
+      return true;
+    }
+    gen a(a0),b(b0);
+    if (a==b){
+      a=minus_inf;
+      b=plus_inf;
+    }
+    // check and convert coeffs of P
+    modpoly p(P);
+    iterateur it=p.begin(),itend=p.end();
+    for (;it!=itend;++it){
+      *it=exact(*it,contextptr);
+    }
+    gen tmp;
+    lcmdeno(p,tmp,contextptr);
+    for (it=p.begin();it!=itend;++it){
+      if (!is_integer(*it))
+	return false;
+    }
+    p=divvecteur(p,lgcd(p));
+    factorization f;
+    p=remove_multiplicities(p,f,false,contextptr);
+    tmp=vas(p,contextptr);
+    if (tmp.type!=_VECT)
+      return false;
+    vecteur v=*tmp._VECTptr;
+    // now improve precision by bisection 
+    it=v.begin(),itend=v.end();
+    for (;it!=itend;++it){
+      if (it->type!=_VECT){
+	if (is_greater(*it,a,contextptr) && is_greater(b,*it,contextptr)){
+	  if (with_mult){
+	    int n=multiplicity(f,*it,contextptr);
+	    vasres.push_back(makevecteur(*it,n));
+	  }
+	  else
+	    vasres.push_back(*it);
+	}
+	continue;
+      }
+      if (it->_VECTptr->size()!=2)
+	return false;
+      gen A=it->_VECTptr->front(),B=it->_VECTptr->back();
+      if (is_strictly_greater(a,B,contextptr) || is_strictly_greater(A,b,contextptr))
+	continue;
+      gen interval=bisection(p,max(A,a,contextptr),min(B,b,contextptr),eps,contextptr);
+      if (is_undef(interval))
+	continue;
+      if (interval.type==_VECT)
+	interval.subtype=_INTERVAL__VECT;
+      if (with_mult)
+	vasres.push_back(makevecteur(interval,multiplicity(f,interval,contextptr)));
+      else
+	vasres.push_back( (interval.type==_VECT && interval._VECTptr->size()==2)?evalf((interval._VECTptr->front()+interval._VECTptr->back())/2,1,contextptr):interval);
+    }
+    return true;
+  }
 
 #ifndef NO_NAMESPACE_GIAC
 } // namespace giac

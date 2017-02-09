@@ -1,5 +1,5 @@
-Ceci est le fichier Info giac_us.info, produit par Makeinfo version 4.7
-à partir giac_us.texinfo.
+This is giac_us.info, produced by makeinfo version 4.11 from
+giac_us.texinfo.
 
 INFO-DIR-SECTION Math
 START-INFO-DIR-ENTRY
@@ -1220,52 +1220,57 @@ Concept Index
 
 
 Tag Table:
-Node: Top223
-Node: Installation871
-Node: Binaries1347
-Node: Requirements2390
-Node: Options3041
-Node: Configure5162
-Node: Compiling6313
-Node: Troubles7890
-Node: Xcas9481
-Node: Interface9855
-Node: CAS11094
-Node: Math menu11359
-Node: Arithmetic11493
-Node: Integer arithmetic12022
-Node: Division12415
-Node: Gcd12984
-Node: Primality13490
-Node: Other integer14268
-Node: Polynomial arithmetic14694
-Node: Cas menu16182
-Node: Rewriting16447
-Node: Diff and integrate17588
-Node: Limits and series18419
-Node: Solving equations18845
-Node: Other cas functions19190
-Node: Linear algebra19281
-Node: Geometry20833
-Node: Spreadsheet21384
-Node: Scripting21698
-Node: Language mode22515
-Node: Data23799
-Node: Loops and conditionnals24975
-Node: Functions25540
-Node: Environment26026
-Node: Giac27065
-Node: C++28211
-Node: Gen28737
-Node: Polynomials31383
-Node: Vectors and matrices32118
-Node: Symbolics32495
-Node: Unary functions32998
-Node: Making a library function35806
-Node: Making modules39937
-Node: User defined data42396
-Node: Examples42749
-Node: First example42946
-Node: Concept Index44661
+Node: Top203
+Node: Installation851
+Node: Binaries1327
+Node: Requirements2370
+Node: Options3021
+Node: Configure5142
+Node: Compiling6293
+Node: Troubles7870
+Node: Xcas9461
+Node: Interface9835
+Node: CAS11074
+Node: Math menu11339
+Node: Arithmetic11473
+Node: Integer arithmetic12002
+Node: Division12395
+Node: Gcd12964
+Node: Primality13470
+Node: Other integer14248
+Node: Polynomial arithmetic14674
+Node: Cas menu16162
+Node: Rewriting16427
+Node: Diff and integrate17568
+Node: Limits and series18399
+Node: Solving equations18825
+Node: Other cas functions19170
+Node: Linear algebra19261
+Node: Geometry20813
+Node: Spreadsheet21364
+Node: Scripting21678
+Node: Language mode22495
+Node: Data23779
+Node: Loops and conditionnals24955
+Node: Functions25520
+Node: Environment26006
+Node: Giac27045
+Node: C++28191
+Node: Gen28717
+Node: Polynomials31363
+Node: Vectors and matrices32098
+Node: Symbolics32475
+Node: Unary functions32978
+Node: Making a library function35786
+Node: Making modules39917
+Node: User defined data42376
+Node: Examples42729
+Node: First example42926
+Node: Concept Index44641
 
 End Tag Table
+
+
+Local Variables:
+coding: iso-8859-1
+End:

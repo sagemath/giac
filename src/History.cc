@@ -1,7 +1,14 @@
-// -*- mode:C++ ; compile-command: "g++-3.4 -I. -I.. -I/usr/local/include -g -c History.cc -Wall" -*-
+// -*- mode:C++ ; compile-command: "g++ -DHAVE_CONFIG_H -I. -I.. -I/usr/local/include -g -c History.cc -Wall" -*-
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#ifndef IN_GIAC
 #include <giac/first.h>
+#else
+#include "first.h"
+#endif
 /*
- *  Copyright (C) 2005 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
+ *  Copyright (C) 2005,2014 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -14,8 +21,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_LIBFLTK
@@ -34,7 +40,11 @@
 #include "Tableur.h"
 #include "Editeur.h"
 #include "Cfg.h"
+#ifndef IN_GIAC
 #include <giac/tex.h>
+#else
+#include "tex.h"
+#endif
 #include <FL/Fl_Multiline_Output.H>
 #include <iostream>
 #include <fstream>
@@ -51,27 +61,215 @@
 #include <sys/cygwin.h>
 #endif
 #endif
-
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 using namespace std;
 using namespace giac;
+
+#ifdef HAVE_LIBFLTK
+#if defined(FL_DEVICE) || (!defined(__APPLE__) && !defined(WIN32)) 
+#include <FL/Fl_File_Chooser.H>
+char *file_chooser(const char *message,const char *pat,const char *fname,int relative){
+  return fl_file_chooser(message,pat,fname,relative);
+}
+char *load_file_chooser(const char *message,const char *pat,const char *fname,int relative,bool save){
+  return fl_file_chooser(message,pat,fname,relative);
+}
+#else // FL_DEVICE
+#include <FL/Fl_Native_File_Chooser.H>
+char *load_file_chooser(const char *message,const char *pat,const char *fname,int relative,bool save){
+  // Create native chooser
+  Fl_Native_File_Chooser native(Fl_Native_File_Chooser::BROWSE_FILE);
+  static string filename="";
+  string path(pat);
+  int l=path.find('\n');
+  if (l<0 || l>=int(path.size()))
+    path += '\n';
+  native.title(message);
+  if (save)
+    native.type(Fl_Native_File_Chooser::BROWSE_SAVE_FILE);
+  else
+    native.type(Fl_Native_File_Chooser::BROWSE_FILE);
+  native.filter(path.c_str());
+  // native.filter("Text\t*.txt\n"); 
+  native.preset_file(fname);
+  // Show native chooser
+  switch ( native.show() ) {
+  case -1: 
+    return 0;	// ERROR
+  case  1: 
+    return 0;		// CANCEL
+  default: // PICKED FILE
+    filename=native.filename();
+    fname=filename.c_str();
+    return (char *) filename.c_str();
+  }
+}
+
+
+#if 0 // def __APPLE__
+Fl_Input * file_chooser_filename = NULL;
+Fl_Window * file_chooser_win =0;
+Fl_Button * file_chooser_but1=0;
+Fl_Button * file_chooser_but2=0;
+Fl_Button * file_chooser_but3=0;
+
+char *file_chooser(const char *message,const char *pat,const char *fname,int relative){
+  if (!file_chooser_win){
+    Fl_Group::current(0);
+    file_chooser_win = new Fl_Window(600, 80,gettext("Choose file"));
+    file_chooser_win->begin();
+    int y = 10;
+    file_chooser_filename = new Fl_Input(100, y, file_chooser_win->w()-120, 25, gettext("Filename"));
+    if (fname) file_chooser_filename->value(fname);
+    file_chooser_filename->tooltip(gettext("Current filename"));
+    y += file_chooser_filename->h() + 5;
+    file_chooser_but1 = new Fl_Button(20, y, file_chooser_win->w()/3-40, 25, gettext("Choose file to overwrite"));
+    file_chooser_but2 = new Fl_Button(file_chooser_win->w()/3+20, y,file_chooser_win->w()/3-40, 25, gettext("OK"));
+    file_chooser_but3 = new Fl_Button(2*file_chooser_win->w()/3+20, y,file_chooser_win->w()/3-40, 25, gettext("Cancel"));
+    y += file_chooser_filename->h() + 5;
+    file_chooser_win->end();
+  }
+  file_chooser_win->set_modal();
+  file_chooser_win->show();
+  file_chooser_win->hotspot(file_chooser_win);
+  int r=-1;
+  for (;r<0;) {
+    Fl_Widget *o = Fl::readqueue();
+    if (!o) Fl::wait();
+    else {
+      if (o == file_chooser_but1){
+	Fl_Native_File_Chooser native(Fl_Native_File_Chooser::BROWSE_FILE);
+	string path(pat);
+	int l=path.find('\n');
+	if (l<0 || l>=path.size())
+	  path += '\n';
+	native.title(message);
+	native.type(Fl_Native_File_Chooser::BROWSE_FILE);
+	native.filter(path.c_str());
+	// native.filter("Text\t*.txt\n"); 
+	native.preset_file(fname);
+	// Show native chooser
+	switch ( native.show() ) {
+	case -1: // Error
+	  fl_alert("%s",(string(gettext("Error"))+native.errmsg()).c_str()); 
+	  break;  
+	case  1: // Cancel
+	  break;
+	default:
+	  if ( native.filename() ) {
+	    file_chooser_filename->value(native.filename());
+	    file_chooser_filename->position(0,0);
+	  } else {
+	    file_chooser_filename->value("<filename>");
+	  }
+	  break;
+	}
+      }
+      if (o == file_chooser_but2) r = 2; // ok
+      if (o == file_chooser_but3) r = 3; // cancel
+    }
+  } // end for (;r<0;)
+  file_chooser_win->hide();
+  if (r==2)
+    return (char *)(file_chooser_filename->value());
+  else
+    return 0;
+}
+#else
+char *file_chooser(const char *message,const char *pat,const char *fname,int relative){
+  return load_file_chooser(message,pat,fname,relative,true);
+}
+#endif // __APPLE__
+
+#endif // FL_DEVICE
+#endif // HAVE_LIBFLTK
 
 #ifndef NO_NAMESPACE_XCAS
 namespace xcas {
 #endif // ndef NO_NAMESPACE_XCAS
 
+  static std::vector<std::string> Xcas_recent_filenames;
+  static std::string Xcas_recent_filenames_filename("xcas_recent");
+  void (*Xcas_load_filename)(const char * filename,bool modified)=0;
+  static const unsigned Xcas_recent_filenames_size=10;
+  static Fl_Menu_ * recent_filenames_menu=0;
 
+  void cb_recent_filename(Fl_Widget * wid , void* ptr){
+    Fl_Menu_ * M =dynamic_cast<Fl_Menu_ *>(wid);
+    if (!M)
+      return ;
+    const Fl_Menu_Item * m=M->mvalue();
+    unsigned n=0;
+    for (--m;;++n,--m){
+      if (m->submenu())
+	break;
+    }
+    if (n==0 || n>Xcas_recent_filenames.size())
+      return ;
+    if (Xcas_load_filename)
+      (*Xcas_load_filename)(Xcas_recent_filenames[n-1].c_str(),false);
+  }
+  void add_recent_filename(const std::string & s,bool writerecent){
+    Fl_Menu_ * menu = recent_filenames_menu;
+    string s_=remove_path(s);
+    if (s_.substr(0,10)=="xcas_auto_")
+      return;
+    unsigned i=0;
+    for (;i<Xcas_recent_filenames.size();++i){
+      if (s_==remove_path(Xcas_recent_filenames[i]))
+	break;
+    }
+    if (i==Xcas_recent_filenames.size()){
+      Xcas_recent_filenames.push_back(s);
+      int offset=menu->add((gettext("File")+string("/")+gettext("Open")+string("/")+remove_path(s)).c_str(),0,(Fl_Callback*)cb_recent_filename);
+      if (Xcas_recent_filenames.size()>Xcas_recent_filenames_size){
+	Xcas_recent_filenames.erase(Xcas_recent_filenames.begin());
+	menu->remove(4);
+      }
+      menu->textsize(menu->labelsize());
+      if (writerecent){
+#ifdef WIN32
+	ofstream of((giac::xcasroot()+Xcas_recent_filenames_filename).c_str());
+#else
+	ofstream of((giac::home_directory()+Xcas_recent_filenames_filename).c_str());
+#endif
+	for (unsigned i=0;i<Xcas_recent_filenames.size();++i)
+	  of << Xcas_recent_filenames[i] << endl;
+	of.close();
+      }
+    }
+  }
+  void read_recent_filenames(Fl_Menu_ * menu){
+    recent_filenames_menu=menu;
+#ifdef WIN32
+    return;
+    ifstream of((giac::xcasroot()+Xcas_recent_filenames_filename).c_str());
+#else
+    ifstream of((giac::home_directory()+Xcas_recent_filenames_filename).c_str());
+#endif
+    Xcas_recent_filenames.clear();
+    for (;;){
+      char buf[65536];
+      of.getline(buf,65535);
+      if (!of)
+	break;
+      add_recent_filename(buf,false);
+    }
+  }
   std::string autosave_folder;
   int GRABAREA=4;
   bool fl_handle_lock=false; // True when Fl::handle is busy
   int labeladd=6;
   Fl_Output * Parse_error_output = 0;
   owstream * logstream = 0;
-  Fl_Color Xcas_input_color=FL_RED,Xcas_input_background_color=FL_WHITE,
+  Fl_Color Xcas_input_color=FL_BLACK,Xcas_input_background_color=FL_WHITE,
     Xcas_comment_color=FL_DARK_GREEN,Xcas_comment_background_color=FL_WHITE,
-    Xcas_log_color=FL_BLUE,Xcas_log_background_color=FL_WHITE,
-    Xcas_equation_input_color=FL_RED,Xcas_equation_input_background_color=FL_WHITE,
-    Xcas_equation_color=FL_BLACK,Xcas_equation_background_color=FL_WHITE,
+    Xcas_log_color=0x3a,Xcas_log_background_color=FL_WHITE,
+    Xcas_equation_input_color=FL_BLACK,Xcas_equation_input_background_color=FL_WHITE,
+    Xcas_equation_color=FL_BLUE,Xcas_equation_background_color=FL_WHITE,
     Xcas_editor_color=FL_BLACK,Xcas_editor_background_color=FL_WHITE,
     Xcas_background_color =FL_GRAY;
   int Xcas_save_saved_color=FL_VERT_PALE,Xcas_save_unsaved_color=FL_ROUGE_PALE;
@@ -111,6 +309,10 @@ namespace xcas {
       ed->color(Xcas_editor_background_color);
       return;
     }
+    if (Xcas_Text_Editor * ed=dynamic_cast<Xcas_Text_Editor *>(w)){
+      ed->color(Xcas_editor_background_color);
+      return;
+    }
     if (dynamic_cast<Fl_Menu_ *>(w))
       w->color(Xcas_background_color);
   }
@@ -133,7 +335,13 @@ namespace xcas {
     if (x<0) return -x; else return x;
   }
 
-  History_Pack::History_Pack(int X,int Y,int W,int H,const char*l):Fl_Group(X,Y,W,H,l),_selecting(false),_pushed(false),_moving(false),_saving(false),undo_position(0),_modified(false),_resize_above(false),_spacing(2),_printlevel_w(labelsize()),_sel_begin(-1),_sel_end(-1),pretty_output(1),eval_below(false),doing_eval(false),eval_below_once(true),eval_next(false),queue_pos(-1),update_pos(-1),contextptr(0),new_question(new_question_multiline_input),_select(0),_insert(0),url(0),eval(0) {
+  History_Pack::History_Pack(int X,int Y,int W,int H,const char*l):Fl_Group(X,Y,W,H,l),_selecting(false),_pushed(false),_moving(false),_saving(false),undo_position(0),_modified(false),_resize_above(false),_spacing(2),_printlevel_w(labelsize()),_sel_begin(-1),_sel_end(-1),pretty_output(1),eval_below(false),doing_eval(false),eval_below_once(true),eval_next(false),queue_pos(-1),update_pos(-1),contextptr(0),
+#if 1
+								   new_question(new_question_editor),
+#else
+								   new_question(new_question_multiline_input),
+#endif
+								   _select(0),_insert(0),url(0),eval(0) {
     box(FL_FLAT_BOX);
     end();
     set_colors(this,false);
@@ -159,6 +367,50 @@ namespace xcas {
       return -1;
   }
 
+  int History_Pack::focus(const Fl_Widget * w) const {
+    for (;w;){
+      if (w->parent()==this)
+	break;
+      w=w->parent();
+    }
+    if (w)
+      return find(w);
+    else
+      return -1;
+  }
+
+  void History_Pack::set_scroller(Fl_Group * gr){
+    if (!gr)
+      return;
+    if (Fl_Scroll * s = dynamic_cast<Fl_Scroll *>(parent())){
+      Fl_Widget * ch=gr->child(0);
+      int spos=s->yposition();
+      int chpos=ch->y()-y();
+      int sh=s->h()-10;
+      if (chpos<spos)
+#ifdef _HAVE_FL_UTF8_HDR_
+	s->scroll_to(0,max(0,min(chpos,h()-sh)));
+#else
+      s->position(0,max(0,min(chpos,h()-sh)));
+#endif
+      else {
+	if (chpos+gr->h()>spos+sh)
+#ifdef _HAVE_FL_UTF8_HDR_
+	  s->scroll_to(0,chpos+gr->h()-sh);
+#else
+	s->position(0,chpos+gr->h()-sh);
+#endif
+	else
+#ifdef _HAVE_FL_UTF8_HDR_
+	  s->scroll_to(0,spos);
+#else
+	s->position(0,spos);
+#endif
+      }
+      s->redraw();
+    }
+  }
+
   // Focus on history pack level no pos if it's an input
   bool History_Pack::focus(int pos,bool do_focus){
     if (pos>=children() || pos<0)
@@ -181,34 +433,14 @@ namespace xcas {
 	ch->redraw();
       }
       // set the scroller if there is one above
-      if (Fl_Scroll * s = dynamic_cast<Fl_Scroll *>(parent())){
-	int spos=s->yposition();
-	int chpos=ch->y()-y();
-	if (chpos<spos)
-#ifdef _HAVE_FL_UTF8_HDR_
-	  s->scroll_to(0,max(0,min(chpos,h()-s->h())));
-#else
-	  s->position(0,max(0,min(chpos,h()-s->h())));
-#endif
-	else {
-	  if (chpos+gr->h()>spos+s->h())
-#ifdef _HAVE_FL_UTF8_HDR_
-	    s->scroll_to(0,chpos+gr->h()-s->h());
-#else
-	    s->position(0,chpos+gr->h()-s->h());
-#endif
-	  else
-#ifdef _HAVE_FL_UTF8_HDR_
-	    s->scroll_to(0,spos);
-#else
-	    s->position(0,spos);
-#endif
-	}
-	s->redraw();
-      }
+      set_scroller(gr);
       if (Editeur * ed = dynamic_cast<Editeur *>(ch)){
 	if (do_focus)
 	  Fl::focus(ed->editor);
+      }
+      if (Xcas_Text_Editor * ed = dynamic_cast<Xcas_Text_Editor *>(ch)){
+	if (do_focus)
+	  Fl::focus(ed);
       }
       return true;
     }
@@ -216,11 +448,23 @@ namespace xcas {
   }
 
   giac::gen warn_equal(const giac::gen & g,GIAC_CONTEXT){
+    if (g.is_symb_of_sommet(at_of)){
+      gen f=g._SYMBptr->feuille;
+      if (f.type==_VECT && f._VECTptr->size()==2 && f._VECTptr->front().type==_IDNT && f._VECTptr->back().type==_VECT){
+	gen n=f._VECTptr->front(),n1;
+	gen arg=f._VECTptr->back();
+	size_t s=arg._VECTptr->size();
+	if ((s==2 || s==3) && !n._IDNTptr->in_eval(0,n,n1,contextptr,true))
+	  *logptr(contextptr) << gettext("If you want to create a point ") << n 
+			      << gettext(" with coordinates ") << arg << endl
+			      << gettext("the right command is ") << n <<":=point(" << arg << ")" << endl;
+      }
+    }
     if (g.is_symb_of_sommet(at_equal) && g._SYMBptr->feuille.type==_VECT && g._SYMBptr->feuille._VECTptr->size()==2 && g._SYMBptr->feuille._VECTptr->front().type!=_INT_){
       if (g._SYMBptr->feuille._VECTptr->front().is_symb_of_sommet(at_at) || g._SYMBptr->feuille._VECTptr->front().is_symb_of_sommet(at_of) || g._SYMBptr->feuille._VECTptr->front().type!=_SYMB)
-	*logptr(contextptr) << "Warning evaluating = at top level, you must use := to assign " << g._SYMBptr->feuille._VECTptr->back() << " to " << g._SYMBptr->feuille._VECTptr->front() << " or == to test equality" << endl;
+	*logptr(contextptr) << gettext("Warning evaluating = at top level, you must use := to assign ") << g._SYMBptr->feuille._VECTptr->back() << gettext(" to ") << g._SYMBptr->feuille._VECTptr->front() << gettext(" or == to test equality") << endl;
     }
-    return g;
+    return equaltosto(g,contextptr);
   }
 
   int parse(Fl_Widget * w,giac::gen & g){
@@ -250,8 +494,20 @@ namespace xcas {
       g=e->get_data();
       return 1;
     }
-    if (Editeur * ed=dynamic_cast<Editeur *>(w)){
-      g=gen(ed->value(),contextptr);
+    if (Editeur * ed=dynamic_cast<Editeur *>(w))
+      return parse(ed->editor,g);
+    if (Xcas_Text_Editor * ed=dynamic_cast<Xcas_Text_Editor *>(w)){
+      if (ed->buffer()->length()==0)
+	return 0;
+      if (!ed->changed()){
+	g = warn_equal(ed->g(),contextptr);
+	return !is_undef(g);
+      }
+      g=warn_equal(giac::gen(ed->value(),contextptr),contextptr);
+      if (ed)
+	ed->_g=g;
+      if (giac::first_error_line(contextptr))
+	*logptr(contextptr) << gettext("Syntax compatibility mode ") << print_program_syntax(xcas_mode(contextptr)) << gettext("\nParse error line ") << giac::first_error_line(contextptr) <<  gettext(" at ")  << giac::error_token_name(contextptr) ;
       return 1;
     }
     if (Figure * f = dynamic_cast<Figure *>(w)){
@@ -293,6 +549,8 @@ namespace xcas {
 	wid=g->child(0);
     if (Fl_Input * i = dynamic_cast<Fl_Input *>(wid))
       return i->value();
+    if (Xcas_Text_Editor * i = dynamic_cast<Xcas_Text_Editor *>(wid))
+      return i->value();
     if (Equation * e = dynamic_cast<Equation *>(wid)){
       e->parse_desactivate();
       e->select();
@@ -324,8 +582,15 @@ namespace xcas {
 
   bool set_gen_value(Fl_Widget * w,const giac::gen & g,bool exec){
     const giac::context * contextptr = get_context(w);
+    if (Xcas_Text_Editor * ed=dynamic_cast<Xcas_Text_Editor *>(w)){
+      ed->_g=g;
+      bool res=set_value(ed,g.print(contextptr),exec);
+      ed->clear_gchanged();
+      return res;
+    }
     if (Fl_Input_ * i = dynamic_cast<Fl_Input_ *>(w)){
       i->value(g.print(contextptr).c_str());
+      i->position(0,0);
       if (Multiline_Input_tab * m = dynamic_cast<Multiline_Input_tab *>(i)){
 	m->_g=g;
 	i->clear_changed();
@@ -391,7 +656,18 @@ namespace xcas {
     context * contextptr=get_context(w);
     if (Fl_Input_ * i = dynamic_cast<Fl_Input_ *>(w)){
       i->value(s.c_str());
+      i->position(0,0);
       i->set_changed();
+      if (exec)
+	i->do_callback();
+      return true;
+    }
+    if (Xcas_Text_Editor * i = dynamic_cast<Xcas_Text_Editor *>(w)){
+      if (i->buffer()->length()>0) 
+	i->buffer()->remove(0,i->buffer()->length());
+      i->buffer()->insert(0,s.c_str());
+      i->insert_position(0);
+      i->set_gchanged();
       if (exec)
 	i->do_callback();
       return true;
@@ -441,7 +717,7 @@ namespace xcas {
   }
 
   History_Fold * get_history_fold_focus(const Fl_Widget * wid){
-    History_Fold * f=get_history_fold(Fl::focus());
+    History_Fold * f=get_history_fold(xcas::Xcas_input_focus);
     return f?f:get_history_fold(wid);
   }
 
@@ -919,6 +1195,20 @@ namespace xcas {
   };
   
   int History_Pack::handle(int event){
+    if (event==FL_MOUSEWHEEL){
+#if 1
+      if (!Fl::event_inside(this)) return 0;
+      return Fl_Group::handle(event); 
+      for (unsigned i=0;i<children();i++){
+	int res=child(i)->handle(event);
+	if (res)
+	  return res;
+      }
+      return 0;
+#else
+      return 0;
+#endif
+    }
     if (event==FL_FOCUS){
       return Fl_Group::handle(event);
     }
@@ -937,7 +1227,7 @@ namespace xcas {
 	  }
 	}	
       }
-      if (Fl::event_key()==FL_BackSpace){
+      if (Fl::event_key()==FL_BackSpace || Fl::event_key()==FL_Delete){
 	remove_selected_levels(false);
 	return 1;
       }
@@ -960,8 +1250,16 @@ namespace xcas {
 	  remove_selected_levels(false);
 	return 1;
       }
-      if (ch==22 || ch==25){ // Ctrl-V
+      if (ch==22){ // Ctrl-V
 	Fl::paste(*this, 1);
+	return 1;
+      }
+      if (ch==25){
+	History_cb_Redo(this,0);
+	return 1;
+      }
+      if (ch==26){
+	History_cb_Undo(this,0);
 	return 1;
       }
     }
@@ -977,7 +1275,7 @@ namespace xcas {
 	return 0;
       _insert(this,Fl::event_text(),-1,_sel_begin);
       _sel_begin = _sel_end = -1;
-      update();
+      update(); // commented
       parent_redraw(this);
       return 1;
     }
@@ -1277,14 +1575,15 @@ namespace xcas {
   bool History_Fold::autosave(bool warn_user){
     if (!pack->_modified || (input && input->visible()))
       return false;
-    cerr << "Autosaving " << autosave_filename << endl;
+    if (debug_infolevel)
+      cerr << "Autosaving " << autosave_filename << endl;
     bool res=pack->save_as(autosave_filename.c_str(),0,false,warn_user,false);
     pack->modified(false);
     return res;
   }
 
   int confirm_close(const string & message){
-    int i=fl_choice(message.c_str(),gettext("Cancel"),gettext("Yes"),gettext("No"));
+    int i=fl_choice("%s",gettext("Cancel"),gettext("Yes"),gettext("No"),message.c_str());
     return i;
   }
 
@@ -1337,9 +1636,14 @@ namespace xcas {
 
 #ifdef WIN32
   std::string unix_path(const std::string & winpath){
-    char * unixpath = (char *) malloc
-	 (cygwin_win32_to_posix_path_list_buf_size (winpath.c_str()));
+#ifdef __x86_64__
+    int s = cygwin_conv_path (CCP_WIN_A_TO_POSIX , winpath.c_str(), NULL, 0);
+    char * unixpath = (char *) malloc(s);
+    cygwin_conv_path(CCP_WIN_A_TO_POSIX,winpath.c_str(), unixpath,s);
+#else
+    char * unixpath = (char *) malloc (cygwin_win32_to_posix_path_list_buf_size (winpath.c_str()));
     cygwin_win32_to_posix_path_list (winpath.c_str(), unixpath);
+#endif
     string res=unixpath;
     free(unixpath);
     return res;
@@ -1373,20 +1677,34 @@ namespace xcas {
   bool History_Pack::save_as(const char * ch){
     if (!_select)
       return false;
-    Fl_Widget * wid = Fl::focus();
+    Fl_Widget * wid = xcas::Xcas_input_focus;
     // get filename
     string tmp="Save worksheet ";
     if (ch)
       tmp += ch;
-    char * newfile = fl_file_chooser(tmp.c_str(), "*.xws", "session.xws");
-    // check filename
+    string fname;
+    if (url)
+      fname=remove_path(remove_extension(*url))+"_.xws";
+    else
+      fname="session.xws";
+    char * newfile = file_chooser(tmp.c_str(), "*.xws", fname.c_str());
     if (wid)
       Fl::focus(wid);
+    // check filename
     if ( !newfile )
       return false;
+#if 1 // ndef WIN32
+    string sn=get_path(unix_path(newfile));
+    if (!sn.empty()){
+#ifndef HAVE_NO_CWD
+      // _cd(string2gen(sn,false),contextptr);
+      chdir(sn.c_str());
+#endif
+    }
+#endif
     string s=remove_extension(newfile)+".xws";
     if (is_file_available(s.c_str())){
-      int i=fl_ask(("File "+s+" exists. Overwrite?").c_str());
+      int i=fl_ask("%s",("File "+s+" exists. Overwrite?").c_str());
       if ( !i )
 	return false;
     }
@@ -1398,27 +1716,47 @@ namespace xcas {
   bool History_Pack::save_as(const char * filename,const char * ch,bool autosave_rm,bool warn_user,bool savecontext){
     if (!filename || !_select || _saving)
       return false;
+    static string html5;
+    html5=widget_html5(this);
+    if (autosave_rm) Fl::copy(html5.c_str(),html5.size(),1);
     const char * chs=_select(this,0,children()-1);
     if (!chs)
       return false;
     _saving = true;
     FILE * f(fopen(filename,"w"));
     if (!f){ 
-      string message=string("Unable to open file ")+filename;
+      string message=string(gettext("Unable to open file "))+filename;
       if (warn_user)
-	fl_alert(message.c_str());
+	fl_alert("%s",message.c_str());
       cerr << message << endl;
       if (url){
 	delete url;
 	url=0;
       }
       if (History_Fold * hf=get_history_fold(this)){
-	hf->label("Unnammed");
+	hf->label(gettext("Unnamed"));
       }
       _saving = false;
       return false; 
     }
-    fprintf(f,"// xcas version=%s fontsize=%i font=%i xcas_mode=%i\n",VERSION,labelsize(),labelfont(),xcas_mode(contextptr));
+    if (recent_filenames_menu)
+      add_recent_filename(filename,true);
+    int savepos=_sel_begin,pos,yscrollerpos;
+    Fl_Scroll * scroller = dynamic_cast<Fl_Scroll *>(parent());
+    if (scroller)
+      yscrollerpos=scroller->yposition();
+    pos=focus(Xcas_input_focus);
+    if (pos==-1)
+      pos=_sel_begin;
+    bool usepos=false,dbg=false;
+    if (xcas::Xcas_Debug_Window && xcas::Xcas_Debug_Window->shown())
+      dbg=true;
+    if (pos<0)
+      pos=update_pos;
+    else 
+      usepos=(dynamic_cast<Equation *>(Xcas_input_focus)==0);
+    _sel_begin=savepos;
+    fprintf(f,"// xcas version=%s fontsize=%i font=%i currentlevel=%i\n",VERSION,labelsize(),labelfont(),pos);
     fprintf(f,"%s",chs);
     if (savecontext){
       string tmps=archive_session(false,contextptr);
@@ -1436,6 +1774,25 @@ namespace xcas {
     if (autosave_rm){
       if (History_Fold * hf=dynamic_cast<History_Fold *>(parent_skip_scroll(this)))
 	hf->autosave_rm();
+    }
+    if (!usepos && Xcas_input_focus){
+      Fl::focus(Xcas_input_focus);
+      if (Fl_Input_ * ptr=dynamic_cast<Fl_Input_*>(Xcas_input_focus))
+	ptr->position(ptr->position(),ptr->position());
+    }
+    else {
+      focus(pos,true);
+      if (Fl_Input_ * ptr=dynamic_cast<Fl_Input_*>(Fl::focus()))
+	ptr->position(ptr->position(),ptr->position());
+    }
+    if (dbg)
+      Fl::focus(xcas::Xcas_Debug_Window);
+    if (scroller){
+#ifdef _HAVE_FL_UTF8_HDR_
+      scroller->scroll_to(0,yscrollerpos);
+#else
+      scroller->position(0,yscrollerpos);
+#endif
     }
     return true;
   }
@@ -1501,36 +1858,33 @@ namespace xcas {
     const char * newfile ;
     switch (mws){
     case 1:
-      newfile = fl_file_chooser("Load maple worksheet","*.mws","*.mws");
+      newfile = load_file_chooser("Load maple worksheet","*.mws","*.mws",0,false);
       break;
     case 3:
-      newfile = fl_file_chooser("Load ti89 program","*.89*","*.89*");
+      newfile = load_file_chooser("Load ti89 program","*.89*","*.89*",0,false);
       break;
     case 7:
-      newfile = fl_file_chooser("Load V200 program","*.v2*","*.v2*");
+      newfile = load_file_chooser("Load V200 program","*.v2*","*.v2*",0,false);
       break;
     default:
-      newfile = fl_file_chooser("Load worksheet", "*.xws", "session.xws");
+      newfile = load_file_chooser("Load worksheet", "*.xws", "session.xws",0,false);
     }
     // check filename
     if ( !newfile )
       return false;
     if (!is_file_available(newfile)){
-      fl_message(("File "+string(newfile)+" does not exist.").c_str());
+      fl_message("%s",("File "+string(newfile)+" does not exist.").c_str());
       return false;
     }
     if (mws==3 || mws==7){
       if (xcas_mode(contextptr)!=3){
-	int i=fl_ask(gettext("Set compatibility mode to TI?"));
+	int i=fl_ask("%s",gettext("Set compatibility mode to TI?"));
 	if (i)
 	  xcas_mode(contextptr)=3;
       }
-      gen tmp;
-      try {
-	tmp=_unarchive_ti(string2gen(newfile,false),contextptr);
-      } catch (...){
+      gen tmp=_unarchive_ti(string2gen(newfile,false),contextptr);
+      if (is_undef(tmp))
 	return false;
-      }
       // create 
       newfile=(remove_extension(newfile)+".xws").c_str();
       if (newurl) 
@@ -1541,7 +1895,7 @@ namespace xcas {
       out.close();
       History_Fold * o = get_history_fold(this);
       if (o){
-	o->pack->set_sel_begin(Fl::focus());
+	o->pack->set_sel_begin(xcas::Xcas_input_focus);
 	int pos=o->pack->_sel_begin;
 	Fl_Widget * e=new_program(max(o->pack->w()-o->pack->_printlevel_w,1),o->h()/2,o->pack);
 	change_group_fontsize(e,o->labelsize());
@@ -1560,12 +1914,12 @@ namespace xcas {
       // Translate to xcas worksheet
       string xcasws=remove_extension(newfile)+".xws";
       if (is_file_available(xcasws.c_str())){
-	int i=fl_ask((gettext("File ")+xcasws+gettext(" exists. Overwrite?")).c_str());
+	int i=fl_ask("%s",(gettext("File ")+xcasws+gettext(" exists. Overwrite?")).c_str());
 	if (!i)
 	  return false;
       }
       if (xcas_mode(contextptr)!=mws){
-	fl_message(gettext("Translating worksheet and setting compatibility mode to maple"));
+	fl_message("%s",gettext("Translating worksheet and setting compatibility mode to maple"));
 	xcas_mode(contextptr)=mws;
       }
       ifstream in(newfile);
@@ -1584,9 +1938,18 @@ namespace xcas {
     if (!urlname0 || !_insert )
       return false;
     string urlname = unix_path(urlname0).c_str();
+#if 1 // ndef WIN32
+    string sn=get_path(urlname);
+    if (!sn.empty()){
+#ifndef HAVE_NO_CWD
+      //_cd(string2gen(sn,false),contextptr);
+      chdir(sn.c_str());
+#endif
+    }
+#endif
     FILE * f=fopen(urlname.c_str(),"r");
     if (!f){
-      fl_message(("Unable to load"+urlname).c_str());
+      fl_message("%s",("Unable to load "+urlname).c_str());
       return false;
     }
     string s;
@@ -1601,6 +1964,7 @@ namespace xcas {
     unsigned ss=s.size();
     bool exec=false;
     int fontsize=labelsize();
+    int newpos=-1;
     Fl_Font police=FL_HELVETICA;
     if (ss>7 && s.substr(0,8)=="// xcas "){
       unsigned pos=s.find('\n');
@@ -1631,6 +1995,11 @@ namespace xcas {
 		police = Fl_Font(atoi(optvalue.c_str()));
 	      if (optname=="xcas_mode")
 		xcas_mode(contextptr)=atoi(optvalue.c_str());
+	      if (optname=="currentlevel"){
+		newpos=atoi(optvalue.c_str());
+		if (before_position>0)
+		  newpos += before_position;
+	      }
 	    }
 	    optname="";
 	    afterequal=false;
@@ -1656,7 +2025,7 @@ namespace xcas {
       mws2xws(in,out,49,87,626,labelsize()+1);
       s=out.str();
       if (xcas_mode(contextptr)!=1){
-	fl_message(gettext("Translating maple worksheet and setting compatibility mode to maple"));
+	fl_message("%s",gettext("Translating maple worksheet and setting compatibility mode to maple"));
 	xcas_mode(contextptr)=1;
       }
       new_url((remove_extension(urlname)+".xws").c_str());
@@ -1669,15 +2038,29 @@ namespace xcas {
 	History_Pack_cb_eval(g->child(0),0);
       }
     }
+    focus(newpos,true);
     labelfont(police);
     change_group_fontsize(this,max(8,fontsize));
     return res;
   }
 
+  int editor_hsize(Fl_Widget * w){
+    if (!w)
+      return 0;
+    return w->labelsize()+12;
+    Fl_Group * wd = w->parent();
+    while (wd && wd->parent())
+      wd=wd->parent();
+    if (wd && w->w()<wd->w()*0.7)
+      return w->labelsize()+24;
+    else
+      return w->labelsize()+12;
+  }
+
   bool History_Pack::add_entry(int n){
     if (!new_question)
       return false;
-    Fl_Widget * q=new_question(max(w()-_printlevel_w,1),labelsize()+10);
+    Fl_Widget * q=new_question(max(w()-_printlevel_w,1),editor_hsize(this));
     add_entry(n,q);
     return true;
   }
@@ -1690,11 +2073,18 @@ namespace xcas {
       i->textsize(labelsize());
       i->textfont(labelfont());
     }
+    if (Xcas_Text_Editor * ed=dynamic_cast<Xcas_Text_Editor *>(q)){
+      ed->Fl_Text_Display::textsize(labelsize());
+      vector<Fl_Text_Display::Style_Table_Entry> & v=ed->styletable;
+      for (unsigned i=0;i<v.size();++i)
+	v[i].size=labelsize();
+    }
     if (q->w()>w()-_printlevel_w)
       q->resize(q->x(),q->y(),w()-_printlevel_w,q->h());
     int addh=1;
     Fl_Group::current(0);
     Fl_Tile * g = new Fl_Tile(q->x(),q->y(),q->w(),q->h()+addh);
+    g->labelfont(q->labelfont());
     g->end();
     g->add(q);
     Log_Output * lg = new Log_Output(q->x(),q->y()+q->h(),q->w(),addh);
@@ -1737,6 +2127,7 @@ namespace xcas {
   }
 
   Fl_Widget * new_question_multiline_input(int W,int H){
+    Fl_Group::current(0);
     Multiline_Input_tab * w=new Multiline_Input_tab(0,0,W,H);
     w->when(FL_WHEN_ENTER_KEY|FL_WHEN_NOT_CHANGED);
     w->callback(History_Pack_cb_eval,0);
@@ -1745,7 +2136,21 @@ namespace xcas {
     return w;
   }
 
+  Fl_Widget * new_question_editor(int W,int H){
+    Fl_Group::current(0);
+    Fl_Text_Buffer * b = new Fl_Text_Buffer;
+    Xcas_Text_Editor * w=new Xcas_Text_Editor(0,0,W,H,b);
+    w->scrollbar_width(12);
+    w->when(FL_WHEN_ENTER_KEY|FL_WHEN_NOT_CHANGED);
+    w->callback(History_Pack_cb_eval,0);
+    w->textcolor(Xcas_input_color);
+    w->color(Xcas_input_background_color);
+    w->buffer()->add_modify_callback(style_update, w); 
+    return w;
+  }
+
   Fl_Widget * new_question_equation(int W,int H){
+    Fl_Group::current(0);
     Equation * w=new Equation(0,0,W,H,"",0);
     w->output_equation=false;
     w->select();
@@ -1761,7 +2166,7 @@ namespace xcas {
       History_Pack * hp=get_history_pack(q);
       if (hp){
 	hp->_sel_begin=-1;
-	hp->set_sel_begin(Fl::focus());
+	hp->set_sel_begin(xcas::Xcas_input_focus);
 	if (hp->_sel_begin<hp->children()-1){
 	  Fl_Widget * w=hp->child(hp->_sel_begin+1);
 	  if (Fl_Group * g=dynamic_cast<Fl_Group *>(w)){
@@ -1784,6 +2189,7 @@ namespace xcas {
   }
 
   Fl_Widget * new_comment_input(int W,int H){
+    Fl_Group::current(0);
     Comment_Multiline_Input * w=new Comment_Multiline_Input(0,0,W,H,"");
     w->textcolor(Xcas_comment_color);
     w->color(Xcas_comment_background_color);
@@ -1795,6 +2201,8 @@ namespace xcas {
   Fl_Widget * new_tableur(int W,int H,const History_Pack * pack){
     Fl_Group::current(0);
     Tableur_Group * t = new Tableur_Group(0,0,W,H,pack->labelsize(),0);
+    t->labelfont(pack->labelfont());
+    t->table->labelfont(pack->labelfont());
     if (t && t->table)
       Fl::focus(t->table);
     set_colors(t);
@@ -1804,14 +2212,21 @@ namespace xcas {
   Fl_Widget * new_program(int W,int H,const History_Pack * pack){
     Fl_Group::current((Fl_Group *)pack);
     Editeur * t = new Editeur(0,0,W,H);
+    t->labelfont(pack->labelfont());
     t->callback(History_Pack_cb_eval,0);
     set_colors(t);
     return t;
   }
 
   Fl_Group * new_figure(int W,int H,const History_Pack * pack,bool dim3,bool approx){
+#if defined GRAPH_WINDOW && defined __APPLE__
+    if (dim3) fl_alert("Sorry, 3d geometry does not work on Mac OS.");
+    dim3=false; // 3d geo does not work on mac
+#endif
     Fl_Group::current(0);
     Figure * t = new Figure(0,0,W,H,pack->labelsize(),dim3);
+    t->labelfont(pack->labelfont());
+    t->geo->hp->labelfont(pack->labelfont());
     t->geo->approx=approx;
     t->geo->hp->contextptr=pack->contextptr;
     if (dim3)
@@ -1824,7 +2239,8 @@ namespace xcas {
     Fl_Group::current(0);
     Logo * t = new Logo(0,0,W,H,pack->labelsize());
     t->hp->contextptr=pack->contextptr;
-    t->t->turtleptr=&giac::turtle_stack(pack->contextptr);    
+    t->t->turtleptr=&giac::turtle_stack(pack->contextptr);
+    turtle(pack->contextptr).widget = t->t;
     set_colors(t);
     return t;
   }
@@ -1856,6 +2272,8 @@ namespace xcas {
     }
   }
 
+  const int logptrinitlines=4;
+
   void History_Pack_Group_eval(Fl_Group * g,bool add_group){
     if (History_Fold * hf=dynamic_cast<History_Fold *>(g)){
       hf->eval();
@@ -1870,11 +2288,13 @@ namespace xcas {
     // add an entry if none are below or focus on next entry
     int N=p->find(g),M=p->children();
     // Search in g->children if there is a Log_Output available
+    if (Xcas_DispG)
+      xcas_dispg_entries=Xcas_DispG->plot_instructions.size();
     Log_Output * otmp=find_log_output(g);
     int deltalog=0;
     if (!otmp){
       Fl_Group::current(0);
-      otmp = new Log_Output(q->x(),q->y()+q->h(),q->w(),q->labelsize()+3);
+      otmp = new Log_Output(q->x(),q->y()+q->h(),q->w(),logptrinitlines*q->labelsize()+14);
       deltalog=otmp->h();
       g->Fl_Widget::resize(g->x(),g->y(),g->w(),g->h()+deltalog);
       otmp->labelsize(q->labelsize());
@@ -1889,7 +2309,7 @@ namespace xcas {
       deltalog=otmp->h();
       otmp->value("");
       // resize otmp
-      otmp->resize(otmp->x(),otmp->y(),otmp->w(),otmp->labelsize()+3);
+      otmp->resize(otmp->x(),otmp->y(),otmp->w(),logptrinitlines*otmp->labelsize()+14);
       deltalog = otmp->h()-deltalog;
       g->Fl_Widget::resize(g->x(),g->y(),g->w(),g->h()+deltalog);
       g->insert(*otmp,1);
@@ -1926,7 +2346,7 @@ namespace xcas {
     }
     // bool computing=false;
     if (Fl_Output * out =dynamic_cast<Fl_Output *>(a)){
-      if (strcmp(out->value(),gettext("Unable to launch thread"))==0)
+      if (strcmp(out->value(),gettext("Unable to launch thread. Press STOP to interrupt."))==0)
 	output_resize_parent(otmp);
     } 
     p->resize();
@@ -1935,8 +2355,9 @@ namespace xcas {
       ah = g->child(2)->h(); 
       Fl_Widget * wid=g->child(2);
       g->remove(wid);
-      if (!dynamic_cast<Gen_Value_Slider *>(wid))
+      if (!dynamic_cast<Gen_Value_Slider *>(wid)){
 	delete wid; // must not delete a slider because we are in it's callback
+      }
     }
     a->resize(q->x(),otmp->y()+otmp->h(),g->w(),a->h());
     g->Fl_Widget::resize(g->x(),g->y(),g->w(),g->h()+a->h()-ah);
@@ -1949,7 +2370,7 @@ namespace xcas {
 	if (tmps->children())
 	  tmp=tmps->child(0);
       }
-      if (!dynamic_cast<Fl_Input *>(tmp))
+      if (!dynamic_cast<Fl_Input *>(tmp) && !dynamic_cast<Xcas_Text_Editor*>(tmp))
 	fin_pack =true;
     }
     if (fin_pack){
@@ -1995,6 +2416,8 @@ namespace xcas {
   }
 
   Fl_Group * parent_skip_scroll(const Fl_Widget * g){
+    if (!g)
+      return 0;
     Fl_Group * res = g->parent();
     if (res){
       if (Fl_Scroll * s = dynamic_cast<Fl_Scroll *>(res))
@@ -2133,14 +2556,32 @@ namespace xcas {
       if (!of)
 	break;
       Fl_Widget * wid=pack->child(i);
+      if (History_Fold * hf=dynamic_cast<History_Fold *>(wid)){
+	save_as_text(of,mode,hf->pack);
+	continue;
+      }
       Fl_Group * g;
       while ( (g=dynamic_cast<Fl_Group *>(wid)) ){ 
 	if (Figure * fig=dynamic_cast<Figure *>(g))
+	  break;
+	if (Editeur * ed=dynamic_cast<Editeur *>(wid))
+	  break;
+	if (Xcas_Text_Editor * ed=dynamic_cast<Xcas_Text_Editor *>(wid))
 	  break;
 	if (g->children())
 	  wid=g->child(0);
 	else
 	  break;
+      }
+      if (Editeur * ed=dynamic_cast<Editeur *>(wid)){
+	xcas_mode(contextptr)=mode;
+	of << unlocalize(ed->value()) << endl;
+	xcas_mode(contextptr)=save_maple_mode;
+      }
+      if (Xcas_Text_Editor * xed=dynamic_cast<Xcas_Text_Editor *>(wid)){
+	xcas_mode(contextptr)=mode;
+	of << unlocalize(xed->value()) << endl;
+	xcas_mode(contextptr)=save_maple_mode;
       }
       if (Figure * fig=dynamic_cast<Figure *>(g)){
 	save_as_text(of,mode,fig->geo->hp);
@@ -2170,7 +2611,7 @@ namespace xcas {
       if (o){
 	string tmp=o->pack->url?remove_extension(*o->pack->url):"session";
 	tmp += "."+mode2extension(mode);
-	char * newfile = fl_file_chooser(gettext("Export worksheet as"), ("*."+mode2extension(mode)).c_str(), tmp.c_str());
+	char * newfile = file_chooser(gettext("Export worksheet as"), ("*."+mode2extension(mode)).c_str(), tmp.c_str());
 	// check filename
 	if ( !newfile )
 	  return ;
@@ -2239,7 +2680,7 @@ namespace xcas {
     if (m && m->parent()){
       History_Pack * hp = dynamic_cast<History_Pack *>(Fl::focus());
       if (!hp)
-	hp=get_history_pack(Fl::focus());
+	hp=get_history_pack(xcas::Xcas_input_focus);
       if (hp){
 	int a=hp->_sel_begin,b= hp->_sel_end;
 	if (a>=0 && b>=0){
@@ -2277,8 +2718,8 @@ namespace xcas {
   }
 
   void cb_New_Input(Fl_Widget* m , void*) {
-    Fl_Widget * w = Fl::focus();
-    if (!dynamic_cast<Fl_Group *>(w))
+    Fl_Widget * w = xcas::Xcas_input_focus;
+    if (dynamic_cast<Xcas_Text_Editor *>(w) || !dynamic_cast<Fl_Group *>(w))
       w=parent_skip_scroll(parent_skip_scroll(w));
     History_Pack * hp=dynamic_cast<History_Pack *>(w);
     History_Fold * o = get_history_fold_focus(m);
@@ -2290,8 +2731,28 @@ namespace xcas {
     }
     if (hp){
       // hp->_sel_begin=-1;
-      hp->set_sel_begin(Fl::focus());
+      hp->set_sel_begin(xcas::Xcas_input_focus);
       hp->add_entry(hp->_sel_begin);
+    }
+  }
+
+  void History_cb_New_Xcas_Text_Editor(Fl_Widget* m , void*) {
+    if (m && m->parent()){
+      History_Fold * o = get_history_fold_focus(m);
+      if (o){
+	o->pack->set_sel_begin(xcas::Xcas_input_focus);
+	Fl_Widget * e=new_question_editor(max(o->pack->w()-o->pack->_printlevel_w,1),editor_hsize(o->pack));
+	if (Xcas_Text_Editor * ed=dynamic_cast<Xcas_Text_Editor *>(e)){
+	  ed->Fl_Text_Display::textsize(o->labelsize());
+	  vector<Fl_Text_Display::Style_Table_Entry> & v=ed->styletable;
+	  for (unsigned i=0;i<v.size();++i)
+	    v[i].size=o->labelsize();
+	}
+	change_group_fontsize(e,o->labelsize());
+	o->pack->add_entry(o->pack->_sel_begin,e);
+	if (Keyboard_Switch)
+	  Keyboard_Switch(0x8000 | 0x1);
+      }
     }
   }
 
@@ -2299,8 +2760,8 @@ namespace xcas {
     if (m && m->parent()){
       History_Fold * o = get_history_fold_focus(m);
       if (o){
-	o->pack->set_sel_begin(Fl::focus());
-	Fl_Widget * e=new_question_equation(max(o->pack->w()-o->pack->_printlevel_w,1),o->pack->labelsize()*3+10);
+	o->pack->set_sel_begin(xcas::Xcas_input_focus);
+	Fl_Widget * e=new_question_equation(max(o->pack->w()-o->pack->_printlevel_w,1),o->pack->labelsize()+10);
 	change_group_fontsize(e,o->labelsize());
 	if (Equation * eq=dynamic_cast<Equation *>(e))
 	  eq->select();
@@ -2315,7 +2776,7 @@ namespace xcas {
     if (m && m->parent()){
       History_Fold * o = get_history_fold_focus(m);
       if (o){
-	o->pack->set_sel_begin(Fl::focus());
+	o->pack->set_sel_begin(xcas::Xcas_input_focus);
 	int pos=o->pack->_sel_begin;
 	Fl_Widget * e=new_tableur(max(o->pack->w()-o->pack->_printlevel_w,1),max(o->h()-4*o->labelsize(),200),o->pack);
 	change_group_fontsize(e,o->labelsize());
@@ -2349,7 +2810,7 @@ namespace xcas {
 	    gen tmp=t->table->m[0][0];
 	    if (tmp.type==_VECT && tmp._VECTptr->size()==3)
 	      tmp=tmp._VECTptr->front();
-	    t->table->input->value(tmp.print(contextptr).c_str());
+	    t->table->input->value(tmp.print(contextptr).c_str(),true);
 	  }
 	}
       }
@@ -2368,7 +2829,7 @@ namespace xcas {
     if (m && m->parent()){
       History_Fold * o = get_history_fold_focus(m);
       if (o){
-	o->pack->set_sel_begin(Fl::focus());
+	o->pack->set_sel_begin(xcas::Xcas_input_focus);
 	Fl_Widget * e=new_comment_input(max(o->pack->w()-o->pack->_printlevel_w,1),o->labelsize()+10);
 	change_group_fontsize(e,o->labelsize());
 	o->pack->add_entry(o->pack->_sel_begin,e);
@@ -2380,7 +2841,7 @@ namespace xcas {
     if (m && m->parent()){
       History_Fold * o = get_history_fold_focus(m);
       if (o){
-	o->pack->set_sel_begin(Fl::focus());
+	o->pack->set_sel_begin(xcas::Xcas_input_focus);
 	int pos=o->pack->_sel_begin;
 	Fl_Widget * e=new_program(max(o->pack->w()-o->pack->_printlevel_w,1),o->h()/2,o->pack);
 	change_group_fontsize(e,o->labelsize());
@@ -2395,7 +2856,8 @@ namespace xcas {
 	    }
 	  }
 	  else
-	    ed->editor->buffer()->insert(0,"\n:;");
+	    cb_choose_func(ed->editor);
+	  // else ed->editor->buffer()->insert(0,"\n:;");
 	  Fl::focus(ed->editor);
 	}
       }
@@ -2414,7 +2876,7 @@ namespace xcas {
     if (m && m->parent()){
       History_Fold * o = get_history_fold_focus(m);
       if (o){
-	o->pack->set_sel_begin(Fl::focus());
+	o->pack->set_sel_begin(xcas::Xcas_input_focus);
 	int pos=o->pack->_sel_begin;
 	Fl_Widget * e=new_figure(max(o->pack->w()-o->pack->_printlevel_w,1),max(4*o->h()/5,340),o->pack,dim3,approx);
 	change_group_fontsize(e,o->labelsize());
@@ -2457,9 +2919,9 @@ namespace xcas {
     if (m && m->parent()){
       History_Fold * o = get_history_fold_focus(m);
       if (o){
-	o->pack->set_sel_begin(Fl::focus());
+	o->pack->set_sel_begin(xcas::Xcas_input_focus);
 	int pos=o->pack->_sel_begin;
-	Fl_Widget * e=new_logo(max(o->pack->w()-o->pack->_printlevel_w,1),o->h()/2,o->pack);
+	Fl_Widget * e=new_logo(max(o->pack->w()-o->pack->_printlevel_w,1),2*o->h()/3,o->pack);
 	change_group_fontsize(e,o->labelsize());
 	o->pack->add_entry(pos,e);
       }
@@ -2470,7 +2932,7 @@ namespace xcas {
     if (m && m->parent()){
       History_Fold * o = get_history_fold_focus(m);
       if (o){
-	o->pack->set_sel_begin(Fl::focus());
+	o->pack->set_sel_begin(xcas::Xcas_input_focus);
 	int pos=o->pack->_sel_begin;
 	Fl_Group::current(o->pack);
 	History_Fold * e=new History_Fold(0,0,max(o->pack->w()-o->pack->_printlevel_w,1),4*o->labelsize());
@@ -2542,9 +3004,16 @@ namespace xcas {
 	int N=hpp->children();
 	for (int i=0;i<N;++i){
 	  Graph2d3d * geo = dynamic_cast<Graph2d3d *>(hpp->child(i));
+	  if (!geo){
+	    Fl_Window * win = dynamic_cast<Fl_Window *>(hpp->child(i));
+	    if (win) 
+	      geo=dynamic_cast<Graph2d3d *>(win->child(0));
+	  }
 	  if (geo){
 	    geo->update(this,update_pos>=0?update_pos:0);
 	    geo->no_handle=false;
+	    if (update_pos>=0 && update_pos<children())
+	      set_scroller(dynamic_cast<Fl_Group *>(child(update_pos)));
 	  }
 	}
       }
@@ -2582,7 +3051,7 @@ namespace xcas {
       if (o ){
 	int n=o->pack->children(),i=n;
 	o->pack->eval_below=true;
-	Fl_Widget * w =Fl::focus();
+	Fl_Widget * w =xcas::Xcas_input_focus;
 	for (;w;){
 	  i=o->pack->find(w);
 	  if (i!=n)
@@ -2607,12 +3076,35 @@ namespace xcas {
     }
   }
 
+  void cb_Rm_Answers(History_Fold * o,int i){
+    if (!o)
+      return;
+    int n=o->pack->children();
+    for (;i<n;++i){
+      Fl_Group * g = dynamic_cast<Fl_Group *>(o->pack->child(i));
+      if (History_Fold * hf=dynamic_cast<History_Fold *>(g)){
+	cb_Rm_Answers(hf,0);
+	continue;
+      }
+      int c=g->children();
+      bool is_input=dynamic_cast<Multiline_Input_tab *>(g->child(0));
+      bool is_equation=dynamic_cast<Equation *>(g->child(0));
+      bool is_editor=dynamic_cast<Xcas_Text_Editor *>(g->child(0));
+      if (g && c>=2 && (is_input || is_equation || is_editor)){
+	for (int j=c-1;j;--j)
+	  g->remove(g->child(j));
+	g->resize(g->x(),g->y(),g->w(),g->child(0)->h());
+	o->redraw();
+      }
+    }    
+  }
+
   void cb_Rm_Answers(Fl_Widget* m , void*) {
     if (m && m->parent()){
       History_Fold * o = get_history_fold_focus(m);
-      if (o ){
+      if (o){
 	int n=o->pack->children(),i=n;
-	Fl_Widget * w =Fl::focus();
+	Fl_Widget * w =xcas::Xcas_input_focus;
 	for (;w;){
 	  if (w->parent()==o->pack){
 	    i=o->pack->find(w);
@@ -2620,18 +3112,7 @@ namespace xcas {
 	  }
 	  w=w->parent();
 	}
-	for (;i<n;++i){
-	  Fl_Group * g = dynamic_cast<Fl_Group *>(o->pack->child(i));
-	  int c=g->children();
-	  bool is_input=dynamic_cast<Multiline_Input_tab *>(g->child(0));
-	  bool is_equation=dynamic_cast<Equation *>(g->child(0));
-	  if (g && c>=2 && (is_input || is_equation)){
-	    for (int j=c-1;j;--j)
-	      g->remove(g->child(j));
-	    g->resize(g->x(),g->y(),g->w(),g->child(0)->h());
-	    o->redraw();
-	  }
-	}
+	cb_Rm_Answers(o,i);
       }
     }
   }
@@ -2639,25 +3120,34 @@ namespace xcas {
   void xdvi(const std::string & name){
     string s=remove_extension(name);
 #ifdef WIN32
-    system((xcasroot+"latex.bat "+s).c_str());
-    cerr << xcasroot+"latex.bat "+s << endl;
-    system((xcasroot+"xdvi.bat "+s+" &").c_str());
-    cerr << xcasroot+"xdvi.bat "+s+" &" << endl;
+    system((xcasroot()+"latex.bat "+s).c_str());
+    cerr << xcasroot()+"latex.bat "+s << endl;
+    system((xcasroot()+"xdvi.bat "+s+" &").c_str());
+    cerr << xcasroot()+"xdvi.bat "+s+" &" << endl;
 #else
-    system(("latex "+s+" ").c_str());
-    system(("xdvi "+s+" &").c_str());
-    system(("dvips "+s+" -o "+s+".ps && pstopnm -stdout "+s+" | pnmtopng > "+s+".png").c_str()); 
-    fl_message(("->"+s+".tex/.dvi/.ps/.png").c_str());
+    string path=get_path(s);
+    s=remove_path(s);
+    if (path.empty()){
+      char buf[1024];
+      path=getcwd(buf,1024);
+    }
+    int tmpresult=system(("cd "+path+" ; latex "+s+" ").c_str());
+    tmpresult=system(("cd "+path+" ; xdvi "+s+" &").c_str());
+    tmpresult=system(("cd "+path+" ; dvips "+s+" -o "+s+".ps && pstopnm -stdout "+s+" | pnmtopng > "+s+".png").c_str());
+    fl_message("%s",("->"+s+".tex/.dvi/.ps/.png").c_str());
 #endif //    
   }
   
   void dvips(const std::string & name){
 #ifdef WIN32
-    system((xcasroot+"latex.bat "+remove_extension(name)).c_str());
-    system((xcasroot+"dvips.bat "+remove_extension(name)+" &").c_str());
+    system((xcasroot()+"latex.bat "+remove_extension(name)).c_str());
+    system((xcasroot()+"dvips.bat "+remove_extension(name)+" &").c_str());
 #else
-    system(("latex "+remove_extension(name)+" ").c_str());
-    system(("dvips "+remove_extension(name)+" &").c_str());
+    string s=remove_extension(name);
+    string path=get_path(s);
+    s=remove_path(s);
+    int tmpresult=system(("cd "+path+" ; latex "+s+" ").c_str());
+    tmpresult=system(("cd "+path+" ; dvips "+s+" -o "+s+".ps && pstopnm -stdout "+s+" | pnmtopng > "+s+".png").c_str());
 #endif //    
   }
 
@@ -2696,6 +3186,10 @@ namespace xcas {
       texof << endl << "\\begin{verbatim}"<<endl;
       texof << ed->value() << endl;
       texof  << "\\end{verbatim}" << endl;
+      return;
+    }
+    if (Xcas_Text_Editor * ed=dynamic_cast<Xcas_Text_Editor *>(wid)){
+      texof << "{\\tt " << translate_underscore(ed->value()) << " } \\\\" << endl;
       return;
     }
     if (const Flv_Table_Gen * t = dynamic_cast<const Flv_Table_Gen *>(wid)){
@@ -2886,7 +3380,7 @@ namespace xcas {
 	  return;
 	int n=o->pack->children();
 	for (;i<=j && i<n;++i)
-	  widget_ps_print(o->pack->child(i),"session",true);
+	  widget_ps_print(o->pack->child(i),("session"+print_INT_(i)).c_str(),true);
       }
     }
   }
@@ -2911,7 +3405,7 @@ namespace xcas {
     Fl::e_text= petit_buffer;
     Fl::e_length=1;
     Fl::e_keysym='\n';
-    fl_handle(Fl::focus());  
+    fl_handle(xcas::Xcas_input_focus);  
   }
 
 
@@ -2926,11 +3420,33 @@ namespace xcas {
     }
   }
 
+  void synchronize(const History_Pack * hp,Graph2d3d * geo){
+    geo->clear();
+    int s=hp->children();
+    for (int i=0;i<s;++i){
+      Fl_Widget * wid=hp->child(i);
+      if (Fl_Group * gr=dynamic_cast<Fl_Group *>(wid)){
+	if (gr->children()>=3){
+	  wid=gr->child(2);
+	  if (Fl_Scroll * scroll = dynamic_cast<Fl_Scroll *>(wid))
+	    wid=scroll->child(0);
+	  if (Gen_Output * out=dynamic_cast<Gen_Output *>(wid)){
+	    geo->add(out->value());
+	    continue;
+	  }
+	}
+      }
+      geo->add(undef);
+    }
+  }
+
   void History_cb_Undo(Fl_Widget* m , void*) {
     if (m && m->parent()){
       Figure * f=find_figure(m);
-      if (f && f->geo)
+      if (f && f->geo){
 	f->geo->hp->restore(-1);
+	synchronize(f->geo->hp,f->geo);
+      }
       else {
 	History_Pack * o = get_history_pack(m);
 	if (o){
@@ -2947,8 +3463,10 @@ namespace xcas {
   void History_cb_Redo(Fl_Widget* m , void*) {
     if (m && m->parent()){
       Figure * f=find_figure(m);
-      if (f && f->geo)
+      if (f && f->geo){
 	f->geo->hp->restore(1);
+	synchronize(f->geo->hp,f->geo);
+      }
       else {
 	History_Pack * o = get_history_pack(m);
 	if (o){
@@ -2996,24 +3514,25 @@ namespace xcas {
     {gettext("comment"), 0,  (Fl_Callback *) History_cb_New_Comment_Input, 0, 0, 0, 0, 14, 56},
     {gettext("entry"), 0,  (Fl_Callback *) cb_New_Input, 0, 0, 0, 0, 14, 56},
     {gettext("expression"), 0x80065,  (Fl_Callback *) History_cb_New_Equation, 0, 0, 0, 0, 14, 56},
-    {gettext("tableur"), 0,  (Fl_Callback *) History_cb_New_Tableur, 0, 0, 0, 0, 14, 56},
+    {gettext("syntax colored entry"), 0x80065,  (Fl_Callback *) History_cb_New_Xcas_Text_Editor, 0, 0, 0, 0, 14, 56},
+    {gettext("spreadsheet"), 0,  (Fl_Callback *) History_cb_New_Tableur, 0, 0, 0, 0, 14, 56},
     {gettext("graph, geo2d"), 0,  (Fl_Callback *) History_cb_New_Figure, 0, 0, 0, 0, 14, 56},
     {gettext("graph, geo3d"), 0,  (Fl_Callback *) History_cb_New_Figure3d, 0, 0, 0, 0, 14, 56},
     {gettext("geo2d exact"), 0,  (Fl_Callback *) History_cb_New_Figurex, 0, 0, 0, 0, 14, 56},
     {gettext("geo3d exact"), 0,  (Fl_Callback *) History_cb_New_Figure3dx, 0, 0, 0, 0, 14, 56},
-    {gettext("tortue"), 0,  (Fl_Callback *) History_cb_New_Logo, 0, 0, 0, 0, 14, 56},
+    {gettext("turtle"), 0,  (Fl_Callback *) History_cb_New_Logo, 0, 0, 0, 0, 14, 56},
     {gettext("program"), 0,  (Fl_Callback *) History_cb_New_Program, 0, 0, 0, 0, 14, 56},
     {gettext("group"), 0,  (Fl_Callback *) History_cb_New_HF, 0, 0, 0, 0, 14, 56},
 #else
     {gettext("comment"), 0x80063,  (Fl_Callback *) History_cb_New_Comment_Input, 0, 0, 0, 0, 14, 56},
     {gettext("new entry"), 0x8006e,  (Fl_Callback *) cb_New_Input, 0, 0, 0, 0, 14, 56},
     {gettext("equation"), 0x80065,  (Fl_Callback *) History_cb_New_Equation, 0, 0, 0, 0, 14, 56},
-    {gettext("tableur"), 0x80074,  (Fl_Callback *) History_cb_New_Tableur, 0, 0, 0, 0, 14, 56},
+    {gettext("spreadsheet"), 0x80074,  (Fl_Callback *) History_cb_New_Tableur, 0, 0, 0, 0, 14, 56},
     {gettext("graph, geo2d"), 0x80067,  (Fl_Callback *) History_cb_New_Figure, 0, 0, 0, 0, 14, 56},
     {gettext("graph, geo3d"), 0x80068,  (Fl_Callback *) History_cb_New_Figure3d, 0, 0, 0, 0, 14, 56},
-    {gettext("geo2d exact"), 0x80069,  (Fl_Callback *) History_cb_New_Figurex, 0, 0, 0, 0, 14, 56},
-    {gettext("geo3d exact"), 0x8006a,  (Fl_Callback *) History_cb_New_Figure3dx, 0, 0, 0, 0, 14, 56},
-    {gettext("dessin tortue"), 0x80064,  (Fl_Callback *) History_cb_New_Logo, 0, 0, 0, 0, 14, 56},
+    {gettext("geo2d exact"), 0x80078,  (Fl_Callback *) History_cb_New_Figurex, 0, 0, 0, 0, 14, 56},
+    {gettext("geo3d exact"), 0x80079,  (Fl_Callback *) History_cb_New_Figure3dx, 0, 0, 0, 0, 14, 56},
+    {gettext("turtle picture"), 0x80064,  (Fl_Callback *) History_cb_New_Logo, 0, 0, 0, 0, 14, 56},
     {gettext("program"), 0x80070,  (Fl_Callback *) History_cb_New_Program, 0, 0, 0, 0, 14, 56},
     {gettext("group"), 0,  (Fl_Callback *) History_cb_New_HF, 0, 0, 0, 0, 14, 56},
 #endif // IPAQ
@@ -3063,6 +3582,11 @@ namespace xcas {
       Keyboard_Switch(1);
   }
 
+  void History_cb_cmds_button(Fl_Button* b , void*){  
+    if (Keyboard_Switch)
+      Keyboard_Switch(4);
+  }
+
   void History_cb_msg_button(Fl_Button* b , void*){  
     if (Keyboard_Switch)
       Keyboard_Switch(2);
@@ -3082,10 +3606,10 @@ namespace xcas {
     if (!wid)
       return;
     int remove,ii;
-    Fl_Widget * w=Fl::focus();
+    Fl_Widget * w=xcas::Xcas_input_focus;
     Fl_Window * wd=wid->window();
     if (
-	(ii=xcas::handle_tab("",(*giac::vector_completions_ptr),wd->w()/3,wd->h()/3,remove,ans)) ){ 
+	(ii=xcas::handle_tab("",(*giac::vector_completions_ptr()),wd->w()/3,wd->h()/3,remove,ans)) ){ 
       if (ii==1)
 	ans = ans +"()";
       Fl::e_text = (char * ) ans.c_str();
@@ -3110,7 +3634,7 @@ namespace xcas {
 	g=extractmatricefromsheet(ptr->selected);
       if (Fl_Input_ * ptr=dynamic_cast<Fl_Input *>(Fl::focus())){
 	int i=ptr->position(),j=ptr->mark();
-	if (i>j) std::swap<int>(i,j);
+	if (i>j) swapint(i,j);
 	s=ptr->value();
 	s=s.substr(i,j-i);
 	g=giac::gen(s,contextptr);
@@ -3127,6 +3651,11 @@ namespace xcas {
 
   void History_cb_help_button(Fl_Widget* b , void*){
     static char petit_buffer[]={9,0};
+    xcas::Xcas_Text_Editor * ed=dynamic_cast<xcas::Xcas_Text_Editor *>(Fl::focus());
+    if (ed){
+      ed->completion();
+      return;
+    }
     xcas::Multiline_Input_tab * in=dynamic_cast<xcas::Multiline_Input_tab *>(Fl::focus());
     if (in){
       Fl::e_length=1;
@@ -3138,14 +3667,84 @@ namespace xcas {
   }
 
   void History_cb_stop_button(Fl_Widget* b , void*){
+#ifndef __APPLE__
     if (xcas::interrupt_button){ 
+      xcas::interrupt_button=false;
       xcas::History_Pack * hp =xcas::get_history_fold(b)->pack;
-      std::cerr << "STOP pressed" << std::endl;
+      context * cptr=hp?hp->contextptr:0;
+      cerr << gettext("STOP pressed. Trying to cancel cleanly") << std::endl;
+      if (!Fl::event_state(FL_SHIFT)){
+	giac::ctrl_c=true;
+	for (int j=0;j<300;j++){
+	  if (!giac::ctrl_c){
+	    *logptr(cptr) << gettext("Cleanly cancelled.") << std::endl;
+	    giac::interrupted=false;
+	    xcas::interrupt_button=true;
+	    return;
+	  }
+	  usleep(10000);
+	}
+	giac::ctrl_c=false;  giac::interrupted=false;
+      }
+      *logptr(cptr) << gettext("Cancelling thread. Xcas may crash now or later :-( Consider saving and restarting Xcas.") << std::endl;
+      xcas::interrupt_button=true;
       if (giac::is_context_busy(hp?hp->contextptr:0)){
         giac::kill_thread(true,hp?hp->contextptr:0);
         return;
       }
     }
+#else
+    static Fl_Window * w = 0;
+    static Fl_Button * button = 0;
+    static string s("10");
+    if (xcas::interrupt_button){ 
+      xcas::interrupt_button=false;
+      xcas::History_Pack * hp =xcas::get_history_fold(b)->pack;
+      context * cptr=hp?hp->contextptr:0;
+      *logptr(cptr) << gettext("STOP pressed. Trying to cancel cleanly") << std::endl;
+      if (!w){
+	Fl_Group::current(0);
+	w=new Fl_Window(200,50);
+	button = new Fl_Button(2,2,w->w()-4,w->h()-4);
+	w->label(gettext("Cancelling"));
+	w->end();
+      }
+      w->set_modal();
+      w->show();
+      w->hotspot(w);
+      Fl::focus(w);
+      Fl::flush();
+      if (!Fl::event_state(FL_SHIFT)){
+	giac::ctrl_c=true;
+	for (int k=5;k>=0;--k){
+	  s=gettext("Trying to cancel cleanly: ")+print_INT_(k);
+	  button->label(s.c_str());
+	  Fl::flush();
+#ifdef HAVE_LIBPTHREAD
+	  Fl::unlock();
+#endif
+	  for (int j=0;j<100;j++){
+	    if (!giac::ctrl_c){
+	       giac::interrupted=false;
+	      w->hide();
+	      *logptr(cptr) << gettext("Cleanly cancelled.") << std::endl;
+	      xcas::interrupt_button=true;
+	      return;
+	    }
+	    usleep(10000);
+	  }
+	}
+	giac::ctrl_c=false; giac::interrupted=false;
+      }
+      w->hide();
+      xcas::interrupt_button=true;
+      if (giac::is_context_busy(hp?hp->contextptr:0)){
+	*logptr(cptr) << gettext("Cancelling thread. Xcas may crash now or later :-( Consider saving and restarting Xcas.") << std::endl;
+        giac::kill_thread(true,hp?hp->contextptr:0);
+        return;
+      }
+    }
+#endif
   }
 
   void History_Fold::update_status(){
@@ -3154,14 +3753,20 @@ namespace xcas {
       stop_button->activate();
     else {
       ++update_status_count;
-      if (!stop_button->active() && (update_status_count%64) )
+      if (!stop_button->active() && 
+#ifdef WIN32
+	  (update_status_count%64) 
+#else
+	  (update_status_count%64) 
+#endif
+	  )
 	return;
       stop_button->deactivate();
     }
     if (current_status){
       string mode_s="Config ";
       if (pack->url)
-	mode_s += *pack->url;
+	mode_s += remove_path(*pack->url);
       mode_s += " :";
 #ifdef IPAQ
       if (giac::approx_mode(ptr))
@@ -3232,8 +3837,9 @@ namespace xcas {
 
   History_Fold::History_Fold(int X,int Y,int W,int H,int showmenu,const char*l):Fl_Group(X,Y,W,H,l),_folded(false),mode(0) { 
     end();
+    update_status_count=-1;
     if (!l)
-      label("Unnamed");
+      label(gettext("Unnamed"));
     if (parent()){
       labelsize(parent()->labelsize());
       labelfont(parent()->labelfont());
@@ -3244,7 +3850,7 @@ namespace xcas {
     // box(FL_FLAT_BOX);
     _bordersize=labelsize();
     autosave_filename = autosave_folder+"xcas_auto_";
-    unsigned long ul=(unsigned long) this;
+    size_t ul=(size_t) this;
     autosave_filename += print_INT_(ul);
     autosave_filename += ".xws";
     scroll = new Fl_Scroll(X,Y+L,W,H-L);
@@ -3271,15 +3877,17 @@ namespace xcas {
       group = new Fl_Group(X,Y+2,W,L-2);
       help_button = new No_Focus_Button(X,Y+1,L,L-2,"?");
       help_button->callback((Fl_Callback*) History_cb_help_button);
-      help_button->tooltip("Online help and command completion");
-      save_button = new Fl_Button(X+L,Y+1,3*L,L-2,"Save");
+      help_button->tooltip(gettext("Online help and command completion"));
+      help_button->color(FL_CYAN);
+      save_button = new Fl_Button(X+L,Y+1,3*L,L-2,gettext("Save"));
       save_button->color(Xcas_save_saved_color);
       save_button->callback((Fl_Callback*) History_cb_save_button);
-      save_button->tooltip("Save current session");
+      save_button->tooltip(gettext("Save current session"));
+      save_button->align(Fl_Align(68|FL_ALIGN_INSIDE));
 #ifdef IPAQ
       bnd_button = new No_Focus_Button(X+8*L,Y+1,2*L,L-2,"bnd");
       bnd_button->callback((Fl_Callback*) History_cb_tex_button);
-      bnd_button->tooltip("Switch bandeau on or off");
+      bnd_button->tooltip(gettext("Switch bandeau on or off"));
       current_status = new Fl_Button(X+6*L,Y+1,max(W-14*L,0),L-2);
       current_status->align(FL_ALIGN_LEFT|FL_ALIGN_CLIP |FL_ALIGN_INSIDE);
 #else
@@ -3289,16 +3897,17 @@ namespace xcas {
       current_status->label("");
       current_status->labelfont(FL_HELVETICA_ITALIC);
       current_status->callback((Fl_Callback*) History_cb_current_status);
-      current_status->tooltip("Current CAS status. Click to modify");
+      current_status->tooltip(gettext("Current CAS status. Click to modify"));
       stop_button = new No_Focus_Button(current_status->x()+current_status->w(),current_status->y(),3*L,L-2);
       stop_button->label("STOP");
       stop_button->callback((Fl_Callback*) History_cb_stop_button);
       stop_button->labelcolor(FL_RED);
-      stop_button->tooltip("Interrupt current computation");
+      stop_button->tooltip(gettext("Interrupt current computation"));
+      stop_button->deactivate();
       xcas::Xcas_Cancel=stop_button; // FIXME when history fold destroyed
-      keyboard_button = new No_Focus_Button(stop_button->x()+stop_button->w(),Y+1,3*L,L-2,"Kbd");
+      keyboard_button = new No_Focus_Button(stop_button->x()+stop_button->w(),Y+1,3*L,L-2,gettext("Kbd"));
       keyboard_button->callback((Fl_Callback*) History_cb_keyboard_button);
-      keyboard_button->tooltip("Switch keyboard on or off");
+      keyboard_button->tooltip(gettext("Switch keyboard on or off"));
       // msg_button = new No_Focus_Button(keyboard_button->x()+keyboard_button->w(),Y+1,2*L,L-2,"Msg");
       // msg_button->callback((Fl_Callback*) History_cb_msg_button);
       // msg_button->tooltip("Show messages line");
@@ -3306,7 +3915,7 @@ namespace xcas {
       close_button = new Fl_Button(keyboard_button->x()+keyboard_button->w()+L,stop_button->y(),L,L-2);
       close_button->label("X");
       close_button->callback((Fl_Callback*) hf_Kill);
-      close_button->tooltip("Close current session");
+      close_button->tooltip(gettext("Close current session"));
       group->end();
       group->resizable(current_status);
       Fl_Group::add(group);
@@ -3338,7 +3947,9 @@ namespace xcas {
   bool History_Fold::add_entry(int n){
     if (!pack->new_question )
       return false;
-    Fl_Widget * q=pack->new_question(max(w()-pack->_printlevel_w,_bordersize),labelsize()+10);
+    int edw=max(w()-pack->_printlevel_w,_bordersize);
+    int edh=editor_hsize(this);
+    Fl_Widget * q=pack->new_question(edw,edh);
     q->resize(pack->x(),pack->y(),q->w(),q->h());
     pack->add_entry(n,q);
     return true;
@@ -3389,13 +4000,16 @@ namespace xcas {
 
   bool History_Pack::remove_entry(int n,bool check){
     if (check && is_context_busy(contextptr)){
-      fl_message(gettext("Unable to cut. Xcas is busy."));
+      fl_message("%s",gettext("Unable to cut. Xcas is busy."));
       return false;
     }
     int m=children();
     if (n>=m)
       return false;
     Fl_Widget * g= child(n);
+    int pos;
+    if (get_history_pack(Xcas_input_focus,pos) && pos==n)
+      Xcas_input_focus=0;
     add_history_map(g,undo_position);
     remove(g);
     delete g;
@@ -3413,10 +4027,13 @@ namespace xcas {
 	return false;
     }
     if (is_context_busy(contextptr)){
-      fl_message(gettext("Unable to cut. Xcas is busy."));
+      fl_message("%s",gettext("Unable to cut. Xcas is busy."));
       return false;
     }
     int s1=_sel_begin, s2= _sel_end;
+    if (s1<0 || s2<0){
+      fl_alert("%s",gettext("First select level(s):\nclick on the level numbers near the left border"));
+    }
     if (s1>=0 && s2>=0){
       int m=min(s1,s2),M=max(s1,s2);
       update_pos=m;
@@ -3457,7 +4074,7 @@ namespace xcas {
     Fl_Scrollbar & ss = scroll->scrollbar;
     ss.resize(W-sw,ss.y(),sw,ss.h());
     // FIXME should use the vertical scrollbar size instead of bordersize
-    pack->Fl_Widget::resize(pack->x(),pack->y(),max(W-sw,_bordersize),pack->h());
+    pack->Fl_Widget::resize(pack->x(),pack->y(),max(W-sw-L,_bordersize),pack->h());
     pack->resize();
   }
 
@@ -3609,14 +4226,46 @@ namespace xcas {
     redraw(); // since children have been modified
   }
 
+  void DispG_Window::draw(){
+    //COUT << "DispG draw" << endl;
+    Fl_Window::draw();
+  }
+
+  int DispG_Window::handle(int event){
+    int res=Fl_Window::handle(event);
+    if (event==FL_HIDE){
+      int n=children();
+      for (int i=0;i<n;++i){
+	Fl_Group * t = dynamic_cast<Fl_Group *>(child(i));
+	if (t && t->children()){
+	  Graph2d3d * gr=dynamic_cast<Graph2d3d *>(t->child(0));
+	  // if (gr) gr->clear(); // commented otherwise iconize clears graph
+	}
+      }
+    }
+    return res;
+  }
+
   // Implementation of widget output stream
+#ifdef WITH_MYOSTREAM
+  owstream::owstream(Fl_Output * wid,context * ptr, int bsize):my_ostream(new widgetbuf(wid, bsize)),output(wid),contextptr(ptr) {}
+
+  owstream::~owstream(){
+    ostream * ptr=logptr(contextptr);
+    if (ptr==this)
+      logptr(&my_cerr,contextptr);
+    //if (tie())      delete tie();
+  }
+#else
   owstream::owstream(Fl_Output * wid,context * ptr, int bsize):ostream(new widgetbuf(wid, bsize)),output(wid),contextptr(ptr) {}
 
   owstream::~owstream(){
-    std::ostream * ptr=logptr(contextptr);
+    ostream * ptr=logptr(contextptr);
     if (ptr==this)
       logptr(&std::cerr,contextptr);
+    //if (tie())      delete tie();
   }
+#endif
 
   void output_resize(Fl_Input_ * output){
     if (!output)
@@ -3625,7 +4274,7 @@ namespace xcas {
     int maxh = ptr?(ptr->h()/3):400;
     const char * ch=output->value();
     int n=strlen(ch);
-    int h0=output->labelsize()+1,res=n?h0+3:1;
+    int h0=output->labelsize()+4,res=n?h0+2:1;
     for (int i=0;i<n-1;++i,++ch){
       if (*ch=='\n'){
 	res += h0;
@@ -3693,9 +4342,8 @@ namespace xcas {
     delete[] pbase();
   }
   
-  int	widgetbuf::overflow(int c){
+  int widgetbuf::overflow(int c){
     put_buffer();
-    
     if (c != EOF){
       if (pbase() == epptr())
 	put_char(c);
@@ -3786,8 +4434,13 @@ namespace xcas {
   int Log_Output::handle(int event){
     if (event!=FL_MOUSEWHEEL)
       return Fl_Multiline_Output::handle(event);
+    return 0; // FIXME
+    if (!Fl::event_inside(this))
+      return 0;
     int n=Fl::e_dy;
-    int i=position(),s=size();
+    int i=position(),iorig=i,s=size();
+    if (!s)
+      return 0;
     if (n>0){
       for (;n;--n){
 	for (++i;i<s-1;++i){
@@ -3804,6 +4457,8 @@ namespace xcas {
 	}
       }
     }
+    if (i==iorig)
+      return 0;
     position(i,i);
     return 1;
   }

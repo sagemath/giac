@@ -49,6 +49,7 @@ Help/Examples/poly/berle.xws
 Help/Examples/poly/yun.xws
 Help/Examples/poly/hensel.xws
 Help/Examples/poly/reed_sol.xws
+Help/Examples/poly/afactor.xws
 Help/Examples/geometrie/lieu_s05.xws
 Help/Examples/geometrie/capes.xws
 Help/Examples/geometrie/napoleon.xws
@@ -58,7 +59,9 @@ Help/Examples/geometrie/hexagone.xws
 Help/Examples/geometrie/astroide.xws
 Help/Examples/geometrie/morley_demo.xws
 Help/Examples/geometrie/morley_puzzle.xws
+Help/Examples/geometrie/animpav.xws
 Help/Examples/geo3d/cone.xws
+Help/Examples/geo3d/animcube.xws
 Help/Examples/logo/sapin.xws
 Help/Examples/logo/neige.xws
 Help/Examples/logo/jeu.xws

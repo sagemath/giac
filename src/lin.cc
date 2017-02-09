@@ -1,7 +1,7 @@
-// -*- mode:C++ ; compile-command: "g++ -I.. -g -c lin.cc" -*-
-#include "first.h"
+// -*- mode:C++ ; compile-command: "g++ -I.. -g -c lin.cc -DHAVE_CONFIG_H -DIN_GIAC" -*-
+#include "giacPCH.h"
 /*
- *  Copyright (C) 2000,7 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
+ *  Copyright (C) 2000,2014 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -14,8 +14,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 using namespace std;
 #include <stdexcept>
@@ -27,17 +26,20 @@ using namespace std;
 #include "subst.h"
 #include "modpoly.h"
 #include "prog.h"
+#include "giacintl.h"
 
 #ifndef NO_NAMESPACE_GIAC
 namespace giac {
 #endif // ndef NO_NAMESPACE_GIAC
+
+  // Should be rewritten with a map container for better efficiency!
 
   bool contains(const gen & e,const unary_function_ptr & mys){
     if (e.type!=_SYMB)
       return false;
     if (e._SYMBptr->sommet==mys)
       return true;
-    if (e._SYMBptr->feuille!=_VECT)
+    if (e._SYMBptr->feuille.type!=_VECT)
       return contains(e._SYMBptr->feuille,mys);
     vecteur::const_iterator it=e._SYMBptr->feuille._VECTptr->begin(),itend=e._SYMBptr->feuille._VECTptr->end();
     for (;it!=itend;++it)
@@ -47,6 +49,7 @@ namespace giac {
   }
 
   void compress(vecteur & res,GIAC_CONTEXT){
+    if (res.size()==2) return;
     vecteur v,w;
     const_iterateur it=res.begin(),itend=res.end();
     v.reserve(itend-it);
@@ -55,7 +58,7 @@ namespace giac {
     for (;it!=itend;++it){
       pos=equalposcomp(w,*(it+1));
       if (pos){
-	v[2*(pos-1)] = normal(v[2*(pos-1)] + *it,false,contextptr);
+	v[2*(pos-1)] = recursive_normal(v[2*(pos-1)] + *it,false,contextptr);
 	++it;
       }
       else {
@@ -65,7 +68,7 @@ namespace giac {
 	v.push_back(*it);
       }
     }
-    res=v;
+    swap(res,v);
   }
 
   // back conversion
@@ -89,7 +92,7 @@ namespace giac {
     for (;it!=itend;++it){
       res.push_back(coeff*(*it));
       ++it;
-      res.push_back(normal(arg+(*it),false,contextptr));
+      res.push_back(recursive_normal(arg+(*it),false,contextptr));
     }
     compress(res,contextptr);
   }
@@ -220,16 +223,16 @@ namespace giac {
       return ; // 1*exp(arg)
     }
     if (s==at_cosh){
-      v.push_back(rdiv(1,2));
+      v.push_back(rdiv(1,2,contextptr));
       v.push_back(f);
-      v.push_back(rdiv(1,2));
+      v.push_back(rdiv(1,2,contextptr));
       v.push_back(-f);
       return ; // 1/2*exp(arg)+1/2*exp(-arg)
     }
     if (s==at_sinh){
-      v.push_back(rdiv(1,2));
+      v.push_back(rdiv(1,2,contextptr));
       v.push_back(f);
-      v.push_back(rdiv(-1,2));
+      v.push_back(rdiv(-1,2,contextptr));
       v.push_back(-f);
       return ; // 1/2*exp(arg)-1/2*exp(-arg)
     }
@@ -243,6 +246,10 @@ namespace giac {
 
   // "unary" version
   gen _lin(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    gen var,res;
+    if (is_algebraic_program(args,var,res))
+      return symbolic(at_program,makesequence(var,0,_lin(res,contextptr)));
     if (is_equal(args))
       return apply_to_equal(args,_lin,contextptr);
     vecteur v;
@@ -252,13 +259,13 @@ namespace giac {
     }
     return apply(args,_lin,contextptr);
   }
-  const string _lin_s("lin");
-  unary_function_eval __lin(&_lin,_lin_s);
-  unary_function_ptr at_lin (&__lin,0,true);
+  static const char _lin_s []="lin";
+  static define_unary_function_eval (__lin,&_lin,_lin_s);
+  define_unary_function_ptr5( at_lin ,alias_at_lin,&__lin,0,true);
 
-  const string _lineariser_s("lineariser");
-  unary_function_eval __lineariser(&_lin,_lineariser_s);
-  unary_function_ptr at_lineariser (&__lineariser,0,true);
+  static const char _lineariser_s []="lineariser";
+  static define_unary_function_eval (__lineariser,&_lin,_lineariser_s);
+  define_unary_function_ptr5( at_lineariser ,alias_at_lineariser,&__lineariser,0,true);
 
   // back conversion
   gen tunlin(vecteur & v,GIAC_CONTEXT){
@@ -276,10 +283,10 @@ namespace giac {
       return 0;
     if (w.size()==1)
       return w.front();
-    return symbolic(at_plus,w);
+    return symbolic(at_plus,gen(w,_SEQ__VECT));
   }
 
-  void tadd(vecteur & res,const gen & coeff,const gen & angle,GIAC_CONTEXT){
+  static void tadd(vecteur & res,const gen & coeff,const gen & angle,GIAC_CONTEXT){
     gen newangle=angle,newcoeff=coeff;
     if ( (newangle.type==_SYMB) && (newangle._SYMBptr->sommet==at_neg)){
       newcoeff=-coeff;
@@ -306,18 +313,18 @@ namespace giac {
 	newcoeff=coeff*(*it);
 	++it;
 	if ( (it->type==_SYMB) && (it->_SYMBptr->sommet==at_cos) ){
-	  newcoeff=normal(rdiv(newcoeff,plus_two),false,contextptr);
+	  newcoeff=recursive_normal(rdiv(newcoeff,plus_two,contextptr),false,contextptr);
 	  tadd(res,newcoeff,cos(normal(arg._SYMBptr->feuille-it->_SYMBptr->feuille,false,contextptr),contextptr),contextptr);
 	  tadd(res,newcoeff,cos(normal(arg._SYMBptr->feuille+it->_SYMBptr->feuille,false,contextptr),contextptr),contextptr);
 	  continue;
 	}
 	if ( (it->type==_SYMB) && (it->_SYMBptr->sommet==at_sin) ){
-	  newcoeff=normal(rdiv(newcoeff,plus_two),false,contextptr);
+	  newcoeff=recursive_normal(rdiv(newcoeff,plus_two,contextptr),false,contextptr);
 	  tadd(res,newcoeff,sin(normal(it->_SYMBptr->feuille+arg._SYMBptr->feuille,false,contextptr),contextptr),contextptr);
 	  tadd(res,newcoeff,sin(normal(it->_SYMBptr->feuille-arg._SYMBptr->feuille,false,contextptr),contextptr),contextptr);
 	  continue;
 	}
-	res.push_back(normal(newcoeff*(*it),false,contextptr));
+	res.push_back(recursive_normal(newcoeff*(*it),false,contextptr));
 	res.push_back(arg);
       }
       compress(res,contextptr);
@@ -329,18 +336,18 @@ namespace giac {
 	newcoeff=coeff*(*it);
 	++it;
 	if ( (it->type==_SYMB) && (it->_SYMBptr->sommet==at_cos) ){
-	  newcoeff=normal(rdiv(newcoeff,plus_two),false,contextptr);
+	  newcoeff=recursive_normal(rdiv(newcoeff,plus_two,contextptr),false,contextptr);
 	  tadd(res,newcoeff,sin(normal(arg._SYMBptr->feuille+it->_SYMBptr->feuille,false,contextptr),contextptr),contextptr);
 	  tadd(res,newcoeff,sin(normal(arg._SYMBptr->feuille-it->_SYMBptr->feuille,false,contextptr),contextptr),contextptr);
 	  continue;
 	}
 	if ( (it->type==_SYMB) && (it->_SYMBptr->sommet==at_sin)){
-	  newcoeff=normal(rdiv(newcoeff,plus_two),false,contextptr);
+	  newcoeff=recursive_normal(rdiv(newcoeff,plus_two,contextptr),false,contextptr);
 	  tadd(res,newcoeff,cos(normal(arg._SYMBptr->feuille-it->_SYMBptr->feuille,false,contextptr),contextptr),contextptr);
 	  tadd(res,-newcoeff,cos(normal(arg._SYMBptr->feuille+it->_SYMBptr->feuille,false,contextptr),contextptr),contextptr);
 	  continue;
 	}
-	res.push_back(normal(newcoeff*(*it),false,contextptr));
+	res.push_back(recursive_normal(newcoeff*(*it),false,contextptr));
 	res.push_back(arg);
       }
       compress(res,contextptr);
@@ -349,7 +356,7 @@ namespace giac {
     const_iterateur it=w.begin(),itend=w.end();
     newcoeff=coeff*arg;
     for (;it!=itend;++it){
-      res.push_back(normal(*it*newcoeff,false,contextptr));
+      res.push_back(recursive_normal(*it*newcoeff,false,contextptr));
       ++it;
       res.push_back(*it);
     }
@@ -458,7 +465,11 @@ namespace giac {
 	return ;
       }
     }
-    v.push_back(e);
+    gen te=_tlin(e._SYMBptr->feuille,contextptr);
+    if (s==at_pow && te.type==_VECT && te._VECTptr->size()==2 && te._VECTptr->back()==plus_one_half)
+      v.push_back(sqrt(te._VECTptr->front(),contextptr));
+    else
+      v.push_back(s(te,contextptr));
     v.push_back(1);
   }
 
@@ -468,6 +479,10 @@ namespace giac {
 
   // "unary" version
   gen _tlin(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    gen var,res;
+    if (is_algebraic_program(args,var,res))
+      return symbolic(at_program,makesequence(var,0,_tlin(res,contextptr)));
     if (is_equal(args))
       return apply_to_equal(args,_tlin,contextptr);
     vecteur v;
@@ -477,16 +492,16 @@ namespace giac {
     }
     return apply(args,_tlin,contextptr);
   }
-  const string _tlin_s("tlin");
-  unary_function_eval __tlin(&_tlin,_tlin_s);
-  unary_function_ptr at_tlin (&__tlin,0,true);
+  static const char _tlin_s []="tlin";
+  static define_unary_function_eval (__tlin,&_tlin,_tlin_s);
+  define_unary_function_ptr5( at_tlin ,alias_at_tlin,&__tlin,0,true);
 
-  const string _lineariser_trigo_s("lineariser_trigo");
-  unary_function_eval __lineariser_trigo(&_tlin,_lineariser_trigo_s);
-  unary_function_ptr at_lineariser_trigo (&__lineariser_trigo,0,true);
+  static const char _lineariser_trigo_s []="lineariser_trigo";
+  static define_unary_function_eval (__lineariser_trigo,&_tlin,_lineariser_trigo_s);
+  define_unary_function_ptr5( at_lineariser_trigo ,alias_at_lineariser_trigo,&__lineariser_trigo,0,true);
 
   // Expand and texpand
-  void split(const gen & e, gen & coeff, gen & arg,GIAC_CONTEXT){
+  static void split(const gen & e, gen & coeff, gen & arg,GIAC_CONTEXT){
     if (e.type==_INT_){
       coeff=e;
       arg=plus_one;
@@ -574,18 +589,18 @@ namespace giac {
       for (itb=b._SYMBptr->feuille._VECTptr->begin();itb!=itbend;++itb)
 	v.push_back( (*ita) * (*itb) );
     }
-    // "compress" v
-    return _simplifier(symbolic(at_plus,gen(v,_SEQ__VECT)),contextptr);
+    return symbolic(at_plus,gen(v,_SEQ__VECT));
   }
-  gen prod_expand(const const_iterateur it,const const_iterateur itend,GIAC_CONTEXT){
-    int s=itend-it;
+
+  static gen prod_expand(const const_iterateur it,const const_iterateur itend,GIAC_CONTEXT){
+    int s=int(itend-it);
     if (s==0)
       return plus_one;
     if (s==1)
       return *it;
-    return prod_expand(prod_expand(it,it+s/2,contextptr),prod_expand(it+s/2,itend,contextptr),contextptr);
+    return _simplifier(prod_expand(prod_expand(it,it+s/2,contextptr),prod_expand(it+s/2,itend,contextptr),contextptr),contextptr);
   }
-  gen prod_expand(const gen & e_orig,GIAC_CONTEXT){
+  static gen prod_expand(const gen & e_orig,GIAC_CONTEXT){
     gen e=aplatir_fois_plus(expand(e_orig,contextptr));
     if (e.type!=_VECT)
       return e;
@@ -593,7 +608,23 @@ namespace giac {
     return prod_expand(e._VECTptr->begin(),e._VECTptr->end(),contextptr);
   }
 
-  void pow_expand_add_res(vector<gen> & factn,int pos,int sumexpo,const gen & coeff,const vecteur & w,const gen & p, int k,int n,vecteur & res,GIAC_CONTEXT){
+  static gen prod_expand_nosimp(const const_iterateur it,const const_iterateur itend,GIAC_CONTEXT){
+    int s=int(itend-it);
+    if (s==0)
+      return plus_one;
+    if (s==1)
+      return *it;
+    return prod_expand(prod_expand_nosimp(it,it+s/2,contextptr),prod_expand_nosimp(it+s/2,itend,contextptr),contextptr);
+  }
+  static gen prod_expand_nosimp(const gen & e_orig,GIAC_CONTEXT){
+    gen e=aplatir_fois_plus(e_orig);
+    if (e.type!=_VECT)
+      return e;
+    // look for sommet=at_plus inside e
+    return prod_expand_nosimp(e._VECTptr->begin(),e._VECTptr->end(),contextptr);
+  }
+
+  static void pow_expand_add_res(vector<gen> & factn,int pos,int sumexpo,const gen & coeff,const vecteur & w,const gen & p, int k,int n,vecteur & res,GIAC_CONTEXT){
     if (sumexpo==k){
       // End recursion
       res.push_back(coeff*p);
@@ -609,7 +640,7 @@ namespace giac {
     }
   }
 
-  gen expand_pow_expand(const gen & e,GIAC_CONTEXT){
+  static gen expand_pow_expand(const gen & e,GIAC_CONTEXT){
     if (e.type!=_VECT || e._VECTptr->size()!=2)
       return e;
     vecteur & v=*e._VECTptr;
@@ -648,9 +679,9 @@ namespace giac {
       }
       // (x1+...+xn)^k -> sum_{j1+...+jn=k} k!/(j1!j2!...jn!) x^j1 *... *x^jk
       vecteur & w=*v[0]._SYMBptr->feuille._VECTptr;
-      int n=w.size();
+      int n=int(w.size());
       if (!n)
-	setsizeerr();
+	return gensizeerr(contextptr);
       vecteur res;
       gen p;
       for (int i=k;i>=0;--i){
@@ -662,7 +693,7 @@ namespace giac {
     return symb_pow(base,exponent);
   }
 
-  gen expand_neg_expand(const gen & g_orig,GIAC_CONTEXT){
+  static gen expand_neg_expand(const gen & g_orig,GIAC_CONTEXT){
     gen g=expand(g_orig,contextptr);
     return -g;
   }
@@ -700,7 +731,9 @@ namespace giac {
     return pow(exp(arg,contextptr),coeff,contextptr);
   }
 
-  gen ln_expand0(const gen & e,GIAC_CONTEXT){
+  static gen ln_expand0(const gen & e,GIAC_CONTEXT){
+    if (e.type==_FRAC)
+      return ln(e._FRACptr->num,contextptr)-ln(e._FRACptr->den,contextptr);
     if (e.type!=_SYMB)
       return ln(e,contextptr);
     if (e._SYMBptr->sommet==at_prod)
@@ -709,8 +742,12 @@ namespace giac {
       return -ln_expand0(e._SYMBptr->feuille,contextptr);
     if (e._SYMBptr->sommet==at_pow){
       gen & tmp=e._SYMBptr->feuille;
-      if (tmp.type==_VECT && tmp._VECTptr->size()==2)
-	return tmp._VECTptr->back()*ln_expand0(tmp._VECTptr->front(),contextptr);
+      if (tmp.type==_VECT && tmp._VECTptr->size()==2){
+	gen base=tmp._VECTptr->front(),expo=tmp._VECTptr->back();
+	if (!complex_mode(contextptr) && expo.type==_INT_ && expo.val%2==0)
+	  base=abs(base,contextptr);
+	return expo*ln_expand0(base,contextptr);
+      }
     }
     return ln(e,contextptr);
   }
@@ -727,16 +764,21 @@ namespace giac {
       return v.back();
     gen res=zero;
     const_iterateur it=v.begin(),itend=v.end();
-    int n=itend-it-1;
+    int n=int(itend-it)-1;
     for (;it!=itend;++it,--n)
       res = res + (*it)*pow(e,n);
     return res;
   }
 
-  gen cos_expand(const gen & e,GIAC_CONTEXT);
-  gen sin_expand(const gen & e,GIAC_CONTEXT){
+  static gen cos_expand(const gen & e,GIAC_CONTEXT);
+  static gen sin_expand(const gen & e,GIAC_CONTEXT){
     if (e.type!=_SYMB)
       return sin(e,contextptr);
+    if (lidnt(e)==vecteur(1,cst_pi)){
+      gen sine=sin(e,contextptr);
+      if (!contains(lidnt(sine),cst_pi))
+	return sine;
+    }
     if (e._SYMBptr->sommet==at_plus){
       vecteur v=*e._SYMBptr->feuille._VECTptr;
       gen last=v.back(),first;
@@ -757,9 +799,14 @@ namespace giac {
       return sin(e,contextptr);
   }
 
-  gen cos_expand(const gen & e,GIAC_CONTEXT){
+  static gen cos_expand(const gen & e,GIAC_CONTEXT){
     if (e.type!=_SYMB)
       return cos(e,contextptr);
+    if (lidnt(e)==vecteur(1,cst_pi)){
+      gen cose=cos(e,contextptr);
+      if (!contains(lidnt(cose),cst_pi))
+	return cose;
+    }
     if (e._SYMBptr->sommet==at_plus){
       vecteur v=*e._SYMBptr->feuille._VECTptr;
       gen last=v.back(),first;
@@ -780,11 +827,11 @@ namespace giac {
       return cos(e,contextptr);
   }
 
-  gen sin2tancos(const gen & g,GIAC_CONTEXT){
+  static gen sin2tancos(const gen & g,GIAC_CONTEXT){
     return symb_cos(g)*symb_tan(g);
   }
 
-  gen even_pow_cos2tan(const gen & g,GIAC_CONTEXT){
+  static gen even_pow_cos2tan(const gen & g,GIAC_CONTEXT){
     if ( (g.type!=_VECT) || (g._VECTptr->size()!=2) )
       return g;
     gen a(g._VECTptr->front()),b(g._VECTptr->back());
@@ -794,9 +841,14 @@ namespace giac {
     return pow(plus_one+pow(symb_tan(a._SYMBptr->feuille),plus_two,contextptr),-i,contextptr);
   }
 
-  gen tan_expand(const gen & e,GIAC_CONTEXT){
+  static gen tan_expand(const gen & e,GIAC_CONTEXT){
     if (e.type!=_SYMB)
       return tan(e,contextptr);
+    if (lidnt(e)==vecteur(1,cst_pi)){
+      gen tane=tan(e,contextptr);
+      if (!contains(lidnt(tane),cst_pi))
+	return tane;
+    }
     if (e._SYMBptr->sommet==at_plus){
       vecteur v=*e._SYMBptr->feuille._VECTptr;
       gen last=v.back(),first;
@@ -807,23 +859,23 @@ namespace giac {
 	first=symbolic(at_plus,v);
       gen ta=tan_expand(first,contextptr);
       gen tb=tan_expand(last,contextptr);
-      return rdiv(ta+tb,1-ta*tb);
+      return rdiv(ta+tb,1-ta*tb,contextptr);
     }
     if (e._SYMBptr->sommet==at_neg)
       return -tan_expand(e._SYMBptr->feuille,contextptr);
     gen coeff,arg;
     split(e,coeff,arg,contextptr);
     if (!is_one(coeff) && coeff.type==_INT_ && coeff.val<max_texpand_expansion_order){
-      gen g=rdiv(symhorner(tchebycheff(coeff.val,false),cos(arg,contextptr))*sin(arg,contextptr),symhorner(tchebycheff(coeff.val,true),cos(arg,contextptr)));
-      vector<unary_function_ptr> v;
+      gen g=rdiv(symhorner(tchebycheff(coeff.val,false),cos(arg,contextptr))*sin(arg,contextptr),symhorner(tchebycheff(coeff.val,true),cos(arg,contextptr)),contextptr);
+      vector<const unary_function_ptr *> v;
       vector< gen_op_context > w;
       v.push_back(at_sin);
       w.push_back(&sin2tancos);
       g=subst(g,v,w,false,contextptr);
       v[0]=at_pow;
       w[0]=(&even_pow_cos2tan);
-      g=subst(normal(g,false,contextptr),v,w,false,contextptr);      
-      return normal(g,false,contextptr);
+      g=subst(recursive_normal(g,false,contextptr),v,w,false,contextptr);      
+      return recursive_normal(g,false,contextptr);
     }
     else
       return tan(e,contextptr);
@@ -835,9 +887,13 @@ namespace giac {
 
   // "unary" version
   gen _texpand(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    gen var,res;
+    if (is_algebraic_program(args,var,res))
+      return symbolic(at_program,makesequence(var,0,_texpand(res,contextptr)));
     if (is_equal(args))
       return apply_to_equal(args,_texpand,contextptr);
-    vector<unary_function_ptr> v;
+    vector<const unary_function_ptr *> v;
     vector< gen_op_context > w;
     v.push_back(at_exp);
     w.push_back(&exp_expand);
@@ -853,44 +909,53 @@ namespace giac {
     w.push_back(&tan_expand);
     return subst(args,v,w,false,contextptr);
   }
-  const string _texpand_s("texpand");
-  unary_function_eval __texpand(&_texpand,_texpand_s);
-  unary_function_ptr at_texpand (&__texpand,0,true);
+  static const char _texpand_s []="texpand";
+  static define_unary_function_eval (__texpand,&_texpand,_texpand_s);
+  define_unary_function_ptr5( at_texpand ,alias_at_texpand,&__texpand,0,true);
 
-  const string _developper_transcendant_s("developper_transcendant");
-  unary_function_eval __developper_transcendant(&_texpand,_developper_transcendant_s);
-  unary_function_ptr at_developper_transcendant (&__developper_transcendant,0,true);
+  static const char _developper_transcendant_s []="developper_transcendant";
+  static define_unary_function_eval (__developper_transcendant,&_texpand,_developper_transcendant_s);
+  define_unary_function_ptr5( at_developper_transcendant ,alias_at_developper_transcendant,&__developper_transcendant,0,true);
 
   gen expand(const gen & e,GIAC_CONTEXT){
     if (is_equal(e))
       return apply_to_equal(e,expand,contextptr);
+    gen var,res;
+    if (e.type!=_VECT && is_algebraic_program(e,var,res))
+      return symbolic(at_program,makesequence(var,0,expand(res,contextptr)));
     if (e.type==_VECT && e.subtype==_SEQ__VECT && e._VECTptr->size()==2){
       gen last=e._VECTptr->back();
-      vector<unary_function_ptr> v;
-      vector< gen_op_context > w;
-      if (contains(last,gen(at_ln))){
-	v.push_back(at_ln);
-	w.push_back(&ln_expand);
+      if (last.type==_STRNG || last.type==_FUNC){
+	vector<const unary_function_ptr *> v;
+	vector< gen_op_context > w;
+	if (contains(last,gen(at_prod)) || (last.type==_STRNG && !strcmp(last._STRNGptr->c_str(),"*"))){ // expand * with no further simplification
+	  v.push_back(at_prod);
+	  w.push_back(prod_expand_nosimp);
+	}
+	if (contains(last,gen(at_ln))){
+	  v.push_back(at_ln);
+	  w.push_back(&ln_expand);
+	}
+	if (contains(last,gen(at_exp))){
+	  v.push_back(at_exp);
+	  w.push_back(&exp_expand);
+	}
+	if (contains(last,gen(at_sin))){ 
+	  v.push_back(at_sin);
+	  w.push_back(&sin_expand);
+	}
+	if (contains(last,gen(at_cos))){
+	  v.push_back(at_cos);
+	  w.push_back(&cos_expand);
+	}
+	if (contains(last,gen(at_tan))){
+	  v.push_back(at_tan);
+	  w.push_back(&tan_expand);
+	}
+	return subst(e._VECTptr->front(),v,w,false,contextptr);	
       }
-      if (contains(last,gen(at_exp))){
-	v.push_back(at_exp);
-	w.push_back(&exp_expand);
-      }
-      if (contains(last,gen(at_sin))){ 
-	v.push_back(at_sin);
-	w.push_back(&sin_expand);
-      }
-      if (contains(last,gen(at_cos))){
-	v.push_back(at_cos);
-	w.push_back(&cos_expand);
-      }
-      if (contains(last,gen(at_tan))){
-	v.push_back(at_tan);
-	w.push_back(&tan_expand);
-      }
-      return subst(e._VECTptr->front(),v,w,false,contextptr);	
     }
-    vector<unary_function_ptr> v;
+    vector<const unary_function_ptr *> v;
     vector< gen_op_context > w;
     v.push_back(at_prod);
     v.push_back(at_pow);
@@ -900,39 +965,48 @@ namespace giac {
     w.push_back(&expand_neg_expand);
     return _simplifier(subst(e,v,w,false,contextptr),contextptr);
   }
-  const string _expand_s("expand");
+  static const char _expand_s []="expand";
   symbolic symb_expand(const gen & args){
     return symbolic(at_expand,args);
   }
-  unary_function_eval __expand(&giac::expand,_expand_s);
-  unary_function_ptr at_expand (&__expand);
+  static define_unary_function_eval (__expand,&giac::expand,_expand_s);
+  define_unary_function_ptr( at_expand ,alias_at_expand ,&__expand);
 
   gen expexpand(const gen & e,GIAC_CONTEXT){
     if (is_equal(e))
       return apply_to_equal(e,expexpand,contextptr);
-    vector<unary_function_ptr> v(1,at_exp);
+    gen var,res;
+    if (is_algebraic_program(e,var,res))
+      return symbolic(at_program,makesequence(var,0,expexpand(res,contextptr)));
+    vector<const unary_function_ptr *> v(1,at_exp);
     vector< gen_op_context > w(1,&exp_expand);
     return subst(e,v,w,false,contextptr);
   }
-  const string _expexpand_s("expexpand");
-  unary_function_eval __expexpand(&giac::expexpand,_expexpand_s);
-  unary_function_ptr at_expexpand (&__expexpand,0,true);
+  static const char _expexpand_s []="expexpand";
+  static define_unary_function_eval (__expexpand,&giac::expexpand,_expexpand_s);
+  define_unary_function_ptr5( at_expexpand ,alias_at_expexpand,&__expexpand,0,true);
 
   gen lnexpand(const gen & e,GIAC_CONTEXT){
     if (is_equal(e))
       return apply_to_equal(e,lnexpand,contextptr);
-    vector<unary_function_ptr> v(1,at_ln);
+    gen var,res;
+    if (is_algebraic_program(e,var,res))
+      return symbolic(at_program,makesequence(var,0,lnexpand(res,contextptr)));
+    vector<const unary_function_ptr *> v(1,at_ln);
     vector< gen_op_context > w(1,&ln_expand);
     return subst(e,v,w,false,contextptr);
   }
-  const string _lnexpand_s("lnexpand");
-  unary_function_eval __lnexpand(&giac::lnexpand,_lnexpand_s);
-  unary_function_ptr at_lnexpand (&__lnexpand,0,true);
+  static const char _lnexpand_s []="lnexpand";
+  static define_unary_function_eval (__lnexpand,&giac::lnexpand,_lnexpand_s);
+  define_unary_function_ptr5( at_lnexpand ,alias_at_lnexpand,&__lnexpand,0,true);
 
   gen trigexpand(const gen & e,GIAC_CONTEXT){
     if (is_equal(e))
       return apply_to_equal(e,trigexpand,contextptr);
-    vector<unary_function_ptr> v;
+    gen var,res;
+    if (is_algebraic_program(e,var,res))
+      return symbolic(at_program,makesequence(var,0,trigexpand(res,contextptr)));
+    vector<const unary_function_ptr *> v;
     vector< gen_op_context > w;
     v.push_back(at_sin);
     w.push_back(&sin_expand);
@@ -940,11 +1014,13 @@ namespace giac {
     w.push_back(&cos_expand);
     v.push_back(at_tan);
     w.push_back(&tan_expand);
+    v.push_back(at_prod);
+    w.push_back(&prod_expand);    
     return subst(e,v,w,false,contextptr);
   }
-  const string _trigexpand_s("trigexpand");
-  unary_function_eval __trigexpand(&giac::trigexpand,_trigexpand_s);
-  unary_function_ptr at_trigexpand (&__trigexpand,0,true);
+  static const char _trigexpand_s []="trigexpand";
+  static define_unary_function_eval (__trigexpand,&giac::trigexpand,_trigexpand_s);
+  define_unary_function_ptr5( at_trigexpand ,alias_at_trigexpand,&__trigexpand,0,true);
 
 #ifndef NO_NAMESPACE_GIAC
 } // namespace giac

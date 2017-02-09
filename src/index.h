@@ -1,6 +1,6 @@
 // -*- mode: C++ ; compile-command: "g++ -I.. -g -O2 -c index.cc" -*-
 /*
- *  Copyright (C) 2000 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
+ *  Copyright (C) 2000,2014 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -13,21 +13,47 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #ifndef _GIAC_INDEX_H_
 #define _GIAC_INDEX_H_
 #include "first.h"
-#include <vector>
+#include "vector.h"
 #include <iostream>
 #include <string>
 
-#if defined UNORDERED_MAP && !defined(__APPLE__)
+//////////////////////////////////////////
+/// this commented and the old put back due to build issues... temporary change to get build going
+//#if defined(VISUALC) && !defined(ConnectivityKit)
+//#pragma anon_unions
+//#endif
+//========================================
+#ifndef ConnectivityKit
+#ifndef _MSC_VER
+#pragma anon_unions
+#endif
+#endif
+///////////////////////////////////////////
+
+#if defined C11_UNORDERED_MAP && (defined __clang__ || !defined __APPLE__)
+#undef HASH_MAP
+#undef EXT_HASH_MAP
+#undef UNORDERED_MAP
+#define HASH_MAP_NAMESPACE std
+#define hash_map unordered_map
+#include <unordered_map>
+#endif
+
+#if defined UNORDERED_MAP  && !defined(__clang__) && !defined(VISUALC) // && !defined(__APPLE__)
 #include <tr1/unordered_map>
 #define HASH_MAP_NAMESPACE std::tr1
 #define hash_map unordered_map
 #else // UNORDERED_MAP
+
+#if defined(VISUALC) || defined(FIR) || defined(__ANDROID__) // || defined(OSX) || defined(IOS))
+#undef HASH_MAP
+#undef EXT_HASH_MAP
+#endif
 
 #ifdef HASH_MAP
 #include <hash_map>
@@ -51,10 +77,15 @@
 namespace giac {
 #endif // ndef NO_NAMESPACE_GIAC
 
+  typedef short int deg_t;
+  typedef std::vector<deg_t> index_t;
+
   int mygcd(int a,int b);
+  void swapint(int & a,int & b);
+  void swapdouble(double & a,double & b);
 
   // index type for tensors
-  typedef std::vector<int> index_t;
+  void add(const index_t & a, const index_t & b,index_t & res);
 
   index_t operator + (const index_t & a, const index_t & b);
   index_t operator - (const index_t & a, const index_t & b);
@@ -79,7 +110,8 @@ namespace giac {
   std::string hexa_print_INT_(int i);
   std::string octal_print_INT_(int i);
   std::string binary_print_INT_(int i);
-  std::string print_INT_(const index_t & v);
+  std::string print_INT_(const std::vector<int> & v);
+  std::string print_INT_(const std::vector<short int> & v);
 
   template <class T> T pow(const std::vector<T> & x, const index_t & n );
 
@@ -95,10 +127,10 @@ namespace giac {
   bool total_lex_is_greater(const std::vector<T> & v1, const std::vector<T> & v2);
 
   index_t mergeindex(const index_t & i,const index_t & j);
-  // index_t might be used for permutations
-  index_t inverse(const index_t & p);
+  // permutation inverse
+  std::vector<int> inverse(const std::vector<int> & p);
   // transposition
-  index_t transposition(int i,int j,int size);
+  std::vector<int> transposition(int i,int j,int size);
   bool has(const index_t & p,int r);
   // zero?
   bool is_zero(const index_t & p);
@@ -153,6 +185,7 @@ namespace giac {
     return false;
   }
 
+  bool lex_is_strictly_greater_deg_t(const std::vector<deg_t> & v1, const std::vector<deg_t> & v2);
 
   template <class T>
   bool total_lex_is_greater(const std::vector<T> & v1, const std::vector<T> & v2){
@@ -177,76 +210,330 @@ namespace giac {
       else
 	return(false);
     }
-    return(!lex_is_strictly_greater<T>(v1,v2));
+    // return(!lex_is_strictly_greater<T>(v1,v2)); but starting from end
+    typename std::vector<T>::const_iterator it1=v1.end()-1,it1end=v1.begin()-1;
+    typename std::vector<T>::const_iterator it2=v2.end()-1;
+    for (;it1!=it1end;--it2,--it1){
+      if ( *it1 != *it2 )
+	return *it1<*it2;
+    }
+    return true;
+  }
+
+  template <class T>
+  bool total_revlex_is_strictly_greater(const std::vector<T> & v1, const std::vector<T> & v2){
+    return !total_revlex_is_greater<T>(v2,v1);
   }
 
   //*****************************************
   // class for memory efficient indices
   //*****************************************
 
+  class ref_index_t {
+  public:
+    ref_count_t ref_count;
+    index_t i;
+    ref_index_t():ref_count(1) {}
+    ref_index_t(int s):ref_count(1),i(s) {}
+    ref_index_t(const index_t & I):ref_count(1),i(I) {}
+    ref_index_t(index_t::const_iterator it,index_t::const_iterator itend):ref_count(1),i(it,itend) {}
+  };
+
+  // direct access to deg_t in index_m 
+  const int POLY_VARS_DIRECT=sizeof(ref_index_t *)/sizeof(deg_t);
+  // HAS_POLY_VARS_OTHER defines the number of word (pointer size) for 
+  // other deg_t directly encoded. Comment if none
+#define HAS_POLY_VARS_OTHER 1
+#if HAS_POLY_VARS_OTHER
+  const int POLY_VARS_OTHER=HAS_POLY_VARS_OTHER*POLY_VARS_DIRECT;
+#else
+  const int POLY_VARS_OTHER=0;
+#endif
+  // capacity of deg_t by direct addressing
+  const int POLY_VARS=POLY_VARS_DIRECT+POLY_VARS_OTHER-1;
+
+#if defined(GIAC_NO_OPTIMIZATIONS) || ((defined(VISUALC) || defined(__APPLE__)) && !defined(GIAC_VECTOR)) || defined __clang__ // || defined(NSPIRE)
   class index_m {
   public:
-    inline index_t * i(){ return iptr; }
-    index_m(const index_m & im)  { 
-      iptr=im.iptr;
-      ref_count=im.ref_count;
-      (*ref_count)++;
+    ref_index_t * riptr;
+    // construct
+    index_m(const index_m & im) { 
+      riptr=im.riptr;
+      ++riptr->ref_count;
     }
-    index_m(const index_t & i);
-    index_m(){
-      iptr=new index_t();
-      ref_count=new int(1);
+    index_m(const index_t & i){
+      riptr=new ref_index_t(i);
     }
+    index_m(){ riptr=new ref_index_t; }
     index_m(size_t s){
-      iptr=new index_t(s);
-      ref_count=new int(1);
+      riptr=new ref_index_t(s);
     }
     index_m(index_t::const_iterator it,index_t::const_iterator itend){
-      iptr=new index_t(it,itend);
-      ref_count=new int(1);
+      riptr=new ref_index_t(it,itend);
     }
+    // delete
+    ~index_m(){
+      --riptr->ref_count;
+      if (!riptr->ref_count)
+	delete riptr;
+    }
+    // copy
     const index_m & operator = (const index_m & other){
-      (*ref_count)--;
-      if (!*ref_count){
-	delete iptr;
-	delete ref_count;
-      }
-      iptr=other.iptr;
-      ref_count=other.ref_count;
-      (*ref_count)++;
+      --riptr->ref_count;
+      if (!riptr->ref_count)
+	delete riptr;
+      riptr=other.riptr; 
+      ++riptr->ref_count;
       return *this;
     }
-    ~index_m(){
-      (*ref_count)--;
-      if (!*ref_count){
-	delete iptr;
-	delete ref_count;
-      }
-    }
-    index_t * iptr;
-    int * ref_count;
-    friend std::ostream & operator << (std::ostream & os, const index_m & m ){
+    
+    // members
+    index_t iref() const { return riptr->i;} ;
+    index_t::iterator begin() { return riptr->i.begin(); }
+    index_t::iterator end() { return riptr->i.end(); }
+    index_t::const_iterator begin() const { return riptr->i.begin(); }
+    index_t::const_iterator end() const { return riptr->i.end(); }
+#if !defined(NSPIRE) && !defined(OSX) && !defined(IOS) && !defined(OSXIOS)
+    index_t::reverse_iterator rbegin() { return riptr->i.rbegin(); }
+    index_t::reverse_iterator rend() { return riptr->i.rend(); }
+    index_t::const_reverse_iterator rbegin() const { return riptr->i.rbegin(); }
+    index_t::const_reverse_iterator rend() const { return riptr->i.rend(); }
+#endif
+    deg_t & front() { return *begin(); }
+    deg_t front() const { return *begin(); }
+    deg_t & back() { return *(end()-1); }
+    deg_t back() const { return *(end()-1); }
+    deg_t & operator [] (size_t pos) { return *(begin()+pos); }
+    deg_t operator [] (size_t pos) const { return *(begin()+pos); }
+    void clear() { riptr->i.clear(); }
+    void reserve(size_t n) { riptr->i.reserve(n); }
+    void push_back(deg_t x) { riptr->i.push_back(x); }
+    size_t size() const { return riptr->i.size(); }
+    bool is_zero() const ; 
+    size_t total_degree() const ;
+#ifdef NSPIRE
+    template<class T> friend nio::ios_base<T> & operator << (nio::ios_base<T> & os,const index_m & m ){
       os << ":index_m:[ " ;
-      for (index_t::const_iterator it=m.iptr->begin();it!=m.iptr->end();++it)
+      for (index_t::const_iterator it=m.begin();it!=m.end();++it)
 	os << *it << " ";
       os << "] " ;
       return(os);
     }
+#else
+    friend std::ostream & operator << (std::ostream & os, const index_m & m ){
+      os << ":index_m:[ " ;
+      for (index_t::const_iterator it=m.begin();it!=m.end();++it)
+	os << *it << " ";
+      os << "] " ;
+      return(os);
+    }
+#endif
     void dbgprint() const {
-      std::cout << *this << std::endl;
+      COUT << *this << std::endl;
     }
     // set first index element to 0
-    index_m firstzero() const {
-      index_t i(*(this->iptr));
-      assert(i.size());
-      i[0]=0;
-      return index_m(i);
-    }
+    index_m set_first_zero() const { index_t i(riptr->i); i[0]=0; return i; }
   };
 
+#else // VISUALC
+  class index_m {
+  public:
+    union {
+      ref_index_t * riptr;
+      struct {
+	deg_t taille; 
+	deg_t direct[POLY_VARS_DIRECT-1]; 
+      };
+    };
+#ifdef HAS_POLY_VARS_OTHER
+    deg_t other[POLY_VARS_OTHER];
+#endif
+    // construct
+    index_m(const index_m & im) { 
+      if ( im.taille % 2){
+	* (size_t *) & taille = * (size_t *) &im.taille;
+#if (HAS_POLY_VARS_OTHER==1)
+	* (size_t *) other = * (size_t *) im.other;	
+#endif
+#if (HAS_POLY_VARS_OTHER==2)
+	* (size_t *) other = * (size_t *) im.other;	
+	* (((size_t *) other)+1) = * (((size_t *) im.other)+1);	
+#endif
+#if (HAS_POLY_VARS_OTHER>2)
+	size_t * target = (size_t *) other, * end = target + POLY_VARS_OTHER/(sizeof(size_t)/sizeof(deg_t));
+	const size_t * source = (size_t *) im.other;
+	for (;target!=end;++target,++source)
+	  *target=*source;
+#endif
+      } else {
+	riptr=im.riptr;
+	++riptr->ref_count;
+      }
+    }
+    index_m(const index_t & i){
+      int s=int(i.size());
+      if (s<=POLY_VARS){
+	taille=2*s+1;
+	deg_t * target=direct,*end=direct+s;
+	index_t::const_iterator source=i.begin();
+	for (;target!=end;++source,++target){
+	  *target=*source;
+	}
+      }
+      else {
+	// taille = 0;
+	riptr=new ref_index_t(i);
+      }
+    }
+    index_m(){ taille =1; }
+    index_m(size_t s){
+      if (int(s)<=POLY_VARS){
+	riptr=0;
+	taille=2*int(s)+1;
+#if (HAS_POLY_VARS_OTHER==1)
+	* (size_t *) other =0;
+#endif
+#if (HAS_POLY_VARS_OTHER==2)
+	* (size_t *) other =0;
+	* (((size_t *) other)+1) =0;
+#endif
+#if (HAS_POLY_VARS_OTHER>2)
+	size_t * target = (size_t *) other ;
+	size_t * end = target + POLY_VARS_OTHER/(sizeof(size_t)/sizeof(deg_t));
+	for (;target!=end;++target)
+	  *target = 0;
+#endif
+      }
+      else {
+	// taille=0;
+	riptr=new ref_index_t(int(s));
+      }
+    }
+    index_m(index_t::const_iterator it,index_t::const_iterator itend){
+      if (itend-it<=POLY_VARS){
+	taille=2*int(itend-it)+1;
+	deg_t * target = direct;
+	for (;it!=itend;++it,++target){
+	  *target=*it;
+	}
+      }
+      else {
+	// taille=0;
+	riptr=new ref_index_t(it,itend);
+      }
+    }
+    // ptr[0] must be 2*size+1
+    index_m(deg_t * ptr){
+      /*
+#ifdef DEBUG_SUPPORT
+      if (ptr[0]/2>POLY_VARS)
+	setsizeerr("Error index.h, size too large for direct access");
+#endif
+      */
+      size_t * source = (size_t *) ptr;
+      *(size_t *) &taille = *(size_t *) source;
+#if (HAS_POLY_VARS_OTHER==1)
+      ++source;
+      * (size_t *) other = *source;
+#endif
+#if (HAS_POLY_VARS_OTHER==2)
+      ++source;
+      * (size_t *) other = *source;
+      ++source;
+      * (((size_t *) other)+1) = *source;
+#endif
+#if (HAS_POLY_VARS_OTHER>2)
+      size_t * target = (size_t *) other ;
+      size_t * end = target + POLY_VARS_OTHER/(sizeof(size_t)/sizeof(deg_t));
+      for (++source;target!=end;++source,++target)
+	*target = *source;
+#endif
+    }
+    // delete
+    ~index_m(){
+      if ( (taille % 2) == 0){
+	--riptr->ref_count;
+	if (!riptr->ref_count)
+	  delete riptr;
+      }
+    }
+    // copy
+    const index_m & operator = (const index_m & other){
+      if ( (taille % 2) == 0){
+	--riptr->ref_count;
+	if (!riptr->ref_count)
+	  delete riptr;
+      }
+      if ( (other.taille % 2) == 0){
+	riptr=other.riptr; 
+	++riptr->ref_count;
+      }
+      else {
+	* (size_t *) &taille = * (size_t *) &other.taille;
+#if (HAS_POLY_VARS_OTHER==1)
+	* (size_t *) this->other = * (size_t *) other.other;
+#endif
+#if (HAS_POLY_VARS_OTHER==2)
+	* (size_t *) this->other = * (size_t *) other.other;
+	* (((size_t *) this->other)+1) = * (((size_t *) other.other)+1);
+#endif
+#if (HAS_POLY_VARS_OTHER>2)
+	const size_t * source = (size_t * ) other.other;
+	size_t * target = (size_t *) this->other; 
+	size_t * end = target + POLY_VARS_OTHER/(sizeof(size_t)/sizeof(deg_t));
+	for (;target!=end;++source,++target)
+	  * target = * source;
+#endif
+      }
+      return *this;
+    }
+    
+    // members
+    index_t iref() const ;
+    index_t::iterator begin() ; 
+    index_t::iterator end() ; 
+    index_t::const_iterator begin() const; 
+    index_t::const_iterator end() const; 
+    deg_t & front() { return *begin(); }
+    deg_t front() const { return *begin(); }
+    deg_t & back() { return *(end()-1); }
+    deg_t back() const { return *(end()-1); }
+    deg_t & operator [] (size_t pos) { return *(begin()+pos); }
+    deg_t operator [] (size_t pos) const { return *(begin()+pos); }
+    void clear() ;
+    void reserve(size_t n);
+    void push_back(deg_t x);
+    size_t size() const ;
+    bool is_zero() const ;
+    size_t total_degree() const ;
+#ifdef NSPIRE
+    template<class T> friend nio::ios_base<T> & operator << (nio::ios_base<T> & os,const index_m & m ){
+      os << ":index_m:[ " ;
+      for (index_t::const_iterator it=m.begin();it!=m.end();++it)
+	os << *it << " ";
+      os << "] " ;
+      return(os);
+    }
+#else
+    friend std::ostream & operator << (std::ostream & os, const index_m & m ){
+      os << ":index_m:[ " ;
+      for (index_t::const_iterator it=m.begin();it!=m.end();++it)
+	os << *it << " ";
+      os << "] " ;
+      return(os);
+    }
+#endif
+    void dbgprint() const {
+      COUT << *this << std::endl;
+    }
+    // set first index element to 0
+    index_m set_first_zero() const;
+  };
+#endif // VISUALC
+
 #ifdef HASH_MAP_NAMESPACE
-  inline size_t index_hash_function(const std::vector<int> & v){
-    std::vector<int>::const_iterator it=v.begin(),itend=v.end();
+  inline size_t index_hash_function(const index_t & v){
+    index_t::const_iterator it=v.begin(),itend=v.end();
     size_t res=0;
     if (itend-it>16)
       itend=it+16;
@@ -284,31 +571,50 @@ namespace giac {
 
   typedef HASH_MAP_NAMESPACE::hash_map< index_t,index_m,hash_function_object > hash_index ;  
 
-  extern std::vector<hash_index> global_hash_index;
-  extern int copy_number;
+  // extern std::vector<hash_index> global_hash_index;
 
 #endif
 
+  void add(const index_m & a, const index_m & b,index_t & res);
+  bool equal(const index_m & a,const index_t &b);
   index_m operator + (const index_m & a, const index_m & b);
   index_m operator - (const index_m & a, const index_m & b);
   index_m operator * (const index_m & a, int fois);
   inline index_m operator * (int fois,const index_m & a){ return a*fois; }
   index_m operator / (const index_m & a, int divisepar);
-  inline int operator / (const index_m & a,const index_m & b){ return *a.iptr / *b.iptr;}
+  inline int operator / (const index_m & a,const index_m & b){ return a.iref() / b.iref();}
   bool operator == (const index_m & i1, const index_m & i2);
   bool operator != (const index_m & i1, const index_m & i2);
   bool operator >= (const index_m & a, const index_m & b);
   bool operator <= (const index_m & a, const index_m & b);
-  int total_degree(const index_m & v1);
+  int sum_degree(const index_m & v1);
+  int sum_degree_from(const index_m & v1,int start);
+  inline int total_degree(const index_m & v1){ return sum_degree(v1); }
   bool i_lex_is_greater(const index_m & v1, const index_m & v2);
   bool i_lex_is_strictly_greater(const index_m & v1, const index_m & v2);
   bool i_total_revlex_is_greater(const index_m & v1, const index_m & v2);
+  bool i_total_revlex_is_strictly_greater(const index_m & v1, const index_m & v2);
   bool i_total_lex_is_greater(const index_m & v1, const index_m & v2);
+  bool i_total_lex_is_strictly_greater(const index_m & v1, const index_m & v2);
+  bool i_16var_is_greater(const index_m & v1, const index_m & v2);
+  bool i_32var_is_greater(const index_m & v1, const index_m & v2);
+  bool i_64var_is_greater(const index_m & v1, const index_m & v2);
+  bool i_11var_is_greater(const index_m & v1, const index_m & v2);
+  bool i_7var_is_greater(const index_m & v1, const index_m & v2);
+  bool i_3var_is_greater(const index_m & v1, const index_m & v2);
+  bool i_nvar_is_greater(const index_m & v1, const index_m & v2,int n,bool sametdeg);
+  int nvar_total_degree(const index_m & v1,int n);
+  inline bool i_16var_is_strictly_greater(const index_m & v1, const index_m & v2){ return !i_16var_is_greater(v2,v1); }
+  inline bool i_32var_is_strictly_greater(const index_m & v1, const index_m & v2){ return !i_32var_is_greater(v2,v1); }
+  inline bool i_64var_is_strictly_greater(const index_m & v1, const index_m & v2){ return !i_64var_is_greater(v2,v1); }
+  inline bool i_11var_is_strictly_greater(const index_m & v1, const index_m & v2){ return !i_11var_is_greater(v2,v1); }
+  inline bool i_7var_is_strictly_greater(const index_m & v1, const index_m & v2){ return !i_7var_is_greater(v2,v1); }
+  inline bool i_3var_is_strictly_greater(const index_m & v1, const index_m & v2){ return !i_3var_is_greater(v2,v1); }
 
   template <class T> T pow(const std::vector<T> & x, const index_m & n ){
-    assert(x.size()==n.iptr->size());
+    assert(x.size()==n.size());
     typename std::vector<T>::const_iterator itx=x.begin();
-    index_t::const_iterator itn=n.iptr->begin();
+    index_t::const_iterator itn=n.begin();
     T res(1);
     for (;itx!=x.end();++itx,++itn){
       res=res*pow(*itx,*itn);
@@ -316,8 +622,26 @@ namespace giac {
     return res;
   }
 
+  void index_lcm(const index_m & a,const index_m & b,index_t & res);
+  bool disjoint(const index_m & a,const index_m & b);
+
 #ifndef NO_NAMESPACE_GIAC
 } // namespace giac
 #endif // ndef NO_NAMESPACE_GIAC
+
+#if 0 // def NSPIRE
+namespace std {
+  inline bool operator > (const giac::index_t & a,const giac::index_t & b){ 
+    if (a.size()!=b.size()) 
+      return a.size()>b.size();
+    return !giac::all_inf_equal(a,b);
+  }
+  inline bool operator < (const giac::index_t & a,const giac::index_t & b){ 
+    if (a.size()!=b.size()) 
+      return a.size()<b.size();
+    return !giac::all_sup_equal(a,b);
+  }
+}
+#endif
 
 #endif // ndef _GIAC_INDEX_H_

@@ -2,9 +2,13 @@
 #ifndef _TABLEUR_H
 #define _TABLEUR_H
 
+#ifndef IN_GIAC
 #include <giac/first.h>
+#else
+#include "first.h"
+#endif
 /*
- *  Copyright (C) 2002 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
+ *  Copyright (C) 2002,2014 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,11 +21,14 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef IN_GIAC
 #include <giac/gen.h>
+#else
+#include "gen.h"
+#endif
 #ifdef HAVE_LIBFLTK
 #include "Flv_Table.H"
 #include "Flve_Input.H"
@@ -65,13 +72,14 @@ namespace xcas {
     giac::context * contextptr;
     bool editing,computing;
     int edit_row,edit_col;
-    Multiline_Input_tab * input,* _goto;
+    Xcas_Text_Editor * input;
+    Multiline_Input_tab* _goto;
     Graph2d * graph,*graph2d;
     Graph3d * graph3d;
     Fl_Menu_Button * mb;
     Fl_Window * win2,*win3;
     std::string status_string;
-    std::string * filename, prefix_filename;
+    std::string * filename,prefix_filename;
     unsigned max_printsize;
     int header_event,last_event;
     // if printing cell requires more than max_printsize, cell is not displayed
@@ -79,7 +87,7 @@ namespace xcas {
     void finish_flv_table_gen();
     void update_name();
     void config();
-  Flv_Table_Gen(int X,int Y,int W,int H,const char *l=0):Flv_Table(X,Y,W,H,l),matrix_fill_cells(true),matrix_symmetry(0),spreadsheet_recompute(true),max_printsize(1024){ contextptr=0; computing=editing=false; graph=0;graph2d=0; graph3d=0; _goto=input=0; name=0; finish_flv_table_gen();};
+  Flv_Table_Gen(int X,int Y,int W,int H,const char *l=0):Flv_Table(X,Y,W,H,l),matrix_fill_cells(true),matrix_symmetry(0),spreadsheet_recompute(true),max_printsize(1024){ contextptr=0; computing=editing=false; graph=0;graph2d=0; graph3d=0; _goto=0;input=0; name=0; finish_flv_table_gen();};
     Flv_Table_Gen( int X, int Y, int W, int H,const giac::gen & g,const char *l=0 );
     Flv_Table_Gen( int X, int Y, int W, int H,const giac::matrice & mym,const char *l=0);
     ~Flv_Table_Gen() ;

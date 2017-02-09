@@ -2,8 +2,6 @@
 #ifndef _GIAC_PARI_H
 #define _GIAC_PARI_H
 #include "first.h"
-
-#ifdef HAVE_LIBPARI
 #include <string>
 
 #ifndef NO_NAMESPACE_GIAC
@@ -19,16 +17,28 @@ namespace giac {
   // Convert a pari GEN to a giac gen, pari pointer are not modified
   // gen GEN2gen(const GEN & G,const vecteur & vars);
 
-  std::string pari_isprime(const gen & e);
+  gen pari_isprime(const gen & e,int certif=0);
+  // FIXME for pari 2.2 use 1 instead of 2, 2 is for APRCL test
+
+  gen pari_ffinit(const gen & p,int n); // irreducible polynomial of deg n over F_p
+
   std::string pari_ifactor(const gen & e);
   gen pari_gamma(const gen & e);
   gen pari_zeta(const gen & e);
   gen pari_psi(const gen & e);
-  void pari_lift_combine(const vecteur & a,const std::vector<vecteur> & factmod,gen & modulo,std::vector<vecteur> & res);
+  bool pari_lift_combine(const vecteur & a,const std::vector<vecteur> & factmod,gen & modulo,std::vector<vecteur> & res);
+  gen _pari(const gen & args,GIAC_CONTEXT);
+  std::string pari_help(const gen & g);
+  bool pari_polroots(const vecteur & p,vecteur & res,long l,GIAC_CONTEXT);
+  gen GEN2gen(const GEN & G,const vecteur & vars);
+  GEN gen2GEN(const gen & e,const vecteur & vars,GIAC_CONTEXT);
+  bool pari_polresultant(const gen & p,const gen & q,const vecteur & lv,gen & res,GIAC_CONTEXT);
+  bool pari_nffactor(const gen & p,const gen & pmin,const vecteur & lv,gen & res,GIAC_CONTEXT);
+  bool pari_galoisconj(const gen & g,vecteur & w,GIAC_CONTEXT);
+  bool pari_allocatemem(size_t mem,GIAC_CONTEXT);
+
 #ifndef NO_NAMESPACE_GIAC
 }
 #endif // ndef NO_NAMESPACE_GIAC
  
-#endif // HAVE_LIBPARI
-
 #endif //_GIAC_PARI_H

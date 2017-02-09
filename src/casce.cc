@@ -15,9 +15,12 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 #include <stdio.h>
 #include "global.h"
 #ifdef HAVE_LIBREADLINE
@@ -122,7 +125,7 @@ void check_browser_help(const giac::gen & g){
       s=f._FUNCptr->ptr->s;
     giac::html_vtt=giac::html_help(giac::html_mtt,s);
     if (!giac::html_vtt.empty())
-      system(giac::browser_command(giac::html_vtt.front()).c_str());
+      giac::system_browser_command(giac::html_vtt.front());
   }
 }
 

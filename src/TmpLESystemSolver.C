@@ -14,15 +14,21 @@
 //   GNU General Public License for more details.
 
 //   You should have received a copy of the GNU General Public License
-//   along with CoCoA; if not, write to the Free Software
-//   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//   along with CoCoA; if not,  see <http://www.gnu.org/licenses/>.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
+#include "first.h"
+#ifdef USE_GMP_REPLACEMENTS
+#undef HAVE_LIBCOCOA
+#endif
 #ifdef HAVE_LIBCOCOA
 #include "TmpLESystemSolver.H"
 #include "CoCoA/DenseMatrix.H"
 #include "CoCoA/matrix.H"
 #include "CoCoA/ring.H"
+#include "CoCoA/error.H"
 
 // #include <vector> // Included by DenseMatrix.H
 using std::vector;
@@ -71,9 +77,9 @@ namespace CoCoADortmund
       CoCoA_ERROR(ERR::NotField, "mySolve: Gauss' algorithm over non-fields not yet implemented.");
 		
     // Create working copies of M and b
-    matrix MCopy(NewDenseMatrix(K, NumRowsM, NumColsM));
+    matrix MCopy(NewDenseMat(K, NumRowsM, NumColsM));
     CopyMatrix(MCopy, M);
-    matrix bCopy(NewDenseMatrix(K, NumRowsb, NumColsb));
+    matrix bCopy(NewDenseMat(K, NumRowsb, NumColsb));
     CopyMatrix(bCopy, b);
 
     // For solution computation
@@ -127,7 +133,7 @@ namespace CoCoADortmund
 	
     // Compute components (x_1, ..., x_n) of vector x0 backwards from x_n to x_1,
     // possibly skipping some components
-    matrix x0Tmp = NewDenseMatrix(K, NumRows(x0), 1);
+    matrix x0Tmp = NewDenseMat(K, NumRows(x0), 1);
     while (!positions.empty())
     {
       const size_t i = positions.back().first, j = positions.back().second;

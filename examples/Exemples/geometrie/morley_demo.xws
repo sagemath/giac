@@ -1,506 +1,533 @@
-// xcas version=0.9.0 fontsize=18 font=0
-// fltk 7Fl_Tile 23 -1808 1115 67 18 0
+// xcas version=1.0.0 fontsize=18 font=0 currentlevel=12
+// fltk 7Fl_Tile 25 68 907 114 18 0
 [
-// fltk N4xcas23Comment_Multiline_InputE 23 -1808 1115 66 18 0
-Demonstration analytique du theoreme de Morley.£On place A a l'origine, B en (1,0) et on utilise 2 parametres a1 et a2, tels que les angles en A et B soient 3*a1, 3*a2£C est donc sur la droite passant par A de pente tan(3*a1) et sur la droite passant par B et de pente -tan(3*a2), etc.
+// fltk N4xcas23Comment_Multiline_InputE 25 68 907 113 18 0
+Demonstration analytique du theoreme de Morley.£On place A a l'origine, B en (1,0) et on utilise 2 parametres a1 et a2, £tels que les angles en A et B soient 3*a1, 3*a2£C est donc sur la droite passant par A de pente tan(3*a1) et sur la droite passant £par B et de pente -tan(3*a2), etc.
 ,
-// fltk N4xcas10Log_OutputE 23 -1742 1115 1 18 0
+// fltk N4xcas10Log_OutputE 25 181 907 1 18 0
 
 ]
 ,
-// fltk 7Fl_Tile 23 -1739 1115 601 18 0
+// fltk 7Fl_Tile 25 184 907 515 18 0
 [
-// fltk N4xcas6FigureE 23 -1739 1115 600 18 0 landscape=0 history=0.38565 geo=0.53363  mouse_param=0.080717
-// fltk N4xcas12History_PackE 25 -1715 410 2218 18 0
+// fltk N4xcas6FigureE 25 184 907 515 18 0 landscape=0 history=0.4344 geo=0.4763  mouse_param=0.089305
+// fltk N4xcas12History_PackE 27 208 374 2273 18 0
 [
-// fltk 7Fl_Tile 47 -1715 388 54 18 0
+// fltk 7Fl_Tile 51 208 350 69 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 47 -1715 388 28 18 0
-assume(a1=[0.32,-10,10,0.01])
-,
-// fltk N4xcas10Log_OutputE 47 -1687 388 1 18 0
+// fltk N4xcas16Xcas_Text_EditorE 51 208 350 43 18 0
+30 ,
+assume(a1=[0.32,-10,10,0.01]);,
+// fltk N4xcas10Log_OutputE 51 251 350 1 18 0
 
 ,
-// fltk N4xcas10Gen_OutputE 47 -1686 388 25 18 0
-parameter(a1,-10.0,10.0,0.32,0.01)
+// fltk N4xcas10Gen_OutputE 51 252 350 25 18 0
+parameter([a1,-10.0,10.0,0.32,0.01])
 ]
 ,
-// fltk 7Fl_Tile 47 -1659 388 54 18 0
+// fltk 7Fl_Tile 51 279 350 69 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 47 -1659 388 28 18 0
-assume(a2=[0.42,-10,10,0.01])
-,
-// fltk N4xcas10Log_OutputE 47 -1631 388 1 18 0
+// fltk N4xcas16Xcas_Text_EditorE 51 279 350 43 18 0
+30 ,
+assume(a2=[0.42,-10,10,0.01]);,
+// fltk N4xcas10Log_OutputE 51 322 350 1 18 0
 
 ,
-// fltk N4xcas10Gen_OutputE 47 -1630 388 25 18 0
-parameter(a2,-10.0,10.0,0.42,0.01)
+// fltk N4xcas10Gen_OutputE 51 323 350 25 18 0
+parameter([a2,-10.0,10.0,0.42,0.01])
 ]
 ,
-// fltk 7Fl_Tile 47 -1603 388 54 18 0
+// fltk 7Fl_Tile 51 350 350 56 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 47 -1603 388 28 18 0
-A:=point(0);
-,
-// fltk N4xcas10Log_OutputE 47 -1575 388 1 18 0
+// fltk N4xcas16Xcas_Text_EditorE 51 350 350 30 18 0
+12 ,
+A:=point(0);,
+// fltk N4xcas10Log_OutputE 51 380 350 1 18 0
 
 ,
-// fltk N4xcas10Gen_OutputE 47 -1574 388 25 18 0
-point(0,0)
+// fltk N4xcas10Gen_OutputE 51 381 350 25 18 0
+pnt(pnt[0,536870968,"A"])
 ]
 ,
-// fltk 7Fl_Tile 47 -1547 388 54 18 0
+// fltk 7Fl_Tile 51 408 350 56 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 47 -1547 388 28 18 0
-B:=point(1);
-,
-// fltk N4xcas10Log_OutputE 47 -1519 388 1 18 0
+// fltk N4xcas16Xcas_Text_EditorE 51 408 350 30 18 0
+12 ,
+B:=point(1);,
+// fltk N4xcas10Log_OutputE 51 438 350 1 18 0
 
 ,
-// fltk N4xcas10Gen_OutputE 47 -1518 388 25 18 0
-point(1,0)
+// fltk N4xcas10Gen_OutputE 51 439 350 25 18 0
+pnt(pnt[1,536870968,"B"])
 ]
 ,
-// fltk 7Fl_Tile 47 -1491 388 130 18 0
+// fltk 7Fl_Tile 51 466 350 69 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 47 -1491 388 104 18 0
-C:=single_inter(£line(A,slope=£texpand(tan(3*a1))),£line(B,slope=£-texpand(tan(3*a2))))
-,
-// fltk N4xcas10Log_OutputE 47 -1387 388 1 18 0
+// fltk N4xcas16Xcas_Text_EditorE 51 466 350 43 18 0
+88 ,
+C:=single_inter( line(A,slope= texpand(tan(3*a1))), line(B,slope= -texpand(tan(3*a2))));,
+// fltk N4xcas10Log_OutputE 51 509 350 1 18 0
 
 ,
-// fltk N4xcas10Gen_OutputE 47 -1386 388 25 18 0
+// fltk N4xcas10Gen_OutputE 51 510 350 25 18 0
 Done
 ]
 ,
-// fltk 7Fl_Tile 47 -1359 388 54 18 0
+// fltk 7Fl_Tile 51 537 350 56 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 47 -1359 388 28 18 0
-triangle(A,B,C)
-,
-// fltk N4xcas10Log_OutputE 47 -1331 388 1 18 0
+// fltk N4xcas16Xcas_Text_EditorE 51 537 350 30 18 0
+16 ,
+triangle(A,B,C);,
+// fltk N4xcas10Log_OutputE 51 567 350 1 18 0
 
 ,
-// fltk N4xcas10Gen_OutputE 47 -1330 388 25 18 0
+// fltk N4xcas10Gen_OutputE 51 568 350 25 18 0
 Done
 ]
 ,
-// fltk 7Fl_Tile 47 -1303 388 71 18 0
+// fltk 7Fl_Tile 51 595 350 69 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 47 -1303 388 45 18 0
-TA1:=line(A,slope=£texpand(tan(a1))):;
-,
-// fltk N4xcas10Log_OutputE 47 -1258 388 1 18 0
+// fltk N4xcas16Xcas_Text_EditorE 51 595 350 43 18 0
+38 ,
+TA1:=line(A,slope= texpand(tan(a1))):;,
+// fltk N4xcas10Log_OutputE 51 638 350 1 18 0
 
 ,
-// fltk N4xcas10Gen_OutputE 47 -1257 388 25 18 0
+// fltk N4xcas10Gen_OutputE 51 639 350 25 18 0
 "Done"
 ]
 ,
-// fltk 7Fl_Tile 47 -1230 388 71 18 0
+// fltk 7Fl_Tile 51 666 350 69 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 47 -1230 388 45 18 0
-TA2:=line(A,slope=£texpand(tan(2*a1))):;
-,
-// fltk N4xcas10Log_OutputE 47 -1185 388 1 18 0
+// fltk N4xcas16Xcas_Text_EditorE 51 666 350 43 18 0
+40 ,
+TA2:=line(A,slope= texpand(tan(2*a1))):;,
+// fltk N4xcas10Log_OutputE 51 709 350 1 18 0
 
 ,
-// fltk N4xcas10Gen_OutputE 47 -1184 388 25 18 0
+// fltk N4xcas10Gen_OutputE 51 710 350 25 18 0
 "Done"
 ]
 ,
-// fltk 7Fl_Tile 47 -1157 388 71 18 0
+// fltk 7Fl_Tile 51 737 350 69 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 47 -1157 388 45 18 0
-TC1:=line(C,slope=£texpand(tan(2a1-a2+pi/3))):;
-,
-// fltk N4xcas10Log_OutputE 47 -1112 388 1 18 0
+// fltk N4xcas16Xcas_Text_EditorE 51 737 350 43 18 0
+47 ,
+TC1:=line(C,slope= texpand(tan(2a1-a2+pi/3))):;,
+// fltk N4xcas10Log_OutputE 51 780 350 1 18 0
 
 ,
-// fltk N4xcas10Gen_OutputE 47 -1111 388 25 18 0
+// fltk N4xcas10Gen_OutputE 51 781 350 25 18 0
 "Done"
 ]
 ,
-// fltk 7Fl_Tile 47 -1084 388 71 18 0
+// fltk 7Fl_Tile 51 808 350 69 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 47 -1084 388 45 18 0
-TC2:=line(C,slope=£texpand(tan(a1-2a2+2*pi/3))):;
-,
-// fltk N4xcas10Log_OutputE 47 -1039 388 1 18 0
+// fltk N4xcas16Xcas_Text_EditorE 51 808 350 43 18 0
+49 ,
+TC2:=line(C,slope= texpand(tan(a1-2a2+2*pi/3))):;,
+// fltk N4xcas10Log_OutputE 51 851 350 1 18 0
 
 ,
-// fltk N4xcas10Gen_OutputE 47 -1038 388 25 18 0
+// fltk N4xcas10Gen_OutputE 51 852 350 25 18 0
 "Done"
 ]
 ,
-// fltk 7Fl_Tile 47 -1011 388 71 18 0
+// fltk 7Fl_Tile 51 879 350 69 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 47 -1011 388 45 18 0
-TB1:=line(B,slope=£-texpand(tan(2*a2))):;
-,
-// fltk N4xcas10Log_OutputE 47 -966 388 1 18 0
+// fltk N4xcas16Xcas_Text_EditorE 51 879 350 43 18 0
+41 ,
+TB1:=line(B,slope= -texpand(tan(2*a2))):;,
+// fltk N4xcas10Log_OutputE 51 922 350 1 18 0
 
 ,
-// fltk N4xcas10Gen_OutputE 47 -965 388 25 18 0
+// fltk N4xcas10Gen_OutputE 51 923 350 25 18 0
 "Done"
 ]
 ,
-// fltk 7Fl_Tile 47 -938 388 71 18 0
+// fltk 7Fl_Tile 51 950 350 69 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 47 -938 388 45 18 0
-TB2:=line(B,slope=£-texpand(tan(a2))):;
-,
-// fltk N4xcas10Log_OutputE 47 -893 388 1 18 0
+// fltk N4xcas16Xcas_Text_EditorE 51 950 350 43 18 0
+39 ,
+TB2:=line(B,slope= -texpand(tan(a2))):;,
+// fltk N4xcas10Log_OutputE 51 993 350 1 18 0
 
 ,
-// fltk N4xcas10Gen_OutputE 47 -892 388 25 18 0
+// fltk N4xcas10Gen_OutputE 51 994 350 25 18 0
 "Done"
 ]
 ,
-// fltk 7Fl_Tile 47 -865 388 72 18 0
+// fltk 7Fl_Tile 51 1021 350 76 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 47 -865 388 26 18 0
-P:=single_inter(TA1,TB2)
-,
-// fltk N4xcas10Log_OutputE 47 -839 388 1 18 0
+// fltk N4xcas16Xcas_Text_EditorE 51 1021 350 30 18 0
+25 ,
+P:=single_inter(TA1,TB2);,
+// fltk N4xcas10Log_OutputE 51 1051 350 1 18 0
 
 ,
-// fltk 9Fl_Scroll 47 -838 388 45 18 0
+// fltk 9Fl_Scroll 51 1052 350 45 18 0
 [
-// fltk N4xcas10Gen_OutputE 47 -838 373 25 18 0
-point(((i)*tan(a1)*tan(a2)+tan(a2))/(tan(a1)+tan(a2)))
+// fltk N4xcas10Gen_OutputE 51 1052 489 25 18 0
+pnt(pnt[((i)*tan(a1)*tan(a2)+tan(a2))/(tan(a1)+tan(a2)),56,P])
 ,
-// fltk 12Fl_Scrollbar 47 -846 357 16 18 0
+// fltk 12Fl_Scrollbar 51 1081 350 16 18 0
 []
 ,
-// fltk 12Fl_Scrollbar 404 -875 16 29 18 0
-[]
-]
-]
-,
-// fltk 7Fl_Tile 47 -791 388 52 18 0
-[
-// fltk N4xcas19Multiline_Input_tabE 47 -791 388 26 18 0
-Q:=single_inter(TB1,TC2)
-,
-// fltk N4xcas10Log_OutputE 47 -765 388 1 18 0
-
-,
-// fltk N4xcas10Gen_OutputE 47 -764 388 25 18 0
-Done
-]
-,
-// fltk 7Fl_Tile 47 -737 388 52 18 0
-[
-// fltk N4xcas19Multiline_Input_tabE 47 -737 388 26 18 0
-R:=single_inter(TC1,TA2)
-,
-// fltk N4xcas10Log_OutputE 47 -711 388 1 18 0
-
-,
-// fltk N4xcas10Gen_OutputE 47 -710 388 25 18 0
-Done
-]
-,
-// fltk 7Fl_Tile 47 -683 388 54 18 0
-[
-// fltk N4xcas19Multiline_Input_tabE 47 -683 388 28 18 0
-triangle(A,R,C);
-,
-// fltk N4xcas10Log_OutputE 47 -655 388 1 18 0
-
-,
-// fltk N4xcas10Gen_OutputE 47 -654 388 25 18 0
-Done
-]
-,
-// fltk 7Fl_Tile 47 -627 388 54 18 0
-[
-// fltk N4xcas19Multiline_Input_tabE 47 -627 388 28 18 0
-triangle(B,Q,C);
-,
-// fltk N4xcas10Log_OutputE 47 -599 388 1 18 0
-
-,
-// fltk N4xcas10Gen_OutputE 47 -598 388 25 18 0
-Done
-]
-,
-// fltk 7Fl_Tile 47 -571 388 74 18 0
-[
-// fltk N4xcas19Multiline_Input_tabE 47 -571 388 28 18 0
-triangle(A,P,B);
-,
-// fltk N4xcas10Log_OutputE 47 -543 388 1 18 0
-
-,
-// fltk 9Fl_Scroll 47 -542 388 45 18 0
-[
-// fltk N4xcas10Gen_OutputE 47 -542 373 25 18 0
-polygon(point(0,0),point(((i)*tan(a1)*tan(a2)+tan(a2))/(tan(a1)+tan(a2))),point(1,0),point(0,0))
-,
-// fltk 12Fl_Scrollbar 47 -550 357 16 18 0
-[]
-,
-// fltk 12Fl_Scrollbar 404 -579 16 29 18 0
+// fltk 12Fl_Scrollbar 385 1052 16 29 18 0
 []
 ]
 ]
 ,
-// fltk 7Fl_Tile 47 -495 388 73 18 0
+// fltk 7Fl_Tile 51 1099 350 56 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 47 -495 388 47 18 0
-triangle(P,Q,R,£'color'=(magenta+line_width_2))
-,
-// fltk N4xcas10Log_OutputE 47 -448 388 1 18 0
+// fltk N4xcas16Xcas_Text_EditorE 51 1099 350 30 18 0
+25 ,
+Q:=single_inter(TB1,TC2);,
+// fltk N4xcas10Log_OutputE 51 1129 350 1 18 0
 
 ,
-// fltk N4xcas10Gen_OutputE 47 -447 388 25 18 0
+// fltk N4xcas10Gen_OutputE 51 1130 350 25 18 0
 Done
 ]
 ,
-// fltk 7Fl_Tile 47 -420 388 54 18 0
+// fltk 7Fl_Tile 51 1157 350 56 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 47 -420 388 28 18 0
-pq2:=distance2(P,Q);
-,
-// fltk N4xcas10Log_OutputE 47 -392 388 1 18 0
+// fltk N4xcas16Xcas_Text_EditorE 51 1157 350 30 18 0
+25 ,
+R:=single_inter(TC1,TA2);,
+// fltk N4xcas10Log_OutputE 51 1187 350 1 18 0
 
 ,
-// fltk N4xcas10Gen_OutputE 47 -391 388 25 18 0
+// fltk N4xcas10Gen_OutputE 51 1188 350 25 18 0
 Done
 ]
 ,
-// fltk 7Fl_Tile 47 -364 388 54 18 0
+// fltk 7Fl_Tile 51 1215 350 56 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 47 -364 388 28 18 0
-pr2:=distance2(P,R);
-,
-// fltk N4xcas10Log_OutputE 47 -336 388 1 18 0
+// fltk N4xcas16Xcas_Text_EditorE 51 1215 350 30 18 0
+16 ,
+triangle(A,R,C);,
+// fltk N4xcas10Log_OutputE 51 1245 350 1 18 0
 
 ,
-// fltk N4xcas10Gen_OutputE 47 -335 388 25 18 0
+// fltk N4xcas10Gen_OutputE 51 1246 350 25 18 0
 Done
 ]
 ,
-// fltk 7Fl_Tile 47 -308 388 54 18 0
+// fltk 7Fl_Tile 51 1273 350 56 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 47 -308 388 28 18 0
-qr2:=distance2(Q,R);
-,
-// fltk N4xcas10Log_OutputE 47 -280 388 1 18 0
+// fltk N4xcas16Xcas_Text_EditorE 51 1273 350 30 18 0
+16 ,
+triangle(B,Q,C);,
+// fltk N4xcas10Log_OutputE 51 1303 350 1 18 0
 
 ,
-// fltk N4xcas10Gen_OutputE 47 -279 388 25 18 0
+// fltk N4xcas10Gen_OutputE 51 1304 350 25 18 0
 Done
 ]
 ,
-// fltk 7Fl_Tile 47 -252 388 74 18 0
+// fltk 7Fl_Tile 51 1331 350 76 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 47 -252 388 28 18 0
-evalf(pq2),evalf(pr2),evalf(qr2)
-,
-// fltk N4xcas10Log_OutputE 47 -224 388 1 18 0
+// fltk N4xcas16Xcas_Text_EditorE 51 1331 350 30 18 0
+16 ,
+triangle(A,P,B);,
+// fltk N4xcas10Log_OutputE 51 1361 350 1 18 0
 
 ,
-// fltk 9Fl_Scroll 47 -223 388 45 18 0
+// fltk 9Fl_Scroll 51 1362 350 45 18 0
 [
-// fltk N4xcas10Gen_OutputE 47 -223 373 25 18 0
+// fltk N4xcas10Gen_OutputE 51 1362 864 25 18 0
+pnt(pnt[group[0,((i)*tan(a1)*tan(a2)+tan(a2))/(tan(a1)+tan(a2)),1,0],56])
+,
+// fltk 12Fl_Scrollbar 51 1391 350 16 18 0
+[]
+,
+// fltk 12Fl_Scrollbar 385 1362 16 29 18 0
+[]
+]
+]
+,
+// fltk 7Fl_Tile 51 1409 350 69 18 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 51 1409 350 43 18 0
+48 ,
+triangle(P,Q,R, 'color'=(magenta+line_width_2));,
+// fltk N4xcas10Log_OutputE 51 1452 350 1 18 0
+
+,
+// fltk N4xcas10Gen_OutputE 51 1453 350 25 18 0
+Done
+]
+,
+// fltk 7Fl_Tile 51 1480 350 56 18 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 51 1480 350 30 18 0
+20 ,
+pq2:=distance2(P,Q);,
+// fltk N4xcas10Log_OutputE 51 1510 350 1 18 0
+
+,
+// fltk N4xcas10Gen_OutputE 51 1511 350 25 18 0
+Done
+]
+,
+// fltk 7Fl_Tile 51 1538 350 56 18 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 51 1538 350 30 18 0
+20 ,
+pr2:=distance2(P,R);,
+// fltk N4xcas10Log_OutputE 51 1568 350 1 18 0
+
+,
+// fltk N4xcas10Gen_OutputE 51 1569 350 25 18 0
+Done
+]
+,
+// fltk 7Fl_Tile 51 1596 350 56 18 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 51 1596 350 30 18 0
+20 ,
+qr2:=distance2(Q,R);,
+// fltk N4xcas10Log_OutputE 51 1626 350 1 18 0
+
+,
+// fltk N4xcas10Gen_OutputE 51 1627 350 25 18 0
+Done
+]
+,
+// fltk 7Fl_Tile 51 1654 350 89 18 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 51 1654 350 43 18 0
+33 ,
+evalf(pq2),evalf(pr2),evalf(qr2);,
+// fltk N4xcas10Log_OutputE 51 1697 350 1 18 0
+
+,
+// fltk 9Fl_Scroll 51 1698 350 45 18 0
+[
+// fltk N4xcas10Gen_OutputE 51 1698 496 25 18 0
 0.0379352631434,0.0379352631434,0.0379352631434
 ,
-// fltk 12Fl_Scrollbar 47 -231 357 16 18 0
+// fltk 12Fl_Scrollbar 51 1727 350 16 18 0
 []
 ,
-// fltk 12Fl_Scrollbar 404 -260 16 29 18 0
+// fltk 12Fl_Scrollbar 385 1698 16 29 18 0
 []
 ]
 ]
 ,
-// fltk 7Fl_Tile 47 -176 388 54 18 0
+// fltk 7Fl_Tile 51 1745 350 69 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 47 -176 388 28 18 0
-normal(pq2-pr2),normal(pq2-qr2)
-,
-// fltk N4xcas10Log_OutputE 47 -148 388 1 18 0
+// fltk N4xcas16Xcas_Text_EditorE 51 1745 350 43 18 0
+32 ,
+normal(pq2-pr2),normal(pq2-qr2);,
+// fltk N4xcas10Log_OutputE 51 1788 350 1 18 0
 
 ,
-// fltk N4xcas10Gen_OutputE 47 -147 388 25 18 0
+// fltk N4xcas10Gen_OutputE 51 1789 350 25 18 0
 0,0
 ]
 ,
-// fltk 7Fl_Tile 47 -120 388 74 18 0
+// fltk 7Fl_Tile 51 1816 350 76 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 47 -120 388 28 18 0
-U:=single_inter(TA2,TB1)
-,
-// fltk N4xcas10Log_OutputE 47 -92 388 1 18 0
+// fltk N4xcas16Xcas_Text_EditorE 51 1816 350 30 18 0
+25 ,
+U:=single_inter(TA2,TB1);,
+// fltk N4xcas10Log_OutputE 51 1846 350 1 18 0
 
 ,
-// fltk 9Fl_Scroll 47 -91 388 45 18 0
+// fltk 9Fl_Scroll 51 1847 350 45 18 0
 [
-// fltk N4xcas10Gen_OutputE 47 -91 373 25 18 0
-point((tan(a1)^2*tan(a2)+(-2*i)*tan(a1)*tan(a2)-tan(a2))/(tan(a1)^2*tan(a2)+tan(a1)*tan(a2)^2-tan(a1)-tan(a2)))
+// fltk N4xcas10Gen_OutputE 51 1847 1032 25 18 0
+pnt(pnt[(tan(a1)^2*tan(a2)+(-2*i)*tan(a1)*tan(a2)-tan(a2))/(tan(a1)^2*tan(a2)+tan(a1)*tan(a2)^2-tan(a1)-tan(a2)),56,U])
 ,
-// fltk 12Fl_Scrollbar 47 -99 357 16 18 0
+// fltk 12Fl_Scrollbar 51 1874 334 18 18 0
 []
 ,
-// fltk 12Fl_Scrollbar 404 -128 16 29 18 0
+// fltk 12Fl_Scrollbar 385 1847 16 29 18 0
 []
 ]
 ]
 ,
-// fltk 7Fl_Tile 47 -44 388 53 18 0
+// fltk 7Fl_Tile 51 1894 350 56 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 47 -44 388 27 18 0
-V:=single_inter(TB2,TC1)
-,
-// fltk N4xcas10Log_OutputE 47 -17 388 1 18 0
+// fltk N4xcas16Xcas_Text_EditorE 51 1894 350 30 18 0
+25 ,
+V:=single_inter(TB2,TC1);,
+// fltk N4xcas10Log_OutputE 51 1924 350 1 18 0
 
 ,
-// fltk N4xcas10Gen_OutputE 47 -16 388 25 18 0
+// fltk N4xcas10Gen_OutputE 51 1925 350 25 18 0
 Done
 ]
 ,
-// fltk 7Fl_Tile 47 11 388 54 18 0
+// fltk 7Fl_Tile 51 1952 350 56 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 47 11 388 28 18 0
-W:=single_inter(TC2,TA1)
-,
-// fltk N4xcas10Log_OutputE 47 39 388 1 18 0
+// fltk N4xcas16Xcas_Text_EditorE 51 1952 350 30 18 0
+25 ,
+W:=single_inter(TC2,TA1);,
+// fltk N4xcas10Log_OutputE 51 1982 350 1 18 0
 
 ,
-// fltk N4xcas10Gen_OutputE 47 40 388 25 18 0
+// fltk N4xcas10Gen_OutputE 51 1983 350 25 18 0
 Done
 ]
 ,
-// fltk 7Fl_Tile 47 67 388 73 18 0
+// fltk 7Fl_Tile 51 2010 350 69 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 47 67 388 47 18 0
-normal(distance2(W,Q)-£distance2(W,P))
-,
-// fltk N4xcas10Log_OutputE 47 114 388 1 18 0
+// fltk N4xcas16Xcas_Text_EditorE 51 2010 350 43 18 0
+39 ,
+normal(distance2(W,Q)- distance2(W,P));,
+// fltk N4xcas10Log_OutputE 51 2053 350 1 18 0
 
 ,
-// fltk N4xcas10Gen_OutputE 47 115 388 25 18 0
+// fltk N4xcas10Gen_OutputE 51 2054 350 25 18 0
 0
 ]
 ,
-// fltk 7Fl_Tile 47 142 388 73 18 0
+// fltk 7Fl_Tile 51 2081 350 69 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 47 142 388 47 18 0
-normal(distance2(U,Q)-£distance2(U,R))
-,
-// fltk N4xcas10Log_OutputE 47 189 388 1 18 0
+// fltk N4xcas16Xcas_Text_EditorE 51 2081 350 43 18 0
+39 ,
+normal(distance2(U,Q)- distance2(U,R));,
+// fltk N4xcas10Log_OutputE 51 2124 350 1 18 0
 
 ,
-// fltk N4xcas10Gen_OutputE 47 190 388 25 18 0
+// fltk N4xcas10Gen_OutputE 51 2125 350 25 18 0
 0
 ]
 ,
-// fltk 7Fl_Tile 47 217 388 70 18 0
+// fltk 7Fl_Tile 51 2152 350 69 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 47 217 388 44 18 0
-normal(distance2(V,P)-£distance2(V,R))
-,
-// fltk N4xcas10Log_OutputE 47 261 388 1 18 0
+// fltk N4xcas16Xcas_Text_EditorE 51 2152 350 43 18 0
+39 ,
+normal(distance2(V,P)- distance2(V,R));,
+// fltk N4xcas10Log_OutputE 51 2195 350 1 18 0
 
 ,
-// fltk N4xcas10Gen_OutputE 47 262 388 25 18 0
+// fltk N4xcas10Gen_OutputE 51 2196 350 25 18 0
 0
 ]
 ,
-// fltk 7Fl_Tile 47 289 388 52 18 0
+// fltk 7Fl_Tile 51 2223 350 76 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 47 289 388 26 18 0
-angle(A,B,W,"a1")
-,
-// fltk N4xcas10Log_OutputE 47 315 388 1 18 0
+// fltk N4xcas16Xcas_Text_EditorE 51 2223 350 30 18 0
+25 ,
+angle(A,B,evalf(W),"a1");,
+// fltk N4xcas10Log_OutputE 51 2253 350 1 18 0
 
 ,
-// fltk N4xcas10Gen_OutputE 47 316 388 25 18 0
+// fltk 9Fl_Scroll 51 2254 350 45 18 0
+[
+// fltk N4xcas10Gen_OutputE 51 2254 903 25 18 0
+0.32,pnt([circle(pnt[[-1/5,1/5],0,0.32,1]),56,"a1"]),pnt(pnt[line[1,0,0.688199446672+0.228062005308*i],56])
+,
+// fltk 12Fl_Scrollbar 51 2283 350 16 18 0
+[]
+,
+// fltk 12Fl_Scrollbar 385 2254 16 29 18 0
+[]
+]
+]
+,
+// fltk 7Fl_Tile 51 2301 350 76 18 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 51 2301 350 30 18 0
+25 ,
+angle(B,evalf(V),A,"a2");,
+// fltk N4xcas10Log_OutputE 51 2331 350 1 18 0
+
+,
+// fltk 9Fl_Scroll 51 2332 350 45 18 0
+[
+// fltk N4xcas10Gen_OutputE 51 2332 1041 25 18 0
+0.42,pnt([circle(pnt[[1.10900047233-0.0486766184753*i,0.890999527668+0.0486766184753*i],0,0.42,1]),56,"a2"]),pnt(pnt[line[0.454997638342+0.243383092377*i,1,0],56])
+,
+// fltk 12Fl_Scrollbar 51 2361 350 16 18 0
+[]
+,
+// fltk 12Fl_Scrollbar 385 2332 16 29 18 0
+[]
+]
+]
+,
+// fltk 7Fl_Tile 51 2379 350 69 18 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 51 2379 350 43 18 0
+36 ,
+polygon(W,Q,U,R,V,P, display=green);,
+// fltk N4xcas10Log_OutputE 51 2422 350 1 18 0
+
+,
+// fltk N4xcas10Gen_OutputE 51 2423 350 25 18 0
 Done
 ]
 ,
-// fltk 7Fl_Tile 47 343 388 52 18 0
+// fltk 7Fl_Tile 51 2450 350 29 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 47 343 388 26 18 0
-angle(B,V,A,"a2")
-,
-// fltk N4xcas10Log_OutputE 47 369 388 1 18 0
+// fltk N4xcas19Multiline_Input_tabE 51 2450 350 28 18 0
 
 ,
-// fltk N4xcas10Gen_OutputE 47 370 388 25 18 0
-Done
+// fltk N4xcas10Log_OutputE 51 2478 350 1 18 0
+
+]
+]
+// fltk N4xcas5Geo2dE 419 208 432 491 18 0
+-0.19241,1.1495,-0.33386,1.273,[parameter([a1,-10.0,10.0,0.32,0.01]),parameter([a2,-10.0,10.0,0.42,0.01]),pnt(pnt[0,536870968,"A"]),pnt(pnt[1,536870968,"B"]),pnt(pnt[((i)*tan(a1)^3*tan(a2)^3+(-3*i)*tan(a1)^3*tan(a2)+3*tan(a1)^2*tan(a2)^3-9*tan(a1)^2*tan(a2)+(-3*i)*tan(a1)*tan(a2)^3+(9*i)*tan(a1)*tan(a2)-tan(a2)^3+3*tan(a2))/(3*tan(a1)^3*tan(a2)^2-tan(a1)^3+3*tan(a1)^2*tan(a2)^3-9*tan(a1)^2*tan(a2)-9*tan(a1)*tan(a2)^2+3*tan(a1)-tan(a2)^3+3*tan(a2)),56,C]),pnt(pnt[group[0,1,((i)*tan(a1)^3*tan(a2)^3+(-3*i)*tan(a1)^3*tan(a2)+3*tan(a1)^2*tan(a2)^3-9*tan(a1)^2*tan(a2)+(-3*i)*tan(a1)*tan(a2)^3+(9*i)*tan(a1)*tan(a2)-tan(a2)^3+3*tan(a2))/(3*tan(a1)^3*tan(a2)^2-tan(a1)^3+3*tan(a1)^2*tan(a2)^3-9*tan(a1)^2*tan(a2)-9*tan(a1)*tan(a2)^2+3*tan(a1)-tan(a2)^3+3*tan(a2)),0],56]),"Done","Done","Done","Done","Done","Done",pnt(pnt[((i)*tan(a1)*tan(a2)+tan(a2))/(tan(a1)+tan(a2)),56,P]),pnt(pnt[((-sqrt(3))*tan(a1)^2*tan(a2)^2+((-2*i)*sqrt(3)+3)*tan(a1)^2*tan(a2)+(-2*sqrt(3)-6*i)*tan(a1)*tan(a2)+(-sqrt(3))*tan(a2)^2-3*tan(a2))/(3*tan(a1)^2*tan(a2)+(-sqrt(3))*tan(a1)^2+3*tan(a1)*tan(a2)^2+(-2*sqrt(3))*tan(a1)*tan(a2)-3*tan(a1)+(-sqrt(3))*tan(a2)^2-3*tan(a2)),56,Q]),pnt(pnt[(sqrt(3)*tan(a1)^2*tan(a2)^2+3*tan(a1)^2*tan(a2)+(-2*i)*sqrt(3)*tan(a1)*tan(a2)^2+(-6*i)*tan(a1)*tan(a2)+(-sqrt(3))*tan(a2)^2-3*tan(a2))/(3*tan(a1)^2*tan(a2)+(-sqrt(3))*tan(a1)^2+3*tan(a1)*tan(a2)^2+(-2*sqrt(3))*tan(a1)*tan(a2)-3*tan(a1)+(-sqrt(3))*tan(a2)^2-3*tan(a2)),56,R]),pnt(pnt[group[0,(sqrt(3)*tan(a1)^2*tan(a2)^2+3*tan(a1)^2*tan(a2)+(-2*i)*sqrt(3)*tan(a1)*tan(a2)^2+(-6*i)*tan(a1)*tan(a2)+(-sqrt(3))*tan(a2)^2-3*tan(a2))/(3*tan(a1)^2*tan(a2)+(-sqrt(3))*tan(a1)^2+3*tan(a1)*tan(a2)^2+(-2*sqrt(3))*tan(a1)*tan(a2)-3*tan(a1)+(-sqrt(3))*tan(a2)^2-3*tan(a2)),((i)*tan(a1)^3*tan(a2)^3+(-3*i)*tan(a1)^3*tan(a2)+3*tan(a1)^2*tan(a2)^3-9*tan(a1)^2*tan(a2)+(-3*i)*tan(a1)*tan(a2)^3+(9*i)*tan(a1)*tan(a2)-tan(a2)^3+3*tan(a2))/(3*tan(a1)^3*tan(a2)^2-tan(a1)^3+3*tan(a1)^2*tan(a2)^3-9*tan(a1)^2*tan(a2)-9*tan(a1)*tan(a2)^2+3*tan(a1)-tan(a2)^3+3*tan(a2)),0],56]),pnt(pnt[group[1,((-sqrt(3))*tan(a1)^2*tan(a2)^2+((-2*i)*sqrt(3)+3)*tan(a1)^2*tan(a2)+(-2*sqrt(3)-6*i)*tan(a1)*tan(a2)+(-sqrt(3))*tan(a2)^2-3*tan(a2))/(3*tan(a1)^2*tan(a2)+(-sqrt(3))*tan(a1)^2+3*tan(a1)*tan(a2)^2+(-2*sqrt(3))*tan(a1)*tan(a2)-3*tan(a1)+(-sqrt(3))*tan(a2)^2-3*tan(a2)),((i)*tan(a1)^3*tan(a2)^3+(-3*i)*tan(a1)^3*tan(a2)+3*tan(a1)^2*tan(a2)^3-9*tan(a1)^2*tan(a2)+(-3*i)*tan(a1)*tan(a2)^3+(9*i)*tan(a1)*tan(a2)-tan(a2)^3+3*tan(a2))/(3*tan(a1)^3*tan(a2)^2-tan(a1)^3+3*tan(a1)^2*tan(a2)^3-9*tan(a1)^2*tan(a2)-9*tan(a1)*tan(a2)^2+3*tan(a1)-tan(a2)^3+3*tan(a2)),1],56]),pnt(pnt[group[0,((i)*tan(a1)*tan(a2)+tan(a2))/(tan(a1)+tan(a2)),1,0],56]),pnt(pnt[group[((i)*tan(a1)*tan(a2)+tan(a2))/(tan(a1)+tan(a2)),((-sqrt(3))*tan(a1)^2*tan(a2)^2+((-2*i)*sqrt(3)+3)*tan(a1)^2*tan(a2)+(-2*sqrt(3)-6*i)*tan(a1)*tan(a2)+(-sqrt(3))*tan(a2)^2-3*tan(a2))/(3*tan(a1)^2*tan(a2)+(-sqrt(3))*tan(a1)^2+3*tan(a1)*tan(a2)^2+(-2*sqrt(3))*tan(a1)*tan(a2)-3*tan(a1)+(-sqrt(3))*tan(a2)^2-3*tan(a2)),(sqrt(3)*tan(a1)^2*tan(a2)^2+3*tan(a1)^2*tan(a2)+(-2*i)*sqrt(3)*tan(a1)*tan(a2)^2+(-6*i)*tan(a1)*tan(a2)+(-sqrt(3))*tan(a2)^2-3*tan(a2))/(3*tan(a1)^2*tan(a2)+(-sqrt(3))*tan(a1)^2+3*tan(a1)*tan(a2)^2+(-2*sqrt(3))*tan(a1)*tan(a2)-3*tan(a1)+(-sqrt(3))*tan(a2)^2-3*tan(a2)),((i)*tan(a1)*tan(a2)+tan(a2))/(tan(a1)+tan(a2))],65541]),((tan(a2))/(tan(a1)+tan(a2))-((-sqrt(3))*tan(a1)^2*tan(a2)^2+3*tan(a1)^2*tan(a2)+(-2*sqrt(3))*tan(a1)*tan(a2)+(-sqrt(3))*tan(a2)^2-3*tan(a2))/(3*tan(a1)^2*tan(a2)+(-sqrt(3))*tan(a1)^2+3*tan(a1)*tan(a2)^2+(-2*sqrt(3))*tan(a1)*tan(a2)-3*tan(a1)+(-sqrt(3))*tan(a2)^2-3*tan(a2)))^2+(1/(tan(a1)+tan(a2))*tan(a2)*tan(a1)-1/(3*tan(a1)^2*tan(a2)+(-sqrt(3))*tan(a1)^2+3*tan(a1)*tan(a2)^2+(-2*sqrt(3))*tan(a1)*tan(a2)-3*tan(a1)+(-sqrt(3))*tan(a2)^2-3*tan(a2))*(tan(a2)*tan(a1)^2*(-2*sqrt(3))+tan(a2)*(-6*tan(a1))))^2,((tan(a2))/(tan(a1)+tan(a2))-(sqrt(3)*tan(a1)^2*tan(a2)^2+3*tan(a1)^2*tan(a2)+(-sqrt(3))*tan(a2)^2-3*tan(a2))/(3*tan(a1)^2*tan(a2)+(-sqrt(3))*tan(a1)^2+3*tan(a1)*tan(a2)^2+(-2*sqrt(3))*tan(a1)*tan(a2)-3*tan(a1)+(-sqrt(3))*tan(a2)^2-3*tan(a2)))^2+(1/(tan(a1)+tan(a2))*tan(a2)*tan(a1)-1/(3*tan(a1)^2*tan(a2)+(-sqrt(3))*tan(a1)^2+3*tan(a1)*tan(a2)^2+(-2*sqrt(3))*tan(a1)*tan(a2)-3*tan(a1)+(-sqrt(3))*tan(a2)^2-3*tan(a2))*(tan(a1)*tan(a2)^2*(-2*sqrt(3))+tan(a2)*(-6*tan(a1))))^2,(((-sqrt(3))*tan(a1)^2*tan(a2)^2+3*tan(a1)^2*tan(a2)+(-2*sqrt(3))*tan(a1)*tan(a2)+(-sqrt(3))*tan(a2)^2-3*tan(a2))/(3*tan(a1)^2*tan(a2)+(-sqrt(3))*tan(a1)^2+3*tan(a1)*tan(a2)^2+(-2*sqrt(3))*tan(a1)*tan(a2)-3*tan(a1)+(-sqrt(3))*tan(a2)^2-3*tan(a2))-(sqrt(3)*tan(a1)^2*tan(a2)^2+3*tan(a1)^2*tan(a2)+(-sqrt(3))*tan(a2)^2-3*tan(a2))/(3*tan(a1)^2*tan(a2)+(-sqrt(3))*tan(a1)^2+3*tan(a1)*tan(a2)^2+(-2*sqrt(3))*tan(a1)*tan(a2)-3*tan(a1)+(-sqrt(3))*tan(a2)^2-3*tan(a2)))^2+(1/(3*tan(a1)^2*tan(a2)+(-sqrt(3))*tan(a1)^2+3*tan(a1)*tan(a2)^2+(-2*sqrt(3))*tan(a1)*tan(a2)-3*tan(a1)+(-sqrt(3))*tan(a2)^2-3*tan(a2))*(tan(a2)*tan(a1)^2*(-2*sqrt(3))+tan(a2)*(-6*tan(a1)))-1/(3*tan(a1)^2*tan(a2)+(-sqrt(3))*tan(a1)^2+3*tan(a1)*tan(a2)^2+(-2*sqrt(3))*tan(a1)*tan(a2)-3*tan(a1)+(-sqrt(3))*tan(a2)^2-3*tan(a2))*(tan(a1)*tan(a2)^2*(-2*sqrt(3))+tan(a2)*(-6*tan(a1))))^2,[0.0379352631434,0.0379352631434,0.0379352631434],[0,0],pnt(pnt[(tan(a1)^2*tan(a2)+(-2*i)*tan(a1)*tan(a2)-tan(a2))/(tan(a1)^2*tan(a2)+tan(a1)*tan(a2)^2-tan(a1)-tan(a2)),56,U]),pnt(pnt[((i)*tan(a1)^3*tan(a2)^2+((-i)*sqrt(3)+2)*tan(a1)^3*tan(a2)+3*tan(a1)^2*tan(a2)^2+(-sqrt(3)-4*i)*tan(a1)^2*tan(a2)+(-3*i)*tan(a1)*tan(a2)^2+((-i)*sqrt(3)-2)*tan(a1)*tan(a2)-tan(a2)^2+(-sqrt(3))*tan(a2))/(3*tan(a1)^3*tan(a2)+(-sqrt(3))*tan(a1)^3+3*tan(a1)^2*tan(a2)^2+(-sqrt(3))*tan(a1)^2*tan(a2)-4*tan(a1)^2-5*tan(a1)*tan(a2)+(-sqrt(3))*tan(a1)-tan(a2)^2+(-sqrt(3))*tan(a2)),56,V]),pnt(pnt[((i)*tan(a1)^2*tan(a2)^3+(-3*i)*tan(a1)^2*tan(a2)+((-i)*sqrt(3)+1)*tan(a1)*tan(a2)^3+(-4*i)*tan(a1)*tan(a2)^2+((-i)*sqrt(3)-3)*tan(a1)*tan(a2)+(-sqrt(3))*tan(a2)^3-4*tan(a2)^2+(-sqrt(3))*tan(a2))/(3*tan(a1)^2*tan(a2)^2-tan(a1)^2+3*tan(a1)*tan(a2)^3+(-sqrt(3))*tan(a1)*tan(a2)^2-5*tan(a1)*tan(a2)+(-sqrt(3))*tan(a1)+(-sqrt(3))*tan(a2)^3-4*tan(a2)^2+(-sqrt(3))*tan(a2)),56,W]),0,0,0,[0.32,pnt([cercle(pnt[[-1/5,1/5],0,0.32,1]),56,"a1"]),pnt(pnt[line[1,0,0.688199446672+0.228062005308*i],56])],[0.42,pnt([cercle(pnt[[1.10900047233-0.0486766184753*i,0.890999527668+0.0486766184753*i],0,0.42,1]),56,"a2"]),pnt(pnt[line[0.454997638342+0.243383092377*i,1,0],56])],pnt(pnt[group[((i)*tan(a1)^2*tan(a2)^3+(-3*i)*tan(a1)^2*tan(a2)+((-i)*sqrt(3)+1)*tan(a1)*tan(a2)^3+(-4*i)*tan(a1)*tan(a2)^2+((-i)*sqrt(3)-3)*tan(a1)*tan(a2)+(-sqrt(3))*tan(a2)^3-4*tan(a2)^2+(-sqrt(3))*tan(a2))/(3*tan(a1)^2*tan(a2)^2-tan(a1)^2+3*tan(a1)*tan(a2)^3+(-sqrt(3))*tan(a1)*tan(a2)^2-5*tan(a1)*tan(a2)+(-sqrt(3))*tan(a1)+(-sqrt(3))*tan(a2)^3-4*tan(a2)^2+(-sqrt(3))*tan(a2)),((-sqrt(3))*tan(a1)^2*tan(a2)^2+((-2*i)*sqrt(3)+3)*tan(a1)^2*tan(a2)+(-2*sqrt(3)-6*i)*tan(a1)*tan(a2)+(-sqrt(3))*tan(a2)^2-3*tan(a2))/(3*tan(a1)^2*tan(a2)+(-sqrt(3))*tan(a1)^2+3*tan(a1)*tan(a2)^2+(-2*sqrt(3))*tan(a1)*tan(a2)-3*tan(a1)+(-sqrt(3))*tan(a2)^2-3*tan(a2)),(tan(a1)^2*tan(a2)+(-2*i)*tan(a1)*tan(a2)-tan(a2))/(tan(a1)^2*tan(a2)+tan(a1)*tan(a2)^2-tan(a1)-tan(a2)),(sqrt(3)*tan(a1)^2*tan(a2)^2+3*tan(a1)^2*tan(a2)+(-2*i)*sqrt(3)*tan(a1)*tan(a2)^2+(-6*i)*tan(a1)*tan(a2)+(-sqrt(3))*tan(a2)^2-3*tan(a2))/(3*tan(a1)^2*tan(a2)+(-sqrt(3))*tan(a1)^2+3*tan(a1)*tan(a2)^2+(-2*sqrt(3))*tan(a1)*tan(a2)-3*tan(a1)+(-sqrt(3))*tan(a2)^2-3*tan(a2)),((i)*tan(a1)^3*tan(a2)^2+((-i)*sqrt(3)+2)*tan(a1)^3*tan(a2)+3*tan(a1)^2*tan(a2)^2+(-sqrt(3)-4*i)*tan(a1)^2*tan(a2)+(-3*i)*tan(a1)*tan(a2)^2+((-i)*sqrt(3)-2)*tan(a1)*tan(a2)-tan(a2)^2+(-sqrt(3))*tan(a2))/(3*tan(a1)^3*tan(a2)+(-sqrt(3))*tan(a1)^3+3*tan(a1)^2*tan(a2)^2+(-sqrt(3))*tan(a1)^2*tan(a2)-4*tan(a1)^2-5*tan(a1)*tan(a2)+(-sqrt(3))*tan(a1)-tan(a2)^2+(-sqrt(3))*tan(a2)),((i)*tan(a1)*tan(a2)+tan(a2))/(tan(a1)+tan(a2)),((i)*tan(a1)^2*tan(a2)^3+(-3*i)*tan(a1)^2*tan(a2)+((-i)*sqrt(3)+1)*tan(a1)*tan(a2)^3+(-4*i)*tan(a1)*tan(a2)^2+((-i)*sqrt(3)-3)*tan(a1)*tan(a2)+(-sqrt(3))*tan(a2)^3-4*tan(a2)^2+(-sqrt(3))*tan(a2))/(3*tan(a1)^2*tan(a2)^2-tan(a1)^2+3*tan(a1)*tan(a2)^3+(-sqrt(3))*tan(a1)*tan(a2)^2-5*tan(a1)*tan(a2)+(-sqrt(3))*tan(a1)+(-sqrt(3))*tan(a2)^3-4*tan(a2)^2+(-sqrt(3))*tan(a2))],2])],-0.62011,0.62011,1,0,0,0,0.2,0.2,1,0,1,2.0556,0,1,65,[],24,18,256,0,100,0,0,1,0.03,88,61,216
+
+,
+// fltk N4xcas10Log_OutputE 25 699 907 1 18 0
+
 ]
 ,
-// fltk 7Fl_Tile 47 397 388 73 18 0
+// fltk 7Fl_Tile 25 701 907 142 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 47 397 388 47 18 0
-polygon(W,Q,U,R,V,P,£display=vert)
+// fltk N4xcas19Multiline_Input_tabE 25 701 907 28 18 0
+factor(coordinates(C))
 ,
-// fltk N4xcas10Log_OutputE 47 444 388 1 18 0
+// fltk N4xcas10Log_OutputE 25 729 907 1 18 0
 
 ,
-// fltk N4xcas10Gen_OutputE 47 445 388 25 18 0
-Done
+// fltk N4xcas8EquationE 25 730 907 113 18 0 1
+[(tan(a2)*(tan(a2)^2-3)*(3*tan(a1)^2-1))/((tan(a1)+tan(a2))*(3*tan(a1)^2*tan(a2)^2-tan(a1)^2-8*tan(a1)*tan(a2)-tan(a2)^2+3)),(tan(a2)*(tan(a2)^2-3)*tan(a1)*(tan(a1)^2-3))/((tan(a1)+tan(a2))*(3*tan(a1)^2*tan(a2)^2-tan(a1)^2-8*tan(a1)*tan(a2)-tan(a2)^2+3))]
 ]
 ,
-// fltk 7Fl_Tile 47 472 388 29 18 0
+// fltk 7Fl_Tile 25 845 907 115 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 47 472 388 28 18 0
-
-,
-// fltk N4xcas10Log_OutputE 47 500 388 1 18 0
-// Parsing trouve_equi£// Success compiling trouve_equi£
-]
-]
-// fltk N4xcas5Geo2dE 453 -1715 595 576 18 0
--0.44051,1.3931,-0.43261,1.401,[parameter(a1,-10.0,10.0,0.32,0.01),parameter(a2,-10.0,10.0,0.42,0.01),pnt(pnt[0,0,"A"]),pnt(pnt[1,0,"B"]),pnt(pnt[((i)*tan(a1)^3*tan(a2)^3-3*(i)*tan(a1)^3*tan(a2)+3*tan(a1)^2*tan(a2)^3-9*tan(a1)^2*tan(a2)-3*(i)*tan(a1)*tan(a2)^3+9*(i)*tan(a1)*tan(a2)-tan(a2)^3+3*tan(a2))/(3*tan(a1)^3*tan(a2)^2-tan(a1)^3+3*tan(a1)^2*tan(a2)^3-9*tan(a1)^2*tan(a2)-9*tan(a1)*tan(a2)^2+3*tan(a1)-tan(a2)^3+3*tan(a2)),0,"C"]),pnt(pnt[group[0,1,((i)*tan(a1)^3*tan(a2)^3-3*(i)*tan(a1)^3*tan(a2)+3*tan(a1)^2*tan(a2)^3-9*tan(a1)^2*tan(a2)-3*(i)*tan(a1)*tan(a2)^3+9*(i)*tan(a1)*tan(a2)-tan(a2)^3+3*tan(a2))/(3*tan(a1)^3*tan(a2)^2-tan(a1)^3+3*tan(a1)^2*tan(a2)^3-9*tan(a1)^2*tan(a2)-9*tan(a1)*tan(a2)^2+3*tan(a1)-tan(a2)^3+3*tan(a2)),0],0]),"Done","Done","Done","Done","Done","Done",pnt(pnt[((i)*tan(a1)*tan(a2)+tan(a2))/(tan(a1)+tan(a2)),0,"P"]),pnt(pnt[((-(sqrt(3)))*tan(a1)^2*tan(a2)^2+(-2*(i)*sqrt(3)+3)*tan(a1)^2*tan(a2)+(-2*sqrt(3)-6*(i))*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a2)^2-3*tan(a2))/(3*tan(a1)^2*tan(a2)+(-(sqrt(3)))*tan(a1)^2+3*tan(a1)*tan(a2)^2-2*sqrt(3)*tan(a1)*tan(a2)-3*tan(a1)+(-(sqrt(3)))*tan(a2)^2-3*tan(a2)),0,"Q"]),pnt(pnt[(4*sqrt(3)*tan(a1)^2*tan(a2)^2+12*tan(a1)^2*tan(a2)-8*(i)*sqrt(3)*tan(a1)*tan(a2)^2-24*(i)*tan(a1)*tan(a2)-4*sqrt(3)*tan(a2)^2-12*tan(a2))/(12*tan(a1)^2*tan(a2)-4*sqrt(3)*tan(a1)^2+12*tan(a1)*tan(a2)^2-8*sqrt(3)*tan(a1)*tan(a2)-12*tan(a1)-4*sqrt(3)*tan(a2)^2-12*tan(a2)),0,"R"]),pnt(pnt[group[0,(4*sqrt(3)*tan(a1)^2*tan(a2)^2+12*tan(a1)^2*tan(a2)-8*(i)*sqrt(3)*tan(a1)*tan(a2)^2-24*(i)*tan(a1)*tan(a2)-4*sqrt(3)*tan(a2)^2-12*tan(a2))/(12*tan(a1)^2*tan(a2)-4*sqrt(3)*tan(a1)^2+12*tan(a1)*tan(a2)^2-8*sqrt(3)*tan(a1)*tan(a2)-12*tan(a1)-4*sqrt(3)*tan(a2)^2-12*tan(a2)),((i)*tan(a1)^3*tan(a2)^3-3*(i)*tan(a1)^3*tan(a2)+3*tan(a1)^2*tan(a2)^3-9*tan(a1)^2*tan(a2)-3*(i)*tan(a1)*tan(a2)^3+9*(i)*tan(a1)*tan(a2)-tan(a2)^3+3*tan(a2))/(3*tan(a1)^3*tan(a2)^2-tan(a1)^3+3*tan(a1)^2*tan(a2)^3-9*tan(a1)^2*tan(a2)-9*tan(a1)*tan(a2)^2+3*tan(a1)-tan(a2)^3+3*tan(a2)),0],0]),pnt(pnt[group[1,((-(sqrt(3)))*tan(a1)^2*tan(a2)^2+(-2*(i)*sqrt(3)+3)*tan(a1)^2*tan(a2)+(-2*sqrt(3)-6*(i))*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a2)^2-3*tan(a2))/(3*tan(a1)^2*tan(a2)+(-(sqrt(3)))*tan(a1)^2+3*tan(a1)*tan(a2)^2-2*sqrt(3)*tan(a1)*tan(a2)-3*tan(a1)+(-(sqrt(3)))*tan(a2)^2-3*tan(a2)),((i)*tan(a1)^3*tan(a2)^3-3*(i)*tan(a1)^3*tan(a2)+3*tan(a1)^2*tan(a2)^3-9*tan(a1)^2*tan(a2)-3*(i)*tan(a1)*tan(a2)^3+9*(i)*tan(a1)*tan(a2)-tan(a2)^3+3*tan(a2))/(3*tan(a1)^3*tan(a2)^2-tan(a1)^3+3*tan(a1)^2*tan(a2)^3-9*tan(a1)^2*tan(a2)-9*tan(a1)*tan(a2)^2+3*tan(a1)-tan(a2)^3+3*tan(a2)),1],0]),pnt(pnt[group[0,((i)*tan(a1)*tan(a2)+tan(a2))/(tan(a1)+tan(a2)),1,0],0]),pnt(pnt[group[((i)*tan(a1)*tan(a2)+tan(a2))/(tan(a1)+tan(a2)),((-(sqrt(3)))*tan(a1)^2*tan(a2)^2+(-2*(i)*sqrt(3)+3)*tan(a1)^2*tan(a2)+(-2*sqrt(3)-6*(i))*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a2)^2-3*tan(a2))/(3*tan(a1)^2*tan(a2)+(-(sqrt(3)))*tan(a1)^2+3*tan(a1)*tan(a2)^2-2*sqrt(3)*tan(a1)*tan(a2)-3*tan(a1)+(-(sqrt(3)))*tan(a2)^2-3*tan(a2)),(4*sqrt(3)*tan(a1)^2*tan(a2)^2+12*tan(a1)^2*tan(a2)-8*(i)*sqrt(3)*tan(a1)*tan(a2)^2-24*(i)*tan(a1)*tan(a2)-4*sqrt(3)*tan(a2)^2-12*tan(a2))/(12*tan(a1)^2*tan(a2)-4*sqrt(3)*tan(a1)^2+12*tan(a1)*tan(a2)^2-8*sqrt(3)*tan(a1)*tan(a2)-12*tan(a1)-4*sqrt(3)*tan(a2)^2-12*tan(a2)),((i)*tan(a1)*tan(a2)+tan(a2))/(tan(a1)+tan(a2))],65541]),((tan(a2))/(tan(a1)+tan(a2))-((-(sqrt(3)))*tan(a1)^2*tan(a2)^2+3*tan(a1)^2*tan(a2)-2*sqrt(3)*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a2)^2-3*tan(a2))/(3*tan(a1)^2*tan(a2)+(-(sqrt(3)))*tan(a1)^2+3*tan(a1)*tan(a2)^2-2*sqrt(3)*tan(a1)*tan(a2)-3*tan(a1)+(-(sqrt(3)))*tan(a2)^2-3*tan(a2)))^2+(1/(tan(a1)+tan(a2))*tan(a2)*tan(a1)-1/(3*tan(a1)^2*tan(a2)+(-(sqrt(3)))*tan(a1)^2+3*tan(a1)*tan(a2)^2-2*sqrt(3)*tan(a1)*tan(a2)-3*tan(a1)+(-(sqrt(3)))*tan(a2)^2-3*tan(a2))*(tan(a2)*tan(a1)^2*-2*sqrt(3)+tan(a2)*-6*tan(a1)))^2,((tan(a2))/(tan(a1)+tan(a2))-(4*sqrt(3)*tan(a1)^2*tan(a2)^2+12*tan(a1)^2*tan(a2)-4*sqrt(3)*tan(a2)^2-12*tan(a2))/(12*tan(a1)^2*tan(a2)-4*sqrt(3)*tan(a1)^2+12*tan(a1)*tan(a2)^2-8*sqrt(3)*tan(a1)*tan(a2)-12*tan(a1)-4*sqrt(3)*tan(a2)^2-12*tan(a2)))^2+(1/(tan(a1)+tan(a2))*tan(a2)*tan(a1)-1/(12*tan(a1)^2*tan(a2)-4*sqrt(3)*tan(a1)^2+12*tan(a1)*tan(a2)^2-8*sqrt(3)*tan(a1)*tan(a2)-12*tan(a1)-4*sqrt(3)*tan(a2)^2-12*tan(a2))*(tan(a1)*tan(a2)^2*-8*sqrt(3)+tan(a2)*-24*tan(a1)))^2,(((-(sqrt(3)))*tan(a1)^2*tan(a2)^2+3*tan(a1)^2*tan(a2)-2*sqrt(3)*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a2)^2-3*tan(a2))/(3*tan(a1)^2*tan(a2)+(-(sqrt(3)))*tan(a1)^2+3*tan(a1)*tan(a2)^2-2*sqrt(3)*tan(a1)*tan(a2)-3*tan(a1)+(-(sqrt(3)))*tan(a2)^2-3*tan(a2))-(4*sqrt(3)*tan(a1)^2*tan(a2)^2+12*tan(a1)^2*tan(a2)-4*sqrt(3)*tan(a2)^2-12*tan(a2))/(12*tan(a1)^2*tan(a2)-4*sqrt(3)*tan(a1)^2+12*tan(a1)*tan(a2)^2-8*sqrt(3)*tan(a1)*tan(a2)-12*tan(a1)-4*sqrt(3)*tan(a2)^2-12*tan(a2)))^2+(1/(3*tan(a1)^2*tan(a2)+(-(sqrt(3)))*tan(a1)^2+3*tan(a1)*tan(a2)^2-2*sqrt(3)*tan(a1)*tan(a2)-3*tan(a1)+(-(sqrt(3)))*tan(a2)^2-3*tan(a2))*(tan(a2)*tan(a1)^2*-2*sqrt(3)+tan(a2)*-6*tan(a1))-1/(12*tan(a1)^2*tan(a2)-4*sqrt(3)*tan(a1)^2+12*tan(a1)*tan(a2)^2-8*sqrt(3)*tan(a1)*tan(a2)-12*tan(a1)-4*sqrt(3)*tan(a2)^2-12*tan(a2))*(tan(a1)*tan(a2)^2*-8*sqrt(3)+tan(a2)*-24*tan(a1)))^2,[0.0379352631434,0.0379352631434,0.0379352631434],[0,0],pnt(pnt[(tan(a1)^2*tan(a2)-2*(i)*tan(a1)*tan(a2)-tan(a2))/(tan(a1)^2*tan(a2)+tan(a1)*tan(a2)^2-tan(a1)-tan(a2)),0,"U"]),pnt(pnt[((i)*tan(a1)^3*tan(a2)^2+((-(i))*sqrt(3)+2)*tan(a1)^3*tan(a2)+3*tan(a1)^2*tan(a2)^2+(-sqrt(3)-4*(i))*tan(a1)^2*tan(a2)-3*(i)*tan(a1)*tan(a2)^2+((-(i))*sqrt(3)-2)*tan(a1)*tan(a2)-tan(a2)^2+(-(sqrt(3)))*tan(a2))/(3*tan(a1)^3*tan(a2)+(-(sqrt(3)))*tan(a1)^3+3*tan(a1)^2*tan(a2)^2+(-(sqrt(3)))*tan(a1)^2*tan(a2)-4*tan(a1)^2-5*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a1)-tan(a2)^2+(-(sqrt(3)))*tan(a2)),0,"V"]),pnt(pnt[((i)*tan(a1)^2*tan(a2)^3-3*(i)*tan(a1)^2*tan(a2)+((-(i))*sqrt(3)+1)*tan(a1)*tan(a2)^3-4*(i)*tan(a1)*tan(a2)^2+((-(i))*sqrt(3)-3)*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a2)^3-4*tan(a2)^2+(-(sqrt(3)))*tan(a2))/(3*tan(a1)^2*tan(a2)^2-tan(a1)^2+3*tan(a1)*tan(a2)^3+(-(sqrt(3)))*tan(a1)*tan(a2)^2-5*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a1)+(-(sqrt(3)))*tan(a2)^3-4*tan(a2)^2+(-(sqrt(3)))*tan(a2)),0,"W"]),0,0,0,[atan((tan(a1)^2*tan(a2)^3-3*tan(a1)^2*tan(a2)+(-(sqrt(3)))*tan(a1)*tan(a2)^3-4*tan(a1)*tan(a2)^2+(-(sqrt(3)))*tan(a1)*tan(a2))/((tan(a1)*tan(a2)^3-3*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a2)^3-4*tan(a2)^2+(-(sqrt(3)))*tan(a2))/(3*tan(a1)^2*tan(a2)^2-tan(a1)^2+3*tan(a1)*tan(a2)^3+(-(sqrt(3)))*tan(a1)*tan(a2)^2-5*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a1)+(-(sqrt(3)))*tan(a2)^3-4*tan(a2)^2+(-(sqrt(3)))*tan(a2))*(3*tan(a1)^2*tan(a2)^2-tan(a1)^2+3*tan(a1)*tan(a2)^3+(-(sqrt(3)))*tan(a1)*tan(a2)^2-5*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a1)+(-(sqrt(3)))*tan(a2)^3-4*tan(a2)^2+(-(sqrt(3)))*tan(a2)))),pnt(cercle(pnt[[(-1)/5,1/5],0,atan((tan(a1)^2*tan(a2)^3-3*tan(a1)^2*tan(a2)+(-(sqrt(3)))*tan(a1)*tan(a2)^3-4*tan(a1)*tan(a2)^2+(-(sqrt(3)))*tan(a1)*tan(a2))/((tan(a1)*tan(a2)^3-3*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a2)^3-4*tan(a2)^2+(-(sqrt(3)))*tan(a2))/(3*tan(a1)^2*tan(a2)^2-tan(a1)^2+3*tan(a1)*tan(a2)^3+(-(sqrt(3)))*tan(a1)*tan(a2)^2-5*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a1)+(-(sqrt(3)))*tan(a2)^3-4*tan(a2)^2+(-(sqrt(3)))*tan(a2))*(3*tan(a1)^2*tan(a2)^2-tan(a1)^2+3*tan(a1)*tan(a2)^3+(-(sqrt(3)))*tan(a1)*tan(a2)^2-5*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a1)+(-(sqrt(3)))*tan(a2)^3-4*tan(a2)^2+(-(sqrt(3)))*tan(a2)))),1]),0,"a1"),pnt(pnt[line[1,0,((i)*tan(a1)^2*tan(a2)^3-3*(i)*tan(a1)^2*tan(a2)+((-(i))*sqrt(3)+1)*tan(a1)*tan(a2)^3-4*(i)*tan(a1)*tan(a2)^2+((-(i))*sqrt(3)-3)*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a2)^3-4*tan(a2)^2+(-(sqrt(3)))*tan(a2))/(3*tan(a1)^2*tan(a2)^2-tan(a1)^2+3*tan(a1)*tan(a2)^3+(-(sqrt(3)))*tan(a1)*tan(a2)^2-5*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a1)+(-(sqrt(3)))*tan(a2)^3-4*tan(a2)^2+(-(sqrt(3)))*tan(a2))],0])],[atan((tan(a1)^3*tan(a2)^2+(-(sqrt(3)))*tan(a1)^3*tan(a2)-4*tan(a1)^2*tan(a2)-3*tan(a1)*tan(a2)^2+(-(sqrt(3)))*tan(a1)*tan(a2))/((tan(a1)^3*tan(a2)+(-(sqrt(3)))*tan(a1)^3-4*tan(a1)^2-3*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a1))/(3*tan(a1)^3*tan(a2)+(-(sqrt(3)))*tan(a1)^3+3*tan(a1)^2*tan(a2)^2+(-(sqrt(3)))*tan(a1)^2*tan(a2)-4*tan(a1)^2-5*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a1)-tan(a2)^2+(-(sqrt(3)))*tan(a2))*(3*tan(a1)^3*tan(a2)+(-(sqrt(3)))*tan(a1)^3+3*tan(a1)^2*tan(a2)^2+(-(sqrt(3)))*tan(a1)^2*tan(a2)-4*tan(a1)^2-5*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a1)-tan(a2)^2+(-(sqrt(3)))*tan(a2)))),pnt(cercle(pnt[[1-(((i)*tan(a1)^3*tan(a2)^2+((-(i))*sqrt(3)+2)*tan(a1)^3*tan(a2)+3*tan(a1)^2*tan(a2)^2+(-sqrt(3)-4*(i))*tan(a1)^2*tan(a2)-3*(i)*tan(a1)*tan(a2)^2+((-(i))*sqrt(3)-2)*tan(a1)*tan(a2)-tan(a2)^2+(-(sqrt(3)))*tan(a2))/(3*tan(a1)^3*tan(a2)+(-(sqrt(3)))*tan(a1)^3+3*tan(a1)^2*tan(a2)^2+(-(sqrt(3)))*tan(a1)^2*tan(a2)-4*tan(a1)^2-5*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a1)-tan(a2)^2+(-(sqrt(3)))*tan(a2))-1)/5,1+(((i)*tan(a1)^3*tan(a2)^2+((-(i))*sqrt(3)+2)*tan(a1)^3*tan(a2)+3*tan(a1)^2*tan(a2)^2+(-sqrt(3)-4*(i))*tan(a1)^2*tan(a2)-3*(i)*tan(a1)*tan(a2)^2+((-(i))*sqrt(3)-2)*tan(a1)*tan(a2)-tan(a2)^2+(-(sqrt(3)))*tan(a2))/(3*tan(a1)^3*tan(a2)+(-(sqrt(3)))*tan(a1)^3+3*tan(a1)^2*tan(a2)^2+(-(sqrt(3)))*tan(a1)^2*tan(a2)-4*tan(a1)^2-5*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a1)-tan(a2)^2+(-(sqrt(3)))*tan(a2))-1)/5],0,atan((tan(a1)^3*tan(a2)^2+(-(sqrt(3)))*tan(a1)^3*tan(a2)-4*tan(a1)^2*tan(a2)-3*tan(a1)*tan(a2)^2+(-(sqrt(3)))*tan(a1)*tan(a2))/((tan(a1)^3*tan(a2)+(-(sqrt(3)))*tan(a1)^3-4*tan(a1)^2-3*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a1))/(3*tan(a1)^3*tan(a2)+(-(sqrt(3)))*tan(a1)^3+3*tan(a1)^2*tan(a2)^2+(-(sqrt(3)))*tan(a1)^2*tan(a2)-4*tan(a1)^2-5*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a1)-tan(a2)^2+(-(sqrt(3)))*tan(a2))*(3*tan(a1)^3*tan(a2)+(-(sqrt(3)))*tan(a1)^3+3*tan(a1)^2*tan(a2)^2+(-(sqrt(3)))*tan(a1)^2*tan(a2)-4*tan(a1)^2-5*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a1)-tan(a2)^2+(-(sqrt(3)))*tan(a2)))),1]),0,"a2"),pnt(pnt[line[((i)*tan(a1)^3*tan(a2)^2+((-(i))*sqrt(3)+2)*tan(a1)^3*tan(a2)+3*tan(a1)^2*tan(a2)^2+(-sqrt(3)-4*(i))*tan(a1)^2*tan(a2)-3*(i)*tan(a1)*tan(a2)^2+((-(i))*sqrt(3)-2)*tan(a1)*tan(a2)-tan(a2)^2+(-(sqrt(3)))*tan(a2))/(3*tan(a1)^3*tan(a2)+(-(sqrt(3)))*tan(a1)^3+3*tan(a1)^2*tan(a2)^2+(-(sqrt(3)))*tan(a1)^2*tan(a2)-4*tan(a1)^2-5*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a1)-tan(a2)^2+(-(sqrt(3)))*tan(a2)),1,0],0])],pnt(pnt[group[((i)*tan(a1)^2*tan(a2)^3-3*(i)*tan(a1)^2*tan(a2)+((-(i))*sqrt(3)+1)*tan(a1)*tan(a2)^3-4*(i)*tan(a1)*tan(a2)^2+((-(i))*sqrt(3)-3)*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a2)^3-4*tan(a2)^2+(-(sqrt(3)))*tan(a2))/(3*tan(a1)^2*tan(a2)^2-tan(a1)^2+3*tan(a1)*tan(a2)^3+(-(sqrt(3)))*tan(a1)*tan(a2)^2-5*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a1)+(-(sqrt(3)))*tan(a2)^3-4*tan(a2)^2+(-(sqrt(3)))*tan(a2)),((-(sqrt(3)))*tan(a1)^2*tan(a2)^2+(-2*(i)*sqrt(3)+3)*tan(a1)^2*tan(a2)+(-2*sqrt(3)-6*(i))*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a2)^2-3*tan(a2))/(3*tan(a1)^2*tan(a2)+(-(sqrt(3)))*tan(a1)^2+3*tan(a1)*tan(a2)^2-2*sqrt(3)*tan(a1)*tan(a2)-3*tan(a1)+(-(sqrt(3)))*tan(a2)^2-3*tan(a2)),(tan(a1)^2*tan(a2)-2*(i)*tan(a1)*tan(a2)-tan(a2))/(tan(a1)^2*tan(a2)+tan(a1)*tan(a2)^2-tan(a1)-tan(a2)),(4*sqrt(3)*tan(a1)^2*tan(a2)^2+12*tan(a1)^2*tan(a2)-8*(i)*sqrt(3)*tan(a1)*tan(a2)^2-24*(i)*tan(a1)*tan(a2)-4*sqrt(3)*tan(a2)^2-12*tan(a2))/(12*tan(a1)^2*tan(a2)-4*sqrt(3)*tan(a1)^2+12*tan(a1)*tan(a2)^2-8*sqrt(3)*tan(a1)*tan(a2)-12*tan(a1)-4*sqrt(3)*tan(a2)^2-12*tan(a2)),((i)*tan(a1)^3*tan(a2)^2+((-(i))*sqrt(3)+2)*tan(a1)^3*tan(a2)+3*tan(a1)^2*tan(a2)^2+(-sqrt(3)-4*(i))*tan(a1)^2*tan(a2)-3*(i)*tan(a1)*tan(a2)^2+((-(i))*sqrt(3)-2)*tan(a1)*tan(a2)-tan(a2)^2+(-(sqrt(3)))*tan(a2))/(3*tan(a1)^3*tan(a2)+(-(sqrt(3)))*tan(a1)^3+3*tan(a1)^2*tan(a2)^2+(-(sqrt(3)))*tan(a1)^2*tan(a2)-4*tan(a1)^2-5*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a1)-tan(a2)^2+(-(sqrt(3)))*tan(a2)),((i)*tan(a1)*tan(a2)+tan(a2))/(tan(a1)+tan(a2)),((i)*tan(a1)^2*tan(a2)^3-3*(i)*tan(a1)^2*tan(a2)+((-(i))*sqrt(3)+1)*tan(a1)*tan(a2)^3-4*(i)*tan(a1)*tan(a2)^2+((-(i))*sqrt(3)-3)*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a2)^3-4*tan(a2)^2+(-(sqrt(3)))*tan(a2))/(3*tan(a1)^2*tan(a2)^2-tan(a1)^2+3*tan(a1)*tan(a2)^3+(-(sqrt(3)))*tan(a1)*tan(a2)^2-5*tan(a1)*tan(a2)+(-(sqrt(3)))*tan(a1)+(-(sqrt(3)))*tan(a2)^3-4*tan(a2)^2+(-(sqrt(3)))*tan(a2))],2])],-0.62011,0.62011,1,0,0,0,0.2,0.2,1,0,1,2.0556,0,1,65,[],24,18,256,0,100,0,0,1,0.03
-
-,
-// fltk N4xcas10Log_OutputE 23 -1139 1115 1 18 0
-
-]
-,
-// fltk 7Fl_Tile 23 -1136 1115 113 18 0
-[
-// fltk N4xcas19Multiline_Input_tabE 23 -1136 1115 28 18 0
-factor(coordinates(C)
-,
-// fltk N4xcas10Log_OutputE 23 -1108 1115 1 18 0
-
-,
-// fltk N4xcas8EquationE 23 -1107 1115 84 18 0 1
-[((tan(a2)^2-3)*tan(a2)*(3*tan(a1)^2-1))/((tan(a1)+tan(a2))*(3*tan(a1)^2*tan(a2)^2-tan(a1)^2-8*tan(a1)*tan(a2)-tan(a2)^2+3)),((tan(a2)^2-3)*tan(a2)*(tan(a1)^2-3)*tan(a1))/((tan(a1)+tan(a2))*(3*tan(a1)^2*tan(a2)^2-tan(a1)^2-8*tan(a1)*tan(a2)-tan(a2)^2+3))]
-]
-,
-// fltk 7Fl_Tile 23 -1021 1115 133 18 0
-[
-// fltk N4xcas19Multiline_Input_tabE 23 -1021 1115 28 18 0
+// fltk N4xcas19Multiline_Input_tabE 25 845 907 28 18 0
 factor(pq2)
 ,
-// fltk N4xcas10Log_OutputE 23 -993 1115 1 18 0
+// fltk N4xcas10Log_OutputE 25 873 907 1 18 0
 
 ,
-// fltk N4xcas8EquationE 23 -992 1115 104 18 0 1
-(4*(tan(a1)^2+1)*tan(a1)^2*(tan(a2)^2+1)*tan(a2)^2)/(3*(tan(a2)+tan(a1))^2*(tan(a2)*tan(a1)+(-(sqrt(3)))/3*tan(a2)+(-(sqrt(3)))/3*tan(a1)-1)^2)
+// fltk N4xcas8EquationE 25 874 907 86 18 0 1
+(4*tan(a1)^2*(tan(a1)^2+1)*tan(a2)^2*(tan(a2)^2+1))/(3*(tan(a2)+tan(a1))^2*(tan(a2)*tan(a1)+(-(sqrt(3)))/3*tan(a2)+(-(sqrt(3)))/3*tan(a1)-1)^2)
 ]
 ,
-// fltk 7Fl_Tile 23 -886 1115 137 18 0
+// fltk 7Fl_Tile 25 962 907 115 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 23 -886 1115 28 18 0
+// fltk N4xcas19Multiline_Input_tabE 25 962 907 28 18 0
 factor(qr2)
 ,
-// fltk N4xcas10Log_OutputE 23 -858 1115 1 18 0
+// fltk N4xcas10Log_OutputE 25 990 907 1 18 0
 
 ,
-// fltk N4xcas8EquationE 23 -857 1115 108 18 0 1
-(4*(tan(a2)^2+1)*tan(a2)^2*(tan(a1)^2+1)*tan(a1)^2)/(3*(tan(a1)+tan(a2))^2*(tan(a1)*tan(a2)+1/(-(sqrt(3)))*tan(a1)+1/(-(sqrt(3)))*tan(a2)-1)^2)
+// fltk N4xcas8EquationE 25 991 907 86 18 0 1
+(4*tan(a2)^2*(tan(a2)^2+1)*tan(a1)^2*(tan(a1)^2+1))/(3*(tan(a1)+tan(a2))^2*(tan(a1)*tan(a2)+(-(sqrt(3)))/3*tan(a1)+(-(sqrt(3)))/3*tan(a2)-1)^2)
 ]
 ,
-// fltk 7Fl_Tile 23 -747 1115 438 18 0
+// fltk 7Fl_Tile 25 1079 907 31 18 0
 [
-// fltk N4xcas7EditeurE 23 -747 1115 375 18 0
+// fltk N4xcas16Xcas_Text_EditorE 25 1079 907 30 18 0
+0 ,
+,
+// fltk N4xcas10Log_OutputE 25 1109 907 1 18 0
+
+]
+,
+// fltk 7Fl_Tile 25 1112 907 398 18 0
+[
+// fltk N4xcas7EditeurE 25 1112 907 375 18 0
 2026 ,
 trouve_equi():={
 local a1,a2,A,B,C0,C,P1,P1num,P2,P2num,P3,P3num,P4,P5,j,k,s,tmp,cpt,trequi;
@@ -561,40 +588,49 @@ for (k:=0;k<36;k++) {
 }
 return trequi;
 }:;,
-// fltk N4xcas10Log_OutputE 23 -372 1115 41 18 0
-// Parsing trouve_equi£// Success compiling trouve_equi£
+// fltk N4xcas10Log_OutputE 25 1487 907 1 18 0
+
 ,
-// fltk N4xcas8EquationE 23 -331 1115 22 18 0 1
+// fltk N4xcas8EquationE 25 1488 907 22 18 0 1
 "Done"
 ]
 ,
-// fltk 7Fl_Tile 23 -307 1115 409 18 0
+// fltk 7Fl_Tile 25 1512 907 362 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 23 -307 1115 28 18 0
+// fltk N4xcas19Multiline_Input_tabE 25 1512 907 28 18 0
 trequi:=trouve_equi()
 ,
-// fltk N4xcas10Log_OutputE 23 -279 1115 269 18 0
-k:1£k:2£k:3£k:4£k:5£k:6£k:0£k:1£"equilateral",1,1,6£"equilateral",1,3,8£k:2£k:3£"equilateral",3,13,6£"equilateral",3,17,10£k:4£k:5£"equilateral",5,27,8£"equilateral",5,29,10£k:6£k:7£k:8£k:9£k:10£k:11£k:12£k:13£"equilateral",13,1,18£"equilateral",13,5,22£k:14£k:15£"equilateral",15,15,20£"equilateral",15,17,22£k:16£k:17£"equilateral",17,25,18£"equilateral",17,27,20£k:18£k:19£k:20£k:21£k:22£k:23£k:24£k:25£"equilateral",25,3,32£"equilateral",25,5,34£k:26£k:27£"equilateral",27,13,30£"equilateral",27,15,32£k:28£k:29£"equilateral",29,25,30£"equilateral",29,29,34£k:30£k:31£k:32£k:33£k:34£k:35£Evaluation time: 19.94£
+// fltk N4xcas10Log_OutputE 25 1540 907 222 18 0
+k:1£k:2£k:3£k:4£k:5£k:6£k:0£k:1£"equilateral",1,1,6£"equilateral",1,3,8£k:2£k:3£"equilateral",3,13,6£"equilateral",3,17,10£k:4£k:5£"equilateral",5,27,8£"equilateral",5,29,10£k:6£k:7£k:8£k:9£k:10£k:11£k:12£k:13£"equilateral",13,1,18£"equilateral",13,5,22£k:14£k:15£"equilateral",15,15,20£"equilateral",15,17,22£k:16£k:17£"equilateral",17,25,18£"equilateral",17,27,20£k:18£k:19£k:20£k:21£k:22£k:23£k:24£k:25£"equilateral",25,3,32£"equilateral",25,5,34£k:26£k:27£"equilateral",27,13,30£"equilateral",27,15,32£k:28£k:29£"equilateral",29,25,30£"equilateral",29,29,34£k:30£k:31£k:32£k:33£k:34£k:35£Evaluation time: 7.88£
 ,
-// fltk N4xcas8EquationE 23 -10 1115 112 18 0 1
+// fltk N4xcas8EquationE 25 1762 907 112 18 0 1
 [[[1,2],[1,2],[1,2]],[[1,2],[1,4],[3,2]],[[1,4],[3,2],[1,2]],[[1,4],[3,6],[5,2]],[[1,6],[5,4],[3,2]],[[1,6],[5,6],[5,2]],[[3,2],[1,2],[1,4]],[[3,2],[1,6],[5,4]],[[3,4],[3,4],[3,4]],[[3,4],[3,6],[5,4]],[[3,6],[5,2],[1,4]],[[3,6],[5,4],[3,4]],[[5,2],[1,4],[3,6]],[[5,2],[1,6],[5,6]],[[5,4],[3,2],[1,6]],[[5,4],[3,4],[3,6]],[[5,6],[5,2],[1,6]],[[5,6],[5,6],[5,6]]]
 ]
 ,
-// fltk 7Fl_Tile 23 104 1115 49 18 0
+// fltk 7Fl_Tile 25 1876 907 49 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 23 104 1115 26 18 0
+// fltk N4xcas19Multiline_Input_tabE 25 1876 907 26 18 0
 size(trequi)
 ,
-// fltk N4xcas10Log_OutputE 23 130 1115 1 18 0
+// fltk N4xcas10Log_OutputE 25 1902 907 1 18 0
 
 ,
-// fltk N4xcas8EquationE 23 131 1115 22 18 0 1
+// fltk N4xcas8EquationE 25 1903 907 22 18 0 1
 18
 ]
 ,
-// fltk 7Fl_Tile 23 155 1115 439 18 0
+// fltk 7Fl_Tile 25 1927 907 31 18 0
 [
-// fltk N4xcas7EditeurE 23 155 1115 376 18 0
+// fltk N4xcas16Xcas_Text_EditorE 25 1927 907 30 18 0
+0 ,
+,
+// fltk N4xcas10Log_OutputE 25 1957 907 1 18 0
+
+]
+,
+// fltk 7Fl_Tile 25 1960 907 399 18 0
+[
+// fltk N4xcas7EditeurE 25 1960 907 376 18 0
 2555 ,
 find_equi():={
 local a1,a2,A,Anum,B,Bnum,C0,C,Cnum,P1,P1num,P2,P2num,P3,P3num,P4,P5,j,k,q,r,s,tmp,cpt,trequi;
@@ -660,35 +696,35 @@ for (q:=0;q<36;q++) {
 }
 return trequi;
 }:;,
-// fltk N4xcas10Log_OutputE 23 531 1115 41 18 0
-// Parsing find_equi£// Success compiling find_equi£
+// fltk N4xcas10Log_OutputE 25 2336 907 1 18 0
+
 ,
-// fltk N4xcas8EquationE 23 572 1115 22 18 0 1
+// fltk N4xcas8EquationE 25 2337 907 22 18 0 1
 "Done"
 ]
 ,
-// fltk 7Fl_Tile 23 596 1115 409 18 0
+// fltk 7Fl_Tile 25 2361 907 362 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 23 596 1115 28 18 0
+// fltk N4xcas19Multiline_Input_tabE 25 2361 907 28 18 0
 find_equi()
 ,
-// fltk N4xcas10Log_OutputE 23 624 1115 269 18 0
-q:0£q:1£"equilateral",1,1,1£"equilateral",1,3,13£q:2£q:3£"equilateral",3,13,1£"equilateral",3,17,25£q:4£q:5£"equilateral",5,27,13£"equilateral",5,29,25£q:6£q:7£q:8£q:9£q:10£q:11£q:12£q:13£"equilateral",13,1,3£"equilateral",13,5,27£q:14£q:15£"equilateral",15,15,15£"equilateral",15,17,27£q:16£q:17£"equilateral",17,25,3£"equilateral",17,27,15£q:18£q:19£q:20£q:21£q:22£q:23£q:24£q:25£"equilateral",25,3,17£"equilateral",25,5,29£q:26£q:27£"equilateral",27,13,5£"equilateral",27,15,17£q:28£q:29£"equilateral",29,25,5£"equilateral",29,29,29£q:30£q:31£q:32£q:33£q:34£q:35£Evaluation time: 16.27£
+// fltk N4xcas10Log_OutputE 25 2389 907 222 18 0
+q:0£q:1£"equilateral",1,1,1£"equilateral",1,3,13£q:2£q:3£"equilateral",3,13,1£"equilateral",3,17,25£q:4£q:5£"equilateral",5,27,13£"equilateral",5,29,25£q:6£q:7£q:8£q:9£q:10£q:11£q:12£q:13£"equilateral",13,1,3£"equilateral",13,5,27£q:14£q:15£"equilateral",15,15,15£"equilateral",15,17,27£q:16£q:17£"equilateral",17,25,3£"equilateral",17,27,15£q:18£q:19£q:20£q:21£q:22£q:23£q:24£q:25£"equilateral",25,3,17£"equilateral",25,5,29£q:26£q:27£"equilateral",27,13,5£"equilateral",27,15,17£q:28£q:29£"equilateral",29,25,5£"equilateral",29,29,29£q:30£q:31£q:32£q:33£q:34£q:35£Evaluation time: 6.17£
 ,
-// fltk N4xcas8EquationE 23 893 1115 112 18 0 1
+// fltk N4xcas8EquationE 25 2611 907 112 18 0 1
 [[[1,2],[1,2],[2,1]],[[1,2],[1,4],[2,3]],[[1,4],[3,2],[2,1]],[[1,4],[3,6],[2,5]],[[1,6],[5,4],[2,3]],[[1,6],[5,6],[2,5]],[[3,2],[1,2],[4,1]],[[3,2],[1,6],[4,5]],[[3,4],[3,4],[4,3]],[[3,4],[3,6],[4,5]],[[3,6],[5,2],[4,1]],[[3,6],[5,4],[4,3]],[[5,2],[1,4],[6,3]],[[5,2],[1,6],[6,5]],[[5,4],[3,2],[6,1]],[[5,4],[3,4],[6,3]],[[5,6],[5,2],[6,1]],[[5,6],[5,6],[6,5]]]
 ]
 ,
-// fltk 7Fl_Tile 23 1007 1115 29 18 0
+// fltk 7Fl_Tile 25 2725 907 29 18 0
 [
-// fltk N4xcas19Multiline_Input_tabE 23 1007 1115 28 18 0
+// fltk N4xcas19Multiline_Input_tabE 25 2725 907 28 18 0
 
 ,
-// fltk N4xcas10Log_OutputE 23 1035 1115 1 18 0
+// fltk N4xcas10Log_OutputE 25 2753 907 1 18 0
 
 ]
-// context 16823 giac archive
-7 0 8 8 0 0 'cas_setup' 7 0 11 0 0 0
+// context 36042 giac archive
+7 0 28 8 0 0 'cas_setup' 7 0 11 0 0 0
 0 0 0
 0 0 0
 0 1 0
@@ -718,9 +754,464 @@ q:0£q:1£"equilateral",1,1,1£"equilateral",1,3,13£q:2£q:3£"equilateral",3,13,1£"e
 0 1 0
 1        
 1      ğ?
+0 3 0
+7 0 0 7 0 0 8 0 15 7 0 2 8 -1 12 7 8 3 0 0 0
+0 536870968 0
+12 1 |A 6 1 A 8 0 15 7 0 2 8 -1 12 7 8 3 0 1 0
+0 536870968 0
+12 1 |B 6 1 B 8 0 15 7 0 2 8 -1 12 7 8 3 8 0 4 7 0 2 8 0 1 7 0 8 8 0 4 7 0 3 4 0 0 0
 0 1 0
-7 0 0 7 0 0 8 0 15 7 0 2 8 0 0 program 7 0 3 7 1 0 7 0 0 8 0 42 7 0 2 7 1 25 6 2 a1 6 2 a2 6 1 A 6 4 Anum 6 1 B 6 4 Bnum 6 2 C0 6 1 C 6 4 Cnum 6 2 P1 6 5 P1num 6 2 P2 6 5 P2num 6 2 P3 6 5 P3num 6 2 P4 6 2 P5 6 1 j 6 1 k 6 1 q 6 1 r 6 1 s 6 3 tmp 6 3 cpt 6 6 trequi 7 0 16 8 0 0 'assume' 8 0 40 7 0 2 6 2 a1 1 ™™™™™É?
-8 0 0 'assume' 8 0 40 7 0 2 6 2 a2 1 ™™™™™Ù?
+8 0 7 7 1 2 8 0 18 6 2 a1 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 4 7 0 3 4 0 0 0
+0 -3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 3 0
+8 0 18 6 2 a2 8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 2 8 0 4 7 0 3 0 9 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 4 7 0 3 4 0 0 0
+0 -3 0
+8 0 18 6 2 a1 8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 4 7 0 3 4 0 0 0
+0 9 0
+8 0 18 6 2 a1 8 0 18 6 2 a2 8 0 2 8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a2 8 0 6 8 0 1 7 0 8 8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 2 8 0 7 7 1 2 8 0 18 6 2 a1 0 3 0
+8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 2 8 0 4 7 0 3 0 9 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 2 8 0 4 7 0 3 0 9 0
+8 0 18 6 2 a1 8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a1 8 0 2 8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a2 0 56 0
+6 1 C 6 1 C 8 0 15 7 0 2 8 -1 12 7 8 3 8 0 4 7 0 2 8 0 1 7 0 2 8 0 4 7 0 3 4 0 0 0
+0 1 0
+8 0 18 6 2 a1 8 0 18 6 2 a2 8 0 18 6 2 a2 8 0 6 8 0 1 7 0 2 8 0 18 6 2 a1 8 0 18 6 2 a2 0 56 0
+6 1 P 6 1 P 8 0 15 7 0 2 8 -1 12 7 8 3 8 0 4 7 0 2 8 0 1 7 0 5 8 0 4 7 0 3 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 3 8 0 1 7 0 2 8 0 4 7 0 2 4 0 0 0
+0 -2 0
+8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 4 7 0 3 8 0 1 7 0 2 8 0 2 8 0 4 7 0 2 0 2 0
+8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+4 0 0 0
+0 -6 0
+8 0 18 6 2 a1 8 0 18 6 2 a2 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 2 8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a2 8 0 6 8 0 1 7 0 7 8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 4 7 0 3 0 3 0
+8 0 18 6 2 a1 8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 3 8 0 2 8 0 4 7 0 2 0 2 0
+8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 18 6 2 a1 8 0 18 6 2 a2 8 0 2 8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a1 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 2 8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a2 0 56 0
+6 1 Q 6 1 Q 8 0 15 7 0 2 8 -1 12 7 8 3 8 0 4 7 0 2 8 0 1 7 0 6 8 0 4 7 0 3 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 4 7 0 3 8 0 4 7 0 2 4 0 0 0
+0 -2 0
+8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 18 6 2 a1 8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 3 4 0 0 0
+0 -6 0
+8 0 18 6 2 a1 8 0 18 6 2 a2 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 2 8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a2 8 0 6 8 0 1 7 0 7 8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 4 7 0 3 0 3 0
+8 0 18 6 2 a1 8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 3 8 0 2 8 0 4 7 0 2 0 2 0
+8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 18 6 2 a1 8 0 18 6 2 a2 8 0 2 8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a1 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 2 8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a2 0 56 0
+6 1 R 6 1 R 8 0 15 7 0 2 8 -1 12 7 8 3 7 6 2 0 0 0
+8 0 1 7 0 2 0 1 0
+8 0 4 7 0 2 4 0 0 0
+0 1 0
+8 0 18 6 2 a1 0 56 0
+6 3 TA1 6 3 TA1 8 0 15 7 0 2 8 -1 12 7 8 3 7 6 2 0 0 0
+8 0 1 7 0 2 0 1 0
+8 0 4 7 0 2 4 0 0 0
+0 1 0
+8 0 2 8 0 4 7 1 3 0 2 0
+8 0 18 6 2 a1 8 0 6 8 0 1 7 0 2 8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+0 -1 0
+0 56 0
+12 3 |TA2 6 3 TA2 8 0 15 7 0 2 8 -1 12 7 8 3 7 6 2 0 1 0
+8 0 1 7 0 3 0 1 0
+0 1 0
+8 0 4 7 0 4 4 0 0 0
+0 1 0
+0 2 0
+8 0 18 6 2 a2 8 0 6 8 0 1 7 0 2 8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+0 -1 0
+0 56 0
+6 3 TB1 6 3 TB1 8 0 15 7 0 2 8 -1 12 7 8 3 7 6 2 0 1 0
+8 0 1 7 0 3 0 1 0
+0 1 0
+8 0 4 7 0 2 4 0 0 0
+0 1 0
+8 0 2 8 0 18 6 2 a2 0 56 0
+6 3 TB2 6 3 TB2 8 0 15 7 0 2 8 -1 12 7 8 3 7 6 2 8 0 4 7 0 2 8 0 1 7 0 8 8 0 4 7 0 3 4 0 0 0
+0 1 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 4 7 0 3 4 0 0 0
+0 -3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 3 0
+8 0 18 6 2 a2 8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 2 8 0 4 7 0 3 0 9 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 4 7 0 3 4 0 0 0
+0 -3 0
+8 0 18 6 2 a1 8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 4 7 0 3 4 0 0 0
+0 9 0
+8 0 18 6 2 a1 8 0 18 6 2 a2 8 0 2 8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a2 8 0 6 8 0 1 7 0 8 8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 2 8 0 7 7 1 2 8 0 18 6 2 a1 0 3 0
+8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 2 8 0 4 7 0 3 0 9 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 2 8 0 4 7 0 3 0 9 0
+8 0 18 6 2 a1 8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a1 8 0 2 8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a2 8 0 1 7 0 3 0 1 0
+8 0 4 7 0 3 4 0 0 0
+0 1 0
+8 0 1 7 0 2 8 0 4 7 0 2 8 0 1 7 0 2 8 0 2 8 0 4 7 1 3 0 2 0
+8 0 18 6 2 a1 8 0 6 8 0 1 7 0 2 8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+0 -1 0
+8 0 2 8 0 18 6 2 a2 8 0 6 8 0 1 7 0 2 0 1 0
+8 0 2 8 0 4 7 0 2 8 0 2 8 0 4 7 1 3 0 2 0
+8 0 18 6 2 a1 8 0 6 8 0 1 7 0 2 8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+0 -1 0
+8 0 2 8 0 18 6 2 a2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 6 8 0 1 7 0 2 0 1 0
+8 0 2 8 0 4 7 0 3 8 0 1 7 0 2 8 0 2 8 0 4 7 1 3 0 2 0
+8 0 18 6 2 a1 8 0 6 8 0 1 7 0 2 8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+0 -1 0
+8 0 2 8 0 18 6 2 a2 8 0 6 8 0 1 7 0 2 0 1 0
+8 0 2 8 0 4 7 0 2 8 0 2 8 0 4 7 1 3 0 2 0
+8 0 18 6 2 a1 8 0 6 8 0 1 7 0 2 8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+0 -1 0
+8 0 2 8 0 18 6 2 a2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 4 7 0 2 8 0 1 7 0 8 8 0 4 7 0 3 4 0 0 0
+0 1 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 4 7 0 3 4 0 0 0
+0 -3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 3 0
+8 0 18 6 2 a2 8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 2 8 0 4 7 0 3 0 9 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 4 7 0 3 4 0 0 0
+0 -3 0
+8 0 18 6 2 a1 8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 4 7 0 3 4 0 0 0
+0 9 0
+8 0 18 6 2 a1 8 0 18 6 2 a2 8 0 2 8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a2 8 0 6 8 0 1 7 0 8 8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 2 8 0 7 7 1 2 8 0 18 6 2 a1 0 3 0
+8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 2 8 0 4 7 0 3 0 9 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 2 8 0 4 7 0 3 0 9 0
+8 0 18 6 2 a1 8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a1 8 0 2 8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a2 0 56 0
+12 3 |TC1 6 3 TC1 8 0 15 7 0 2 8 -1 12 7 8 3 7 6 2 8 0 4 7 0 2 8 0 1 7 0 8 8 0 4 7 0 3 4 0 0 0
+0 1 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 4 7 0 3 4 0 0 0
+0 -3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 3 0
+8 0 18 6 2 a2 8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 2 8 0 4 7 0 3 0 9 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 4 7 0 3 4 0 0 0
+0 -3 0
+8 0 18 6 2 a1 8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 4 7 0 3 4 0 0 0
+0 9 0
+8 0 18 6 2 a1 8 0 18 6 2 a2 8 0 2 8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a2 8 0 6 8 0 1 7 0 8 8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 2 8 0 7 7 1 2 8 0 18 6 2 a1 0 3 0
+8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 2 8 0 4 7 0 3 0 9 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 2 8 0 4 7 0 3 0 9 0
+8 0 18 6 2 a1 8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a1 8 0 2 8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a2 8 0 1 7 0 3 0 1 0
+8 0 4 7 0 3 4 0 0 0
+0 1 0
+8 0 1 7 0 2 8 0 4 7 0 2 8 0 1 7 0 2 8 0 18 6 2 a1 8 0 4 7 1 3 0 2 0
+8 0 18 6 2 a2 8 0 6 8 0 1 7 0 2 8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+0 -1 0
+8 0 6 8 0 1 7 0 2 0 1 0
+8 0 2 8 0 4 7 0 4 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 6 8 0 1 7 0 2 8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+0 -1 0
+8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 6 8 0 1 7 0 2 0 1 0
+8 0 2 8 0 4 7 0 3 8 0 1 7 0 2 8 0 18 6 2 a1 8 0 4 7 1 3 0 2 0
+8 0 18 6 2 a2 8 0 6 8 0 1 7 0 2 8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+0 -1 0
+8 0 6 8 0 1 7 0 2 0 1 0
+8 0 2 8 0 4 7 0 4 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 6 8 0 1 7 0 2 8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+0 -1 0
+8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 4 7 0 2 8 0 1 7 0 8 8 0 4 7 0 3 4 0 0 0
+0 1 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 4 7 0 3 4 0 0 0
+0 -3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 3 0
+8 0 18 6 2 a2 8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 2 8 0 4 7 0 3 0 9 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 4 7 0 3 4 0 0 0
+0 -3 0
+8 0 18 6 2 a1 8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 4 7 0 3 4 0 0 0
+0 9 0
+8 0 18 6 2 a1 8 0 18 6 2 a2 8 0 2 8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a2 8 0 6 8 0 1 7 0 8 8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 2 8 0 7 7 1 2 8 0 18 6 2 a1 0 3 0
+8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 2 8 0 4 7 0 3 0 9 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 2 8 0 4 7 0 3 0 9 0
+8 0 18 6 2 a1 8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a1 8 0 2 8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a2 0 56 0
+12 3 |TC2 6 3 TC2 8 0 15 7 0 2 8 -1 12 7 8 3 8 0 4 7 0 2 8 0 1 7 0 3 8 0 4 7 0 2 8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 4 7 0 3 4 0 0 0
+0 -2 0
+8 0 18 6 2 a1 8 0 18 6 2 a2 8 0 2 8 0 18 6 2 a2 8 0 6 8 0 1 7 0 4 8 0 4 7 0 2 8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 4 7 0 2 8 0 18 6 2 a1 8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 2 8 0 18 6 2 a1 8 0 2 8 0 18 6 2 a2 0 56 0
+6 1 U 6 1 U 8 0 15 7 0 2 8 -1 12 7 8 3 8 0 4 7 0 2 8 0 1 7 0 8 8 0 4 7 0 3 4 0 0 0
+0 1 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 3 8 0 1 7 0 2 8 0 4 7 0 2 4 0 0 0
+0 -1 0
+8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 3 0
+8 0 18 6 2 a2 8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 3 8 0 1 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+4 0 0 0
+0 -4 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 4 7 0 3 4 0 0 0
+0 -3 0
+8 0 18 6 2 a1 8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 3 8 0 1 7 0 2 8 0 4 7 0 2 4 0 0 0
+0 -1 0
+8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+0 -2 0
+8 0 18 6 2 a1 8 0 18 6 2 a2 8 0 2 8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 18 6 2 a2 8 0 6 8 0 1 7 0 9 8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 3 0
+8 0 18 6 2 a2 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 3 0
+8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 3 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 2 8 0 4 7 0 2 0 4 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 2 8 0 4 7 0 3 0 5 0
+8 0 18 6 2 a1 8 0 18 6 2 a2 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 18 6 2 a1 8 0 2 8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 18 6 2 a2 0 56 0
+6 1 V 6 1 V 8 0 15 7 0 2 8 -1 12 7 8 3 8 0 4 7 0 2 8 0 1 7 0 8 8 0 4 7 0 3 4 0 0 0
+0 1 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 4 7 0 3 4 0 0 0
+0 -3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 4 7 0 3 8 0 1 7 0 2 8 0 4 7 0 2 4 0 0 0
+0 -1 0
+8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+0 1 0
+8 0 18 6 2 a1 8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 4 7 0 3 4 0 0 0
+0 -4 0
+8 0 18 6 2 a1 8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 3 8 0 1 7 0 2 8 0 4 7 0 2 4 0 0 0
+0 -1 0
+8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+0 -3 0
+8 0 18 6 2 a1 8 0 18 6 2 a2 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 2 8 0 4 7 0 2 0 4 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 18 6 2 a2 8 0 6 8 0 1 7 0 9 8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 2 8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 4 7 0 3 0 3 0
+8 0 18 6 2 a1 8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 4 7 0 3 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 18 6 2 a1 8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 2 8 0 4 7 0 3 0 5 0
+8 0 18 6 2 a1 8 0 18 6 2 a2 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 18 6 2 a1 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 3 0
+8 0 2 8 0 4 7 0 2 0 4 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 18 6 2 a2 0 56 0
+6 1 W 6 1 W 8 0 15 7 0 2 7 13 2 0 1 1
+1 ®GázÔ?
+6 2 a1 8 0 15 7 0 2 7 13 2 0 1 1
+1 z®GáÚ?
+6 2 a2 8 0 15 7 0 2 8 0 73 7 0 3 7 1 0 7 1 0 8 0 42 7 0 2 7 0 2 7 1 25 6 2 a1 6 2 a2 6 1 A 6 4 Anum 6 1 B 6 4 Bnum 6 2 C0 6 1 C 6 4 Cnum 6 2 P1 6 5 P1num 6 2 P2 6 5 P2num 6 2 P3 6 5 P3num 6 2 P4 6 2 P5 6 1 j 6 1 k 6 1 q 6 1 r 6 1 s 6 3 tmp 6 3 cpt 6 6 trequi 7 1 0 7 0 16 8 0 0 'supposons' 8 0 40 7 1 2 6 2 a1 1 ™™™™™É?
+8 0 0 'supposons' 8 0 40 7 1 2 6 2 a2 1 ™™™™™Ù?
 8 0 15 7 0 2 7 0 7 0 0 0
 8 0 1 7 0 2 0 1 0
 8 0 4 7 1 2 4 0 0 0
@@ -732,22 +1223,22 @@ q:0£q:1£"equilateral",1,1,1£"equilateral",1,3,13£q:2£q:3£"equilateral",3,13,1£"e
 6 2 a1 8 0 1 7 0 2 0 1 0
 8 0 4 7 1 2 4 0 0 0
 0 1 0
-8 0 0 'texpand' 8 0 18 8 0 1 7 0 2 8 0 5 7 0 2 6 2 pi 0 3 0
+8 0 0 'texpand' 8 0 18 8 0 1 7 0 2 8 0 5 7 1 2 6 2 pi 0 3 0
 6 2 a1 8 0 1 7 0 2 0 1 0
 8 0 4 7 1 2 4 0 0 0
 0 1 0
 8 0 0 'texpand' 8 0 18 8 0 1 7 0 2 8 0 4 7 1 2 0 2 0
 6 2 a1 8 0 4 7 1 2 0 2 0
-8 0 5 7 0 2 6 2 pi 0 3 0
+8 0 5 7 1 2 6 2 pi 0 3 0
 8 0 1 7 0 2 0 1 0
 8 0 4 7 1 2 4 0 0 0
 0 1 0
 8 0 0 'texpand' 8 0 18 8 0 1 7 0 2 6 2 a1 8 0 4 7 1 2 0 2 0
-8 0 5 7 0 2 6 2 pi 0 3 0
+8 0 5 7 1 2 6 2 pi 0 3 0
 8 0 1 7 0 2 0 1 0
 8 0 4 7 1 2 4 0 0 0
 0 1 0
-8 0 0 'texpand' 8 0 18 8 0 1 7 0 2 8 0 5 7 0 2 6 2 pi 0 3 0
+8 0 0 'texpand' 8 0 18 8 0 1 7 0 2 8 0 5 7 1 2 6 2 pi 0 3 0
 8 0 4 7 1 2 0 2 0
 6 2 a1 6 1 A 8 0 15 7 0 2 8 0 0 'evalf' 6 1 A 6 4 Anum 8 0 15 7 0 2 7 0 7 0 1 0
 8 0 4 7 1 2 4 0 0 0
@@ -759,19 +1250,19 @@ q:0£q:1£"equilateral",1,1,1£"equilateral",1,3,13£q:2£q:3£"equilateral",3,13,1£"e
 0 1 0
 8 0 0 'texpand' 8 0 18 8 0 1 7 0 2 8 0 4 7 1 2 0 2 0
 6 2 a2 8 0 4 7 1 2 0 2 0
-8 0 5 7 0 2 6 2 pi 0 3 0
+8 0 5 7 1 2 6 2 pi 0 3 0
 8 0 4 7 1 2 4 0 0 0
 0 1 0
-8 0 0 'texpand' 8 0 18 8 0 1 7 0 2 6 2 a2 8 0 5 7 0 2 6 2 pi 0 3 0
+8 0 0 'texpand' 8 0 18 8 0 1 7 0 2 6 2 a2 8 0 5 7 1 2 6 2 pi 0 3 0
 8 0 4 7 1 2 4 0 0 0
 0 1 0
-8 0 0 'texpand' 8 0 18 8 0 1 7 0 2 8 0 5 7 0 2 6 2 pi 0 3 0
+8 0 0 'texpand' 8 0 18 8 0 1 7 0 2 8 0 5 7 1 2 6 2 pi 0 3 0
 8 0 4 7 1 2 0 2 0
 6 2 a2 8 0 4 7 1 2 4 0 0 0
 0 1 0
 8 0 0 'texpand' 8 0 18 8 0 1 7 0 2 8 0 4 7 1 2 0 2 0
-8 0 5 7 0 2 6 2 pi 0 3 0
-6 2 a2 6 1 B 8 0 15 7 0 2 8 0 0 'evalf' 6 1 B 6 4 Bnum 8 0 15 7 0 2 8 0 0 'texpand' 8 0 4 7 1 2 8 0 5 7 0 2 8 0 18 8 0 4 7 1 2 6 2 a2 0 3 0
+8 0 5 7 1 2 6 2 pi 0 3 0
+6 2 a2 6 1 B 8 0 15 7 0 2 8 0 0 'evalf' 6 1 B 6 4 Bnum 8 0 15 7 0 2 8 0 0 'texpand' 8 0 4 7 1 2 8 0 5 7 1 2 8 0 18 8 0 4 7 1 2 6 2 a2 0 3 0
 8 0 1 7 0 2 8 0 18 8 0 4 7 1 2 6 2 a1 0 3 0
 8 0 18 8 0 4 7 1 2 6 2 a2 0 3 0
 8 0 1 7 0 2 0 1 0
@@ -781,24 +1272,24 @@ q:0£q:1£"equilateral",1,1,1£"equilateral",1,3,13£q:2£q:3£"equilateral",3,13,1£"e
 6 2 C0 8 0 15 7 0 2 7 0 7 6 2 C0 8 0 1 7 0 3 6 2 C0 0 1 0
 8 0 4 7 1 2 4 0 0 0
 0 1 0
-8 0 0 'texpand' 8 0 18 8 0 1 7 0 3 8 0 5 7 0 2 6 2 pi 0 3 0
+8 0 0 'texpand' 8 0 18 8 0 1 7 0 3 8 0 5 7 1 2 6 2 pi 0 3 0
 8 0 4 7 1 2 0 2 0
 6 2 a1 8 0 2 6 2 a2 8 0 1 7 0 3 6 2 C0 0 1 0
 8 0 4 7 1 2 4 0 0 0
 0 1 0
 8 0 0 'texpand' 8 0 18 8 0 1 7 0 3 8 0 4 7 1 2 0 2 0
-8 0 5 7 0 2 6 2 pi 0 3 0
+8 0 5 7 1 2 6 2 pi 0 3 0
 6 2 a1 8 0 2 8 0 4 7 1 2 0 2 0
 6 2 a2 8 0 1 7 0 3 6 2 C0 0 1 0
 8 0 4 7 1 2 4 0 0 0
 0 1 0
 8 0 0 'texpand' 8 0 18 8 0 1 7 0 3 8 0 4 7 1 2 0 2 0
-8 0 5 7 0 2 6 2 pi 0 3 0
+8 0 5 7 1 2 6 2 pi 0 3 0
 8 0 4 7 1 2 0 2 0
 6 2 a1 8 0 2 6 2 a2 8 0 1 7 0 3 6 2 C0 0 1 0
 8 0 4 7 1 2 4 0 0 0
 0 1 0
-8 0 0 'texpand' 8 0 18 8 0 1 7 0 3 8 0 5 7 0 2 6 2 pi 0 3 0
+8 0 0 'texpand' 8 0 18 8 0 1 7 0 3 8 0 5 7 1 2 6 2 pi 0 3 0
 6 2 a1 8 0 2 8 0 4 7 1 2 0 2 0
 6 2 a2 8 0 1 7 0 3 6 2 C0 0 1 0
 8 0 4 7 1 2 4 0 0 0
@@ -814,49 +1305,50 @@ q:0£q:1£"equilateral",1,1,1£"equilateral",1,3,13£q:2£q:3£"equilateral",3,13,1£"e
 0 36 0
 6 5 P2num 8 0 15 7 0 2 7 0 1 8 0 62 7 0 2 0 0 0
 0 36 0
-6 5 P3num 8 0 0 for 7 0 4 8 0 15 7 0 2 0 0 0
+6 5 P3num 8 0 71 7 0 4 8 0 15 7 0 2 0 0 0
 6 1 q 8 0 35 7 1 2 6 1 q 0 36 0
-8 0 0 'increment' 6 1 q 8 0 0 'bloc' 7 0 5 8 0 15 7 0 2 8 0 1 7 0 2 8 0 0 'iquo' 7 1 2 6 1 q 0 6 0
+8 0 75 6 1 q 8 0 72 7 0 5 8 0 15 7 0 2 8 0 1 7 0 2 8 0 0 'iquo' 7 1 2 6 1 q 0 6 0
 0 1 0
 6 1 k 8 0 15 7 0 2 8 0 1 7 0 2 8 0 0 'irem' 7 1 2 6 1 q 0 6 0
 0 1 0
-6 1 j 8 0 0 'array_sto' 7 0 2 8 0 0 'affixe' 8 0 0 'inter_unique' 7 1 2 8 0 0 'droite' 7 1 2 8 0 0 at 7 0 2 6 4 Anum 0 0 0
-8 0 0 at 7 0 2 6 4 Anum 6 1 k 8 0 0 'droite' 7 1 2 8 0 0 at 7 0 2 6 4 Bnum 0 0 0
-8 0 0 at 7 0 2 6 4 Bnum 6 1 j 8 0 0 at 7 0 2 6 5 P1num 6 1 q 8 0 0 'array_sto' 7 0 2 8 0 0 'affixe' 8 0 0 'inter_unique' 7 1 2 8 0 0 'droite' 7 1 2 8 0 0 at 7 0 2 6 4 Bnum 0 0 0
-8 0 0 at 7 0 2 6 4 Bnum 6 1 k 8 0 0 'droite' 7 1 2 8 0 0 at 7 0 2 6 4 Cnum 0 0 0
-8 0 0 at 7 0 2 6 4 Cnum 6 1 j 8 0 0 at 7 0 2 6 5 P2num 6 1 q 8 0 0 'array_sto' 7 0 2 8 0 0 'affixe' 8 0 0 'inter_unique' 7 1 2 8 0 0 'droite' 7 1 2 8 0 0 at 7 0 2 6 4 Cnum 0 0 0
-8 0 0 at 7 0 2 6 4 Cnum 6 1 k 8 0 0 'droite' 7 1 2 8 0 0 at 7 0 2 6 4 Anum 0 0 0
-8 0 0 at 7 0 2 6 4 Anum 6 1 j 8 0 0 at 7 0 2 6 5 P3num 6 1 q 8 0 15 7 0 2 7 0 0 6 6 trequi 8 0 0 for 7 0 4 8 0 15 7 0 2 0 0 0
+6 1 j 8 0 0 'array_sto' 7 0 2 8 0 0 'affixe' 8 0 0 'inter_unique' 7 1 2 8 0 0 'droite' 7 1 2 8 0 82 7 0 2 6 4 Anum 0 0 0
+8 0 82 7 0 2 6 4 Anum 6 1 k 8 0 0 'droite' 7 1 2 8 0 82 7 0 2 6 4 Bnum 0 0 0
+8 0 82 7 0 2 6 4 Bnum 6 1 j 8 0 82 7 0 2 6 5 P1num 6 1 q 8 0 0 'array_sto' 7 0 2 8 0 0 'affixe' 8 0 0 'inter_unique' 7 1 2 8 0 0 'droite' 7 1 2 8 0 82 7 0 2 6 4 Bnum 0 0 0
+8 0 82 7 0 2 6 4 Bnum 6 1 k 8 0 0 'droite' 7 1 2 8 0 82 7 0 2 6 4 Cnum 0 0 0
+8 0 82 7 0 2 6 4 Cnum 6 1 j 8 0 82 7 0 2 6 5 P2num 6 1 q 8 0 0 'array_sto' 7 0 2 8 0 0 'affixe' 8 0 0 'inter_unique' 7 1 2 8 0 0 'droite' 7 1 2 8 0 82 7 0 2 6 4 Cnum 0 0 0
+8 0 82 7 0 2 6 4 Cnum 6 1 k 8 0 0 'droite' 7 1 2 8 0 82 7 0 2 6 4 Anum 0 0 0
+8 0 82 7 0 2 6 4 Anum 6 1 j 8 0 82 7 0 2 6 5 P3num 6 1 q 8 0 15 7 0 2 7 0 0 6 6 trequi 8 0 71 7 0 4 8 0 15 7 0 2 0 0 0
 6 1 q 8 0 35 7 1 2 6 1 q 0 36 0
-8 0 0 'increment' 6 1 q 8 0 0 'bloc' 7 0 3 8 0 0 print 6 1 q 8 0 15 7 0 2 0 0 0
-6 2 P1 8 0 0 for 7 0 4 8 0 15 7 0 2 0 0 0
+8 0 75 6 1 q 8 0 72 7 0 3 8 0 0 print 6 1 q 8 0 15 7 0 2 0 0 0
+6 2 P1 8 0 71 7 0 4 8 0 15 7 0 2 0 0 0
 6 1 r 8 0 35 7 1 2 6 1 r 0 36 0
-8 0 0 'increment' 6 1 r 8 0 0 'bloc' 7 0 3 8 0 15 7 0 2 8 0 0 'affixe' 8 0 0 'rotation' 7 1 3 8 0 0 at 7 0 2 6 5 P1num 6 1 q 8 0 5 7 0 2 6 2 pi 0 3 0
-8 0 0 at 7 0 2 6 5 P2num 6 1 r 6 2 P4 8 0 15 7 0 2 8 0 0 'affixe' 8 0 0 'rotation' 7 1 3 8 0 0 at 7 0 2 6 5 P1num 6 1 q 8 0 5 7 0 2 8 0 2 6 2 pi 0 3 0
-8 0 0 at 7 0 2 6 5 P2num 6 1 r 6 2 P5 8 0 0 for 7 0 4 8 0 15 7 0 2 0 0 0
+8 0 75 6 1 r 8 0 72 7 0 3 8 0 15 7 0 2 8 0 0 'affixe' 8 0 0 'rotation' 7 1 3 8 0 82 7 0 2 6 5 P1num 6 1 q 8 0 5 7 1 2 6 2 pi 0 3 0
+8 0 82 7 0 2 6 5 P2num 6 1 r 6 2 P4 8 0 15 7 0 2 8 0 0 'affixe' 8 0 0 'rotation' 7 1 3 8 0 82 7 0 2 6 5 P1num 6 1 q 8 0 5 7 1 2 8 0 2 6 2 pi 0 3 0
+8 0 82 7 0 2 6 5 P2num 6 1 r 6 2 P5 8 0 71 7 0 4 8 0 15 7 0 2 0 0 0
 6 1 s 8 0 35 7 1 2 6 1 s 0 36 0
-8 0 0 'increment' 6 1 s 8 0 0 'bloc' 7 0 2 8 0 0 ifte 7 0 3 8 0 35 7 1 2 8 0 10 8 0 0 'longueur2' 7 1 2 6 2 P4 8 0 0 at 7 0 2 6 5 P3num 6 1 s 1 íµ ÷Æ°>
-8 0 0 'bloc' 7 0 12 8 0 0 print 7 1 4 12 11 |equilateral 6 1 q 6 1 r 6 1 s 8 0 15 7 0 2 8 0 1 7 0 2 8 0 0 'iquo' 7 1 2 6 1 q 0 6 0
+8 0 75 6 1 s 8 0 72 7 0 2 8 0 70 7 0 3 8 0 35 7 1 2 8 0 10 8 0 0 'longueur2' 7 1 2 6 2 P4 8 0 82 7 0 2 6 5 P3num 6 1 s 1 íµ ÷Æ°>
+8 0 72 7 0 12 8 0 0 print 7 1 4 12 11 |equilateral 6 1 q 6 1 r 6 1 s 8 0 15 7 0 2 8 0 1 7 0 2 8 0 0 'iquo' 7 1 2 6 1 q 0 6 0
 0 1 0
 6 1 k 8 0 15 7 0 2 8 0 1 7 0 2 8 0 0 'irem' 7 1 2 6 1 q 0 6 0
 0 1 0
-6 1 j 8 0 0 ifte 7 0 3 8 0 0 '==' 7 1 2 6 2 P1 0 0 0
-8 0 15 7 0 2 8 0 0 'inter_unique' 7 1 2 8 0 0 'droite' 7 1 2 8 0 0 at 7 0 2 6 1 A 0 0 0
-8 0 0 at 7 0 2 6 1 A 6 1 k 8 0 0 'droite' 7 1 2 8 0 0 at 7 0 2 6 1 B 0 0 0
-8 0 0 at 7 0 2 6 1 B 6 1 j 6 2 P1 6 5 undef 8 0 15 7 0 2 8 0 1 7 0 2 8 0 0 'iquo' 7 1 2 6 1 r 0 6 0
+6 1 j 8 0 70 7 0 3 8 0 74 7 1 2 6 2 P1 0 0 0
+8 0 15 7 0 2 8 0 0 'inter_unique' 7 1 2 8 0 0 'droite' 7 1 2 8 0 82 7 0 2 6 1 A 0 0 0
+8 0 82 7 0 2 6 1 A 6 1 k 8 0 0 'droite' 7 1 2 8 0 82 7 0 2 6 1 B 0 0 0
+8 0 82 7 0 2 6 1 B 6 1 j 6 2 P1 0 0 0
+8 0 15 7 0 2 8 0 1 7 0 2 8 0 0 'iquo' 7 1 2 6 1 r 0 6 0
 0 1 0
 6 1 k 8 0 15 7 0 2 8 0 1 7 0 2 8 0 0 'irem' 7 1 2 6 1 r 0 6 0
 0 1 0
-6 1 j 8 0 15 7 0 2 8 0 0 'inter_unique' 7 1 2 8 0 0 'droite' 7 1 2 8 0 0 at 7 0 2 6 1 B 0 0 0
-8 0 0 at 7 0 2 6 1 B 6 1 k 8 0 0 'droite' 7 1 2 8 0 0 at 7 0 2 6 1 C 0 0 0
-8 0 0 at 7 0 2 6 1 C 6 1 j 6 2 P2 8 0 15 7 0 2 8 0 1 7 0 2 8 0 0 'iquo' 7 1 2 6 1 s 0 6 0
+6 1 j 8 0 15 7 0 2 8 0 0 'inter_unique' 7 1 2 8 0 0 'droite' 7 1 2 8 0 82 7 0 2 6 1 B 0 0 0
+8 0 82 7 0 2 6 1 B 6 1 k 8 0 0 'droite' 7 1 2 8 0 82 7 0 2 6 1 C 0 0 0
+8 0 82 7 0 2 6 1 C 6 1 j 6 2 P2 8 0 15 7 0 2 8 0 1 7 0 2 8 0 0 'iquo' 7 1 2 6 1 s 0 6 0
 0 1 0
 6 1 k 8 0 15 7 0 2 8 0 1 7 0 2 8 0 0 'irem' 7 1 2 6 1 s 0 6 0
 0 1 0
-6 1 j 8 0 15 7 0 2 8 0 0 'inter_unique' 7 1 2 8 0 0 'droite' 7 1 2 8 0 0 at 7 0 2 6 1 C 0 0 0
-8 0 0 at 7 0 2 6 1 C 6 1 k 8 0 0 'droite' 7 1 2 8 0 0 at 7 0 2 6 1 A 0 0 0
-8 0 0 at 7 0 2 6 1 A 6 1 j 6 2 P3 8 0 15 7 0 2 8 0 0 'rotation' 7 1 3 6 2 P1 8 0 5 7 0 2 6 2 pi 0 3 0
-6 2 P2 6 2 P4 8 0 0 ifte 7 0 3 8 0 0 '==' 7 1 2 8 0 0 'normal' 8 0 1 7 0 2 6 2 P4 8 0 2 6 2 P3 0 0 0
+6 1 j 8 0 15 7 0 2 8 0 0 'inter_unique' 7 1 2 8 0 0 'droite' 7 1 2 8 0 82 7 0 2 6 1 C 0 0 0
+8 0 82 7 0 2 6 1 C 6 1 k 8 0 0 'droite' 7 1 2 8 0 82 7 0 2 6 1 A 0 0 0
+8 0 82 7 0 2 6 1 A 6 1 j 6 2 P3 8 0 15 7 0 2 8 0 0 'rotation' 7 1 3 6 2 P1 8 0 5 7 1 2 6 2 pi 0 3 0
+6 2 P2 6 2 P4 8 0 70 7 0 3 8 0 74 7 1 2 8 0 0 'normal' 8 0 1 7 0 2 6 2 P4 8 0 2 6 2 P3 0 0 0
 8 0 15 7 0 2 8 0 0 'append' 7 1 2 6 6 trequi 7 0 3 7 0 2 8 0 1 7 0 2 8 0 0 'iquo' 7 1 2 6 1 q 0 6 0
 0 1 0
 8 0 1 7 0 2 8 0 0 'irem' 7 1 2 6 1 q 0 6 0
@@ -869,28 +1361,31 @@ q:0£q:1£"equilateral",1,1,1£"equilateral",1,3,13£q:2£q:3£"equilateral",3,13,1£"e
 0 1 0
 8 0 1 7 0 2 8 0 0 'iquo' 7 1 2 6 1 s 0 6 0
 0 1 0
-6 6 trequi 6 5 undef 6 5 undef 8 0 0 ifte 7 0 3 8 0 35 7 1 2 8 0 10 8 0 0 'longueur2' 7 1 2 6 2 P5 8 0 0 at 7 0 2 6 5 P3num 6 1 s 1 íµ ÷Æ°>
-8 0 0 'bloc' 7 0 12 8 0 0 print 7 1 4 12 11 |equilateral 6 1 q 6 1 r 6 1 s 8 0 15 7 0 2 8 0 1 7 0 2 8 0 0 'iquo' 7 1 2 6 1 q 0 6 0
+6 6 trequi 0 0 0
+0 0 0
+8 0 70 7 0 3 8 0 35 7 1 2 8 0 10 8 0 0 'longueur2' 7 1 2 6 2 P5 8 0 82 7 0 2 6 5 P3num 6 1 s 1 íµ ÷Æ°>
+8 0 72 7 0 12 8 0 0 print 7 1 4 12 11 |equilateral 6 1 q 6 1 r 6 1 s 8 0 15 7 0 2 8 0 1 7 0 2 8 0 0 'iquo' 7 1 2 6 1 q 0 6 0
 0 1 0
 6 1 k 8 0 15 7 0 2 8 0 1 7 0 2 8 0 0 'irem' 7 1 2 6 1 q 0 6 0
 0 1 0
-6 1 j 8 0 0 ifte 7 0 3 8 0 0 '==' 7 1 2 6 2 P1 0 0 0
-8 0 15 7 0 2 8 0 0 'inter_unique' 7 1 2 8 0 0 'droite' 7 1 2 8 0 0 at 7 0 2 6 1 A 0 0 0
-8 0 0 at 7 0 2 6 1 A 6 1 k 8 0 0 'droite' 7 1 2 8 0 0 at 7 0 2 6 1 B 0 0 0
-8 0 0 at 7 0 2 6 1 B 6 1 j 6 2 P1 6 5 undef 8 0 15 7 0 2 8 0 1 7 0 2 8 0 0 'iquo' 7 1 2 6 1 r 0 6 0
+6 1 j 8 0 70 7 0 3 8 0 74 7 1 2 6 2 P1 0 0 0
+8 0 15 7 0 2 8 0 0 'inter_unique' 7 1 2 8 0 0 'droite' 7 1 2 8 0 82 7 0 2 6 1 A 0 0 0
+8 0 82 7 0 2 6 1 A 6 1 k 8 0 0 'droite' 7 1 2 8 0 82 7 0 2 6 1 B 0 0 0
+8 0 82 7 0 2 6 1 B 6 1 j 6 2 P1 0 0 0
+8 0 15 7 0 2 8 0 1 7 0 2 8 0 0 'iquo' 7 1 2 6 1 r 0 6 0
 0 1 0
 6 1 k 8 0 15 7 0 2 8 0 1 7 0 2 8 0 0 'irem' 7 1 2 6 1 r 0 6 0
 0 1 0
-6 1 j 8 0 15 7 0 2 8 0 0 'inter_unique' 7 1 2 8 0 0 'droite' 7 1 2 8 0 0 at 7 0 2 6 1 B 0 0 0
-8 0 0 at 7 0 2 6 1 B 6 1 k 8 0 0 'droite' 7 1 2 8 0 0 at 7 0 2 6 1 C 0 0 0
-8 0 0 at 7 0 2 6 1 C 6 1 j 6 2 P2 8 0 15 7 0 2 8 0 1 7 0 2 8 0 0 'iquo' 7 1 2 6 1 s 0 6 0
+6 1 j 8 0 15 7 0 2 8 0 0 'inter_unique' 7 1 2 8 0 0 'droite' 7 1 2 8 0 82 7 0 2 6 1 B 0 0 0
+8 0 82 7 0 2 6 1 B 6 1 k 8 0 0 'droite' 7 1 2 8 0 82 7 0 2 6 1 C 0 0 0
+8 0 82 7 0 2 6 1 C 6 1 j 6 2 P2 8 0 15 7 0 2 8 0 1 7 0 2 8 0 0 'iquo' 7 1 2 6 1 s 0 6 0
 0 1 0
 6 1 k 8 0 15 7 0 2 8 0 1 7 0 2 8 0 0 'irem' 7 1 2 6 1 s 0 6 0
 0 1 0
-6 1 j 8 0 15 7 0 2 8 0 0 'inter_unique' 7 1 2 8 0 0 'droite' 7 1 2 8 0 0 at 7 0 2 6 1 C 0 0 0
-8 0 0 at 7 0 2 6 1 C 6 1 k 8 0 0 'droite' 7 1 2 8 0 0 at 7 0 2 6 1 A 0 0 0
-8 0 0 at 7 0 2 6 1 A 6 1 j 6 2 P3 8 0 15 7 0 2 8 0 0 'rotation' 7 1 3 6 2 P1 8 0 5 7 0 2 8 0 2 6 2 pi 0 3 0
-6 2 P2 6 2 P5 8 0 0 ifte 7 0 3 8 0 0 '==' 7 1 2 8 0 0 'normal' 8 0 1 7 0 2 6 2 P5 8 0 2 6 2 P3 0 0 0
+6 1 j 8 0 15 7 0 2 8 0 0 'inter_unique' 7 1 2 8 0 0 'droite' 7 1 2 8 0 82 7 0 2 6 1 C 0 0 0
+8 0 82 7 0 2 6 1 C 6 1 k 8 0 0 'droite' 7 1 2 8 0 82 7 0 2 6 1 A 0 0 0
+8 0 82 7 0 2 6 1 A 6 1 j 6 2 P3 8 0 15 7 0 2 8 0 0 'rotation' 7 1 3 6 2 P1 8 0 5 7 1 2 8 0 2 6 2 pi 0 3 0
+6 2 P2 6 2 P5 8 0 70 7 0 3 8 0 74 7 1 2 8 0 0 'normal' 8 0 1 7 0 2 6 2 P5 8 0 2 6 2 P3 0 0 0
 8 0 15 7 0 2 8 0 0 'append' 7 1 2 6 6 trequi 7 0 3 7 0 2 8 0 1 7 0 2 8 0 0 'iquo' 7 1 2 6 1 q 0 6 0
 0 1 0
 8 0 1 7 0 2 8 0 0 'irem' 7 1 2 6 1 q 0 6 0
@@ -903,7 +1398,239 @@ q:0£q:1£"equilateral",1,1,1£"equilateral",1,3,13£q:2£q:3£"equilateral",3,13,1£"e
 0 1 0
 8 0 1 7 0 2 8 0 0 'iquo' 7 1 2 6 1 s 0 6 0
 0 1 0
-6 6 trequi 6 5 undef 6 5 undef 8 0 43 6 6 trequi 6 9 find_equi 8 0 15 7 0 2 7 0 18 7 0 3 7 0 2 0 1 0
+6 6 trequi 0 0 0
+0 0 0
+8 0 43 6 6 trequi 6 9 find_equi 8 0 15 7 0 2 8 0 1 7 0 2 8 0 7 7 1 2 8 0 1 7 0 2 8 0 4 7 0 2 8 0 18 6 2 a2 8 0 6 8 0 1 7 0 2 8 0 18 6 2 a1 8 0 18 6 2 a2 8 0 2 8 0 4 7 0 2 8 0 1 7 0 5 8 0 4 7 0 3 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 4 7 0 3 8 0 2 8 0 4 7 0 2 0 2 0
+8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 18 6 2 a1 8 0 18 6 2 a2 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 2 8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a2 8 0 6 8 0 1 7 0 7 8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 4 7 0 3 0 3 0
+8 0 18 6 2 a1 8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 3 8 0 2 8 0 4 7 0 2 0 2 0
+8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 18 6 2 a1 8 0 18 6 2 a2 8 0 2 8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a1 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 2 8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a2 0 2 0
+8 0 7 7 1 2 8 0 1 7 0 2 8 0 4 7 0 3 8 0 6 8 0 1 7 0 2 8 0 18 6 2 a1 8 0 18 6 2 a2 8 0 18 6 2 a2 8 0 18 6 2 a1 8 0 2 8 0 4 7 0 2 8 0 6 8 0 1 7 0 7 8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 4 7 0 3 0 3 0
+8 0 18 6 2 a1 8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 3 8 0 2 8 0 4 7 0 2 0 2 0
+8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 18 6 2 a1 8 0 18 6 2 a2 8 0 2 8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a1 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 2 8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a2 8 0 1 7 0 2 8 0 4 7 0 3 8 0 18 6 2 a2 8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 2 8 0 4 7 0 2 0 2 0
+8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 4 7 0 2 8 0 18 6 2 a2 8 0 2 8 0 4 7 0 2 0 6 0
+8 0 18 6 2 a1 0 2 0
+6 3 pq2 8 0 15 7 0 2 8 0 1 7 0 2 8 0 7 7 1 2 8 0 1 7 0 2 8 0 4 7 0 2 8 0 18 6 2 a2 8 0 6 8 0 1 7 0 2 8 0 18 6 2 a1 8 0 18 6 2 a2 8 0 2 8 0 4 7 0 2 8 0 1 7 0 4 8 0 4 7 0 3 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 2 8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a2 8 0 6 8 0 1 7 0 7 8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 4 7 0 3 0 3 0
+8 0 18 6 2 a1 8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 3 8 0 2 8 0 4 7 0 2 0 2 0
+8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 18 6 2 a1 8 0 18 6 2 a2 8 0 2 8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a1 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 2 8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a2 0 2 0
+8 0 7 7 1 2 8 0 1 7 0 2 8 0 4 7 0 3 8 0 6 8 0 1 7 0 2 8 0 18 6 2 a1 8 0 18 6 2 a2 8 0 18 6 2 a2 8 0 18 6 2 a1 8 0 2 8 0 4 7 0 2 8 0 6 8 0 1 7 0 7 8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 4 7 0 3 0 3 0
+8 0 18 6 2 a1 8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 3 8 0 2 8 0 4 7 0 2 0 2 0
+8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 18 6 2 a1 8 0 18 6 2 a2 8 0 2 8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a1 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 2 8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a2 8 0 1 7 0 2 8 0 4 7 0 3 8 0 18 6 2 a1 8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 2 8 0 4 7 0 2 0 2 0
+8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 4 7 0 2 8 0 18 6 2 a2 8 0 2 8 0 4 7 0 2 0 6 0
+8 0 18 6 2 a1 0 2 0
+6 3 pr2 8 0 15 7 0 2 8 0 1 7 0 2 8 0 7 7 1 2 8 0 1 7 0 2 8 0 4 7 0 2 8 0 1 7 0 5 8 0 4 7 0 3 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 4 7 0 3 8 0 2 8 0 4 7 0 2 0 2 0
+8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 18 6 2 a1 8 0 18 6 2 a2 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 2 8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a2 8 0 6 8 0 1 7 0 7 8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 4 7 0 3 0 3 0
+8 0 18 6 2 a1 8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 3 8 0 2 8 0 4 7 0 2 0 2 0
+8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 18 6 2 a1 8 0 18 6 2 a2 8 0 2 8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a1 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 2 8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a2 8 0 2 8 0 4 7 0 2 8 0 1 7 0 4 8 0 4 7 0 3 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 2 8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a2 8 0 6 8 0 1 7 0 7 8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 4 7 0 3 0 3 0
+8 0 18 6 2 a1 8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 3 8 0 2 8 0 4 7 0 2 0 2 0
+8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 18 6 2 a1 8 0 18 6 2 a2 8 0 2 8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a1 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 2 8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a2 0 2 0
+8 0 7 7 1 2 8 0 1 7 0 2 8 0 4 7 0 2 8 0 6 8 0 1 7 0 7 8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 4 7 0 3 0 3 0
+8 0 18 6 2 a1 8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 3 8 0 2 8 0 4 7 0 2 0 2 0
+8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 18 6 2 a1 8 0 18 6 2 a2 8 0 2 8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a1 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 2 8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a2 8 0 1 7 0 2 8 0 4 7 0 3 8 0 18 6 2 a2 8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 2 8 0 4 7 0 2 0 2 0
+8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 4 7 0 2 8 0 18 6 2 a2 8 0 2 8 0 4 7 0 2 0 6 0
+8 0 18 6 2 a1 8 0 2 8 0 4 7 0 2 8 0 6 8 0 1 7 0 7 8 0 4 7 0 3 0 3 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 18 6 2 a2 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a1 0 2 0
+8 0 4 7 0 3 0 3 0
+8 0 18 6 2 a1 8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 4 7 0 3 8 0 2 8 0 4 7 0 2 0 2 0
+8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 18 6 2 a1 8 0 18 6 2 a2 8 0 2 8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a1 8 0 4 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 2 8 0 4 7 0 2 0 3 0
+8 0 18 6 2 a2 8 0 1 7 0 2 8 0 4 7 0 3 8 0 18 6 2 a1 8 0 7 7 1 2 8 0 18 6 2 a2 0 2 0
+8 0 2 8 0 4 7 0 2 0 2 0
+8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+8 0 4 7 0 2 8 0 18 6 2 a2 8 0 2 8 0 4 7 0 2 0 6 0
+8 0 18 6 2 a1 0 2 0
+6 3 qr2 8 0 15 7 0 2 7 0 18 7 0 3 7 0 2 0 1 0
 0 2 0
 7 0 2 0 1 0
 0 2 0
@@ -1011,8 +1738,8 @@ q:0£q:1£"equilateral",1,1,1£"equilateral",1,3,13£q:2£q:3£"equilateral",3,13,1£"e
 0 6 0
 7 0 2 0 5 0
 0 6 0
-6 6 trequi 8 0 15 7 0 2 8 0 0 program 7 0 3 7 1 0 7 0 0 8 0 42 7 0 2 7 1 20 6 2 a1 6 2 a2 6 1 A 6 1 B 6 2 C0 6 1 C 6 2 P1 6 5 P1num 6 2 P2 6 5 P2num 6 2 P3 6 5 P3num 6 2 P4 6 2 P5 6 1 j 6 1 k 6 1 s 6 3 tmp 6 3 cpt 6 6 trequi 7 0 16 8 0 0 'assume' 8 0 40 7 0 2 6 2 a1 1 ™™™™™É?
-8 0 0 'assume' 8 0 40 7 0 2 6 2 a2 1 ™™™™™Ù?
+6 6 trequi 8 0 15 7 0 2 8 0 73 7 0 3 7 1 0 7 1 0 8 0 42 7 0 2 7 0 2 7 1 20 6 2 a1 6 2 a2 6 1 A 6 1 B 6 2 C0 6 1 C 6 2 P1 6 5 P1num 6 2 P2 6 5 P2num 6 2 P3 6 5 P3num 6 2 P4 6 2 P5 6 1 j 6 1 k 6 1 s 6 3 tmp 6 3 cpt 6 6 trequi 7 1 0 7 0 16 8 0 0 'supposons' 8 0 40 7 1 2 6 2 a1 1 ™™™™™É?
+8 0 0 'supposons' 8 0 40 7 1 2 6 2 a2 1 ™™™™™Ù?
 8 0 15 7 0 2 7 0 7 0 0 0
 8 0 1 7 0 2 0 1 0
 8 0 4 7 1 2 4 0 0 0
@@ -1024,22 +1751,22 @@ q:0£q:1£"equilateral",1,1,1£"equilateral",1,3,13£q:2£q:3£"equilateral",3,13,1£"e
 6 2 a1 8 0 1 7 0 2 0 1 0
 8 0 4 7 1 2 4 0 0 0
 0 1 0
-8 0 0 'texpand' 8 0 18 8 0 1 7 0 2 8 0 5 7 0 2 6 2 pi 0 3 0
+8 0 0 'texpand' 8 0 18 8 0 1 7 0 2 8 0 5 7 1 2 6 2 pi 0 3 0
 6 2 a1 8 0 1 7 0 2 0 1 0
 8 0 4 7 1 2 4 0 0 0
 0 1 0
 8 0 0 'texpand' 8 0 18 8 0 1 7 0 2 8 0 4 7 1 2 0 2 0
 6 2 a1 8 0 4 7 1 2 0 2 0
-8 0 5 7 0 2 6 2 pi 0 3 0
+8 0 5 7 1 2 6 2 pi 0 3 0
 8 0 1 7 0 2 0 1 0
 8 0 4 7 1 2 4 0 0 0
 0 1 0
 8 0 0 'texpand' 8 0 18 8 0 1 7 0 2 6 2 a1 8 0 4 7 1 2 0 2 0
-8 0 5 7 0 2 6 2 pi 0 3 0
+8 0 5 7 1 2 6 2 pi 0 3 0
 8 0 1 7 0 2 0 1 0
 8 0 4 7 1 2 4 0 0 0
 0 1 0
-8 0 0 'texpand' 8 0 18 8 0 1 7 0 2 8 0 5 7 0 2 6 2 pi 0 3 0
+8 0 0 'texpand' 8 0 18 8 0 1 7 0 2 8 0 5 7 1 2 6 2 pi 0 3 0
 8 0 4 7 1 2 0 2 0
 6 2 a1 6 1 A 8 0 15 7 0 2 7 0 7 0 1 0
 8 0 4 7 1 2 4 0 0 0
@@ -1051,19 +1778,19 @@ q:0£q:1£"equilateral",1,1,1£"equilateral",1,3,13£q:2£q:3£"equilateral",3,13,1£"e
 0 1 0
 8 0 0 'texpand' 8 0 18 8 0 1 7 0 2 8 0 4 7 1 2 0 2 0
 6 2 a2 8 0 4 7 1 2 0 2 0
-8 0 5 7 0 2 6 2 pi 0 3 0
+8 0 5 7 1 2 6 2 pi 0 3 0
 8 0 4 7 1 2 4 0 0 0
 0 1 0
-8 0 0 'texpand' 8 0 18 8 0 1 7 0 2 6 2 a2 8 0 5 7 0 2 6 2 pi 0 3 0
+8 0 0 'texpand' 8 0 18 8 0 1 7 0 2 6 2 a2 8 0 5 7 1 2 6 2 pi 0 3 0
 8 0 4 7 1 2 4 0 0 0
 0 1 0
-8 0 0 'texpand' 8 0 18 8 0 1 7 0 2 8 0 5 7 0 2 6 2 pi 0 3 0
+8 0 0 'texpand' 8 0 18 8 0 1 7 0 2 8 0 5 7 1 2 6 2 pi 0 3 0
 8 0 4 7 1 2 0 2 0
 6 2 a2 8 0 4 7 1 2 4 0 0 0
 0 1 0
 8 0 0 'texpand' 8 0 18 8 0 1 7 0 2 8 0 4 7 1 2 0 2 0
-8 0 5 7 0 2 6 2 pi 0 3 0
-6 2 a2 6 1 B 8 0 15 7 0 2 8 0 0 'texpand' 8 0 4 7 1 2 8 0 5 7 0 2 8 0 18 8 0 4 7 1 2 6 2 a2 0 3 0
+8 0 5 7 1 2 6 2 pi 0 3 0
+6 2 a2 6 1 B 8 0 15 7 0 2 8 0 0 'texpand' 8 0 4 7 1 2 8 0 5 7 1 2 8 0 18 8 0 4 7 1 2 6 2 a2 0 3 0
 8 0 1 7 0 2 8 0 18 8 0 4 7 1 2 6 2 a1 0 3 0
 8 0 18 8 0 4 7 1 2 6 2 a2 0 3 0
 8 0 1 7 0 2 0 1 0
@@ -1073,24 +1800,24 @@ q:0£q:1£"equilateral",1,1,1£"equilateral",1,3,13£q:2£q:3£"equilateral",3,13,1£"e
 6 2 C0 8 0 15 7 0 2 7 0 7 6 2 C0 8 0 1 7 0 3 6 2 C0 0 1 0
 8 0 4 7 1 2 4 0 0 0
 0 1 0
-8 0 0 'texpand' 8 0 18 8 0 1 7 0 3 8 0 5 7 0 2 6 2 pi 0 3 0
+8 0 0 'texpand' 8 0 18 8 0 1 7 0 3 8 0 5 7 1 2 6 2 pi 0 3 0
 8 0 4 7 1 2 0 2 0
 6 2 a1 8 0 2 6 2 a2 8 0 1 7 0 3 6 2 C0 0 1 0
 8 0 4 7 1 2 4 0 0 0
 0 1 0
 8 0 0 'texpand' 8 0 18 8 0 1 7 0 3 8 0 4 7 1 2 0 2 0
-8 0 5 7 0 2 6 2 pi 0 3 0
+8 0 5 7 1 2 6 2 pi 0 3 0
 6 2 a1 8 0 2 8 0 4 7 1 2 0 2 0
 6 2 a2 8 0 1 7 0 3 6 2 C0 0 1 0
 8 0 4 7 1 2 4 0 0 0
 0 1 0
 8 0 0 'texpand' 8 0 18 8 0 1 7 0 3 8 0 4 7 1 2 0 2 0
-8 0 5 7 0 2 6 2 pi 0 3 0
+8 0 5 7 1 2 6 2 pi 0 3 0
 8 0 4 7 1 2 0 2 0
 6 2 a1 8 0 2 6 2 a2 8 0 1 7 0 3 6 2 C0 0 1 0
 8 0 4 7 1 2 4 0 0 0
 0 1 0
-8 0 0 'texpand' 8 0 18 8 0 1 7 0 3 8 0 5 7 0 2 6 2 pi 0 3 0
+8 0 0 'texpand' 8 0 18 8 0 1 7 0 3 8 0 5 7 1 2 6 2 pi 0 3 0
 6 2 a1 8 0 2 8 0 4 7 1 2 0 2 0
 6 2 a2 8 0 1 7 0 3 6 2 C0 0 1 0
 8 0 4 7 1 2 4 0 0 0
@@ -1112,30 +1839,30 @@ q:0£q:1£"equilateral",1,1,1£"equilateral",1,3,13£q:2£q:3£"equilateral",3,13,1£"e
 0 36 0
 6 2 P3 8 0 15 7 0 2 7 0 1 8 0 62 7 0 2 0 0 0
 0 36 0
-6 5 P3num 8 0 0 for 7 0 4 8 0 15 7 0 2 0 1 0
+6 5 P3num 8 0 71 7 0 4 8 0 15 7 0 2 0 1 0
 6 1 k 8 0 36 7 1 2 6 1 k 0 6 0
-8 0 0 'increment' 6 1 k 8 0 0 'bloc' 7 0 2 8 0 0 print 6 1 k 8 0 0 for 7 0 4 8 0 15 7 0 2 0 1 0
+8 0 75 6 1 k 8 0 72 7 0 2 8 0 0 print 6 1 k 8 0 71 7 0 4 8 0 15 7 0 2 0 1 0
 6 1 j 8 0 36 7 1 2 6 1 j 0 6 0
-8 0 0 'increment' 6 1 j 8 0 0 'bloc' 7 0 10 8 0 15 7 0 2 8 0 0 'affixe' 8 0 0 at 7 0 2 8 0 0 'inter' 7 1 2 8 0 0 'droite' 7 1 2 8 0 0 at 7 0 2 6 1 A 0 0 0
-8 0 0 at 7 0 2 6 1 A 6 1 k 8 0 0 'droite' 7 1 2 8 0 0 at 7 0 2 6 1 B 0 0 0
-8 0 0 at 7 0 2 6 1 B 6 1 j 0 0 0
-6 3 tmp 8 0 0 'array_sto' 7 0 2 6 3 tmp 8 0 0 at 7 0 2 6 2 P1 6 3 cpt 8 0 0 'array_sto' 7 0 2 8 0 0 'evalf' 6 3 tmp 8 0 0 at 7 0 2 6 5 P1num 6 3 cpt 8 0 15 7 0 2 8 0 0 'affixe' 8 0 0 at 7 0 2 8 0 0 'inter' 7 1 2 8 0 0 'droite' 7 1 2 8 0 0 at 7 0 2 6 1 A 0 0 0
-8 0 0 at 7 0 2 6 1 A 6 1 k 8 0 0 'droite' 7 1 2 8 0 0 at 7 0 2 6 1 C 0 0 0
-8 0 0 at 7 0 2 6 1 C 6 1 j 0 0 0
-6 3 tmp 8 0 0 'array_sto' 7 0 2 6 3 tmp 8 0 0 at 7 0 2 6 2 P3 6 3 cpt 8 0 0 'array_sto' 7 0 2 8 0 0 'evalf' 6 3 tmp 8 0 0 at 7 0 2 6 5 P3num 6 3 cpt 8 0 15 7 0 2 8 0 0 'affixe' 8 0 0 at 7 0 2 8 0 0 'inter' 7 1 2 8 0 0 'droite' 7 1 2 8 0 0 at 7 0 2 6 1 B 0 0 0
-8 0 0 at 7 0 2 6 1 B 6 1 k 8 0 0 'droite' 7 1 2 8 0 0 at 7 0 2 6 1 C 0 0 0
-8 0 0 at 7 0 2 6 1 C 6 1 j 0 0 0
-6 3 tmp 8 0 0 'array_sto' 7 0 2 6 3 tmp 8 0 0 at 7 0 2 6 2 P2 6 3 cpt 8 0 0 'array_sto' 7 0 2 8 0 0 'evalf' 6 3 tmp 8 0 0 at 7 0 2 6 5 P2num 6 3 cpt 8 0 0 'increment' 6 3 cpt 8 0 15 7 0 2 7 0 0 6 6 trequi 8 0 0 for 7 0 4 8 0 15 7 0 2 0 0 0
+8 0 75 6 1 j 8 0 72 7 0 10 8 0 15 7 0 2 8 0 0 'affixe' 8 0 82 7 0 2 8 0 0 'inter' 7 1 2 8 0 0 'droite' 7 1 2 8 0 82 7 0 2 6 1 A 0 0 0
+8 0 82 7 0 2 6 1 A 6 1 k 8 0 0 'droite' 7 1 2 8 0 82 7 0 2 6 1 B 0 0 0
+8 0 82 7 0 2 6 1 B 6 1 j 0 0 0
+6 3 tmp 8 0 0 'array_sto' 7 0 2 6 3 tmp 8 0 82 7 0 2 6 2 P1 6 3 cpt 8 0 0 'array_sto' 7 0 2 8 0 0 'evalf' 6 3 tmp 8 0 82 7 0 2 6 5 P1num 6 3 cpt 8 0 15 7 0 2 8 0 0 'affixe' 8 0 82 7 0 2 8 0 0 'inter' 7 1 2 8 0 0 'droite' 7 1 2 8 0 82 7 0 2 6 1 A 0 0 0
+8 0 82 7 0 2 6 1 A 6 1 k 8 0 0 'droite' 7 1 2 8 0 82 7 0 2 6 1 C 0 0 0
+8 0 82 7 0 2 6 1 C 6 1 j 0 0 0
+6 3 tmp 8 0 0 'array_sto' 7 0 2 6 3 tmp 8 0 82 7 0 2 6 2 P3 6 3 cpt 8 0 0 'array_sto' 7 0 2 8 0 0 'evalf' 6 3 tmp 8 0 82 7 0 2 6 5 P3num 6 3 cpt 8 0 15 7 0 2 8 0 0 'affixe' 8 0 82 7 0 2 8 0 0 'inter' 7 1 2 8 0 0 'droite' 7 1 2 8 0 82 7 0 2 6 1 B 0 0 0
+8 0 82 7 0 2 6 1 B 6 1 k 8 0 0 'droite' 7 1 2 8 0 82 7 0 2 6 1 C 0 0 0
+8 0 82 7 0 2 6 1 C 6 1 j 0 0 0
+6 3 tmp 8 0 0 'array_sto' 7 0 2 6 3 tmp 8 0 82 7 0 2 6 2 P2 6 3 cpt 8 0 0 'array_sto' 7 0 2 8 0 0 'evalf' 6 3 tmp 8 0 82 7 0 2 6 5 P2num 6 3 cpt 8 0 75 6 3 cpt 8 0 15 7 0 2 7 0 0 6 6 trequi 8 0 71 7 0 4 8 0 15 7 0 2 0 0 0
 6 1 k 8 0 35 7 1 2 6 1 k 0 36 0
-8 0 0 'increment' 6 1 k 8 0 0 'bloc' 7 0 2 8 0 0 print 6 1 k 8 0 0 for 7 0 4 8 0 15 7 0 2 0 0 0
+8 0 75 6 1 k 8 0 72 7 0 2 8 0 0 print 6 1 k 8 0 71 7 0 4 8 0 15 7 0 2 0 0 0
 6 1 j 8 0 35 7 1 2 6 1 j 0 36 0
-8 0 0 'increment' 6 1 j 8 0 0 'bloc' 7 0 3 8 0 15 7 0 2 8 0 0 'affixe' 8 0 0 'rotation' 7 1 3 8 0 0 at 7 0 2 6 5 P1num 6 1 k 8 0 5 7 0 2 6 2 pi 0 3 0
-8 0 0 at 7 0 2 6 5 P2num 6 1 j 6 2 P4 8 0 15 7 0 2 8 0 0 'affixe' 8 0 0 'rotation' 7 1 3 8 0 0 at 7 0 2 6 5 P1num 6 1 k 8 0 5 7 0 2 8 0 2 6 2 pi 0 3 0
-8 0 0 at 7 0 2 6 5 P2num 6 1 j 6 2 P5 8 0 0 for 7 0 4 8 0 15 7 0 2 0 0 0
+8 0 75 6 1 j 8 0 72 7 0 3 8 0 15 7 0 2 8 0 0 'affixe' 8 0 0 'rotation' 7 1 3 8 0 82 7 0 2 6 5 P1num 6 1 k 8 0 5 7 1 2 6 2 pi 0 3 0
+8 0 82 7 0 2 6 5 P2num 6 1 j 6 2 P4 8 0 15 7 0 2 8 0 0 'affixe' 8 0 0 'rotation' 7 1 3 8 0 82 7 0 2 6 5 P1num 6 1 k 8 0 5 7 1 2 8 0 2 6 2 pi 0 3 0
+8 0 82 7 0 2 6 5 P2num 6 1 j 6 2 P5 8 0 71 7 0 4 8 0 15 7 0 2 0 0 0
 6 1 s 8 0 35 7 1 2 6 1 s 0 36 0
-8 0 0 'increment' 6 1 s 8 0 0 'bloc' 7 0 2 8 0 0 ifte 7 0 3 8 0 35 7 1 2 8 0 10 8 0 0 'longueur2' 7 1 2 6 2 P4 8 0 0 at 7 0 2 6 5 P3num 6 1 s 1 íµ ÷Æ°>
-8 0 0 'bloc' 7 0 3 8 0 0 print 7 1 4 12 11 |equilateral 6 1 k 6 1 j 6 1 s 8 0 15 7 0 2 8 0 0 'affixe' 8 0 0 'rotation' 7 1 3 8 0 0 at 7 0 2 6 2 P1 6 1 k 8 0 5 7 0 2 6 2 pi 0 3 0
-8 0 0 at 7 0 2 6 2 P2 6 1 j 6 2 P4 8 0 0 ifte 7 0 3 8 0 0 '==' 7 1 2 8 0 0 'normal' 8 0 1 7 0 2 6 2 P4 8 0 2 8 0 0 at 7 0 2 6 2 P3 6 1 s 0 0 0
+8 0 75 6 1 s 8 0 72 7 0 2 8 0 70 7 0 3 8 0 35 7 1 2 8 0 10 8 0 0 'longueur2' 7 1 2 6 2 P4 8 0 82 7 0 2 6 5 P3num 6 1 s 1 íµ ÷Æ°>
+8 0 72 7 0 3 8 0 0 print 7 1 4 12 11 |equilateral 6 1 k 6 1 j 6 1 s 8 0 15 7 0 2 8 0 0 'affixe' 8 0 0 'rotation' 7 1 3 8 0 82 7 0 2 6 2 P1 6 1 k 8 0 5 7 1 2 6 2 pi 0 3 0
+8 0 82 7 0 2 6 2 P2 6 1 j 6 2 P4 8 0 70 7 0 3 8 0 74 7 1 2 8 0 0 'normal' 8 0 1 7 0 2 6 2 P4 8 0 2 8 0 82 7 0 2 6 2 P3 6 1 s 0 0 0
 8 0 15 7 0 2 8 0 0 'append' 7 1 2 6 6 trequi 7 0 3 7 0 2 8 0 1 7 0 2 8 0 0 'iquo' 7 1 2 6 1 k 0 6 0
 0 1 0
 8 0 1 7 0 2 8 0 0 'irem' 7 1 2 6 1 k 0 6 0
@@ -1148,9 +1875,11 @@ q:0£q:1£"equilateral",1,1,1£"equilateral",1,3,13£q:2£q:3£"equilateral",3,13,1£"e
 0 1 0
 8 0 1 7 0 2 8 0 0 'iquo' 7 1 2 6 1 s 0 6 0
 0 1 0
-6 6 trequi 6 5 undef 6 5 undef 8 0 0 ifte 7 0 3 8 0 35 7 1 2 8 0 10 8 0 0 'longueur2' 7 1 2 6 2 P5 8 0 0 at 7 0 2 6 5 P3num 6 1 s 1 íµ ÷Æ°>
-8 0 0 'bloc' 7 0 3 8 0 0 print 7 1 4 12 11 |equilateral 6 1 k 6 1 j 6 1 s 8 0 15 7 0 2 8 0 0 'affixe' 8 0 0 'rotation' 7 1 3 8 0 0 at 7 0 2 6 2 P1 6 1 k 8 0 5 7 0 2 8 0 2 6 2 pi 0 3 0
-8 0 0 at 7 0 2 6 2 P2 6 1 j 6 2 P5 8 0 0 ifte 7 0 3 8 0 0 '==' 7 1 2 8 0 0 'normal' 8 0 1 7 0 2 6 2 P5 8 0 2 8 0 0 at 7 0 2 6 2 P3 6 1 s 0 0 0
+6 6 trequi 0 0 0
+0 0 0
+8 0 70 7 0 3 8 0 35 7 1 2 8 0 10 8 0 0 'longueur2' 7 1 2 6 2 P5 8 0 82 7 0 2 6 5 P3num 6 1 s 1 íµ ÷Æ°>
+8 0 72 7 0 3 8 0 0 print 7 1 4 12 11 |equilateral 6 1 k 6 1 j 6 1 s 8 0 15 7 0 2 8 0 0 'affixe' 8 0 0 'rotation' 7 1 3 8 0 82 7 0 2 6 2 P1 6 1 k 8 0 5 7 1 2 8 0 2 6 2 pi 0 3 0
+8 0 82 7 0 2 6 2 P2 6 1 j 6 2 P5 8 0 70 7 0 3 8 0 74 7 1 2 8 0 0 'normal' 8 0 1 7 0 2 6 2 P5 8 0 2 8 0 82 7 0 2 6 2 P3 6 1 s 0 0 0
 8 0 15 7 0 2 8 0 0 'append' 7 1 2 6 6 trequi 7 0 3 7 0 2 8 0 1 7 0 2 8 0 0 'iquo' 7 1 2 6 1 k 0 6 0
 0 1 0
 8 0 1 7 0 2 8 0 0 'irem' 7 1 2 6 1 k 0 6 0
@@ -1163,5 +1892,7 @@ q:0£q:1£"equilateral",1,1,1£"equilateral",1,3,13£q:2£q:3£"equilateral",3,13,1£"e
 0 1 0
 8 0 1 7 0 2 8 0 0 'iquo' 7 1 2 6 1 s 0 6 0
 0 1 0
-6 6 trequi 6 5 undef 6 5 undef 8 0 43 6 6 trequi 6 11 trouve_equi 8 0 0 'xcas_mode' 0 0 0
+6 6 trequi 0 0 0
+0 0 0
+8 0 43 6 6 trequi 6 11 trouve_equi 8 0 0 'xcas_mode' 0 0 0
 

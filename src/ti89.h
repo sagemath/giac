@@ -1,6 +1,6 @@
 // -*- mode:C++ ; compile-command: "g++ -I.. -g -c ti89.cc" -*-
 /*
- *  Copyright (C) 2000 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
+ *  Copyright (C) 2000,2014 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -13,8 +13,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #ifndef _GIAC_TI9X_H
 #define _GIAC_TI9X_H
@@ -25,44 +24,155 @@ namespace giac {
 #endif // ndef NO_NAMESPACE_GIAC
   typedef unsigned char octet;
   class gen;
-  extern unary_function_ptr at_product;
+  gen _seq(const gen & g,GIAC_CONTEXT);
+  gen _logb(const gen & g,GIAC_CONTEXT);
+  gen _getType(const gen & g,GIAC_CONTEXT);
+  gen _Define(const gen & g,GIAC_CONTEXT);
+  gen _isprime(const gen & args,GIAC_CONTEXT);
+  gen _Input(const gen & args,GIAC_CONTEXT);
+  gen _InputStr(const gen & g,GIAC_CONTEXT);
+  gen _Prompt(const gen & g,GIAC_CONTEXT);
+  gen _cSolve(const gen & g,GIAC_CONTEXT);
+  gen _cFactor(const gen & g,GIAC_CONTEXT);
+  gen _cpartfrac(const gen & g,GIAC_CONTEXT);
+  gen _nSolve(const gen & g,GIAC_CONTEXT);
+  gen _zeros(const gen & g,GIAC_CONTEXT);
+  gen _cZeros(const gen & g,GIAC_CONTEXT);
+  gen _getDenom(const gen & g,GIAC_CONTEXT);
+  gen _denom(const gen & g,GIAC_CONTEXT);
+  gen _getNum(const gen & g,GIAC_CONTEXT);
+  gen _numer(const gen & g,GIAC_CONTEXT);
+  gen _tExpand(const gen & g,GIAC_CONTEXT);
+  gen _comDenom(const gen & g,GIAC_CONTEXT);
+  gen _randPoly(const gen & g,GIAC_CONTEXT);
+  gen _nInt(const gen & g,GIAC_CONTEXT);
+  gen _nDeriv(const gen & g,GIAC_CONTEXT);
+  gen _avgRC(const gen & g,GIAC_CONTEXT);
+  gen _fMin(const gen & g,GIAC_CONTEXT);
+  gen _fMax(const gen & g,GIAC_CONTEXT);
+  gen _taylor(const gen & g,GIAC_CONTEXT);
+  gen _arcLen(const gen & g,GIAC_CONTEXT);
+  gen _dim(const gen & g,GIAC_CONTEXT);
+  gen _format(const gen & g,GIAC_CONTEXT);
+  gen _inString(const gen & g,GIAC_CONTEXT);
+  gen _left(const gen & g,GIAC_CONTEXT);
+  extern const unary_function_ptr * const  at_left;
+  gen _right(const gen & g,GIAC_CONTEXT);
+  extern const unary_function_ptr * const  at_right;
+  gen _mid(const gen & g,GIAC_CONTEXT);
+  gen _ord(const gen & g,GIAC_CONTEXT);
+  gen _rotate(const gen & g,GIAC_CONTEXT);
+  gen _shift(const gen & g,GIAC_CONTEXT);
+  gen _augment(const gen & g,GIAC_CONTEXT);
+  gen _semi_augment(const gen & g,GIAC_CONTEXT);
+  gen _cumSum(const gen & g,GIAC_CONTEXT);
+  gen _exp2list(const gen & g,GIAC_CONTEXT);
+  gen _list2mat(const gen & g,GIAC_CONTEXT);
+  gen _deltalist(const gen & g,GIAC_CONTEXT);
+  gen _mat2list(const gen & g,GIAC_CONTEXT);
+  gen _newList(const gen & g,GIAC_CONTEXT);
+  gen _polyEval(const gen & g,GIAC_CONTEXT);
+  extern const unary_function_ptr * const  at_product;
+  gen _product(const gen & g,GIAC_CONTEXT);
+  gen sortad(const vecteur & v,bool ascend,GIAC_CONTEXT);
+  gen _SortA(const gen & g,GIAC_CONTEXT);
+  gen _sorta(const gen & g,GIAC_CONTEXT);
+  gen _SortD(const gen & g,GIAC_CONTEXT);
+  bool complex_sort(const gen & a,const gen & b,GIAC_CONTEXT);
+  gen _int(const gen & g,GIAC_CONTEXT);
+  gen _iPart(const gen & g,GIAC_CONTEXT);
+  extern const unary_function_ptr * const  at_iPart;
+  gen _Fill(const gen & g,GIAC_CONTEXT);
+  gen _mRow(const gen & g,GIAC_CONTEXT);
+  gen _mRowAdd(const gen & g,GIAC_CONTEXT);
+  gen _rowAdd(const gen & g,GIAC_CONTEXT);
+  gen _rowSwap(const gen & g,GIAC_CONTEXT);
+  gen _LU(const gen & g,GIAC_CONTEXT);
+  gen _QR(const gen & g,GIAC_CONTEXT);
+  gen _newMat(const gen & g,GIAC_CONTEXT);
+  gen _ref(const gen & a,GIAC_CONTEXT) ;
+  vecteur gen2vecteur(const gen & g,int exclude);
+  gen _subMat(const gen & g,GIAC_CONTEXT) ;
+  gen _unitV(const gen & g,GIAC_CONTEXT) ;
+  gen _rowNorm(const gen & g,GIAC_CONTEXT) ;
+  gen _colNorm(const gen & g,GIAC_CONTEXT) ;
+  gen _Archive(const gen & g,GIAC_CONTEXT);
+  gen _Unarchiv(const gen & g,GIAC_CONTEXT);
+  gen _ClrIO(const gen & g,GIAC_CONTEXT);
+  gen _Output(const gen & g,GIAC_CONTEXT);
+  gen _getKey(const gen & g,GIAC_CONTEXT);
+  gen _DelFold(const gen & g,GIAC_CONTEXT);
+  gen _DispG(const gen & g,GIAC_CONTEXT);
+  gen _DispHome(const gen & g,GIAC_CONTEXT);
+  gen _Exec(const gen & g,GIAC_CONTEXT);
+  gen _NewFold(const gen & g,GIAC_CONTEXT);
+  gen _GetFold(const gen & g,GIAC_CONTEXT);
+  gen _StoPic(const gen & g,GIAC_CONTEXT);
+  gen _RclPic(const gen & g,GIAC_CONTEXT);
+  gen _RplcPic(const gen & g,GIAC_CONTEXT);
+  gen _ClrGraph(const gen & g,GIAC_CONTEXT);
+  gen _PtOn(const gen & g,GIAC_CONTEXT);
+  gen _PtOff(const gen & g,GIAC_CONTEXT);
+  gen _Line(const gen & g,GIAC_CONTEXT);
+  gen _LineHorz(const gen & g,GIAC_CONTEXT);
+  gen _LineVert(const gen & g,GIAC_CONTEXT);
+  gen _DrawSlp(const gen & g,GIAC_CONTEXT);
+  gen _Circle(const gen & g,GIAC_CONTEXT);
+  gen _PtText(const gen & g,GIAC_CONTEXT);
+  gen _NewPic(const gen & g,GIAC_CONTEXT);
+  gen _ZoomSto(const gen & g,GIAC_CONTEXT);
+  gen _ZoomRcl(const gen & g,GIAC_CONTEXT);
+  gen _deSolve(const gen & g,GIAC_CONTEXT);
+  gen _LineTan(const gen & g,GIAC_CONTEXT);
+  gen _CyclePic(const gen & g,GIAC_CONTEXT);
+  gen _RandSeed(const gen & g,GIAC_CONTEXT);
+  gen _Store(const gen & g,const context * contextptr);
   gen exact_double(double d,double eps);
   gen exact(const gen & g,GIAC_CONTEXT);
-  extern unary_function_ptr at_exact ;
-  gen _Input(const gen & args,GIAC_CONTEXT);
-  extern unary_function_ptr at_Input;
-  gen _InputStr(const gen & args,GIAC_CONTEXT);
-  extern unary_function_ptr at_InputStr;
-  gen _Prompt(const gen & args,GIAC_CONTEXT);
-  extern unary_function_ptr at_Prompt;
-  extern unary_function_unary __getKey;
-  extern unary_function_ptr at_numer;
+  gen fPart(const gen & g,GIAC_CONTEXT);
+  gen simult(const gen & g,GIAC_CONTEXT);
+  gen make_symbol(const std::string & s,GIAC_CONTEXT);
+  gen _unarchive_ti(const gen & g,GIAC_CONTEXT);
+  gen _sialorssinon(const gen & g,GIAC_CONTEXT);
+  gen _pour(const gen & g,GIAC_CONTEXT);
 
-  gen _ClrIO(const gen & args,GIAC_CONTEXT);
-  extern unary_function_ptr at_ClrIO;
+#ifdef NSPIRE
+  extern const unary_function_ptr * const  at_system;
+#endif
+  extern const unary_function_ptr * const  at_int;
+  extern const unary_function_ptr * const  at_exact ;
+  extern const unary_function_ptr * const  at_Input;
+  extern const unary_function_ptr * const  at_InputStr;
+  extern const unary_function_ptr * const  at_Prompt;
+  extern const unary_function_ptr * const  at_rowswap;
+#ifndef RTOS_THREADX
+#ifndef BESTA_OS
+  extern unary_function_eval __getKey;
+#endif
+#endif
+  extern const unary_function_ptr * const  at_getKey;
+  extern const unary_function_ptr * const  at_numer;
+  extern const unary_function_ptr * const  at_ClrIO;
+  extern const unary_function_ptr * const  at_Output;
+  extern const unary_function_ptr * const  at_DispG;
+  extern const unary_function_ptr * const  at_real;
+  extern const unary_function_ptr * const  at_et;
+  extern const unary_function_ptr * const  at_oufr;
+  extern const unary_function_ptr * const  at_DispHome;
+  extern const unary_function_ptr * const  at_RclPic;
+  extern const unary_function_ptr * const  at_RplcPic;
 
-  gen _Output(const gen & args,GIAC_CONTEXT);
-  extern unary_function_ptr at_Output;
-
-  gen _DispG(const gen & args,GIAC_CONTEXT);
-  extern unary_function_ptr at_DispG;
-
-  extern unary_function_ptr at_real;
-
-  gen _DispHome(const gen & args,GIAC_CONTEXT);
-  extern unary_function_ptr at_DispHome;
-  extern unary_function_ptr at_RclPic;
-  extern unary_function_ptr at_RplcPic;
+#ifndef RTOS_THREADX
 
   gen ti_decode_tag(octet * & ptr,GIAC_CONTEXT);
   gen ti2gen(octet * ptr,GIAC_CONTEXT);
 
   gen _unarchive_ti(const gen & args,GIAC_CONTEXT);
-  extern unary_function_ptr at_unarchive_ti;
+  extern const unary_function_ptr * const  at_unarchive_ti;
 
   // from TIGCC estack.h
 
-  typedef unsigned short HANDLE;
+  // typedef unsigned short HANDLE;
 
   enum Data_Tags {
     NONNEGATIVE_INTEGER_TAG=31,
@@ -651,6 +761,7 @@ namespace giac {
     SENDCHAT_ITAG=0x97
   };
 
+#endif //RTOS_THREADX
 
 #ifndef NO_NAMESPACE_GIAC
 } // namespace giac

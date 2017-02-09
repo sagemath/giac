@@ -6,9 +6,10 @@ Quick overview
 1/ Check that the file /etc/ld.so.conf contains a line 
 /usr/local/lib
 if not edit the file as root and add this line
-2/ Get and install GMP, MPFR, FLTK 1.1, readline, optionnaly GSL if you want 
-to do numerical stuff, PARI 2.3 or above for advanced arithmetic, 
-NTL for fast polynomial (see configuration compatible with giac below).
+2/ Get and install GMP, MPFR, FLTK 1.3.2, readline, optionnaly GSL,
+lapack, atlas if you want to do numerical stuff, 
+PARI 2.3 or above for advanced arithmetic, 
+NTL for fast polynomial (see configuration compatible with giac below)
 Look at the prerequisites section for download addresses and instructions.
 3/ Run ldconfig as root to insure the newly installed library are recognized
 on your system
@@ -24,207 +25,71 @@ become root
   # ldconfig
 * Enjoy!
 
-Prerequisites
+PREREQUSITES:
 =============
-* If you want to cross-compile for the ARM architecture look also at
-the file src/README.ipaq
-* You must first check that you have installed GMP (available at any GNU ftp
-mirror site, see www.gnu.org, for example in France try ftp.lip6.fr)
-* If you want numerical functions you should install the Gnu Scientific 
-Library (http://sources.redhat.com/gsl)
-* If you want long float support, get MPFR at www.mpfr.org
-If you have MPFR version 2.1 or >, you must make a change in src/gen.cc
-since it does call mpfr_set_str_raw, which is no more defined, try
-instead
-    mpfr_strtofr(r.inf,(char *)s.c_str(),0,2,GMP_RNDN);
+0. If you want to cross-compile for the ARM architecture look also at
+   the file src/README.ipaq
+1. ANSI C++ compiler. C++ compiler from GNU compiler collection (GCC),
+   version >= 3.4, is required.
+2. GNU multiprecision library (GMP, http://gmplib.org), version 3 or newer.
+3. GNU readline library (http://www.gnu.org/software/readline), version >= 4.2
+4. [Only if you want GUI] FLTK library (http://www.fltk.org), version 1.3.x
+   For scrollbars to work properly, you must check that FL_REGION_STACK_SIZE
+   is large enough in FL/Fl_Device.H  (100 should be large enough). 
+  On Mac, you must remove static in src/gl_start.cxx in the declaration
+of gl_choice, change FL/Fl_Window.H, add
+  void * window_ref() const; at the end of the class definition
+  and in src/Fl_Window.cxx 
+void * Fl_Window::window_ref() const {
+  return i;
+}
 
-* If you want to use NTL, get version >= 5.2 at http://www.shoup.net, 
-check that you configured with namespace enabled (this is not the
-default) and with GMP enabled (not the default, but this is not mandatory)
-If you are not sure of your install go in the NTL directory and type
-$ make clean
-$ ./configure NTL_GMP_LIP=on NTL_STD_CXX=on
-$ make
-$ make install
 
-* If you want advanced arithmetic functions, get 
-PARI ** version 2.3.0 or above ** at http://pari.math.u-bordeaux.fr/
-  Recompile (make all) and reinstall PARI (make libpari.a  make install
-and check that libpari.a has been updated or copy it explicitely from 
-the O<os> directory to /usr/local/lib)
-  Check in the giac src directory, file pari.cc that the memory allocated
-to the PARI stack suit your needs (default is 10M of RAM) or modify
-  long pari_mem_size=10000000;
-
-* For faster Groebner basis, install CoCoA library from
-http://cocoa.dima.unige.it/cocoalib/
-Note that giac compiles with version up to 0.9915 (0.9918 does not work)
-N.B.: there is no make install target currently, you must copy
-lib/libcocoa.a to /usr/local/lib and include/CoCoA/* to 
-/usr/local/include/CoCoA by hand
-
-* If you want GUI support, check that you have FLTK 1.1.x installed 
-(available at http://www.fltk.org). For scrollbars to work properly,
-you must check that STACK_SIZE is large enough in
-src/fl_rect.cxx (or src/fl_rect_generic.cxx with FL_Device patch)
-(100 should be large enough). If you want printer support, get the
-Fl-Device modified version of fltk, available from my webpage.
-
-* TeXmacs may be used as an interface for giac. 
-If you have TeXmacs installed (www.texmacs.org), after installing giac, 
-run texmacs and use Insert->Session->giac.
-If you copy Init.scm in your ~/.TeXmacs/progs directory you will get
-a Cas menu for giac.
-* If you want garbage collection, get the gc library
-http://www.hpl.hp.com/personal/Hans_Boehm/gc/
-Then remove all libraries from config.h except gmp (see config.h.gc), 
-add #define HAVE_LIBGC 1
-replace malloc/realloc in input_parser.cc/input_lexer.cc with
-GC_MALLOC_UNCOLLECTABLE and GC_realloc
-rm -f *.o and look at Makefile.fast for the cas2 target
-* For installation inside sage,
-  sage -sh
-  ./configure --prefix="$SAGE_LOCAL" --disable-gui
+5. MPFR library (http://mpfr.org).
+6. GNU scientific library (http://www.gnu.org/software/gsl)
+or/and LAPACK http://www.netlib.org/lapack/ (option ATLAS
+for faster blaslib http://www.netlib.org/lapack/)
+7. PARI/GP library, version >= 2.3 (http://pari.math.u-bordeaux.fr)
+   To build a static version, make libpari.a  make install
+   and check that libpari.a has been updated or copy it explicitely from 
+   the O<os> directory to /usr/local/lib
+8. NTL library, version >= 5.2 (http://www.shoup.net/ntl), for faster
+   computations with univariate polynomials. Note: NTL should be configured
+   with namespace enabled (which is sadly not the default) and GMP as 
+   a bignum library, i.e.
+   $ ./configure NTL_GMP_LIP=on NTL_STD_CXX=on
+9. CoCoA library (http://cocoa.dima.unige.it/cocoalib). 
+   Note that giac compiles by default with version 0.9950 (except under win32), 
+   for smaller versions try to remove #define COCOA9950 in cocoa.cc.
+   N.B.: there is no make install target currently, you must copy
+   lib/libcocoa.a to /usr/local/lib and include/CoCoA/* to 
+   /usr/local/include/CoCoA by hand
 
 INSTALLATION (UNIX)
 ===================
 Like with any autoconfiguring GNU software, you can type this:
 
  $ ./configure 
-[add options as needed: try ./configure -help for option info, see 
-section INSTALLATION OPTIONS below]
  $ make
  $ make check
 [become root if necessary]
- # make install-strip
+ $ make install
 
-Alternatives or tips:
---------------------
-** If you are updating giac for bug fixes, you can run 
-  $ ./config.status 
-instead of ./configure, this will keep the same configuration options
+ N.B.: For installation inside sage, type
+  sage -sh
+  ./configure --prefix="$SAGE_LOCAL" --disable-gui
 
-** If you don't want optimizations, set the environment variable CXXFLAGS
-to -g before calling configure
-(tcsh) setenv CXXFLAGS -g
-(bash) CXXFLAGS=-g
 
-** If you just want to build xcas,
- $ ./configure 
- $ cd src
- $ make -f Makefile.fast
-Replace -g by -O2 in Makefile.fast if you want full optimizations.
+INSTALLATION (Windows).
+======================
+Unfortunately the only option to install giac on Windows is to emulate
+UNIX via cygwin (http://www.cygwin.com). Run configure, then adapt
+Makefilenew.win to your configuration and run
+  make -f Makefilenew.win
 
-** If you want to build xcas for the iPaq with the Linux familiar distribution
-assuming you have the skiff toolchain installed and FLTK installed.
-Check that config.h defines HAVE_LIBFLTK and does not define HAVE_LIBGSL
-and HAVE_LIBGSLCBLAS unless you have these libraries too, then
- $ make -f Makefile.ipaq
-Note that I never succeded to build with optimization for the iPaq.
-
-** If you want the commandline cas only run 
- $ ./configure --disable-gui
- $ make
-
-INSTALLATION (WIN)
-==================
-There is some support for those who must use Microsoft Windows (R). 
-Assuming you have the cygwin tools, gmp, FLTK, FLVW installed (see 
-http://sources.redhat.com/cygwin for cygwin, any GNU mirror for gmp e.g. 
-ftp://ftp.lip6.fr:/pub/gnu, http://www.fltk.org for FLTK, configure
-FLTK with ./configure --enable-cygwin), run cygwin,
-go in the giac-0.4.0 directory and run 
-$ ./configure
-$ make
-$ make install
-As usual, before these steps do
-$ export CXXFLAGS=-g
-if you want a faster compilation
-Alternatively you can
-$ cp config.h.win config.h
-or edit config.h and modify to suit your needs, then
-go in the src directory and run
-$ make -f Makefile.win
-After that, you may run xcas.exe standalone, provided /usr/bin/cygwin1.dll
-has been copied in the path (e.g. in the same directory as xcas.exe)
-You should be able to compile the library version of giac like under Unix using
-$ sh configure ; make 
-
-INSTALLATION (MACOSX)
-=====================
-The first Carbon port for Mac OS X was done by Jean-Yves Avenard.
-See the file README.MACOSX for info on compiling the required libraries.
-Once the libraries are installed, run
-tcsh mkosx
-
-TROUBLESHOOTING
-===============
-* gcc 4.0: comment UNORDERED_MAP in config.h
-* Cygwin: various linking errors
-Be sure to compile FLTK with --enable-cygwin
-* Cygwin: error when compiling sym2poly.cc
-... sys/types.h ... does not define anything 
-Remove the #undef off_t lines from config.h.in and #define lines from config.h
-* If you get an error about libtool not found when running make, run
-  $ ./ltconfig ltmain.sh
-* If you have recently installed a library and this lib seems not to be 
-recognized, type
-  $ rm config.cache
-before running configure
-* Optimization requires much memory for compilation. If you are low in memory
-edit src/Makefile and if necessary replace the line :
-CXXFLAGS = -g -O2
-by :
-CXXFLAGS = -g
-* If you get an error like
-autoheader: Symbol 'CONSTANT_DEBUG_SUPPORT' is not covered by ...
-run
-autoheader --localdir=.
-* If you get error when compiling modpoly.cc, it's most certainly because
-you compiled NTL without namespaces. Recompile it (see Prerequisites section
-above)
-* If you get a linker error about combine_factors not found in modfactor.o
-it's because you did not modify PARI correctly or forgot to re-install the
-PARI libraries
-* Cygwin compilation of Giac with PARI 2.1.1 requires you to make
-some hand work. I could not get the dynamic version of PARI library.
-Therefore I had to do the install by hand
-cp libpari.a /usr/local/lib
-mkdir /usr/local/include/pari
-cp src/headers/*.h /usr/local/include/pari 
-cp Ocygwin/*.h /usr/local/include/pari 
-Then I got an error compiling pari.cc that dispeared by commenting
-the offending line in the header /usr/local/include/pari/paricom.h
-After that all went OK.
-* If your cygwin installation lacks internationalization support (you will
-get errors about #include <libintl.h> in plotfltk.h)
-you must modify xcas.fl to remove internationalization support, run
-fluid xcas.fl
-menu Edit->Preferences, deselect gettext and choose None
-(The program fluid.exe should be in your fltk-1.0.x source directory, in the 
-fluid subdirectory)
-Then edit plotfltk.h and comment 
-#include <locale.h>
-#include <libintl.h>
-as well as the object_bidon class definition
-Edit plotfltk.cc and comment
-   objet_bidon mon_objet_bidon;
-
-DOC
+DOCUMENTATION
 ===
- If you want some documentation, go in the doc directory
- $ cd doc
- and type
-
- $ make dvi
-
-REMARKS
-=======
-At the end of the compilation, you should have:
-* xcas, cas, aide (programs) in /usr/local/bin
-* the libgiac libraries in /usr/local/lib 
-* the include files in /usr/local/include/giac
-* the on-line help file /usr/local/share/aide.cas
+pdf are available in the doc directory
 
 INSTALLATION OPTIONS
 ====================
@@ -247,8 +112,10 @@ the following options are recognized
 These options can be turned off using --disable-option-name instead of 
 --enable-option-name. By default configure will use these options if
 the libraries are available on your system
-For full speed binaries do (bash)
-$ export CXXFLAGS="-O3 -fexpensive-optimizations -malign-loops=2 -malign-jumps=2 -malign-functions=2"
-or (tcsh)
-$ setenv CXXFLAGS "-O3 -fexpensive-optimizations -malign-loops=2 -malign-jumps=2 -malign-functions=2"
-Be sure to configure with no debug support (default) and compile statically.
+
+Note also the configuration option you can pass to the compiler
+setting CXXFLAGS or LDFLAGS. For example adding -DDOUBLEVAL to the
+CXXFLAGS will use full double support (53 bit of mantissa) but will
+require 12 bytes on a 32 bit architecture for the gen type, as not
+setting this flag will use 48 bit of mantissa (the 5 bit remaining 
+being set to 0) but the size of a gen is reduced to 8 bytes.

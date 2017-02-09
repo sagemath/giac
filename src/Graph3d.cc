@@ -1,7 +1,7 @@
-// -*- mode:C++ ; compile-command: "g++-3.4 -I. -I.. -I../include -I../../giac/include -g -c Graph3d.cc" -*-
+// -*- mode:C++ ; compile-command: "g++-3.4 -I. -I.. -I../include -I../../giac/include -g -c Graph3d.cc -DIN_GIAC -DHAVE_CONFIG_H" -*-
 #include "Graph3d.h"
 /*
- *  Copyright (C) 2006 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
+ *  Copyright (C) 2006,2014 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -14,12 +14,14 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 #define __CARBONSOUND__
-#ifdef HAVE_LIBFLTK
+#ifdef HAVE_LIBFLTK_GL
 #include <FL/fl_ask.H>
 #include <FL/fl_ask.H>
 #include <FL/Fl.H>
@@ -28,7 +30,7 @@
 #include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Check_Button.H>
 #include <fstream>
-#include <vector>
+#include "vector.h"
 #include <algorithm>
 #include <fcntl.h>
 #include <cmath>
@@ -36,8 +38,12 @@
 #include <stdio.h>
 #include <dirent.h>
 #include <sys/stat.h> // auto-recovery function
-#include <giac/path.h>
+#include "path.h"
+#ifndef IN_GIAC
 #include <giac/misc.h>
+#else
+#include "misc.h"
+#endif
 #include "Equation.h"
 #include "Editeur.h"
 #include "Xcas1.h"
@@ -48,9 +54,17 @@
 #include <AGL/agl.h>
 #include <FL/x.H>
 #include <FL/fl_draw.H>
-#include <Fl_Gl_Choice.H>
+#define __APPLE_QUARTZ__ 1
+#include "Fl_Gl_Choice.H"
 extern Fl_Gl_Choice * gl_choice;
 // be sure to remove static declaration in gl_start.cxx in fltk src directory
+#endif
+
+#ifndef HAVE_PNG_H
+#undef HAVE_LIBPNG
+#endif
+#ifdef HAVE_LIBPNG
+#include <png.h>
 #endif
 
 using namespace std;
@@ -67,7 +81,7 @@ namespace xcas {
     if (!screenbuf)
       return -1;
     int i;
-    unsigned rowbytes = w()*4;
+    // unsigned rowbytes = w()*4;
     unsigned char *rows[h()];
     for (i = 0; i < h(); i++) {
       rows[i] = &screenbuf[(h() - i - 1)*4*w()];
@@ -77,10 +91,12 @@ namespace xcas {
       string command="pngtopnm "+filename+" | pnmtops > "+remove_extension(filename)+".ps &";
       cerr << command << endl;
       system(command.c_str()); 
+      command="pngtopnm "+filename+" | pnmtojpeg > "+remove_extension(filename)+".jpg &";
+      cerr << command << endl;
+      system(command.c_str()); 
     }
-#else
-    return -1;
 #endif
+    return -1;
   }
 
 
@@ -117,6 +133,7 @@ namespace xcas {
     // end();
     // mode=0;
     display_mode |= 0x80;
+    display_mode |= 0x200;
     box(FL_FLAT_BOX);
     couleur=_POINT_WIDTH_5;
     q=euler_deg_to_quaternion_double(theta_z,theta_x,theta_y);
@@ -134,20 +151,20 @@ namespace xcas {
     arc_en_ciel(k,r,g,b);
   }
 
-  bool get_glvertex(const vecteur & v,double & d1,double & d2,double & d3,double realiscmplx,double zmin){
+  bool get_glvertex(const vecteur & v,double & d1,double & d2,double & d3,double realiscmplx,double zmin,GIAC_CONTEXT){
     if (v.size()==3){
       gen tmp;
-      tmp=evalf_double(v[0],2,context0);
+      tmp=evalf_double(v[0],2,contextptr);
       if (tmp.type!=_DOUBLE_) return false;
       d1=tmp._DOUBLE_val;
-      tmp=evalf_double(v[1],2,context0);
+      tmp=evalf_double(v[1],2,contextptr);
       if (tmp.type!=_DOUBLE_) return false;
       d2=tmp._DOUBLE_val;
-      tmp=evalf_double(v[2],2,context0);
+      tmp=evalf_double(v[2],2,contextptr);
       if (realiscmplx){
 	double arg=0;
 	if (realiscmplx<0){
-	  d3=evalf_double(im(tmp,context0),2,context0)._DOUBLE_val-zmin;
+	  d3=evalf_double(im(tmp,contextptr),2,contextptr)._DOUBLE_val-zmin;
 	  arg=-d3*realiscmplx;
 	}
 	else {
@@ -184,15 +201,15 @@ namespace xcas {
     return false;
   }
 
-  bool get_glvertex(const gen & g,double & d1,double & d2,double & d3,double realiscmplx,double zmin){
+  bool get_glvertex(const gen & g,double & d1,double & d2,double & d3,double realiscmplx,double zmin,GIAC_CONTEXT){
     if (g.type!=_VECT)
       return false;
-    return get_glvertex(*g._VECTptr,d1,d2,d3,realiscmplx,zmin);
+    return get_glvertex(*g._VECTptr,d1,d2,d3,realiscmplx,zmin,contextptr);
   }
 
-  bool glvertex(const vecteur & v,double realiscmplx=0,double zmin=0){
+  bool glvertex(const vecteur & v,double realiscmplx,double zmin,GIAC_CONTEXT){
     double d1,d2,d3;
-    if (get_glvertex(v,d1,d2,d3,realiscmplx,zmin)){
+    if (get_glvertex(v,d1,d2,d3,realiscmplx,zmin,contextptr)){
       glVertex3d(d1,d2,d3);
       return true;
     }
@@ -227,6 +244,9 @@ namespace xcas {
       find_dxdy(s,mode,labelsize(),di,dj);
       find_xyz(Ai+di,Aj+dj,Ad,Ax,Ay,Az);
       glRasterPos3d(Ax,Ay,Az);
+      // string s1(s);
+      // cst_greek_translate(s1);
+      // draw_string(s1);
       draw_string(s);
     }
   }
@@ -268,7 +288,7 @@ namespace xcas {
   GLubyte image[LI][LH][3];
 
   void makeImage(void) {
-    int i,j,r,c;
+    int i,j,c;
     for( i = 0 ; i < LI ; i++ ) {
       for( j = 0 ; j < LH ; j++ ) {
 	c = (((i&0x8)==0)^
@@ -422,7 +442,7 @@ namespace xcas {
 	return false;
       gen s3=evalf_double(surface._VECTptr->back()/cst_i,2,context0);
       if (s3.type==_DOUBLE_){
-	double & s3d = s3._DOUBLE_val;
+	double s3d = s3._DOUBLE_val;
 	if (s3d<zmin) zmin=s3d;
 	if (s3d>zmax) zmax=s3d;
       }
@@ -436,7 +456,7 @@ namespace xcas {
     return true;
   }
 
-  void glsurface(const gen & surfaceg,int draw_mode,Fl_Image * texture){
+  void glsurface(const gen & surfaceg,int draw_mode,Fl_Image * texture,GIAC_CONTEXT){
     if (!ckmatrix(surfaceg,true))
       return;
     test_enable_texture(texture);
@@ -455,9 +475,9 @@ namespace xcas {
 	  vecteur & v=*surface[i]._VECTptr;
 	  const_iterateur it=v.begin();
 	  double d1,d2,d3,e1,e2,e3,f1,f2,f3;
-	  if (get_glvertex(*it,d1,d2,d3,realiscmplx,zmin) &&
-	      get_glvertex(*(it+1),e1,e2,e3,realiscmplx,zmin) &&
-	      get_glvertex(*(it+2),f1,f2,f3,realiscmplx,zmin)){
+	  if (get_glvertex(*it,d1,d2,d3,realiscmplx,zmin,contextptr) &&
+	      get_glvertex(*(it+1),e1,e2,e3,realiscmplx,zmin,contextptr) &&
+	      get_glvertex(*(it+2),f1,f2,f3,realiscmplx,zmin,contextptr)){
 	    glnormal(d1,d2,d3,e1,e2,e3,f1,f2,f3);
 	    glVertex3d(d1,d2,d3);
 	    glVertex3d(e1,e2,e3);
@@ -472,9 +492,9 @@ namespace xcas {
 	  vecteur & v=*surface[i]._VECTptr;
 	  const_iterateur it=v.begin();
 	  double d1,d2,d3,e1,e2,e3,f1,f2,f3;
-	  if (get_glvertex(*it,d1,d2,d3,realiscmplx,zmin) &&
-	      get_glvertex(*(it+1),e1,e2,e3,realiscmplx,zmin) &&
-	      get_glvertex(*(it+2),f1,f2,f3,realiscmplx,zmin)){
+	  if (get_glvertex(*it,d1,d2,d3,realiscmplx,zmin,contextptr) &&
+	      get_glvertex(*(it+1),e1,e2,e3,realiscmplx,zmin,contextptr) &&
+	      get_glvertex(*(it+2),f1,f2,f3,realiscmplx,zmin,contextptr)){
 	    glnormal(d1,d2,d3,e1,e2,e3,f1,f2,f3);
 	    glVertex3d(d1,d2,d3);
 	    glVertex3d(e1,e2,e3);
@@ -504,11 +524,11 @@ namespace xcas {
       double a1,a2,a3,b1,b2,b3,c1,c2,c3,d1,d2,d3;
       /*
       if (draw_mode==GL_QUADS){
-	get_glvertex(b,b1,b2,b3,realiscmplx,zmin);
+	get_glvertex(b,b1,b2,b3,realiscmplx,zmin,contextptr);
 	glBegin(GL_QUAD_STRIP);
 	for (;it!=itend;yt+=dyt){
 	  a=*itprec;
-	  get_glvertex(a,a1,a2,a3,realiscmplx,zmin);
+	  get_glvertex(a,a1,a2,a3,realiscmplx,zmin,contextptr);
 	  ++it; ++itprec;
 	  if (it==itend){
 	    if (texture)
@@ -518,7 +538,7 @@ namespace xcas {
 	    break;
 	  }
 	  b=*it;
-	  get_glvertex(b,c1,c2,c3,realiscmplx,zmin);
+	  get_glvertex(b,c1,c2,c3,realiscmplx,zmin,contextptr);
 	  if (texture)
 	    glTexCoord2f(xt,yt);
 	  glnormal(a1,a2,a3,b1,b2,b3,c1,c2,c3);
@@ -531,14 +551,14 @@ namespace xcas {
       else 
       */
       {
-	get_glvertex(a,a1,a2,a3,realiscmplx,zmin);
-	get_glvertex(b,b1,b2,b3,realiscmplx,zmin);
+	get_glvertex(a,a1,a2,a3,realiscmplx,zmin,contextptr);
+	get_glvertex(b,b1,b2,b3,realiscmplx,zmin,contextptr);
 	++it; ++itprec;
 	for (;it!=itend;++it,++itprec,yt+=dyt){
 	  c = *itprec;
 	  d = *it;
-	  get_glvertex(c,c1,c2,c3,realiscmplx,zmin);
-	  get_glvertex(d,d1,d2,d3,realiscmplx,zmin);
+	  get_glvertex(c,c1,c2,c3,realiscmplx,zmin,contextptr);
+	  get_glvertex(d,d1,d2,d3,realiscmplx,zmin,contextptr);
 	  glBegin(draw_mode);
 	  if (texture)
 	    glTexCoord2f(xt,yt);
@@ -569,7 +589,7 @@ namespace xcas {
   // surface without grid evaluation, should not happen!
   void glsurface(const vecteur & point,const gen & uv,double umin,double umax,double vmin,double vmax,int nu,int nv,int draw_mode,GIAC_CONTEXT){
     double u=umin,v=vmin,deltau=(umax-umin)/nu,deltav=(vmax-vmin)/nv;
-    gen prevline[nv+1];//,line[nv+1];
+    vecteur prevline(nv+1); //gen prevline[nv+1];//,line[nv+1];
     vecteur curuv(2);
     gen old,current;
     curuv[0]=u;
@@ -587,12 +607,12 @@ namespace xcas {
 	glBegin(draw_mode);
 	curuv[1] = v;
 	current = subst(point,uv,curuv,false,contextptr);
-	glvertex(*prevline[j]._VECTptr);
+	glvertex(*prevline[j]._VECTptr,0,0,contextptr);
 	prevline[j]=old;
-	glvertex(*old._VECTptr);
+	glvertex(*old._VECTptr,0,0,contextptr);
 	++j;
-	glvertex(*current._VECTptr);
-	glvertex(*prevline[j]._VECTptr);
+	glvertex(*current._VECTptr,0,0,contextptr);
+	glvertex(*prevline[j]._VECTptr,0,0,contextptr);
 	old=current;
 	glEnd();
       }
@@ -715,12 +735,12 @@ namespace xcas {
   }
 
   void tran4(double * colmat){
-    swap<double>(colmat[1],colmat[4]);
-    swap<double>(colmat[2],colmat[8]);
-    swap<double>(colmat[3],colmat[12]);
-    swap<double>(colmat[6],colmat[9]);
-    swap<double>(colmat[7],colmat[13]);
-    swap<double>(colmat[11],colmat[14]);    
+    giac::swapdouble(colmat[1],colmat[4]);
+    giac::swapdouble(colmat[2],colmat[8]);
+    giac::swapdouble(colmat[3],colmat[12]);
+    giac::swapdouble(colmat[6],colmat[9]);
+    giac::swapdouble(colmat[7],colmat[13]);
+    giac::swapdouble(colmat[11],colmat[14]);    
   }
 
   void get_texture(const gen & attrv1,Fl_Image * & texture){
@@ -751,7 +771,8 @@ namespace xcas {
       return g.val;
     if (g.type==_DOUBLE_)
       return int(g._DOUBLE_val);
-    setsizeerr("Unable to convert to int"+g.print());
+    setsizeerr(gettext("Unable to convert to int")+g.print());
+    return -1;
   }
 
   void Graph3d::indraw(const giac::gen & g){
@@ -776,7 +797,14 @@ namespace xcas {
     vecteur style(get_style(v,legende));
     int styles=style.size();
     // color
+    bool hidden_name = false;
     int ensemble_attributs=style.front().val;
+    if (style.front().type==_ZINT){
+      ensemble_attributs = mpz_get_si(*style.front()._ZINTptr);
+      hidden_name=true;
+    }
+    else
+      hidden_name=ensemble_attributs<0;
     int couleur=ensemble_attributs & 0x0000ff;
     int width           =(ensemble_attributs & 0x00070000) >> 16; // 3 bits
     int epaisseur_point =((ensemble_attributs & 0x00380000) >> 19)+1; // 3 bits
@@ -784,7 +812,6 @@ namespace xcas {
     int type_point      =(ensemble_attributs & 0x0e000000) >> 25; // 3 bits
     int labelpos        =(ensemble_attributs & 0x30000000) >> 28; // 2 bits
     bool fill_polygon   =(ensemble_attributs & 0x40000000) >> 30;
-    bool hidden_name    =(ensemble_attributs & 0x80000000);
     hidden_name = hidden_name || legende.empty();
     Fl_Image * texture=0;
     glLineWidth(width+1);
@@ -794,7 +821,6 @@ namespace xcas {
       glLineStipple(1,line_stipple(type_line));
     else
       glLineStipple(1,0xffff);
-    // glEnable(GL_POINT_SMOOTH);
     glPointSize(epaisseur_point);
     gl2psPointSize(epaisseur_point);
     if (styles<=2){
@@ -895,7 +921,7 @@ namespace xcas {
 	  glGetLightfv(GL_LIGHT0+i,GL_SPOT_CUTOFF,&cutoff);
 	  glGetLightfv(GL_LIGHT0+i,GL_POSITION,posf);
 	  glGetLightfv(GL_LIGHT0+i,GL_SPOT_DIRECTION,direcf);
-	  direcf[4]=0;
+	  direcf[3]=0; // 4 was out of bound
 	  mult4(model_inv,posf,pos);
 	  tran4(model);
 	  mult4(model,direcf,direc);
@@ -938,7 +964,8 @@ namespace xcas {
     }
     if (est_hyperplan){
       vecteur P,n;
-      hyperplan_normal_point(v0,n,P);
+      if (!hyperplan_normal_point(v0,n,P))
+	return;
       P=*evalf_double(P,1,contextptr)._VECTptr;
       vecteur Porig(P);
       double n1=evalf_double(n[0],1,contextptr)._DOUBLE_val;
@@ -946,7 +973,8 @@ namespace xcas {
       double n3=evalf_double(n[2],1,contextptr)._DOUBLE_val;
       if (fill_polygon){
 	vecteur v1,v2;
-	normal3d(n,v1,v2);
+	if (!normal3d(n,v1,v2))
+	  return;
 	double v11=evalf_double(v1[0],1,contextptr)._DOUBLE_val;
 	double v12=evalf_double(v1[1],1,contextptr)._DOUBLE_val;
 	double v13=evalf_double(v1[2],1,contextptr)._DOUBLE_val;
@@ -997,15 +1025,15 @@ namespace xcas {
 	      vecteur P4(addvecteur(P1,v2));
 	      glBegin(GL_QUADS);
 	      glNormal3d(n1,n2,n3);
-	      glvertex(P1);
-	      glvertex(P2);
-	      glvertex(P3);
-	      glvertex(P4);
+	      glvertex(P1,0,0,contextptr);
+	      glvertex(P2,0,0,contextptr);
+	      glvertex(P3,0,0,contextptr);
+	      glvertex(P4,0,0,contextptr);
 	      glNormal3d(-n1,-n2,-n3);
-	      glvertex(P1);
-	      glvertex(P4);
-	      glvertex(P3);
-	      glvertex(P2);
+	      glvertex(P1,0,0,contextptr);
+	      glvertex(P4,0,0,contextptr);
+	      glvertex(P3,0,0,contextptr);
+	      glvertex(P2,0,0,contextptr);
 	      glEnd();
 	      // cerr << P1 << "," << P2 << "," << P3 << "," << P4 << endl;
 	      P1=P2;
@@ -1021,15 +1049,15 @@ namespace xcas {
 	  glBegin(GL_QUADS);
 	  // normal not needed (light not enabled)
 	  glNormal3d(n1,n2,n3);
-	  glvertex(P1);
-	  glvertex(P2);
-	  glvertex(P3);
-	  glvertex(P4);
+	  glvertex(P1,0,0,contextptr);
+	  glvertex(P2,0,0,contextptr);
+	  glvertex(P3,0,0,contextptr);
+	  glvertex(P4,0,0,contextptr);
 	  glNormal3d(-n1,-n2,-n3);
-	  glvertex(P1);
-	  glvertex(P4);
-	  glvertex(P3);
-	  glvertex(P2);
+	  glvertex(P1,0,0,contextptr);
+	  glvertex(P4,0,0,contextptr);
+	  glvertex(P3,0,0,contextptr);
+	  glvertex(P2,0,0,contextptr);
 	  glEnd();
 	}
       } // end fill_polygon
@@ -1128,7 +1156,7 @@ namespace xcas {
 		dir1=divvecteur(dir1,sqrt(dotvecteur(dir1,dir1),contextptr));
 	      }
 	    }
-	    dir2=cross(dir3,dir1);
+	    dir2=cross(dir3,dir1,contextptr);
 	  }
 	  // optional discretisation info for drawing
 	  if (v.size()>=5 && v[4].type==_INT_){
@@ -1167,7 +1195,7 @@ namespace xcas {
 	      glBegin(closed?GL_POLYGON:GL_LINE_STRIP);
 	      // if (closed) ++it;
 	      for (;it!=itend;++it){
-		if (!glvertex(*it->_VECTptr)){
+		if (!glvertex(*it->_VECTptr,0,0,contextptr)){
 		  glEnd();
 		  glBegin(closed?GL_POLYGON:GL_LINE_STRIP);
 		}
@@ -1189,7 +1217,7 @@ namespace xcas {
 	gen delta=(maxi-mini)/n;
 	glBegin(closed?GL_POLYGON:GL_LINE_STRIP);
 	for (int i=closed?1:0;i<=n;++i){
-	  if (!glvertex(*subst(point,var,mini,false,contextptr)._VECTptr)){
+	  if (!glvertex(*subst(point,var,mini,false,contextptr)._VECTptr,0,0,contextptr)){
 	    glEnd();
 	    glBegin(closed?GL_POLYGON:GL_LINE_STRIP);
 	  }
@@ -1209,13 +1237,13 @@ namespace xcas {
 	return;
       if (tmp._VECTptr->size()>4){
 	if (!fill_polygon)
-	  glsurface((*tmp._VECTptr)[4],GL_LINE_LOOP,texture);
+	  glsurface((*tmp._VECTptr)[4],GL_LINE_LOOP,texture,contextptr);
 	else {
-	  glsurface((*tmp._VECTptr)[4],GL_QUADS,texture);
+	  glsurface((*tmp._VECTptr)[4],GL_QUADS,texture,contextptr);
 	  // glLineWidth(width+2);
 	  if (!hidden_line){
 	    glColor3d(0,0,0);
-	    glsurface((*tmp._VECTptr)[4],GL_LINE_LOOP,texture);
+	    glsurface((*tmp._VECTptr)[4],GL_LINE_LOOP,texture,contextptr);
 	    xcas_color(couleur,true);
 	  }
 	}
@@ -1335,7 +1363,7 @@ namespace xcas {
 	  break;
 	default: 	  // 7 point
 	  glBegin(GL_POINTS);
-	  glvertex(*v0._VECTptr);
+	  glvertex(*v0._VECTptr,0,0,contextptr);
 	  glEnd();
 	}
 	glLineWidth(width+1);
@@ -1352,14 +1380,14 @@ namespace xcas {
 	const_iterateur it=vv0.begin(),itend=vv0.end();
 	for (;it!=itend;++it){
 	  if (it->type==_VECT){ 
-	    w = * it->_VECTptr;
+	    w = *evalf_double(*it,1,contextptr)._VECTptr;
 	    int s=w.size();
 	    if (s<3)
 	      continue;
 	    double d1,d2,d3,e1,e2,e3,f1,f2,f3;	    
-	    if (get_glvertex(w[0],d1,d2,d3,0,0) &&
-		get_glvertex(w[1],e1,e2,e3,0,0) &&
-		get_glvertex(w[2],f1,f2,f3,0,0) ){
+	    if (get_glvertex(w[0],d1,d2,d3,0,0,contextptr) &&
+		get_glvertex(w[1],e1,e2,e3,0,0,contextptr) &&
+		get_glvertex(w[2],f1,f2,f3,0,0,contextptr) ){
 	      glnormal(d1,d2,d3,e1,e2,e3,f1,f2,f3);
 	      if (fill_polygon){
 		glBegin(GL_POLYGON);
@@ -1368,20 +1396,21 @@ namespace xcas {
 		glVertex3d(f1,f2,f3);
 		for (int j=3;j<s;++j){
 		  if (w[j].type!=_VECT || w[j]._VECTptr->size()!=3)
-		    glvertex(vecteur(3,0));
+		    glvertex(vecteur(3,0),0,0,contextptr);
 		  else 
-		    glvertex( lastpnt=*w[j]._VECTptr );
+		    glvertex( lastpnt=*w[j]._VECTptr,0,0,contextptr );
 		}
 		glEnd();
+		xcas_color(couleur,true);
 		// FIXME?? back face
 		/*
 		glnormal(f1,f2,f3,e1,e2,e3,d1,d2,d3);
 		glBegin(GL_POLYGON);
 		for (int j=s-1;j>=3;--j){
 		  if (w[j].type!=_VECT || w[j]._VECTptr->size()!=3)
-		    glvertex(vecteur(3,0));
+		    glvertex(vecteur(3,0),0,0,contextptr);
 		  else 
-		    glvertex( *w[j]._VECTptr );
+		    glvertex( *w[j]._VECTptr ,0,0,contextptr);
 		}
 		glVertex3d(f1,f2,f3);
 		glVertex3d(e1,e2,e3);
@@ -1389,6 +1418,20 @@ namespace xcas {
 		glEnd();
 		*/
 	      }
+	    }
+	  }
+	}
+	for (it=vv0.begin();it!=itend;++it){
+	  if (it->type==_VECT){ 
+	    w = *evalf_double(*it,1,contextptr)._VECTptr;
+	    int s=w.size();
+	    if (s<3)
+	      continue;
+	    double d1,d2,d3,e1,e2,e3,f1,f2,f3;	    
+	    if (get_glvertex(w[0],d1,d2,d3,0,0,contextptr) &&
+		get_glvertex(w[1],e1,e2,e3,0,0,contextptr) &&
+		get_glvertex(w[2],f1,f2,f3,0,0,contextptr) ){
+	      glnormal(d1,d2,d3,e1,e2,e3,f1,f2,f3);
 	      if (!hidden_line){
 		glColor3d(0,0,0);
 		glBegin(GL_LINE_LOOP);
@@ -1397,9 +1440,9 @@ namespace xcas {
 		glVertex3d(f1,f2,f3);
 		for (int j=3;j<s;++j){
 		  if (w[j].type!=_VECT || w[j]._VECTptr->size()!=3)
-		    glvertex(vecteur(3,0));
+		    glvertex(vecteur(3,0),0,0,contextptr);
 		  else 
-		    glvertex( lastpnt=*w[j]._VECTptr );
+		    glvertex( lastpnt=*w[j]._VECTptr,0,0,contextptr );
 		}
 		glEnd();
 		xcas_color(couleur,true);
@@ -1413,7 +1456,7 @@ namespace xcas {
       int s=vv0.size();
       if (s==2 && check3dpoint(vv0.front()) && check3dpoint(vv0.back()) ){
 	// segment, half-line, vector or line
-	vecteur A(*vv0.front()._VECTptr),B(*vv0.back()._VECTptr);
+	vecteur A(*evalf_double(vv0.front(),1,contextptr)._VECTptr),B(*evalf_double(vv0.back(),1,contextptr)._VECTptr);
 	vecteur dir(subvecteur(B,A));
 	double lambda=1,nu;
 	double d1=evalf_double(dir[0],1,contextptr)._DOUBLE_val;
@@ -1440,15 +1483,16 @@ namespace xcas {
 	if (v0.subtype==_LINE__VECT){
 	  // move A in clip
 	  A=addvecteur(A,multvecteur(nu,dir));
-	  glvertex(subvecteur(A,multvecteur(lambda,dir)));
-	  glvertex(addvecteur(A,multvecteur(lambda,dir)));
+	  B=subvecteur(B,multvecteur(nu,dir));
+	  glvertex(subvecteur(A,multvecteur(lambda,dir)),0,0,contextptr);
+	  glvertex(addvecteur(A,multvecteur(lambda,dir)),0,0,contextptr);
 	}
 	else {
-	  glvertex(A);
+	  glvertex(A,0,0,contextptr);
 	  if (v0.subtype==_HALFLINE__VECT)
-	    glvertex(addvecteur(A,multvecteur(lambda,dir)));
+	    glvertex(addvecteur(A,multvecteur(lambda,dir)),0,0,contextptr);
 	  else
-	    glvertex(B);
+	    glvertex(B,0,0,contextptr);
 	}
 	glEnd();
 	if (v0.subtype==_VECTOR__VECT){
@@ -1485,15 +1529,15 @@ namespace xcas {
 	  }
 	}
 	if (!hidden_name && show_names && v0.subtype!=_GROUP__VECT) 
-	  legende_draw(B,legende,labelpos);
+	  legende_draw(multvecteur(0.5,addvecteur(A,B)),legende,labelpos);
 	return;
       }
       if (s>2){ // polygon
 	bool closed=vv0.front()==vv0.back();
 	double d1,d2,d3,e1,e2,e3,f1,f2,f3;	    
-	if (get_glvertex(vv0[0],d1,d2,d3,0,0) &&
-	    get_glvertex(vv0[1],e1,e2,e3,0,0) &&
-	    get_glvertex(vv0[2],f1,f2,f3,0,0) ){
+	if (get_glvertex(vv0[0],d1,d2,d3,0,0,contextptr) &&
+	    get_glvertex(vv0[1],e1,e2,e3,0,0,contextptr) &&
+	    get_glvertex(vv0[2],f1,f2,f3,0,0,contextptr) ){
 	  if (test_enable_texture(texture) && s<=5 && closed){
 	    glBegin(GL_QUADS);
 	    glnormal(d1,d2,d3,e1,e2,e3,f1,f2,f3);
@@ -1505,7 +1549,7 @@ namespace xcas {
 	    glVertex3d(f1,f2,f3);
 	    if (s==5){
 	      glTexCoord2f(1,0);
-	      glvertex(*vv0[3]._VECTptr);
+	      glvertex(*vv0[3]._VECTptr,0,0,contextptr);
 	    }
 	    else
 	      glVertex3d(d1,d2,d3);
@@ -1520,7 +1564,7 @@ namespace xcas {
 	      ++it;
 	    for (;it!=itend;++it){
 	      if (check3dpoint(*it))
-		glvertex(*it->_VECTptr);
+		glvertex(*it->_VECTptr,0,0,contextptr);
 	    }
 	    glEnd();
 	  }
@@ -1650,8 +1694,10 @@ namespace xcas {
       gl2psText(s.c_str(),"Helvetica",labelsize());
     }
     else {
+#if !defined(__APPLE__) || !defined(INT128) // (does not work with textures on mac 64 bits)
       gl_font(FL_HELVETICA,labelsize());
       gl_draw(s.c_str());
+#endif
     }
   }
 
@@ -1822,51 +1868,102 @@ namespace xcas {
       cout << endl;
     }
     // drax
+    bool fbox=(display_mode & 0x100);
+    bool triedre=(display_mode & 0x200);
+    glLineStipple(1,0xffff);
     glLineWidth(1);
     gl2psLineWidth(1);
-    glLineStipple(1,0xffff);
-    glBegin(GL_LINES);
-    glColor3f(1,0,0);
-    if (show_axes){
+    gl_color(FL_RED);
+    // glColor3f(1,0,0);
+    if (show_axes || triedre){
+      glLineWidth(3);
+      gl2psLineWidth(3);
+      glBegin(GL_LINES);
       glVertex3d(0,0,0);
       glVertex3d(1,0,0);
+      glEnd();
     }
-    glVertex3d(window_xmin,window_ymin,window_zmin);
-    glVertex3d(window_xmax,window_ymin,window_zmin);
-    glVertex3d(window_xmin,window_ymax,window_zmin);
-    glVertex3d(window_xmax,window_ymax,window_zmin);
-    glVertex3d(window_xmin,window_ymin,window_zmax);
-    glVertex3d(window_xmax,window_ymin,window_zmax);
-    glVertex3d(window_xmin,window_ymax,window_zmax);
-    glVertex3d(window_xmax,window_ymax,window_zmax);
-    glColor3f(0,1,0);
     if (show_axes){
+      glLineWidth(1);
+      gl2psLineWidth(1);
+      glBegin(GL_LINES);
+      glVertex3d(0,0,0);
+      glVertex3d(window_xmax,0,0);
+      glEnd();
+    }
+    if (show_axes && !printing){
+      glBegin(GL_LINES);
+      glVertex3d(window_xmin,window_ymin,window_zmin);
+      glVertex3d(window_xmax,window_ymin,window_zmin);
+      glVertex3d(window_xmin,window_ymax,window_zmin);
+      glVertex3d(window_xmax,window_ymax,window_zmin);
+      glVertex3d(window_xmin,window_ymin,window_zmax);
+      glVertex3d(window_xmax,window_ymin,window_zmax);
+      glVertex3d(window_xmin,window_ymax,window_zmax);
+      glVertex3d(window_xmax,window_ymax,window_zmax);
+      glEnd();
+    }
+    gl_color(FL_GREEN);
+    // glColor3f(0,1,0);
+    if (show_axes || triedre){
+      glLineWidth(3);
+      gl2psLineWidth(3);
+      glBegin(GL_LINES);
       glVertex3d(0,0,0);
       glVertex3d(0,1,0);
+      glEnd();
     }
-    glVertex3d(window_xmin,window_ymin,window_zmin);
-    glVertex3d(window_xmin,window_ymax,window_zmin);
-    glVertex3d(window_xmax,window_ymin,window_zmin);
-    glVertex3d(window_xmax,window_ymax,window_zmin);
-    glVertex3d(window_xmin,window_ymin,window_zmax);
-    glVertex3d(window_xmin,window_ymax,window_zmax);
-    glVertex3d(window_xmax,window_ymin,window_zmax);
-    glVertex3d(window_xmax,window_ymax,window_zmax);
-    glColor3f(0,0,1);
     if (show_axes){
+      glLineWidth(1);
+      gl2psLineWidth(1);
+      glBegin(GL_LINES);
+      glVertex3d(0,0,0);
+      glVertex3d(0,window_ymax,0);
+      glEnd();
+    }
+    if (show_axes && !printing){
+      glBegin(GL_LINES);
+      glVertex3d(window_xmin,window_ymin,window_zmin);
+      glVertex3d(window_xmin,window_ymax,window_zmin);
+      glVertex3d(window_xmax,window_ymin,window_zmin);
+      glVertex3d(window_xmax,window_ymax,window_zmin);
+      glVertex3d(window_xmin,window_ymin,window_zmax);
+      glVertex3d(window_xmin,window_ymax,window_zmax);
+      glVertex3d(window_xmax,window_ymin,window_zmax);
+      glVertex3d(window_xmax,window_ymax,window_zmax);
+      glEnd();
+    }
+    gl_color(FL_BLUE);
+    // glColor3f(0,0,1);
+    if (show_axes || triedre){
+      glLineWidth(3);
+      gl2psLineWidth(3);
+      glBegin(GL_LINES);
       glVertex3d(0,0,0);
       glVertex3d(0,0,1);
+      glEnd();
     }
-    glVertex3d(window_xmin,window_ymin,window_zmin);
-    glVertex3d(window_xmin,window_ymin,window_zmax);
-    glVertex3d(window_xmax,window_ymax,window_zmin);
-    glVertex3d(window_xmax,window_ymax,window_zmax);
-    glVertex3d(window_xmin,window_ymax,window_zmin);
-    glVertex3d(window_xmin,window_ymax,window_zmax);
-    glVertex3d(window_xmax,window_ymin,window_zmin);
-    glVertex3d(window_xmax,window_ymin,window_zmax);
-    glEnd();
-    if( show_axes){ // maillage
+    if (show_axes){
+      glLineWidth(1);
+      gl2psLineWidth(1);
+      glBegin(GL_LINES);
+      glVertex3d(0,0,0);
+      glVertex3d(0,0,window_zmax);
+      glEnd();
+    }
+    if (show_axes && !printing){
+      glBegin(GL_LINES);
+      glVertex3d(window_xmin,window_ymin,window_zmin);
+      glVertex3d(window_xmin,window_ymin,window_zmax);
+      glVertex3d(window_xmax,window_ymax,window_zmin);
+      glVertex3d(window_xmax,window_ymax,window_zmax);
+      glVertex3d(window_xmin,window_ymax,window_zmin);
+      glVertex3d(window_xmin,window_ymax,window_zmax);
+      glVertex3d(window_xmax,window_ymin,window_zmin);
+      glVertex3d(window_xmax,window_ymin,window_zmax);
+      glEnd();
+    }
+    if(show_axes){ // maillage
       glColor3f(1,0,0);
       glRasterPos3d(1,0,0);
       draw_string(x_axis_name.empty()?"x":x_axis_name);
@@ -1876,60 +1973,62 @@ namespace xcas {
       glColor3f(0,0,1);
       glRasterPos3d(0,0,1);
       draw_string(z_axis_name.empty()?"z":z_axis_name);
-      double xmin,dx,x,ymin,dy,y,zmin,dz,z;
-      find_xmin_dx(window_xmin,window_xmax,xmin,dx);
-      find_xmin_dx(window_ymin,window_ymax,ymin,dy);
-      find_xmin_dx(window_zmin,window_zmax,zmin,dz);
-      glLineStipple(1,0x3333);
-      glBegin(GL_LINES);
-      gl_color(FL_CYAN);
-      for (z=zmin;z<=window_zmax;z+=2*dz){
-	for (y=ymin;y<=window_ymax;y+=2*dy){
-	  glVertex3d(window_xmin,y,z);
-	  glVertex3d(window_xmax,y,z);
+      if (fbox){
+	double xmin,dx,x,ymin,dy,y,zmin,dz,z;
+	find_xmin_dx(window_xmin,window_xmax,xmin,dx);
+	find_xmin_dx(window_ymin,window_ymax,ymin,dy);
+	find_xmin_dx(window_zmin,window_zmax,zmin,dz);
+	glLineStipple(1,0x3333);
+	glBegin(GL_LINES);
+	gl_color(FL_CYAN);
+	for (z=zmin;z<=window_zmax;z+=2*dz){
+	  for (y=ymin;y<=window_ymax;y+=2*dy){
+	    glVertex3d(window_xmin,y,z);
+	    glVertex3d(window_xmax,y,z);
+	  }
 	}
-      }
-      for (z=zmin;z<=window_zmax;z+=2*dz){
+	for (z=zmin;z<=window_zmax;z+=2*dz){
+	  for (x=xmin;x<=window_xmax;x+=2*dx){
+	    glVertex3d(x,window_ymin,z);
+	    glVertex3d(x,window_ymax,z);
+	  }
+	}
 	for (x=xmin;x<=window_xmax;x+=2*dx){
-	  glVertex3d(x,window_ymin,z);
-	  glVertex3d(x,window_ymax,z);
+	  for (y=ymin;y<=window_ymax;y+=2*dy){
+	    glVertex3d(x,y,window_zmin);
+	    glVertex3d(x,y,window_zmax);
+	  }
 	}
-      }
-      for (x=xmin;x<=window_xmax;x+=2*dx){
-	for (y=ymin;y<=window_ymax;y+=2*dy){
-	  glVertex3d(x,y,window_zmin);
-	  glVertex3d(x,y,window_zmax);
+	glEnd();
+	gl_color((display_mode & 0x8)?FL_WHITE:FL_BLACK);
+	glPointSize(3);
+	for (x=xmin;x<=window_xmax;x+=dx){
+	  round0(x,window_xmin,window_xmax);
+	  glBegin(GL_POINTS);
+	  glVertex3d(x,window_ymin,window_zmin);
+	  glEnd();
+	  glRasterPos3d(x,window_ymin,window_zmin);
+	  string tmps=giac::print_DOUBLE_(x,2)+x_axis_unit;
+	  draw_string(tmps);
 	}
-      }
-      glEnd();
-      gl_color((display_mode & 0x8)?FL_WHITE:FL_BLACK);
-      glPointSize(3);
-      for (x=xmin;x<=window_xmax;x+=dx){
-	round0(x,window_xmin,window_xmax);
-	glBegin(GL_POINTS);
-	glVertex3d(x,window_ymin,window_zmin);
-	glEnd();
-	glRasterPos3d(x,window_ymin,window_zmin);
-	string tmps=giac::print_DOUBLE_(x,2)+x_axis_unit;
-	draw_string(tmps);
-      }
-      for (y=ymin;y<=window_ymax;y+=dy){
-	round0(y,window_ymin,window_ymax);
-	glBegin(GL_POINTS);
-	glVertex3d(window_xmin,y,window_zmin);
-	glEnd();
-	glRasterPos3d(window_xmin,y,window_zmin);
-	string tmps=giac::print_DOUBLE_(y,2)+y_axis_unit;
-	draw_string(tmps);
-      }
-      for (z=zmin;z<=window_zmax;z+=dz){
-	round0(z,window_zmin,window_zmax);
-	glBegin(GL_POINTS);
-	glVertex3d(window_xmin,window_ymin,z);
-	glEnd();
-	glRasterPos3d(window_xmin,window_ymin,z);
-	string tmps=giac::print_DOUBLE_(z,2)+z_axis_unit;
-	draw_string(tmps);
+	for (y=ymin;y<=window_ymax;y+=dy){
+	  round0(y,window_ymin,window_ymax);
+	  glBegin(GL_POINTS);
+	  glVertex3d(window_xmin,y,window_zmin);
+	  glEnd();
+	  glRasterPos3d(window_xmin,y,window_zmin);
+	  string tmps=giac::print_DOUBLE_(y,2)+y_axis_unit;
+	  draw_string(tmps);
+	}
+	for (z=zmin;z<=window_zmax;z+=dz){
+	  round0(z,window_zmin,window_zmax);
+	  glBegin(GL_POINTS);
+	  glVertex3d(window_xmin,window_ymin,z);
+	  glEnd();
+	  glRasterPos3d(window_xmin,window_ymin,z);
+	  string tmps=giac::print_DOUBLE_(z,2)+z_axis_unit;
+	  draw_string(tmps);
+	}
       }
     }
     glClipPlane(GL_CLIP_PLANE0,plan0);
@@ -1947,7 +2046,7 @@ namespace xcas {
     plan_t0=normal_a*plan_x0+normal_b*plan_y0+normal_c*plan_z0;
     if (std::abs(plan_t0)<std::abs(window_zmax-window_zmin)/1000)
       plan_t0=0;
-    if (show_axes && parent() && dynamic_cast<Figure *>(parent())){
+    if (show_axes && !printing && parent() && dynamic_cast<Figure *>(parent())){
       gl_color((display_mode & 0x8)?FL_WHITE:FL_BLACK);
       glLineWidth(2);
       gl2psLineWidth(2);
@@ -1956,6 +2055,7 @@ namespace xcas {
       // example with the face z=Z:
       // a*x+b*y=plan_t0-normal_c*Z
       // get the 4 intersections, keep only the valid ones
+      glLineStipple(1,0x3333);
       if (is_clipped(normal_a,window_xmin,window_xmax,normal_b,window_ymin,window_ymax,plan_t0-normal_c*window_zmin,xa,ya,xb,yb)){
 	glBegin(GL_LINE_STRIP);
 	glVertex3d(xa,ya,window_zmin+dz/256);
@@ -1995,6 +2095,7 @@ namespace xcas {
       // same for window_zmax, etc.
       glLineWidth(1);
       gl2psLineWidth(1);
+      glLineStipple(1,0xffff);
     }
     if (lighting){
       /*
@@ -2050,7 +2151,7 @@ namespace xcas {
 	  glGetLightfv(GL_LIGHT0+i,GL_SPOT_CUTOFF,&cutoff);
 	  glGetLightfv(GL_LIGHT0+i,GL_POSITION,posf);
 	  glGetLightfv(GL_LIGHT0+i,GL_SPOT_DIRECTION,direcf);
-	  direcf[4]=0;
+	  direcf[3]=0; // 4 was out of bound
 	  mult4(model_inv,posf,pos);
 	  tran4(model);
 	  mult4(model,direcf,direc);
@@ -2130,9 +2231,14 @@ namespace xcas {
     string mytitle(title);
     if (!is_zero(title_tmp) && function_final.type==_FUNC)
       mytitle=gen(symbolic(*function_final._FUNCptr,title_tmp)).print(contextptr);
-    draw_string(mytitle);
+    if (!mytitle.empty())
+      draw_string(mytitle);
+    glRasterPos3d(-1,-1,depth-0.001);
+    if (!args_help.empty() && args_tmp.size()<= args_help.size()){
+      draw_string(gettext("Click ")+args_help[giacmax(1,args_tmp.size())-1]);
+    }
     glRasterPos3d(-0.98,0.87,depth-0.001);
-    if (show_axes){
+    if (show_axes && !printing){
       string tmps=gettext("mouse plan ")+giac::print_DOUBLE_(normal_a,3)+"x+"+giac::print_DOUBLE_(normal_b,3)+"y+"+giac::print_DOUBLE_(normal_c,3)+"z="+ giac::print_DOUBLE_(plan_t0,3);
       // cerr << tmps << endl;
       draw_string(tmps); // +" Z="+giac::print_DOUBLE_(-depth,3));
@@ -2146,7 +2252,7 @@ namespace xcas {
 	j=(j-view[1])*2/view[3]-1;
       */
       glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-      xcas_color(color(),true);
+      xcas_color((display_mode & 0x8)?FL_WHITE:FL_BLACK,true);
       glBegin(GL_POLYGON);
       glVertex3d(-1,-1,depth);
       glVertex3d(-1,1,depth);
@@ -2165,7 +2271,6 @@ namespace xcas {
       glReadBuffer(GL_FRONT);
       glReadPixels(this->x(), window()->h()-this->y()-this->h(), w(), h(), GL_RGBA, GL_UNSIGNED_BYTE, screenbuf);
     }
-    gl_finish();
   }
 
   void Graph3d::print(){
@@ -2191,11 +2296,11 @@ namespace xcas {
     vector<Fl_Widget *> p;
     for (;wid;wid=wid->parent())
       p.push_back(wid);
-    for (int i=p.size()-1;i>=0;--i){
+    for (int i=p.size()-2;i>=0;--i){
       fl_clip_box(p[i]->x(),p[i]->y(),p[i]->w(),p[i]->h(),x,y,w,h);
       fl_push_clip(x,y,w,h);
     }
-    for (int i=p.size();i>=0;--i)
+    for (int i=p.size()-1;i>=0;--i)
       fl_pop_clip();
     return true;
   }
@@ -2203,7 +2308,6 @@ namespace xcas {
   // if printing is true, we call gl2ps to make an eps file
   void Graph3d::draw(){
     // cerr << "graph3d" << endl;
-    bool save_block_signal = block_signal;
     int clip_x,clip_y,clip_w,clip_h;
 #ifdef __APPLE__
     if (!find_clip_box(this,clip_x,clip_y,clip_w,clip_h))
@@ -2225,40 +2329,62 @@ namespace xcas {
     if (!hp)
       hp=geo_find_history_pack(this);
     context * contextptr = hp?hp->contextptr:0;
+    int locked=0;
 #ifdef HAVE_LIBPTHREAD
-    pthread_mutex_lock(&interactive_mutex);
-    bool b=io_graph(contextptr);
-    io_graph(contextptr)=false;
+    locked=pthread_mutex_trylock(&interactive_mutex);
 #endif
-#ifdef __APPLE__
+    bool b,block;
+    if (!locked){
+      b=io_graph(contextptr);
+      io_graph(contextptr)=false;
+      block=block_signal;
+      block_signal=true;
+    }
+#if defined __APPLE__ && !defined GRAPH_WINDOW
     GLContext context;
     if (!glcontext){ // create context
       GLContext shared_ctx = 0;
       context = aglCreateContext( gl_choice->pixelformat, shared_ctx);
-      if (!context) return ;
+      if (!context){ 
+	if (!locked){
+	  block_signal=block;
+	  io_graph(contextptr)=b;
+#ifdef HAVE_LIBPTHREAD
+	  pthread_mutex_unlock(&interactive_mutex);
+#endif
+	}
+	return ;
+      }
       glcontext = (void *) context;
     }
     else
       context = (GLContext) glcontext;
-    block_signal=true;
+    aglSetCurrentContext(context);
     GLint rect[] = { clip_x, win->h()-clip_y-clip_h, clip_w, clip_h};
     aglSetInteger( (GLContext)context, AGL_BUFFER_RECT, rect );
     aglEnable( (GLContext)context, AGL_BUFFER_RECT );
-    aglSetDrawable( context, GetWindowPort( fl_xid(win) ) );
-    aglSetCurrentContext(context);
-    aglEnable(context,GL_DEPTH_TEST);
+    OpaqueWindowPtr * winid=(OpaqueWindowPtr*) win->window_ref();
+    aglSetWindowRef( context, winid );
+    glEnable(GL_DEPTH_TEST);
     // glLoadIdentity();
     // glEnable(GL_SCISSOR_TEST);
     // glScissor(clip_x, win->h()-clip_y-clip_h, clip_w, clip_h); // lower left
     // glViewport(clip_x, win->h()-clip_y-clip_h, clip_w, clip_h); // lower left
     glViewport(0,0,w(),h());
     // glDrawBuffer(GL_FRONT);
+    gl_font(FL_HELVETICA,labelsize());
+    // GLint viewport[4];
+    // glGetIntergerv(GL_VIEWPORT,viewport);
+    //fl_push_clip(clip_x,clip_y,clip_w,clip_h);
+    display();
 #else
-    block_signal=true;
     gl_start();
     glEnable(GL_SCISSOR_TEST);
-    glScissor(clip_x, win->h()-clip_y-clip_h, clip_w, clip_h); // lower left
     // glViewport(clip_x, win->h()-clip_y-clip_h, clip_w, clip_h); // lower left
+#ifdef GRAPH_WINDOW
+    glViewport(0,0, w(), h()); // lower left
+#else
+    glScissor(clip_x, win->h()-clip_y-clip_h, clip_w, clip_h); // lower left
     glViewport(x(),win->h()-y()-h(), w(), h()); // lower left
 #endif
     gl_font(FL_HELVETICA,labelsize());
@@ -2266,16 +2392,20 @@ namespace xcas {
     // glGetIntergerv(GL_VIEWPORT,viewport);
     //fl_push_clip(clip_x,clip_y,clip_w,clip_h);
     display();
+    gl_finish();
+#endif
     struct timezone tz;
     gettimeofday(&animation_last,&tz);
     if (!paused)
       ++animation_instructions_pos;
     //fl_pop_clip();
-    block_signal=save_block_signal;
+    if (!locked){
+      block_signal=block;
+      io_graph(contextptr)=b;
 #ifdef HAVE_LIBPTHREAD
-    pthread_mutex_unlock(&interactive_mutex);
-    io_graph(contextptr)=b;
+      pthread_mutex_unlock(&interactive_mutex);
 #endif
+    }
   }
 
   const char * Graph3d::latex(const char * filename_){
@@ -2323,10 +2453,10 @@ namespace xcas {
   }
 
   Graph3d::~Graph3d(){ 
-#ifdef __APPLE__
+#if defined __APPLE__ && !defined GRAPH_WINDOW
     if (glcontext){
       aglSetCurrentContext( NULL );
-      aglSetDrawable((GLContext) glcontext, NULL );    
+      aglSetWindowRef((GLContext) glcontext, NULL );    
       aglDestroyContext((GLContext)glcontext);
     }
 #endif
@@ -2345,7 +2475,7 @@ namespace xcas {
       theta_z -= int(theta_z/360)*360;
       theta_x -= int(theta_x/360)*360;
       theta_y -= int(theta_y/360)*360;
-      switch (Fl::event_text()[0]){
+      switch (Fl::event_text()?Fl::event_text()[0]:0){
       case 'y':
 	theta_z += delta_theta;
 	q=q*euler_deg_to_quaternion_double(delta_theta,0,0);
@@ -2405,6 +2535,8 @@ namespace xcas {
       (y>=window_ymin) && (y<=window_ymax) && 
       (z>=window_zmin) && (z<=window_zmax);
     if (event==FL_MOUSEWHEEL){
+      if (!Fl::event_inside(this))
+	return 0;
       if (show_axes){ // checking in_area seems to difficult, especially if mouse plan is not viewed
 	depth = int(1000*(depth-Fl::e_dy *0.01)+.5)/1000.0;
 	mouse_position->redraw();
@@ -2560,7 +2692,7 @@ namespace xcas {
 	  gen tmp=remove_at_pnt(*it);
 	  if (tmp.is_symb_of_sommet(at_hyperplan)){
 	    vecteur v=interdroitehyperplan(line,tmp,contextptr);
-	    if (!v.empty()){
+	    if (!v.empty() && !is_undef(v.front())){
 	      gen inters=evalf_double(remove_at_pnt(v.front()),1,contextptr);
 	      if (inters.type==_VECT && inters._VECTptr->size()==3){
 		vecteur & xyz=*inters._VECTptr;
@@ -2585,4 +2717,4 @@ namespace xcas {
 } // namespace giac
 #endif // ndef NO_NAMESPACE_XCAS
 
-#endif // HAVE_LIBFLTK
+#endif // HAVE_LIBFLTK_GL

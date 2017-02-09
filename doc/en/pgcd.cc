@@ -15,7 +15,7 @@ gen pgcd(gen a,gen b){
 }
 
 int main(){
-  cout << "Enter 2 integers";
+  cout << "Enter 2 integers ";
   gen a,b;
   cin >> a >> b;
   cout << pgcd(a,b) << endl;

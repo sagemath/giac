@@ -1,6 +1,6 @@
 // -*- mode:C++ -*-
 /*
- *  Copyright (C) 2000 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
+ *  Copyright (C) 2000,2014 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -13,8 +13,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #ifndef _GIAC_MONOMIAL_H_
 #define _GIAC_MONOMIAL_H_
@@ -26,15 +25,34 @@
 #include <cmath>
 #include <map>
 #include <string>
+#ifdef USTL
+#include <pair>
+#endif
 #include "index.h"
+#include "poly.h"
 
 #ifndef NO_NAMESPACE_GIAC
 namespace giac {
 #endif // ndef NO_NAMESPACE_GIAC
 
+  int powmod(int a,unsigned long n,int m);
+
+#ifdef NSPIRE
+  template<class T,class U,class I>
+  nio::ios_base<I> & operator << (nio::ios_base<I> & os,const std::pair<T,U> & p){
+    return os << "<" << p.first << "," << p.second << ">";
+  }
+#else
+  template<class T,class U>
+  std::ostream & operator << (std::ostream & os,const std::pair<T,U> & p){
+    return os << "<" << p.first << "," << p.second << ">";
+  }
+#endif
   extern int debug_infolevel;
 
+#ifndef NO_STDEXCEPT
   void setsizeerr(const std::string &);
+#endif
 
   inline bool is_zero(const longlong & a){ return a==0; }
   inline bool is_zero(const long & a){ return a==0; }
@@ -93,19 +111,49 @@ namespace giac {
 		   :"a"(b),"b"(a),"c"(c),"D"(reduce)
 		   );
 #else
-      longlong tmp=longlong(b)*c;
-      tmp+=a;
-      a=tmp%reduce;
+      a=(a+longlong(b)*c)%reduce;
 #endif
     }
     else
       a+=b*c;      
   }
 
+  inline void type_operator_plus_times_reduce_nock(const int & b,const int & c,int & a,int reduce){
+#ifdef _I386_   // a<-a+b*c mod m
+    asm volatile("testl %%ebx,%%ebx; \n\t"
+		 "jns .Lok%=\n\t"
+		 "addl %%edi,%%ebx\n" /* a+=m*/
+		 ".Lok%=:\t"
+		 "imull %%ecx; \n\t" /* b*c in edx:eax */
+		 "addl %%ebx,%%eax; \n\t" /* b*c+a */
+		 "adcl $0x0,%%edx; \n\t" /* b*c+a carry */
+		 "idivl %%edi; \n\t"
+		 :"=d"(a)
+		 :"a"(b),"b"(a),"c"(c),"D"(reduce)
+		 );
+#else
+    a=(longlong(b)*c+a)%reduce;
+#endif
+  }
+
   inline void type_operator_plus_times(const int & b,const int & c,int & a){
     a+=b*c;
   }
 
+  // a<-b*c mod m
+  inline void type_operator_times_reduce(const int & b,const int & c,int & a,int reduce){
+#ifdef _I386_   
+      asm volatile("imull %%ecx; \n\t" /* b*c in edx:eax */
+		   "idivl %%edi; \n\t"
+		   :"=d"(a)
+		   :"a"(b),"c"(c),"D"(reduce)
+		   );
+#else
+      longlong tmp=longlong(b)*c;
+      a=tmp%reduce;
+#endif
+  }
+  
   inline void type_operator_reduce(const int & b,const int & c,int & a,int reduce){
     if (reduce){
 #ifdef _I386_   // a<-b*c mod m
@@ -126,55 +174,31 @@ namespace giac {
   inline bool has_denominator(int a){ return false; }
   inline bool has_denominator(longlong a){ return false; }
 
-  template<class T,class U>
-  struct T_unsigned {
-    T g;
-    U u;
-    T_unsigned(const T & myg,const U & myu): g(myg),u(myu) {};
-    T_unsigned(): g(0),u(0) {};
-  };
-
-  // warning, < is > so that monomial ordering is ok after back-conversion
-  template <class T,class U>
-  inline bool operator < (const T_unsigned<T,U> & gu1,const T_unsigned<T,U> & gu2){
-    return gu1.u > gu2.u;
-  }
-  typedef T_unsigned<int,unsigned> int_unsigned;
-
-  class hash_function_unsigned_object {
-  public:
-    // inline size_t operator () (size_t x) const { return x; }
-    inline size_t operator () (int x) const { return x; }
-    inline size_t operator () (unsigned x) const { return x; }
-    inline size_t operator () (long long unsigned x) const { return x%12345701; }
-    inline size_t operator () (long long x) const { return x%12345701; }
-    hash_function_unsigned_object() {};
-  };
-
-  // a class for monomials, poly&matrices are std::vectors of couples index/monomial
+  // a class for monomials, poly&matrices are std::imvectors of couples index/monomial
   template <class T> class monomial{
   public:
     index_m index;
     T value;
     // constructors
     monomial(const monomial<T> & m) : index(m.index), value(m.value) {}
+    monomial():index(),value(0){}
     monomial( const T & v, int dim) : value(v) {
-      index.iptr->clear();
-      index.iptr->reserve(dim);
+      index.clear();
+      index.reserve(dim);
       for (int i=1;i<=dim;i++)
-	index.iptr->push_back(0);
+	index.push_back(0);
     }
     monomial( const T & v, int var,int dim) : value(v) {
-      index.iptr->clear();
-      index.iptr->reserve(dim);
+      index.clear();
+      index.reserve(dim);
       for (int i=1;i<=dim;i++)
-	index.iptr->push_back(i==var);
+	index.push_back(i==var);
     }
     monomial( const T & v, int deg,int var,int dim) : value(v) {
-      index.iptr->clear();
-      index.iptr->reserve(dim);
+      index.clear();
+      index.reserve(dim);
       for (int i=1;i<=dim;i++)
-	index.iptr->push_back(deg*(i==var));
+	index.push_back(deg*(i==var));
     }
     monomial( const T & v, const index_m & i) : index(i),value(v) {}
     // unary negation
@@ -191,43 +215,43 @@ namespace giac {
     monomial<T> shift(index_m i) const {
       return monomial<T>(value,i+index);
     }
-    void divided_by_x(){
-      (*index.iptr)[0]--;
-    }
     void reverse()  {
-      int s=index.iptr->size();
+      int s=int(index.size());
       index_m new_i;
-      new_i.iptr->reserve(s);
-      index_t::const_iterator it=index.iptr->begin();
-      index_t::const_iterator itend=index.iptr->end();
+      new_i.reserve(s);
+      index_t::const_iterator it=index.begin();
+      index_t::const_iterator itend=index.end();
       --it;
       --itend;
       for (;it!=itend;--itend)
-	new_i.iptr->push_back(*itend);
+	new_i.push_back(*itend);
       index=new_i;
     }
-    void reorder(const index_t & permutation)  {
-      int s=index.iptr->size();
-      if (unsigned(s)!=permutation.size())
+    void reorder(const std::vector<int> & permutation)  {
+      int s=int(index.size());
+      if (unsigned(s)!=permutation.size()){
+#ifndef NO_STDEXCEPT
 	setsizeerr("Error monomial.h reorder(const index_t &)");
+#endif
+	return;
+      }
       index_m new_i(s);
-      index_t::iterator newit=new_i.iptr->begin();
+      index_t::iterator newit=new_i.begin();
       for (int i=0;i<s;++newit,++i)
-	*newit=(*index.iptr)[permutation[i]];
+	*newit=(index)[permutation[i]];
       index=new_i;
     }
     // truncate topmost index value (decrement by 1 the dimension)
     inline monomial<T> trunc1 () const {
-      index_t & itt=*index.iptr;
 #ifdef DEBUG_SUPPORT
-      assert(!itt.empty());
+      assert(index.begin()!=index.end());
 #endif
-      return monomial<T>(value,index_m(itt.begin()+1,itt.end()));
+      return monomial<T>(value,index_m(index.begin()+1,index.end()));
     }
     monomial<T> untrunc1 (int j=0) const {
-      index_t::const_iterator it=index.iptr->begin(),itend=index.iptr->end();
+      index_t::const_iterator it=index.begin(),itend=index.end();
       index_m new_i(itend-it+1);
-      index_t::iterator newit=new_i.iptr->begin();    
+      index_t::iterator newit=new_i.begin();    
       *newit=j;
       for (++newit;it!=itend;++newit,++it)
 	*newit=*it;
@@ -235,58 +259,129 @@ namespace giac {
     }
     // add a principal degree equal to j and adjust dimension to dim
     monomial<T> untrunc (int j,int dim) const {
-      int s=index.iptr->size();
+      int s=int(index.size());
       assert(s<dim);
       index_m new_i(dim);
-      index_t::const_iterator it=index.iptr->begin();
-      index_t::iterator newit=new_i.iptr->begin();
+      index_t::const_iterator it=index.begin();
+      index_t::iterator newit=new_i.begin();
       *newit=j;
       for (++newit,--dim;dim>s;++newit,--dim)
 	*newit=0;
-      for (;it!=index.iptr->end();++newit,++it)
+      for (;it!=index.end();++newit,++it)
 	*newit=*it;
       return monomial<T>(value,new_i);
     }
     inline T norm () const{
       return abs(value);
     }
-    std::string print() const {
-      return "%%%{"+value.print()+','+print_INT_(* index.iptr)+ "%%%}";
+    inline std::string print() const {
+      std::string s("%%%{");
+      s += value.print();
+      s += ',';
+      s += print_INT_(index.iref());
+      s += std::string("%%%}");
+      return s;
     }
   };
   
+  // ordering monomials using index ordering
+  template <class T>
+  bool m_total_lex_is_strictly_greater(const monomial<T> & m1, const monomial<T> & m2){
+    return(i_total_lex_is_strictly_greater(m1.index,m2.index));
+  }
+  template <class T>
+  bool m_lex_is_strictly_greater(const monomial<T> & m1, const monomial<T> & m2){
+    return(i_lex_is_strictly_greater(m1.index,m2.index));
+  }
+
+  template <class T>
+  bool m_total_revlex_is_strictly_greater(const monomial<T> & m1, const monomial<T> & m2){
+    return(i_total_revlex_is_strictly_greater(m1.index,m2.index));
+  }
+
+  template <class T>
+  bool m_3var_is_strictly_greater(const monomial<T> & m1, const monomial<T> & m2){
+    return(i_3var_is_strictly_greater(m1.index,m2.index));
+  }
+
+  template <class T>
+  bool m_7var_is_strictly_greater(const monomial<T> & m1, const monomial<T> & m2){
+    return(i_7var_is_strictly_greater(m1.index,m2.index));
+  }
+
+  template <class T>
+  bool m_11var_is_strictly_greater(const monomial<T> & m1, const monomial<T> & m2){
+    return(i_11var_is_strictly_greater(m1.index,m2.index));
+  }
+
+  template <class T>
+  bool m_16var_is_strictly_greater(const monomial<T> & m1, const monomial<T> & m2){
+    return(i_16var_is_strictly_greater(m1.index,m2.index));
+  }
+
+  template <class T>
+  bool m_32var_is_strictly_greater(const monomial<T> & m1, const monomial<T> & m2){
+    return(i_32var_is_strictly_greater(m1.index,m2.index));
+  }
+
+  template <class T>
+  bool m_64var_is_strictly_greater(const monomial<T> & m1, const monomial<T> & m2){
+    return(i_64var_is_strictly_greater(m1.index,m2.index));
+  }
+
+  template<class T> class sort_helper {
+  public:
+    std::pointer_to_binary_function < const monomial<T> &, const monomial<T> &, bool> strictly_greater ;
+    sort_helper(const std::pointer_to_binary_function < const monomial<T> &, const monomial<T> &, bool> is_strictly_greater):strictly_greater(is_strictly_greater) {};
+    sort_helper():strictly_greater(std::ptr_fun<const monomial<T> &, const monomial<T> &, bool>(m_lex_is_strictly_greater<T>)) {};
+    bool operator () (const monomial<T> & a, const monomial<T> & b){ return strictly_greater(a,b);}
+  };
+
+#ifdef NSPIRE
+  template <class T,class I>
+  nio::ios_base<I> & operator << (nio::ios_base<I> & os, const monomial<T> & m ){
+    return os << m.print();
+  }
+#else
   template <class T>
   std::ostream & operator << (std::ostream & os, const monomial<T> & m ){
     return os << m.print();
   }
+#endif
 
   template<class T>
   bool operator == (const monomial<T>& a,const monomial<T> & b){
     return (a.value==b.value) && (a.index==b.index);
   }
 
+  template<class T>
+  bool operator != (const monomial<T>& a,const monomial<T> & b){
+    return !(a==b);
+  }
+
   template <class T>
   monomial<T> Untrunc1(const T & t,int j=0){
     index_m new_i;
-    new_i.i()->push_back(j);
+    new_i.push_back(j);
     return monomial<T>(t,new_i);
   }
 
-  // ordering monomials using index ordering
-  template <class T>
-  bool m_total_lex_is_greater(const monomial<T> & m1, const monomial<T> & m2){
-    return(i_total_lex_is_greater(m1.index,m2.index));
+#ifdef NSPIRE
+  template <class T,class I>
+  nio::ios_base<I> & operator << (nio::ios_base<I> & os, const  std::vector<T> v){
+    typename std::vector<T>::const_iterator it=v.begin();
+    typename std::vector<T>::const_iterator itend=v.end();
+    os << "Vector [";
+    for (;it!=itend;){
+      os << *it ;
+      ++it;
+      if (it!=itend)
+	os << ",";
+    }
+    os << "]" ;
+    return os;
   }
-  template <class T>
-  bool m_lex_is_greater(const monomial<T> & m1, const monomial<T> & m2){
-    return(i_lex_is_greater(m1.index,m2.index));
-  }
-
-  template <class T>
-  bool m_total_revlex_is_greater(const monomial<T> & m1, const monomial<T> & m2){
-    return(i_total_revlex_is_greater(m1.index,m2.index));
-  }
-
+#else
   template <class T>
   std::ostream & operator << (std::ostream & os, const  std::vector<T> v){
     typename std::vector<T>::const_iterator it=v.begin();
@@ -301,6 +396,7 @@ namespace giac {
     os << "]" ;
     return os;
   }
+#endif
 
   /*
     template <class T>
@@ -324,9 +420,12 @@ namespace giac {
       }
     }
     else {
+      new_coord.clear();
       new_coord.reserve(a_end - a );
       for (;a!=a_end;++a){
-	new_coord.push_back(monomial<T>( ((*a).value) * fact , (*a).index) );
+	T tmp=((*a).value) * fact;
+	if (!is_zero(tmp))
+	  new_coord.push_back(monomial<T>( tmp , (*a).index) );
       }
     }
   }
@@ -343,17 +442,39 @@ namespace giac {
   }
 
   template <class T>
-  std::vector< monomial<T> > operator * (const std::vector< monomial<T> > & v,const T & f){
+  inline std::vector< monomial<T> > operator * (const std::vector< monomial<T> > & v,const T & f){
     return f*v;
+  }
+
+  template <class T>
+  std::vector< monomial<T> > & operator *= (std::vector< monomial<T> > & v,const T & f){
+    if (is_one(f))
+      return v;
+    typename std::vector< monomial<T> >::const_iterator a=v.begin(), a_end=v.end();
+    if (!is_zero(f))
+      Mul(a,a_end,f,v);
+    else
+      v.clear();
+    return v;
   }
 
   template <class T>
   void Div ( typename std::vector< monomial<T> >::const_iterator & a,
 	     typename std::vector< monomial<T> >::const_iterator & a_end,
 	     const T & fact, std::vector< monomial<T> > & new_coord){
-    new_coord.reserve(a_end - a );
-    for (;a!=a_end;++a){
-      new_coord.push_back(monomial<T>( rdiv((*a).value, fact) , (*a).index) );
+    if (new_coord.begin()==a){
+      if (is_one(fact))
+	return;
+      typename std::vector< monomial<T> >::iterator b=new_coord.begin(),b_end=new_coord.end();
+      for (;b!=b_end;++b){
+	b->value = b->value / fact;
+      }
+    }
+    else {
+      new_coord.reserve(a_end - a );
+      for (;a!=a_end;++a){
+	new_coord.push_back(monomial<T>( rdiv((*a).value, fact) , (*a).index) );
+      }
     }
   }
 
@@ -368,20 +489,28 @@ namespace giac {
     return res ;
   }
 
+  typedef bool (* m_strictly_greater_t)(const index_m &,const index_m &);
+
   template <class T>
   void Add ( typename std::vector< monomial<T> >::const_iterator & a,
 	     typename std::vector< monomial<T> >::const_iterator & a_end,
 	     typename std::vector< monomial<T> >::const_iterator & b,
 	     typename std::vector< monomial<T> >::const_iterator & b_end,
 	     std::vector< monomial<T> > & new_coord,
-	     const std::pointer_to_binary_function< const index_t &, const index_t &, bool> is_strictly_greater) {
+	     bool (* is_strictly_greater)( const index_m &, const index_m &)) {
+    if ( (a!=a_end && new_coord.begin()==a) || (b!=b_end && new_coord.begin()==b)){
+      std::vector< monomial<T> > tmp;
+      Add(a,a_end,b,b_end,tmp,is_strictly_greater);
+      std::swap(new_coord,tmp);
+      return;
+    }
     new_coord.clear();
     new_coord.reserve( (a_end - a) + (b_end - b));
     // bool log=false;
     /* if (a!=a_end)
-       log=a->index.iptr->size()>=12; 
+       log=a->index.size()>=12; 
        if (log)
-       cerr << "+ begin" << clock() << endl; */
+       CERR << "+ begin" << CLOCK() << endl; */
     for (;;) {
       if (a == a_end) {
 	while (b != b_end) {
@@ -391,7 +520,6 @@ namespace giac {
 	break;
       } 
       const index_m & pow_a = a->index;
-    
       // If b is empty, fill up with elements from a and stop
       if (b == b_end) {
 	while (a != a_end) {
@@ -400,12 +528,10 @@ namespace giac {
 	}
 	break;
       } 
-
       const index_m & pow_b = b->index;
-        
       // a and b are non-empty, compare powers
       if (pow_a!=pow_b){
-	if (is_strictly_greater(*pow_a.iptr, *pow_b.iptr)) {
+	if (is_strictly_greater(pow_a, pow_b)) {
 	  // a has lesser power, get coefficient from a
 	  new_coord.push_back(*a);
 	  ++a;
@@ -425,7 +551,7 @@ namespace giac {
       }
     }
     //  if (log)
-    //  std::cerr << "+ end " << clock() << endl;
+    //  CERR << "+ end " << CLOCK() << endl;
   }
 
   template <class T>
@@ -433,7 +559,7 @@ namespace giac {
     typename std::vector< monomial<T> >::const_iterator a=v.begin(), a_end=v.end();
     typename std::vector< monomial<T> >::const_iterator b=w.begin(), b_end=w.end();
     std::vector< monomial<T> > res;
-    Add(a,a_end,b,b_end,res,lex_is_greater<int>);
+    Add(a,a_end,b,b_end,res,i_lex_is_strictly_greater);
     return res ;
   }
 
@@ -443,7 +569,13 @@ namespace giac {
 	     typename std::vector< monomial<T> >::const_iterator & b,
 	     typename std::vector< monomial<T> >::const_iterator & b_end,
 	     std::vector< monomial<T> > & new_coord,
-	     const std::pointer_to_binary_function< const index_t &, const index_t &, bool> is_strictly_greater) {
+	     bool (* is_strictly_greater)( const index_m &, const index_m &)) {
+    if ((a!=a_end && new_coord.begin()==a) || (b!=b_end && new_coord.begin()==b)){
+      std::vector< monomial<T> > tmp;
+      Sub(a,a_end,b,b_end,tmp,is_strictly_greater);
+      std::swap(new_coord,tmp);
+      return;
+    }
     new_coord.clear();
     new_coord.reserve( (a_end - a) + (b_end - b));
     for (;;) {
@@ -456,7 +588,6 @@ namespace giac {
 	break;
       } 
       const index_m & pow_a = a->index;
-    
       // If b is empty, fill up with elements from a and stop
       if (b == b_end) {
 	while (a != a_end) {
@@ -466,10 +597,9 @@ namespace giac {
 	break;
       } 
       const index_m & pow_b = b->index;
-        
       // a and b are non-empty, compare powers
       if (pow_a!=pow_b){
-	if (is_strictly_greater(*pow_a.iptr, *pow_b.iptr)) {
+	if (is_strictly_greater(pow_a, pow_b)) {
 	  // a has lesser power, get coefficient from a
 	  new_coord.push_back(*a);
 	  ++a;
@@ -495,7 +625,7 @@ namespace giac {
     typename std::vector< monomial<T> >::const_iterator a=v.begin(), a_end=v.end();
     typename std::vector< monomial<T> >::const_iterator b=w.begin(), b_end=w.end();
     std::vector< monomial<T> > res;
-    Sub(a,a_end,b,b_end,res,lex_is_greater<int>);
+    Sub(a,a_end,b,b_end,res,i_lex_is_strictly_greater);
     return res ;
   }
 
@@ -518,13 +648,12 @@ namespace giac {
 
   struct ltindex
   {
-    std::pointer_to_binary_function < const index_t &, const index_t &, bool> is_strictly_greater;
-    inline bool operator()(const index_t & s1, const index_t & s2) const
+    bool (* is_strictly_greater)( const index_m &, const index_m &);
+    inline bool operator()(const index_m & s1, const index_m & s2) const
     {
       return is_strictly_greater(s1, s2) ;
     }
-    ltindex(const std::pointer_to_binary_function < const index_t &, const index_t &, bool> my_is_strictly_greater) : is_strictly_greater(my_is_strictly_greater) {};
-
+    ltindex(bool (* my_is_strictly_greater)( const index_m &, const index_m &)) : is_strictly_greater(my_is_strictly_greater) {};
   };
 
   template <class T>
@@ -533,25 +662,29 @@ namespace giac {
 	     typename std::vector< monomial<T> >::const_iterator & itb,
 	     typename std::vector< monomial<T> >::const_iterator & itb_end,
 	     std::vector< monomial<T> > & new_coord,
-	     const std::pointer_to_binary_function < const index_t &, const index_t &, bool> is_strictly_greater,
-	     const std::pointer_to_binary_function < const monomial<T> &, const monomial<T> &, bool> m_is_greater
+	     bool (* is_strictly_greater)( const index_m &, const index_m &),
+	     const std::pointer_to_binary_function < const monomial<T> &, const monomial<T> &, bool> m_is_strictly_greater
 	     ) {
+    if (ita==ita_end || itb==itb_end){
+      new_coord.clear();
+      return;
+    }
     // another algorithm using a hash_map 
 #ifdef HASH_MAP_NAMESPACE
     typedef HASH_MAP_NAMESPACE::hash_map< index_t,T,hash_function_object > hash_prod ;
     hash_prod produit_;
-    index_t sum_(ita->index.iptr->size());
-    index_t * it_aindexptr;
+    index_t sum_(ita->index.size());
+    // const index_t * it_aindexptr;
     index_t::const_iterator it_aindex,it_aindexbeg,it_aindexend,it_bindex;
     index_t::iterator it_sum_index,it_sum_beg=sum_.begin();
     typename hash_prod::iterator prod_it_,prod_it_end;
     typename std::vector< monomial<T> >::const_iterator it_a_cur=ita,it_b_cur;
     for ( ; it_a_cur!=ita_end; ++it_a_cur ){
-      it_aindexptr= it_a_cur->index.iptr;
-      it_aindexbeg=it_aindexptr->begin();
-      it_aindexend=it_aindexptr->end();
+      // it_aindexptr= &it_a_cur->index.iref();
+      it_aindexbeg=it_a_cur->index.begin();
+      it_aindexend=it_a_cur->index.end();
       for ( it_b_cur=itb;it_b_cur!=itb_end;++it_b_cur) {
-	it_bindex=it_b_cur->index.iptr->begin();
+	it_bindex=it_b_cur->index.begin();
 	it_sum_index=it_sum_beg;
 	for (it_aindex=it_aindexbeg;it_aindex!=it_aindexend;++it_bindex,++it_sum_index,++it_aindex)
 	  *it_sum_index=(*it_aindex)+(*it_bindex);
@@ -563,32 +696,37 @@ namespace giac {
       }
     }
     prod_it_=produit_.begin(),prod_it_end=produit_.end();
+    new_coord.clear();
     new_coord.reserve(produit_.size());
     for (;prod_it_!=prod_it_end;++prod_it_)
       if (!is_zero(prod_it_->second))
 	new_coord.push_back(monomial<T>(prod_it_->second,prod_it_->first));
-    // cerr << new_coord <<endl;
-    sort(new_coord.begin(),new_coord.end(),m_is_greater);
+    // CERR << new_coord <<endl;
+#if 1
+    sort_helper<T> M(m_is_strictly_greater);
+    sort(new_coord.begin(),new_coord.end(),M);    
+#else
+    sort(new_coord.begin(),new_coord.end(),m_is_strictly_greater);
+#endif
     return ;
 #endif
-
+#ifndef NSPIRE
     /* other algorithm using a map to avoid reserving too much space */
-    typedef std::map< index_t,T,const std::pointer_to_binary_function < const index_t &, const index_t &, bool> > application;
-    application produit(is_strictly_greater);
+    typedef std::map< index_t,T,const std::pointer_to_binary_function < const index_m &, const index_m &, bool> > application;
+    application produit(std::ptr_fun(is_strictly_greater));
     // typedef std::map<index_t,T> application;
     // application produit;
-    index_t somme(ita->index.iptr->size());
-    index_t * itaindexptr;
+    index_t somme(ita->index.size());
+    // const index_t * itaindexptr;
     index_t::const_iterator itaindex,itaindexbeg,itaindexend,itbindex;
     index_t::iterator itsommeindex,itsommebeg=somme.begin();
     typename application::iterator prod_it,prod_itend;
     typename std::vector< monomial<T> >::const_iterator ita_cur=ita,itb_cur;
     for ( ; ita_cur!=ita_end; ++ita_cur ){
-      itaindexptr= ita_cur->index.iptr;
-      itaindexbeg=itaindexptr->begin();
-      itaindexend=itaindexptr->end();
+      itaindexbeg=ita_cur->index.begin();
+      itaindexend=ita_cur->index.end();
       for ( itb_cur=itb;itb_cur!=itb_end;++itb_cur) {
-	itbindex=itb_cur->index.iptr->begin();
+	itbindex=itb_cur->index.begin();
 	itsommeindex=itsommebeg;
 	for (itaindex=itaindexbeg;itaindex!=itaindexend;++itbindex,++itsommeindex,++itaindex)
 	  *itsommeindex=(*itaindex)+(*itbindex);
@@ -600,86 +738,94 @@ namespace giac {
       }
     }
     prod_it=produit.begin(),prod_itend=produit.end();
+    new_coord.clear();
     new_coord.reserve(produit.size());
     for (;prod_it!=prod_itend;++prod_it)
       if (!is_zero(prod_it->second))
 	new_coord.push_back(monomial<T>(prod_it->second,prod_it->first));
-    // cerr << new_coord <<endl;
-    // sort(new_coord.begin(),new_coord.end(),m_is_greater);
-  
-    /* old algorithm
-       std::vector< monomial<T> > multcoord;
-       int asize=ita_end-ita,bsize=itb_end-itb;
-       int d=ita->index.iptr->size();
-       multcoord.reserve(asize*bsize); // correct for sparse polynomial
-       typename std::vector< monomial<T> >::const_iterator ita_begin = ita,itb_begin=itb ;
-       index_m old_pow=(*ita).index+(*itb).index;
-       T res( 0);
-       for ( ; ita!=ita_end; ++ita ){
-       typename std::vector< monomial<T> >::const_iterator ita_cur=ita;
-       typename std::vector< monomial<T> >::const_iterator itb_cur=itb;
-       for (;itb_cur!=itb_end;--ita_cur,++itb_cur) {
-       index_m cur_pow=(*ita_cur).index+(*itb_cur).index;
-       if (cur_pow!=old_pow){
-       if (!is_zero(res))
-       multcoord.push_back( monomial<T>(res ,old_pow ));
-       res=((*ita_cur).value) * ((*itb_cur).value);
-       old_pow=cur_pow;
-       }
-       else
-       res=res+((*ita_cur).value) * ((*itb_cur).value);      
-       if (ita_cur==ita_begin)
-       break;
-       }
-       }
-       --ita;
-       ++itb;
-       for ( ; itb!=itb_end;++itb){
-       typename std::vector< monomial<T> >::const_iterator ita_cur=ita;
-       typename std::vector< monomial<T> >::const_iterator itb_cur=itb;
-       for (;itb_cur!=itb_end;--ita_cur,++itb_cur) {
-       index_m cur_pow=(*ita_cur).index+(*itb_cur).index;
-       if (cur_pow!=old_pow){
-       if (!is_zero(res))
-       multcoord.push_back( monomial<T>(res ,old_pow ));
-       res=((*ita_cur).value) * ((*itb_cur).value);
-       old_pow=cur_pow;
-       }
-       else
-       res=res+((*ita_cur).value) * ((*itb_cur).value);
-    
-       if (ita_cur==ita_begin)
-       break;
-       }
-       }
-       // push last monomial
-       if (!is_zero(res))
-       multcoord.push_back( monomial<T>(res ,old_pow ));
-       // sort by asc. power
-       sort( multcoord.begin(),multcoord.end(),m_is_greater);
-       typename std::vector< monomial<T> >::const_iterator it=multcoord.begin();
-       typename std::vector< monomial<T> >::const_iterator itend=multcoord.end();
-       // adjust result size 
-       // statistics about polynomial density
-       // a dense poly of deg. aa and d variables has binomial(aa+d,d) monomials
-       // we need to reserve at most asize*bsize
-       // but less for dense polynomials since 
-       // binomial(aa+d,d)*binomial(bb+d,d) > binomial(aa+bb+d,d)
-       int aa=total_degree(ita_begin->index),bb=total_degree(itb_begin->index);
-       double r;
-       double factoriald=std::lgamma(d+1);
-       // double factorialaa=std::lgamma(aa+1),factorialbb=std::lgamma(bb+1);
-       // double factorialaad=std::lgamma(aa+d+1),factorialbbd=std::lgamma(bb+d+1);
-       double factorialaabbd=std::lgamma(aa+bb+d+1),factorialaabb=std::lgamma(aa+bb+1);
-       r=std::exp(factorialaabbd-(factorialaabb+factoriald));
-       if (debug_infolevel)
-       cerr << "// Mul degree " << aa << "+" << bb << " size " << asize << "*" << bsize << "=" << asize*bsize << " max " << r << endl;
-       new_coord.reserve(min(int(r),itend-it));
-       // add terms with same power
-       addsamepower(it,itend,new_coord);
-       if (debug_infolevel)
-       cerr << "// Actual mul size " << new_coord.size() << endl;
-    */
+    // CERR << new_coord <<endl;
+    // sort(new_coord.begin(),new_coord.end(),m_is_strictly_greater);
+    return;
+#else
+    /* old algorithm */
+    std::vector< monomial<T> > multcoord;
+    int asize=ita_end-ita,bsize=itb_end-itb;
+    int d=ita->index.size();
+    multcoord.reserve(asize*bsize); // correct for sparse polynomial
+    typename std::vector< monomial<T> >::const_iterator ita_begin = ita,itb_begin=itb ;
+    index_m old_pow=(*ita).index+(*itb).index;
+    T res( 0);
+    for ( ; ita!=ita_end; ++ita ){
+      typename std::vector< monomial<T> >::const_iterator ita_cur=ita;
+      typename std::vector< monomial<T> >::const_iterator itb_cur=itb;
+      for (;itb_cur!=itb_end;--ita_cur,++itb_cur) {
+	index_m cur_pow=(*ita_cur).index+(*itb_cur).index;
+	if (cur_pow!=old_pow){
+	  if (!is_zero(res))
+	    multcoord.push_back( monomial<T>(res ,old_pow ));
+	  res=((*ita_cur).value) * ((*itb_cur).value);
+	  old_pow=cur_pow;
+	}
+	else
+	  res=res+((*ita_cur).value) * ((*itb_cur).value);      
+	if (ita_cur==ita_begin)
+	  break;
+      }
+    }
+    --ita;
+    ++itb;
+    for ( ; itb!=itb_end;++itb){
+      typename std::vector< monomial<T> >::const_iterator ita_cur=ita;
+      typename std::vector< monomial<T> >::const_iterator itb_cur=itb;
+      for (;itb_cur!=itb_end;--ita_cur,++itb_cur) {
+	index_m cur_pow=(*ita_cur).index+(*itb_cur).index;
+	if (cur_pow!=old_pow){
+	  if (!is_zero(res))
+	    multcoord.push_back( monomial<T>(res ,old_pow ));
+	  res=((*ita_cur).value) * ((*itb_cur).value);
+	  old_pow=cur_pow;
+	}
+	else
+	  res=res+((*ita_cur).value) * ((*itb_cur).value);
+	
+	if (ita_cur==ita_begin)
+	  break;
+      }
+    }
+    // push last monomial
+    if (!is_zero(res))
+      multcoord.push_back( monomial<T>(res ,old_pow ));
+    // sort by asc. power
+#if 1 // def NSPIRE
+    sort_helper<T> M(m_is_strictly_greater);  
+    sort(multcoord.begin(),multcoord.end(),M);
+#else
+    sort( multcoord.begin(),multcoord.end(),m_is_strictly_greater);
+#endif
+    typename std::vector< monomial<T> >::const_iterator it=multcoord.begin();
+    typename std::vector< monomial<T> >::const_iterator itend=multcoord.end();
+    // adjust result size 
+    // statistics about polynomial density
+    // a dense poly of deg. aa and d variables has binomial(aa+d,d) monomials
+    // we need to reserve at most asize*bsize
+    // but less for dense polynomials since 
+    // binomial(aa+d,d)*binomial(bb+d,d) > binomial(aa+bb+d,d)
+    int aa=total_degree(ita_begin->index),bb=total_degree(itb_begin->index);
+    double r;
+    double factoriald=std::lgamma(d+1);
+    // double factorialaa=std::lgamma(aa+1),factorialbb=std::lgamma(bb+1);
+    // double factorialaad=std::lgamma(aa+d+1),factorialbbd=std::lgamma(bb+d+1);
+    double factorialaabbd=std::lgamma(aa+bb+d+1),factorialaabb=std::lgamma(aa+bb+1);
+    r=std::exp(factorialaabbd-(factorialaabb+factoriald));
+    if (debug_infolevel)
+      CERR << "// " << CLOCK() << " Mul degree " << aa << "+" << bb << " size " << asize << "*" << bsize << "=" << asize*bsize << " max " << r << std::endl;
+    new_coord.clear();
+    new_coord.reserve(std::min(int(r),itend-it));
+    // add terms with same power
+    addsamepower(it,itend,new_coord);
+    if (debug_infolevel)
+      CERR << "// Actual mul size " << new_coord.size() << std::endl;
+#endif
   }
 
   // polynomial multiplication
@@ -688,16 +834,39 @@ namespace giac {
     typename std::vector< monomial<T> >::const_iterator a=v.begin(), a_end=v.end();
     typename std::vector< monomial<T> >::const_iterator b=w.begin(), b_end=w.end();
     std::vector< monomial<T> > res;
-    Mul(a,a_end,b,b_end,res,m_lex_is_greater);
+    Mul(a,a_end,b,b_end,res,i_lex_is_strictly_greater,std::ptr_fun< const monomial<T> &, const monomial<T> &, bool >((m_lex_is_strictly_greater<T>)));
     return res ;
+  }
+
+  template <class T>
+  std::vector< monomial<T> > & operator *= (std::vector< monomial<T> > & v,const std::vector< monomial<T> > & w){
+    typename std::vector< monomial<T> >::const_iterator a=v.begin(), a_end=v.end();
+    typename std::vector< monomial<T> >::const_iterator b=w.begin(), b_end=w.end();
+    Mul(a,a_end,b,b_end,v,i_lex_is_strictly_greater,std::ptr_fun< const monomial<T> &, const monomial<T> &, bool >((m_lex_is_strictly_greater<T>)));
+    return v;
+  }
+
+
+  template <class T>
+  void Shift (const std::vector< monomial<T> > & v,const index_m &i, std::vector< monomial<T> > & new_coord){
+    new_coord.clear();
+    typename std::vector< monomial<T> >::const_iterator itend=v.end();
+    for (typename std::vector< monomial<T> >::const_iterator it=v.begin();it!=itend;++it)
+      new_coord.push_back( it->shift(i) );
   }
 
   template <class T>
   void Shift (const std::vector< monomial<T> > & v,const index_m &i, const T & fois, std::vector< monomial<T> > & new_coord){
     new_coord.clear();
     typename std::vector< monomial<T> >::const_iterator itend=v.end();
-    for (typename std::vector< monomial<T> >::const_iterator it=v.begin();it!=itend;++it)
-      new_coord.push_back( it->shift(i,fois) );
+    if (is_one(fois)){
+      for (typename std::vector< monomial<T> >::const_iterator it=v.begin();it!=itend;++it)
+	new_coord.push_back( it->shift(i) );
+    }
+    else {
+      for (typename std::vector< monomial<T> >::const_iterator it=v.begin();it!=itend;++it)
+	new_coord.push_back( it->shift(i,fois) );
+    }
   }
 
   template <class T>
@@ -709,20 +878,12 @@ namespace giac {
   }
 
   template <class T>
-  void Shift (const std::vector< monomial<T> > & v,const index_m &i, std::vector< monomial<T> > & new_coord){
-    new_coord.clear();
-    typename std::vector< monomial<T> >::const_iterator itend=v.end();
-    for (typename std::vector< monomial<T> >::const_iterator it=v.begin();it!=itend;++it)
-      new_coord.push_back( it->shift(i) );
-  }
-
-  template <class T>
   T Content (const std::vector< monomial<T> > & v){
     typename std::vector< monomial<T> >::const_iterator it=v.begin();
     typename std::vector< monomial<T> >::const_iterator itend=v.end();
     if (it==itend)
       return 1;
-    T res=it->value;
+    T res=(itend-1)->value;
     for (;it!=itend ;++it){
       res=gcd(res,it->value);
       if (is_one(res))
@@ -740,9 +901,9 @@ namespace giac {
 
   template<class T>
   void Nextcoeff(typename std::vector< monomial<T> >::const_iterator & it,const typename std::vector< monomial<T> >::const_iterator & itend,std::vector< monomial<T> > & v){
-    int n=it->index.iptr->front();
-    int d=it->index.iptr->size();
-    for (;(it!=itend) && (it->index.iptr->front()==n);++it)
+    int n=it->index.front();
+    int d=it->index.size();
+    for (;(it!=itend) && (it->index.front()==n);++it)
       v.push_back(it->trunc1());
   }
 
@@ -771,14 +932,18 @@ namespace giac {
     typename std::vector< monomial<T> >::iterator itend=c.end();
     index_t tmp;
     for (;it!=itend;++it){
-      index_t & i=*it->index.iptr;
-      if (*(it->index.ref_count)==1)
+      /*
+      index_t & i= it->index.riptr->i;
+      if (it->index.riptr->ref_count==1)
 	i.push_back(j);
       else {
-	tmp=i;
-	tmp.push_back(j);
-	it->index=tmp;
+      */
+      tmp=it->index.iref();
+      tmp.push_back(j);
+      it->index=tmp;
+	/*
       }
+	*/
     }
   }
 
@@ -816,8 +981,8 @@ namespace giac {
       // set found to true as soon as one is non 0
       typename std::vector< monomial<T> >::const_iterator it=v.begin();
       for (;it!=itend;++it){
-	if ((*it->index.iptr)[1]==pivotc){	
-	  int r=it->index.iptr->front();
+	if ((it->index)[1]==pivotc){	
+	  int r=it->index.front();
 	  T val=it->value;
 	  pivotcol[r]=val;
 	  if ( !has(permut,r) ){
@@ -840,14 +1005,15 @@ namespace giac {
     pivotline.clear();
     typename std::vector< monomial<T> >::const_iterator it=v.begin();
     for (;it!=itend;++it){
-      if (it->index.iptr->front()==pivotr)
+      if (it->index.front()==pivotr)
 	break;
     }
     for (;it!=itend;++it){
-      if (it->index.iptr->front()!=pivotr)
+      if (it->index.front()!=pivotr)
 	break;
       pivotline.push_back(it->trunc1());
     }
+    return true;
   }
 
   template <class T>
@@ -855,7 +1021,7 @@ namespace giac {
     T bareisscoeff=1;
     permut.clear();
     permut.push_back(0); // 0 -> 0 convention for permutations
-    T pivotcol[rows+1];
+    T* pivotcol = new T[rows+1];
     int pivotr;
     for (int pivotc=1;pivotc<=cols;pivotc++){
       std::vector< monomial<T> > pivotline;
@@ -866,11 +1032,11 @@ namespace giac {
       newcoord.reserve(v.size());
       typename std::vector< monomial<T> >::const_iterator it=v.begin(),itend=v.end(),tmpit,tmpitend;
       while (it!=itend){
-	int r=it->index.iptr->front();
+	int r=it->index.front();
 	std::vector< monomial<T> > temp;
 	Nextcoeff(it,itend,temp);
 	if (r!=pivotr){
-	  // std::cout << "L" << r << "=" << pivotcoeff << "*L" << r << "-" << pivotcol[r] << "*L" << pivotr << std::endl ;
+	  // COUT << "L" << r << "=" << pivotcoeff << "*L" << r << "-" << pivotcol[r] << "*L" << pivotr << std::endl ;
 	  temp=temp*pivotcoeff-pivotline*pivotcol[r];
 	  if (dobareiss)
 	    temp=temp/bareisscoeff;
@@ -881,8 +1047,9 @@ namespace giac {
       }
       bareisscoeff=pivotcoeff;
       v=newcoord;
-      // std::cout << v << std::endl;
+      // COUT << v << std::endl;
     }
+    delete [] pivotcol;
   }
 
   template <class T>
@@ -890,10 +1057,10 @@ namespace giac {
     for (int j=0;j<=cols;j++)
       beg[j]=0;
     for (;it!=itend;){
-      int row=it->index.iptr->front();
-      int col=(*it->index.iptr)[1];
+      int row=it->index.front();
+      int col=(it->index)[1];
       beg[col]=it;
-      while ((it!=itend) && (row==it->index.iptr->front()))
+      while ((it!=itend) && (row==it->index.front()))
 	++it;
     }
   }
@@ -903,10 +1070,10 @@ namespace giac {
     for (int j=0;j<=cols;j++)
       beg[j]=0;
     for (;it!=itend;){
-      int row=it->index.iptr->front();
-      int col=(*it->index.iptr)[1];
+      int row=it->index.front();
+      int col=(it->index)[1];
       beg[col]=it;
-      while ((it!=itend) && (row==it->index.iptr->front()))
+      while ((it!=itend) && (row==it->index.front()))
 	++it;
     }
   }
@@ -917,7 +1084,7 @@ namespace giac {
     Rref(v,rows,cols,permut,dobareiss);
     // divide each non-zero row by leading coeff and order
     typename std::vector< monomial<T> >::const_iterator it=v.begin(),itend=v.end();
-    typename std::vector< monomial<T> >::const_iterator beg[cols+1];
+    typename std::vector< monomial<T> >::const_iterator *beg = new typename std::vector< monomial<T> >::const_iterator[cols+1];
     std::vector< monomial<T> > temp,newcoord;
     Findbeginofrows(it,itend,cols,beg);
     int r=1;
@@ -934,6 +1101,7 @@ namespace giac {
 	break;
     }
     v=newcoord;
+    delete [] beg;
   }
 
 #ifndef NO_NAMESPACE_GIAC

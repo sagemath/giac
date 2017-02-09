@@ -1,9 +1,16 @@
 // -*- mode:C++ ; compile-command: "g++  cas2html.cc -o cas2html -lgiac -lgmp" -*-
 // g++ --static cas2html.cc -o cas2html -lgiac -lgsl -lgslcblas -lmpfr -lgmp -ldl
 // Pour installer sur BSD brandelf -t Linux cas2html
+#ifndef IN_GIAC
 #include <giac/giac.h>
 #include <giac/mathml.h>
 #include <giac/tex.h>
+#else
+#include "giac.h"
+#include "mathml.h"
+#include "tex.h"
+#endif
+
 #include <string>
 #include <fstream>
 

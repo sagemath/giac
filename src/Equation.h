@@ -1,9 +1,16 @@
 // -*- mode:C++ ; compile-command: "g++ -I.. -g -c Equation.cc" -*-
 #ifndef _EQUATION_H
 #define _EQUATION_H
-#include <vector>
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "vector.h"
 #include <string>
+#ifndef IN_GIAC
 #include <giac/giac.h>
+#else
+#include "giac.h"
+#endif
 #ifdef HAVE_LIBFLTK
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Menu.H>
@@ -16,7 +23,11 @@
 #ifdef HAVE_LC_MESSAGES
 #include <locale.h>
 #endif
+#ifndef IN_GIAC
 #include <giac/giacintl.h>
+#else
+#include "giacintl.h"
+#endif
 
 #ifndef NO_NAMESPACE_XCAS
 namespace xcas {
@@ -66,9 +77,10 @@ namespace xcas {
     void (* cb_select) (const char * ); // callback when selection changed
     Equation_Scrollbar * vscroll,* hscroll;
     Fl_Menu_Bar * menubar;
-    Equation(int x, int y, int w, int h);
+    Equation(int x, int y, int w, int h,const char * l=0);
     Equation(int x, int y, int w, int h, const char* l,const giac::gen & g);
     Equation(int x, int y, int w, int h, const char* l,const giac::gen & g,giac::attributs mya);
+    Equation(int x, int y, int w, int h, const char* l,const giac::gen & g,giac::attributs mya,const giac::context * contextptr);
     ~Equation();
     void add_scroll_menu();
     void deselect();
@@ -79,6 +91,7 @@ namespace xcas {
     void select_down(int mode);
     void select_right(int mode);
     void select_left(int mode);
+    void adjust_widget_size(); // adjust widget size
     void adjust_xy(); // recalculate xsel, ysel to begin top of selection
     // and xcur, ycur to end bottom of selection
     void adjust_xy_sel(); // same + recalc xleft
@@ -94,7 +107,7 @@ namespace xcas {
     void setscroll();
     void deselect_and_activate();
     void desactivate_and_select();
-    void insure_something_selected();
+    void insure_something_selected(bool selectall=false);
     bool handle_key(unsigned char c,giac::gen * act);
     bool handle_text(const std::string & s,giac::gen * act);
     bool handle_text(const std::string & paste_s_orig);
@@ -122,7 +135,7 @@ namespace xcas {
   void Equation_select(giac::gen & g,bool select,bool active_search=false);
   giac::gen Equation_compute_size(const giac::gen & g,const giac::attributs & a,int windowhsize,const giac::context * contextptr);
   giac::eqwdata Equation_total_size(const giac::gen & g);  
-  // giac::gen Equation_translate(const giac::gen & g,int deltax,int deltay);
+  // Equation_translate(giac::gen & g,int deltax,int deltay);
   void Equation_vertical_adjust(int hp,int yp,int & h,int & y);
   bool Equation_find_vector_pos(giac::const_iterateur it,giac::const_iterateur itend,int & i,int &nrows);
   // return -1 if not in a multistring, position otherwise

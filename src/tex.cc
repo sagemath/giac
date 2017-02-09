@@ -1,7 +1,8 @@
 // -*- mode:C++ ; compile-command: "g++-3.4 -I.. -g -c tex.cc" -*-
-#include "first.h"
+#include "giacPCH.h"
+
 /*
- *  Copyright (C) 2002,7 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
+ *  Copyright (C) 2002,2014 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
  *  Figure printing adapted from eukleides (c) 2002, Christian Obrecht
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -14,12 +15,15 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <fcntl.h>
+//#include <fcntl.h>
 #include <stdlib.h>
 #include <stdio.h>
+#ifdef __ANDROID__
+using std::vector;
+#endif
+
 using namespace std;
 #include "gen.h"
 #include "gausspol.h"
@@ -31,6 +35,7 @@ using namespace std;
 #include "prog.h"
 #include "rpn.h"
 #include "plot.h"
+#include "giacintl.h"
 
 #ifndef NO_NAMESPACE_GIAC
 namespace giac {
@@ -182,17 +187,21 @@ namespace giac {
   // dimension of the LaTeX output figures default 12 cm x 12 cm
   double horiz_latex=12.;
   double vert_latex=12.;
-  string tex_preamble("\\documentclass{article} \n\\usepackage{pst-plot,color} \n\\usepackage{graphicx} \n\\begin{document}\n");
-  string tex_color("\\newrgbcolor{fltkcolor0}{0 0 0}\n\\newrgbcolor{fltkcolor1}{0.9961 0 0}\n\\newrgbcolor{fltkcolor2}{0 0.9961 0}\n\\newrgbcolor{fltkcolor3}{0.9961 0.9961 0}\n\\newrgbcolor{fltkcolor4}{0 0 0.9961}\n\\newrgbcolor{fltkcolor5}{0.9961 0 0.9961}\n\\newrgbcolor{fltkcolor6}{0 0.9961 0.9961}\n\\newrgbcolor{fltkcolor7}{0.9961 0.9961 0.9961}\n\\newrgbcolor{fltkcolor8}{0.332 0.332 0.332}\n\\newrgbcolor{fltkcolor9}{0.7734 0.4414 0.4414}\n\\newrgbcolor{fltkcolor10}{0.4414 0.7734 0.4414}\n\\newrgbcolor{fltkcolor11}{0.5547 0.5547 0.2188}\n\\newrgbcolor{fltkcolor12}{0.4414 0.4414 0.7734}\n\\newrgbcolor{fltkcolor13}{0.5547 0.2188 0.5547}\n\\newrgbcolor{fltkcolor14}{0.2188 0.5547 0.5547}\n\\newrgbcolor{fltkcolor15}{0 0 0.5}\n\\newrgbcolor{fltkcolor16}{0.6562 0.6562 0.5938}\n\\newrgbcolor{fltkcolor17}{0.9062 0.9062 0.8438}\n\\newrgbcolor{fltkcolor18}{0.4062 0.4062 0.3438}\n\\newrgbcolor{fltkcolor19}{0.5938 0.6562 0.6562}\n\\newrgbcolor{fltkcolor20}{0.8438 0.9062 0.9062}\n\\newrgbcolor{fltkcolor21}{0.3438 0.4062 0.4062}\n\\newrgbcolor{fltkcolor22}{0.6094 0.6094 0.6562}\n\\newrgbcolor{fltkcolor23}{0.8594 0.8594 0.9062}\n\\newrgbcolor{fltkcolor24}{0.3594 0.3594 0.4062}\n\\newrgbcolor{fltkcolor25}{0.6094 0.6562 0.6094}\n\\newrgbcolor{fltkcolor26}{0.8594 0.9062 0.8594}\n\\newrgbcolor{fltkcolor27}{0.3594 0.4062 0.3594}\n\\newrgbcolor{fltkcolor28}{0.5625 0.5625 0.5625}\n\\newrgbcolor{fltkcolor29}{0.75 0.75 0.75}\n\\newrgbcolor{fltkcolor30}{0.3125 0.3125 0.3125}\n\\newrgbcolor{fltkcolor31}{0.625 0.625 0.625}\n\\newrgbcolor{fltkcolor32}{0 0 0}\n\\newrgbcolor{fltkcolor33}{0.05078 0.05078 0.05078}\n\\newrgbcolor{fltkcolor34}{0.1016 0.1016 0.1016}\n\\newrgbcolor{fltkcolor35}{0.1484 0.1484 0.1484}\n\\newrgbcolor{fltkcolor36}{0.1914 0.1914 0.1914}\n\\newrgbcolor{fltkcolor37}{0.2383 0.2383 0.2383}\n\\newrgbcolor{fltkcolor38}{0.2812 0.2812 0.2812}\n\\newrgbcolor{fltkcolor39}{0.332 0.332 0.332}\n\\newrgbcolor{fltkcolor40}{0.3711 0.3711 0.3711}\n\\newrgbcolor{fltkcolor41}{0.4141 0.4141 0.4141}\n\\newrgbcolor{fltkcolor42}{0.457 0.457 0.457}\n\\newrgbcolor{fltkcolor43}{0.5 0.5 0.5}\n\\newrgbcolor{fltkcolor44}{0.5391 0.5391 0.5391}\n\\newrgbcolor{fltkcolor45}{0.582 0.582 0.582}\n\\newrgbcolor{fltkcolor46}{0.625 0.625 0.625}\n\\newrgbcolor{fltkcolor47}{0.6641 0.6641 0.6641}\n\\newrgbcolor{fltkcolor48}{0.707 0.707 0.707}\n\\newrgbcolor{fltkcolor49}{0.75 0.75 0.75}\n\\newrgbcolor{fltkcolor50}{0.793 0.793 0.793}\n\\newrgbcolor{fltkcolor51}{0.832 0.832 0.832}\n\\newrgbcolor{fltkcolor52}{0.875 0.875 0.875}\n\\newrgbcolor{fltkcolor53}{0.9141 0.9141 0.9141}\n\\newrgbcolor{fltkcolor54}{0.957 0.957 0.957}\n\\newrgbcolor{fltkcolor55}{0.9961 0.9961 0.9961}\n\\newrgbcolor{fltkcolor56}{0 0 0}\n\\newrgbcolor{fltkcolor57}{0 0.1406 0}\n\\newrgbcolor{fltkcolor58}{0 0.2812 0}\n\\newrgbcolor{fltkcolor59}{0 0.4258 0}\n\\newrgbcolor{fltkcolor60}{0 0.5664 0}\n\\newrgbcolor{fltkcolor61}{0 0.7109 0}\n\\newrgbcolor{fltkcolor62}{0 0.8516 0}\n\\newrgbcolor{fltkcolor63}{0 0.9961 0}\n\\newrgbcolor{fltkcolor64}{0.2461 0 0}\n\\newrgbcolor{fltkcolor65}{0.2461 0.1406 0}\n\\newrgbcolor{fltkcolor66}{0.2461 0.2812 0}\n\\newrgbcolor{fltkcolor67}{0.2461 0.4258 0}\n\\newrgbcolor{fltkcolor68}{0.2461 0.5664 0}\n\\newrgbcolor{fltkcolor69}{0.2461 0.7109 0}\n\\newrgbcolor{fltkcolor70}{0.2461 0.8516 0}\n\\newrgbcolor{fltkcolor71}{0.2461 0.9961 0}\n\\newrgbcolor{fltkcolor72}{0.4961 0 0}\n\\newrgbcolor{fltkcolor73}{0.4961 0.1406 0}\n\\newrgbcolor{fltkcolor74}{0.4961 0.2812 0}\n\\newrgbcolor{fltkcolor75}{0.4961 0.4258 0}\n\\newrgbcolor{fltkcolor76}{0.4961 0.5664 0}\n\\newrgbcolor{fltkcolor77}{0.4961 0.7109 0}\n\\newrgbcolor{fltkcolor78}{0.4961 0.8516 0}\n\\newrgbcolor{fltkcolor79}{0.4961 0.9961 0}\n\\newrgbcolor{fltkcolor80}{0.7461 0 0}\n\\newrgbcolor{fltkcolor81}{0.7461 0.1406 0}\n\\newrgbcolor{fltkcolor82}{0.7461 0.2812 0}\n\\newrgbcolor{fltkcolor83}{0.7461 0.4258 0}\n\\newrgbcolor{fltkcolor84}{0.7461 0.5664 0}\n\\newrgbcolor{fltkcolor85}{0.7461 0.7109 0}\n\\newrgbcolor{fltkcolor86}{0.7461 0.8516 0}\n\\newrgbcolor{fltkcolor87}{0.7461 0.9961 0}\n\\newrgbcolor{fltkcolor88}{0.9961 0 0}\n\\newrgbcolor{fltkcolor89}{0.9961 0.1406 0}\n\\newrgbcolor{fltkcolor90}{0.9961 0.2812 0}\n\\newrgbcolor{fltkcolor91}{0.9961 0.4258 0}\n\\newrgbcolor{fltkcolor92}{0.9961 0.5664 0}\n\\newrgbcolor{fltkcolor93}{0.9961 0.7109 0}\n\\newrgbcolor{fltkcolor94}{0.9961 0.8516 0}\n\\newrgbcolor{fltkcolor95}{0.9961 0.9961 0}\n\\newrgbcolor{fltkcolor96}{0 0 0.2461}\n\\newrgbcolor{fltkcolor97}{0 0.1406 0.2461}\n\\newrgbcolor{fltkcolor98}{0 0.2812 0.2461}\n\\newrgbcolor{fltkcolor99}{0 0.4258 0.2461}\n\\newrgbcolor{fltkcolor100}{0 0.5664 0.2461}\n\\newrgbcolor{fltkcolor101}{0 0.7109 0.2461}\n\\newrgbcolor{fltkcolor102}{0 0.8516 0.2461}\n\\newrgbcolor{fltkcolor103}{0 0.9961 0.2461}\n\\newrgbcolor{fltkcolor104}{0.2461 0 0.2461}\n\\newrgbcolor{fltkcolor105}{0.2461 0.1406 0.2461}\n\\newrgbcolor{fltkcolor106}{0.2461 0.2812 0.2461}\n\\newrgbcolor{fltkcolor107}{0.2461 0.4258 0.2461}\n\\newrgbcolor{fltkcolor108}{0.2461 0.5664 0.2461}\n\\newrgbcolor{fltkcolor109}{0.2461 0.7109 0.2461}\n\\newrgbcolor{fltkcolor110}{0.2461 0.8516 0.2461}\n\\newrgbcolor{fltkcolor111}{0.2461 0.9961 0.2461}\n\\newrgbcolor{fltkcolor112}{0.4961 0 0.2461}\n\\newrgbcolor{fltkcolor113}{0.4961 0.1406 0.2461}\n\\newrgbcolor{fltkcolor114}{0.4961 0.2812 0.2461}\n\\newrgbcolor{fltkcolor115}{0.4961 0.4258 0.2461}\n\\newrgbcolor{fltkcolor116}{0.4961 0.5664 0.2461}\n\\newrgbcolor{fltkcolor117}{0.4961 0.7109 0.2461}\n\\newrgbcolor{fltkcolor118}{0.4961 0.8516 0.2461}\n\\newrgbcolor{fltkcolor119}{0.4961 0.9961 0.2461}\n\\newrgbcolor{fltkcolor120}{0.7461 0 0.2461}\n\\newrgbcolor{fltkcolor121}{0.7461 0.1406 0.2461}\n\\newrgbcolor{fltkcolor122}{0.7461 0.2812 0.2461}\n\\newrgbcolor{fltkcolor123}{0.7461 0.4258 0.2461}\n\\newrgbcolor{fltkcolor124}{0.7461 0.5664 0.2461}\n\\newrgbcolor{fltkcolor125}{0.7461 0.7109 0.2461}\n\\newrgbcolor{fltkcolor126}{0.7461 0.8516 0.2461}\n\\newrgbcolor{fltkcolor127}{0.7461 0.9961 0.2461}\n\\newrgbcolor{fltkcolor128}{0.9961 0 0.2461}\n\\newrgbcolor{fltkcolor129}{0.9961 0.1406 0.2461}\n\\newrgbcolor{fltkcolor130}{0.9961 0.2812 0.2461}\n\\newrgbcolor{fltkcolor131}{0.9961 0.4258 0.2461}\n\\newrgbcolor{fltkcolor132}{0.9961 0.5664 0.2461}\n\\newrgbcolor{fltkcolor133}{0.9961 0.7109 0.2461}\n\\newrgbcolor{fltkcolor134}{0.9961 0.8516 0.2461}\n\\newrgbcolor{fltkcolor135}{0.9961 0.9961 0.2461}\n\\newrgbcolor{fltkcolor136}{0 0 0.4961}\n\\newrgbcolor{fltkcolor137}{0 0.1406 0.4961}\n\\newrgbcolor{fltkcolor138}{0 0.2812 0.4961}\n\\newrgbcolor{fltkcolor139}{0 0.4258 0.4961}\n\\newrgbcolor{fltkcolor140}{0 0.5664 0.4961}\n\\newrgbcolor{fltkcolor141}{0 0.7109 0.4961}\n\\newrgbcolor{fltkcolor142}{0 0.8516 0.4961}\n\\newrgbcolor{fltkcolor143}{0 0.9961 0.4961}\n\\newrgbcolor{fltkcolor144}{0.2461 0 0.4961}\n\\newrgbcolor{fltkcolor145}{0.2461 0.1406 0.4961}\n\\newrgbcolor{fltkcolor146}{0.2461 0.2812 0.4961}\n\\newrgbcolor{fltkcolor147}{0.2461 0.4258 0.4961}\n\\newrgbcolor{fltkcolor148}{0.2461 0.5664 0.4961}\n\\newrgbcolor{fltkcolor149}{0.2461 0.7109 0.4961}\n\\newrgbcolor{fltkcolor150}{0.2461 0.8516 0.4961}\n\\newrgbcolor{fltkcolor151}{0.2461 0.9961 0.4961}\n\\newrgbcolor{fltkcolor152}{0.4961 0 0.4961}\n\\newrgbcolor{fltkcolor153}{0.4961 0.1406 0.4961}\n\\newrgbcolor{fltkcolor154}{0.4961 0.2812 0.4961}\n\\newrgbcolor{fltkcolor155}{0.4961 0.4258 0.4961}\n\\newrgbcolor{fltkcolor156}{0.4961 0.5664 0.4961}\n\\newrgbcolor{fltkcolor157}{0.4961 0.7109 0.4961}\n\\newrgbcolor{fltkcolor158}{0.4961 0.8516 0.4961}\n\\newrgbcolor{fltkcolor159}{0.4961 0.9961 0.4961}\n\\newrgbcolor{fltkcolor160}{0.7461 0 0.4961}\n\\newrgbcolor{fltkcolor161}{0.7461 0.1406 0.4961}\n\\newrgbcolor{fltkcolor162}{0.7461 0.2812 0.4961}\n\\newrgbcolor{fltkcolor163}{0.7461 0.4258 0.4961}\n\\newrgbcolor{fltkcolor164}{0.7461 0.5664 0.4961}\n\\newrgbcolor{fltkcolor165}{0.7461 0.7109 0.4961}\n\\newrgbcolor{fltkcolor166}{0.7461 0.8516 0.4961}\n\\newrgbcolor{fltkcolor167}{0.7461 0.9961 0.4961}\n\\newrgbcolor{fltkcolor168}{0.9961 0 0.4961}\n\\newrgbcolor{fltkcolor169}{0.9961 0.1406 0.4961}\n\\newrgbcolor{fltkcolor170}{0.9961 0.2812 0.4961}\n\\newrgbcolor{fltkcolor171}{0.9961 0.4258 0.4961}\n\\newrgbcolor{fltkcolor172}{0.9961 0.5664 0.4961}\n\\newrgbcolor{fltkcolor173}{0.9961 0.7109 0.4961}\n\\newrgbcolor{fltkcolor174}{0.9961 0.8516 0.4961}\n\\newrgbcolor{fltkcolor175}{0.9961 0.9961 0.4961}\n\\newrgbcolor{fltkcolor176}{0 0 0.7461}\n\\newrgbcolor{fltkcolor177}{0 0.1406 0.7461}\n\\newrgbcolor{fltkcolor178}{0 0.2812 0.7461}\n\\newrgbcolor{fltkcolor179}{0 0.4258 0.7461}\n\\newrgbcolor{fltkcolor180}{0 0.5664 0.7461}\n\\newrgbcolor{fltkcolor181}{0 0.7109 0.7461}\n\\newrgbcolor{fltkcolor182}{0 0.8516 0.7461}\n\\newrgbcolor{fltkcolor183}{0 0.9961 0.7461}\n\\newrgbcolor{fltkcolor184}{0.2461 0 0.7461}\n\\newrgbcolor{fltkcolor185}{0.2461 0.1406 0.7461}\n\\newrgbcolor{fltkcolor186}{0.2461 0.2812 0.7461}\n\\newrgbcolor{fltkcolor187}{0.2461 0.4258 0.7461}\n\\newrgbcolor{fltkcolor188}{0.2461 0.5664 0.7461}\n\\newrgbcolor{fltkcolor189}{0.2461 0.7109 0.7461}\n\\newrgbcolor{fltkcolor190}{0.2461 0.8516 0.7461}\n\\newrgbcolor{fltkcolor191}{0.2461 0.9961 0.7461}\n\\newrgbcolor{fltkcolor192}{0.4961 0 0.7461}\n\\newrgbcolor{fltkcolor193}{0.4961 0.1406 0.7461}\n\\newrgbcolor{fltkcolor194}{0.4961 0.2812 0.7461}\n\\newrgbcolor{fltkcolor195}{0.4961 0.4258 0.7461}\n\\newrgbcolor{fltkcolor196}{0.4961 0.5664 0.7461}\n\\newrgbcolor{fltkcolor197}{0.4961 0.7109 0.7461}\n\\newrgbcolor{fltkcolor198}{0.4961 0.8516 0.7461}\n\\newrgbcolor{fltkcolor199}{0.4961 0.9961 0.7461}\n\\newrgbcolor{fltkcolor200}{0.7461 0 0.7461}\n\\newrgbcolor{fltkcolor201}{0.7461 0.1406 0.7461}\n\\newrgbcolor{fltkcolor202}{0.7461 0.2812 0.7461}\n\\newrgbcolor{fltkcolor203}{0.7461 0.4258 0.7461}\n\\newrgbcolor{fltkcolor204}{0.7461 0.5664 0.7461}\n\\newrgbcolor{fltkcolor205}{0.7461 0.7109 0.7461}\n\\newrgbcolor{fltkcolor206}{0.7461 0.8516 0.7461}\n\\newrgbcolor{fltkcolor207}{0.7461 0.9961 0.7461}\n\\newrgbcolor{fltkcolor208}{0.9961 0 0.7461}\n\\newrgbcolor{fltkcolor209}{0.9961 0.1406 0.7461}\n\\newrgbcolor{fltkcolor210}{0.9961 0.2812 0.7461}\n\\newrgbcolor{fltkcolor211}{0.9961 0.4258 0.7461}\n\\newrgbcolor{fltkcolor212}{0.9961 0.5664 0.7461}\n\\newrgbcolor{fltkcolor213}{0.9961 0.7109 0.7461}\n\\newrgbcolor{fltkcolor214}{0.9961 0.8516 0.7461}\n\\newrgbcolor{fltkcolor215}{0.9961 0.9961 0.7461}\n\\newrgbcolor{fltkcolor216}{0 0 0.9961}\n\\newrgbcolor{fltkcolor217}{0 0.1406 0.9961}\n\\newrgbcolor{fltkcolor218}{0 0.2812 0.9961}\n\\newrgbcolor{fltkcolor219}{0 0.4258 0.9961}\n\\newrgbcolor{fltkcolor220}{0 0.5664 0.9961}\n\\newrgbcolor{fltkcolor221}{0 0.7109 0.9961}\n\\newrgbcolor{fltkcolor222}{0 0.8516 0.9961}\n\\newrgbcolor{fltkcolor223}{0 0.9961 0.9961}\n\\newrgbcolor{fltkcolor224}{0.2461 0 0.9961}\n\\newrgbcolor{fltkcolor225}{0.2461 0.1406 0.9961}\n\\newrgbcolor{fltkcolor226}{0.2461 0.2812 0.9961}\n\\newrgbcolor{fltkcolor227}{0.2461 0.4258 0.9961}\n\\newrgbcolor{fltkcolor228}{0.2461 0.5664 0.9961}\n\\newrgbcolor{fltkcolor229}{0.2461 0.7109 0.9961}\n\\newrgbcolor{fltkcolor230}{0.2461 0.8516 0.9961}\n\\newrgbcolor{fltkcolor231}{0.2461 0.9961 0.9961}\n\\newrgbcolor{fltkcolor232}{0.4961 0 0.9961}\n\\newrgbcolor{fltkcolor233}{0.4961 0.1406 0.9961}\n\\newrgbcolor{fltkcolor234}{0.4961 0.2812 0.9961}\n\\newrgbcolor{fltkcolor235}{0.4961 0.4258 0.9961}\n\\newrgbcolor{fltkcolor236}{0.4961 0.5664 0.9961}\n\\newrgbcolor{fltkcolor237}{0.4961 0.7109 0.9961}\n\\newrgbcolor{fltkcolor238}{0.4961 0.8516 0.9961}\n\\newrgbcolor{fltkcolor239}{0.4961 0.9961 0.9961}\n\\newrgbcolor{fltkcolor240}{0.7461 0 0.9961}\n\\newrgbcolor{fltkcolor241}{0.7461 0.1406 0.9961}\n\\newrgbcolor{fltkcolor242}{0.7461 0.2812 0.9961}\n\\newrgbcolor{fltkcolor243}{0.7461 0.4258 0.9961}\n\\newrgbcolor{fltkcolor244}{0.7461 0.5664 0.9961}\n\\newrgbcolor{fltkcolor245}{0.7461 0.7109 0.9961}\n\\newrgbcolor{fltkcolor246}{0.7461 0.8516 0.9961}\n\\newrgbcolor{fltkcolor247}{0.7461 0.9961 0.9961}\n\\newrgbcolor{fltkcolor248}{0.9961 0 0.9961}\n\\newrgbcolor{fltkcolor249}{0.9961 0.1406 0.9961}\n\\newrgbcolor{fltkcolor250}{0.9961 0.2812 0.9961}\n\\newrgbcolor{fltkcolor251}{0.9961 0.4258 0.9961}\n\\newrgbcolor{fltkcolor252}{0.9961 0.5664 0.9961}\n\\newrgbcolor{fltkcolor253}{0.9961 0.7109 0.9961}\n\\newrgbcolor{fltkcolor254}{0.9961 0.8516 0.9961}\n\\newrgbcolor{fltkcolor255}{0.9961 0.9961 0.9961}\n");
-  string tex_end("\n\\end{document}");
-  string mbox_begin("\\mathrm{"); // ("\\mbox{");
-  string mbox_end("}");
+  const char tex_preamble[]="\\documentclass{article} \n\\usepackage{pst-plot,color} \n\\usepackage{graphicx} \n\\begin{document}\n";
+#ifdef RTOS_THREADX
+  const char tex_color[]="";
+#else
+  const char tex_color[]="\\newrgbcolor{fltkcolor0}{0 0 0}\n\\newrgbcolor{fltkcolor1}{0.9961 0 0}\n\\newrgbcolor{fltkcolor2}{0 0.9961 0}\n\\newrgbcolor{fltkcolor3}{0.9961 0.9961 0}\n\\newrgbcolor{fltkcolor4}{0 0 0.9961}\n\\newrgbcolor{fltkcolor5}{0.9961 0 0.9961}\n\\newrgbcolor{fltkcolor6}{0 0.9961 0.9961}\n\\newrgbcolor{fltkcolor7}{0.9961 0.9961 0.9961}\n\\newrgbcolor{fltkcolor8}{0.332 0.332 0.332}\n\\newrgbcolor{fltkcolor9}{0.7734 0.4414 0.4414}\n\\newrgbcolor{fltkcolor10}{0.4414 0.7734 0.4414}\n\\newrgbcolor{fltkcolor11}{0.5547 0.5547 0.2188}\n\\newrgbcolor{fltkcolor12}{0.4414 0.4414 0.7734}\n\\newrgbcolor{fltkcolor13}{0.5547 0.2188 0.5547}\n\\newrgbcolor{fltkcolor14}{0.2188 0.5547 0.5547}\n\\newrgbcolor{fltkcolor15}{0 0 0.5}\n\\newrgbcolor{fltkcolor16}{0.6562 0.6562 0.5938}\n\\newrgbcolor{fltkcolor17}{0.9062 0.9062 0.8438}\n\\newrgbcolor{fltkcolor18}{0.4062 0.4062 0.3438}\n\\newrgbcolor{fltkcolor19}{0.5938 0.6562 0.6562}\n\\newrgbcolor{fltkcolor20}{0.8438 0.9062 0.9062}\n\\newrgbcolor{fltkcolor21}{0.3438 0.4062 0.4062}\n\\newrgbcolor{fltkcolor22}{0.6094 0.6094 0.6562}\n\\newrgbcolor{fltkcolor23}{0.8594 0.8594 0.9062}\n\\newrgbcolor{fltkcolor24}{0.3594 0.3594 0.4062}\n\\newrgbcolor{fltkcolor25}{0.6094 0.6562 0.6094}\n\\newrgbcolor{fltkcolor26}{0.8594 0.9062 0.8594}\n\\newrgbcolor{fltkcolor27}{0.3594 0.4062 0.3594}\n\\newrgbcolor{fltkcolor28}{0.5625 0.5625 0.5625}\n\\newrgbcolor{fltkcolor29}{0.75 0.75 0.75}\n\\newrgbcolor{fltkcolor30}{0.3125 0.3125 0.3125}\n\\newrgbcolor{fltkcolor31}{0.625 0.625 0.625}\n\\newrgbcolor{fltkcolor32}{0 0 0}\n\\newrgbcolor{fltkcolor33}{0.05078 0.05078 0.05078}\n\\newrgbcolor{fltkcolor34}{0.1016 0.1016 0.1016}\n\\newrgbcolor{fltkcolor35}{0.1484 0.1484 0.1484}\n\\newrgbcolor{fltkcolor36}{0.1914 0.1914 0.1914}\n\\newrgbcolor{fltkcolor37}{0.2383 0.2383 0.2383}\n\\newrgbcolor{fltkcolor38}{0.2812 0.2812 0.2812}\n\\newrgbcolor{fltkcolor39}{0.332 0.332 0.332}\n\\newrgbcolor{fltkcolor40}{0.3711 0.3711 0.3711}\n\\newrgbcolor{fltkcolor41}{0.4141 0.4141 0.4141}\n\\newrgbcolor{fltkcolor42}{0.457 0.457 0.457}\n\\newrgbcolor{fltkcolor43}{0.5 0.5 0.5}\n\\newrgbcolor{fltkcolor44}{0.5391 0.5391 0.5391}\n\\newrgbcolor{fltkcolor45}{0.582 0.582 0.582}\n\\newrgbcolor{fltkcolor46}{0.625 0.625 0.625}\n\\newrgbcolor{fltkcolor47}{0.6641 0.6641 0.6641}\n\\newrgbcolor{fltkcolor48}{0.707 0.707 0.707}\n\\newrgbcolor{fltkcolor49}{0.75 0.75 0.75}\n\\newrgbcolor{fltkcolor50}{0.793 0.793 0.793}\n\\newrgbcolor{fltkcolor51}{0.832 0.832 0.832}\n\\newrgbcolor{fltkcolor52}{0.875 0.875 0.875}\n\\newrgbcolor{fltkcolor53}{0.9141 0.9141 0.9141}\n\\newrgbcolor{fltkcolor54}{0.957 0.957 0.957}\n\\newrgbcolor{fltkcolor55}{0.9961 0.9961 0.9961}\n\\newrgbcolor{fltkcolor56}{0 0 0}\n\\newrgbcolor{fltkcolor57}{0 0.1406 0}\n\\newrgbcolor{fltkcolor58}{0 0.2812 0}\n\\newrgbcolor{fltkcolor59}{0 0.4258 0}\n\\newrgbcolor{fltkcolor60}{0 0.5664 0}\n\\newrgbcolor{fltkcolor61}{0 0.7109 0}\n\\newrgbcolor{fltkcolor62}{0 0.8516 0}\n\\newrgbcolor{fltkcolor63}{0 0.9961 0}\n\\newrgbcolor{fltkcolor64}{0.2461 0 0}\n\\newrgbcolor{fltkcolor65}{0.2461 0.1406 0}\n\\newrgbcolor{fltkcolor66}{0.2461 0.2812 0}\n\\newrgbcolor{fltkcolor67}{0.2461 0.4258 0}\n\\newrgbcolor{fltkcolor68}{0.2461 0.5664 0}\n\\newrgbcolor{fltkcolor69}{0.2461 0.7109 0}\n\\newrgbcolor{fltkcolor70}{0.2461 0.8516 0}\n\\newrgbcolor{fltkcolor71}{0.2461 0.9961 0}\n\\newrgbcolor{fltkcolor72}{0.4961 0 0}\n\\newrgbcolor{fltkcolor73}{0.4961 0.1406 0}\n\\newrgbcolor{fltkcolor74}{0.4961 0.2812 0}\n\\newrgbcolor{fltkcolor75}{0.4961 0.4258 0}\n\\newrgbcolor{fltkcolor76}{0.4961 0.5664 0}\n\\newrgbcolor{fltkcolor77}{0.4961 0.7109 0}\n\\newrgbcolor{fltkcolor78}{0.4961 0.8516 0}\n\\newrgbcolor{fltkcolor79}{0.4961 0.9961 0}\n\\newrgbcolor{fltkcolor80}{0.7461 0 0}\n\\newrgbcolor{fltkcolor81}{0.7461 0.1406 0}\n\\newrgbcolor{fltkcolor82}{0.7461 0.2812 0}\n\\newrgbcolor{fltkcolor83}{0.7461 0.4258 0}\n\\newrgbcolor{fltkcolor84}{0.7461 0.5664 0}\n\\newrgbcolor{fltkcolor85}{0.7461 0.7109 0}\n\\newrgbcolor{fltkcolor86}{0.7461 0.8516 0}\n\\newrgbcolor{fltkcolor87}{0.7461 0.9961 0}\n\\newrgbcolor{fltkcolor88}{0.9961 0 0}\n\\newrgbcolor{fltkcolor89}{0.9961 0.1406 0}\n\\newrgbcolor{fltkcolor90}{0.9961 0.2812 0}\n\\newrgbcolor{fltkcolor91}{0.9961 0.4258 0}\n\\newrgbcolor{fltkcolor92}{0.9961 0.5664 0}\n\\newrgbcolor{fltkcolor93}{0.9961 0.7109 0}\n\\newrgbcolor{fltkcolor94}{0.9961 0.8516 0}\n\\newrgbcolor{fltkcolor95}{0.9961 0.9961 0}\n\\newrgbcolor{fltkcolor96}{0 0 0.2461}\n\\newrgbcolor{fltkcolor97}{0 0.1406 0.2461}\n\\newrgbcolor{fltkcolor98}{0 0.2812 0.2461}\n\\newrgbcolor{fltkcolor99}{0 0.4258 0.2461}\n\\newrgbcolor{fltkcolor100}{0 0.5664 0.2461}\n\\newrgbcolor{fltkcolor101}{0 0.7109 0.2461}\n\\newrgbcolor{fltkcolor102}{0 0.8516 0.2461}\n\\newrgbcolor{fltkcolor103}{0 0.9961 0.2461}\n\\newrgbcolor{fltkcolor104}{0.2461 0 0.2461}\n\\newrgbcolor{fltkcolor105}{0.2461 0.1406 0.2461}\n\\newrgbcolor{fltkcolor106}{0.2461 0.2812 0.2461}\n\\newrgbcolor{fltkcolor107}{0.2461 0.4258 0.2461}\n\\newrgbcolor{fltkcolor108}{0.2461 0.5664 0.2461}\n\\newrgbcolor{fltkcolor109}{0.2461 0.7109 0.2461}\n\\newrgbcolor{fltkcolor110}{0.2461 0.8516 0.2461}\n\\newrgbcolor{fltkcolor111}{0.2461 0.9961 0.2461}\n\\newrgbcolor{fltkcolor112}{0.4961 0 0.2461}\n\\newrgbcolor{fltkcolor113}{0.4961 0.1406 0.2461}\n\\newrgbcolor{fltkcolor114}{0.4961 0.2812 0.2461}\n\\newrgbcolor{fltkcolor115}{0.4961 0.4258 0.2461}\n\\newrgbcolor{fltkcolor116}{0.4961 0.5664 0.2461}\n\\newrgbcolor{fltkcolor117}{0.4961 0.7109 0.2461}\n\\newrgbcolor{fltkcolor118}{0.4961 0.8516 0.2461}\n\\newrgbcolor{fltkcolor119}{0.4961 0.9961 0.2461}\n\\newrgbcolor{fltkcolor120}{0.7461 0 0.2461}\n\\newrgbcolor{fltkcolor121}{0.7461 0.1406 0.2461}\n\\newrgbcolor{fltkcolor122}{0.7461 0.2812 0.2461}\n\\newrgbcolor{fltkcolor123}{0.7461 0.4258 0.2461}\n\\newrgbcolor{fltkcolor124}{0.7461 0.5664 0.2461}\n\\newrgbcolor{fltkcolor125}{0.7461 0.7109 0.2461}\n\\newrgbcolor{fltkcolor126}{0.7461 0.8516 0.2461}\n\\newrgbcolor{fltkcolor127}{0.7461 0.9961 0.2461}\n\\newrgbcolor{fltkcolor128}{0.9961 0 0.2461}\n\\newrgbcolor{fltkcolor129}{0.9961 0.1406 0.2461}\n\\newrgbcolor{fltkcolor130}{0.9961 0.2812 0.2461}\n\\newrgbcolor{fltkcolor131}{0.9961 0.4258 0.2461}\n\\newrgbcolor{fltkcolor132}{0.9961 0.5664 0.2461}\n\\newrgbcolor{fltkcolor133}{0.9961 0.7109 0.2461}\n\\newrgbcolor{fltkcolor134}{0.9961 0.8516 0.2461}\n\\newrgbcolor{fltkcolor135}{0.9961 0.9961 0.2461}\n\\newrgbcolor{fltkcolor136}{0 0 0.4961}\n\\newrgbcolor{fltkcolor137}{0 0.1406 0.4961}\n\\newrgbcolor{fltkcolor138}{0 0.2812 0.4961}\n\\newrgbcolor{fltkcolor139}{0 0.4258 0.4961}\n\\newrgbcolor{fltkcolor140}{0 0.5664 0.4961}\n\\newrgbcolor{fltkcolor141}{0 0.7109 0.4961}\n\\newrgbcolor{fltkcolor142}{0 0.8516 0.4961}\n\\newrgbcolor{fltkcolor143}{0 0.9961 0.4961}\n\\newrgbcolor{fltkcolor144}{0.2461 0 0.4961}\n\\newrgbcolor{fltkcolor145}{0.2461 0.1406 0.4961}\n\\newrgbcolor{fltkcolor146}{0.2461 0.2812 0.4961}\n\\newrgbcolor{fltkcolor147}{0.2461 0.4258 0.4961}\n\\newrgbcolor{fltkcolor148}{0.2461 0.5664 0.4961}\n\\newrgbcolor{fltkcolor149}{0.2461 0.7109 0.4961}\n\\newrgbcolor{fltkcolor150}{0.2461 0.8516 0.4961}\n\\newrgbcolor{fltkcolor151}{0.2461 0.9961 0.4961}\n\\newrgbcolor{fltkcolor152}{0.4961 0 0.4961}\n\\newrgbcolor{fltkcolor153}{0.4961 0.1406 0.4961}\n\\newrgbcolor{fltkcolor154}{0.4961 0.2812 0.4961}\n\\newrgbcolor{fltkcolor155}{0.4961 0.4258 0.4961}\n\\newrgbcolor{fltkcolor156}{0.4961 0.5664 0.4961}\n\\newrgbcolor{fltkcolor157}{0.4961 0.7109 0.4961}\n\\newrgbcolor{fltkcolor158}{0.4961 0.8516 0.4961}\n\\newrgbcolor{fltkcolor159}{0.4961 0.9961 0.4961}\n\\newrgbcolor{fltkcolor160}{0.7461 0 0.4961}\n\\newrgbcolor{fltkcolor161}{0.7461 0.1406 0.4961}\n\\newrgbcolor{fltkcolor162}{0.7461 0.2812 0.4961}\n\\newrgbcolor{fltkcolor163}{0.7461 0.4258 0.4961}\n\\newrgbcolor{fltkcolor164}{0.7461 0.5664 0.4961}\n\\newrgbcolor{fltkcolor165}{0.7461 0.7109 0.4961}\n\\newrgbcolor{fltkcolor166}{0.7461 0.8516 0.4961}\n\\newrgbcolor{fltkcolor167}{0.7461 0.9961 0.4961}\n\\newrgbcolor{fltkcolor168}{0.9961 0 0.4961}\n\\newrgbcolor{fltkcolor169}{0.9961 0.1406 0.4961}\n\\newrgbcolor{fltkcolor170}{0.9961 0.2812 0.4961}\n\\newrgbcolor{fltkcolor171}{0.9961 0.4258 0.4961}\n\\newrgbcolor{fltkcolor172}{0.9961 0.5664 0.4961}\n\\newrgbcolor{fltkcolor173}{0.9961 0.7109 0.4961}\n\\newrgbcolor{fltkcolor174}{0.9961 0.8516 0.4961}\n\\newrgbcolor{fltkcolor175}{0.9961 0.9961 0.4961}\n\\newrgbcolor{fltkcolor176}{0 0 0.7461}\n\\newrgbcolor{fltkcolor177}{0 0.1406 0.7461}\n\\newrgbcolor{fltkcolor178}{0 0.2812 0.7461}\n\\newrgbcolor{fltkcolor179}{0 0.4258 0.7461}\n\\newrgbcolor{fltkcolor180}{0 0.5664 0.7461}\n\\newrgbcolor{fltkcolor181}{0 0.7109 0.7461}\n\\newrgbcolor{fltkcolor182}{0 0.8516 0.7461}\n\\newrgbcolor{fltkcolor183}{0 0.9961 0.7461}\n\\newrgbcolor{fltkcolor184}{0.2461 0 0.7461}\n\\newrgbcolor{fltkcolor185}{0.2461 0.1406 0.7461}\n\\newrgbcolor{fltkcolor186}{0.2461 0.2812 0.7461}\n\\newrgbcolor{fltkcolor187}{0.2461 0.4258 0.7461}\n\\newrgbcolor{fltkcolor188}{0.2461 0.5664 0.7461}\n\\newrgbcolor{fltkcolor189}{0.2461 0.7109 0.7461}\n\\newrgbcolor{fltkcolor190}{0.2461 0.8516 0.7461}\n\\newrgbcolor{fltkcolor191}{0.2461 0.9961 0.7461}\n\\newrgbcolor{fltkcolor192}{0.4961 0 0.7461}\n\\newrgbcolor{fltkcolor193}{0.4961 0.1406 0.7461}\n\\newrgbcolor{fltkcolor194}{0.4961 0.2812 0.7461}\n\\newrgbcolor{fltkcolor195}{0.4961 0.4258 0.7461}\n\\newrgbcolor{fltkcolor196}{0.4961 0.5664 0.7461}\n\\newrgbcolor{fltkcolor197}{0.4961 0.7109 0.7461}\n\\newrgbcolor{fltkcolor198}{0.4961 0.8516 0.7461}\n\\newrgbcolor{fltkcolor199}{0.4961 0.9961 0.7461}\n\\newrgbcolor{fltkcolor200}{0.7461 0 0.7461}\n\\newrgbcolor{fltkcolor201}{0.7461 0.1406 0.7461}\n\\newrgbcolor{fltkcolor202}{0.7461 0.2812 0.7461}\n\\newrgbcolor{fltkcolor203}{0.7461 0.4258 0.7461}\n\\newrgbcolor{fltkcolor204}{0.7461 0.5664 0.7461}\n\\newrgbcolor{fltkcolor205}{0.7461 0.7109 0.7461}\n\\newrgbcolor{fltkcolor206}{0.7461 0.8516 0.7461}\n\\newrgbcolor{fltkcolor207}{0.7461 0.9961 0.7461}\n\\newrgbcolor{fltkcolor208}{0.9961 0 0.7461}\n\\newrgbcolor{fltkcolor209}{0.9961 0.1406 0.7461}\n\\newrgbcolor{fltkcolor210}{0.9961 0.2812 0.7461}\n\\newrgbcolor{fltkcolor211}{0.9961 0.4258 0.7461}\n\\newrgbcolor{fltkcolor212}{0.9961 0.5664 0.7461}\n\\newrgbcolor{fltkcolor213}{0.9961 0.7109 0.7461}\n\\newrgbcolor{fltkcolor214}{0.9961 0.8516 0.7461}\n\\newrgbcolor{fltkcolor215}{0.9961 0.9961 0.7461}\n\\newrgbcolor{fltkcolor216}{0 0 0.9961}\n\\newrgbcolor{fltkcolor217}{0 0.1406 0.9961}\n\\newrgbcolor{fltkcolor218}{0 0.2812 0.9961}\n\\newrgbcolor{fltkcolor219}{0 0.4258 0.9961}\n\\newrgbcolor{fltkcolor220}{0 0.5664 0.9961}\n\\newrgbcolor{fltkcolor221}{0 0.7109 0.9961}\n\\newrgbcolor{fltkcolor222}{0 0.8516 0.9961}\n\\newrgbcolor{fltkcolor223}{0 0.9961 0.9961}\n\\newrgbcolor{fltkcolor224}{0.2461 0 0.9961}\n\\newrgbcolor{fltkcolor225}{0.2461 0.1406 0.9961}\n\\newrgbcolor{fltkcolor226}{0.2461 0.2812 0.9961}\n\\newrgbcolor{fltkcolor227}{0.2461 0.4258 0.9961}\n\\newrgbcolor{fltkcolor228}{0.2461 0.5664 0.9961}\n\\newrgbcolor{fltkcolor229}{0.2461 0.7109 0.9961}\n\\newrgbcolor{fltkcolor230}{0.2461 0.8516 0.9961}\n\\newrgbcolor{fltkcolor231}{0.2461 0.9961 0.9961}\n\\newrgbcolor{fltkcolor232}{0.4961 0 0.9961}\n\\newrgbcolor{fltkcolor233}{0.4961 0.1406 0.9961}\n\\newrgbcolor{fltkcolor234}{0.4961 0.2812 0.9961}\n\\newrgbcolor{fltkcolor235}{0.4961 0.4258 0.9961}\n\\newrgbcolor{fltkcolor236}{0.4961 0.5664 0.9961}\n\\newrgbcolor{fltkcolor237}{0.4961 0.7109 0.9961}\n\\newrgbcolor{fltkcolor238}{0.4961 0.8516 0.9961}\n\\newrgbcolor{fltkcolor239}{0.4961 0.9961 0.9961}\n\\newrgbcolor{fltkcolor240}{0.7461 0 0.9961}\n\\newrgbcolor{fltkcolor241}{0.7461 0.1406 0.9961}\n\\newrgbcolor{fltkcolor242}{0.7461 0.2812 0.9961}\n\\newrgbcolor{fltkcolor243}{0.7461 0.4258 0.9961}\n\\newrgbcolor{fltkcolor244}{0.7461 0.5664 0.9961}\n\\newrgbcolor{fltkcolor245}{0.7461 0.7109 0.9961}\n\\newrgbcolor{fltkcolor246}{0.7461 0.8516 0.9961}\n\\newrgbcolor{fltkcolor247}{0.7461 0.9961 0.9961}\n\\newrgbcolor{fltkcolor248}{0.9961 0 0.9961}\n\\newrgbcolor{fltkcolor249}{0.9961 0.1406 0.9961}\n\\newrgbcolor{fltkcolor250}{0.9961 0.2812 0.9961}\n\\newrgbcolor{fltkcolor251}{0.9961 0.4258 0.9961}\n\\newrgbcolor{fltkcolor252}{0.9961 0.5664 0.9961}\n\\newrgbcolor{fltkcolor253}{0.9961 0.7109 0.9961}\n\\newrgbcolor{fltkcolor254}{0.9961 0.8516 0.9961}\n\\newrgbcolor{fltkcolor255}{0.9961 0.9961 0.9961}\n";
+#endif
+  const char tex_end[]="\n\\end{document}";
+  const char mbox_begin[]="\\mathrm{"; // ("\\mbox{");
+  const char mbox_end[]="}";
 
   string spread2tex(const matrice & m,int formule,GIAC_CONTEXT){
-    int l=m.size();
+    int l=int(m.size());
     if (!l)
       return "\\mbox{empty_spread}";
-    int c=m.front()._VECTptr->size();
+    int c=int(m.front()._VECTptr->size());
     string s("\\ \\mbox{\\begin{tabular}{|");
     for (int j=0;j<=c;++j)
       s += "r|";
@@ -224,7 +233,7 @@ namespace giac {
 	  int save_r=printcell_current_row(contextptr),save_c=printcell_current_col(contextptr);
 	  printcell_current_row(contextptr)=i,printcell_current_col(contextptr)=j;
 	  string t(m[i][j][0].print(contextptr)),tt;
-	  int ll=t.size();
+	  int ll=int(t.size());
 	  for (int l=0;l<ll;++l){
 	    if (t[l]!='$')
 	      tt += t[l];
@@ -251,11 +260,11 @@ namespace giac {
     return s;
   }
 
-  string matrix2tex(const matrice & m,GIAC_CONTEXT){
-    int l=m.size();
+  static string matrix2tex(const matrice & m,GIAC_CONTEXT){
+    int l=int(m.size());
     if (!l)
       return string("()");
-    int c=m.front()._VECTptr->size();
+    int c=int(m.front()._VECTptr->size());
     string s("\\left(\\begin{array}{");
     for (int j=0;j<c;++j)
       s += 'c';
@@ -274,7 +283,7 @@ namespace giac {
     return s;
   }
 
-  string _VECT2tex(const vecteur & v,int subtype,GIAC_CONTEXT){
+  static string _VECT2tex(const vecteur & v,int subtype,GIAC_CONTEXT){
     string s(begin_VECT_string(subtype,true,contextptr));
     vecteur::const_iterator it=v.begin(),itend=v.end();
     for (;it!=itend;){
@@ -287,20 +296,22 @@ namespace giac {
     return s;
   }
 
-  string prod_vect2tex(const vecteur & v,GIAC_CONTEXT){
+  static string prod_vect2tex(const vecteur & v,GIAC_CONTEXT){
     if (v.empty())
       return "1";
     vecteur::const_iterator it=v.begin(),itend=v.end();
     string s;
     for (;;){
-      if ( it->type==_CPLX || (it->type==_SYMB && ( it->_SYMBptr->sommet==at_plus || it->_SYMBptr->sommet==at_neg) ) )
+      if ( (it->type==_CPLX && !is_zero(*it->_CPLXptr) && !is_zero(*(it->_CPLXptr+1))) || (it->type==_SYMB && ( it->_SYMBptr->sommet==at_plus || (it->_SYMBptr->sommet==at_neg && need_parenthesis(it->_SYMBptr->feuille)) ) ) )
 	s += string("(")+gen2tex(*it,contextptr)+string(")");
       else 
 	s += gen2tex(*it,contextptr);
       ++it;
       if (it==itend)
 	return s;
-      if (it->type<_IDNT)
+      if (it->type<=_IDNT || (it->type==_SYMB && 
+			      (it->_SYMBptr->sommet==at_neg || (it->_SYMBptr->sommet.ptr()->printsommet && it->_SYMBptr->feuille.type==_VECT && !it->_SYMBptr->feuille._VECTptr->empty() && it->_SYMBptr->feuille._VECTptr->front().type<=_IDNT))
+			      )) // second part of the test added for e.g. latex('2*3*5^2')
 	s += "\\cdot ";
       else
 	s += " ";
@@ -355,17 +366,20 @@ namespace giac {
 	res += *it;
       }
     }
-    return res;
+    string s0;
+    greek2tex(res,s0,false);
+    return s0;
   }
 
-  string fill_flag(bool flag){
+  static string fill_flag(bool flag){
     if (flag)
       return "linestyle=none,fillstyle=solid,";
     else
       return "";
   }
 
-  string line_flag(int flag){
+  /*
+  static string line_flag(int flag){
     switch(flag) {
     case _STYLE_FULL : return "";
     case _STYLE_DOTTED : return "[linestyle=dotted]";
@@ -373,9 +387,9 @@ namespace giac {
     }
     return "error";
   }
+  */
 
-  string vector_flag(int flag)
-  {
+  static string vector_flag(int flag){
     switch(flag) {
     case _VECTOR__VECT : return "{->}";
       // case BACKARROW : return  "{<-}";
@@ -384,16 +398,28 @@ namespace giac {
     }
   }
 
-  string point_flag(int flag){
+  static string point_flag(int flag){
     switch(flag) {
-    case _STYLE_BOX : return "[dotstyle=square*]"; break;
-    case _STYLE_CROSS : return "[dotstyle=x]"; break;
-    case _STYLE_PLUS : return "[dotstyle=+]"; break;
-    default : return "[dotstyle=*]"; break;
+    case _STYLE_BOX : return "[dotstyle=square*]"; 
+    case _STYLE_CROSS : return "[dotstyle=x]"; 
+    case _STYLE_PLUS : return "[dotstyle=+]"; 
+    default : return "[dotstyle=*]"; 
     }
   }
 
-  string flcolor2pstrickscolor(int color){
+#ifdef GIAC_HAS_STO_38
+  static string flcolor2pstrickscolor(int color){
+    switch(color) {
+    case FL_BLACK: return "black";
+    case FL_WHITE: return "white";
+    case FL_DARK1: return "darkgray"; 
+    case FL_GRAY: return "gray"; 
+    }
+    return "unknown";
+  }
+#else
+
+  static string flcolor2pstrickscolor(int color){
     switch(color) {
     case FL_BLACK: return "black";
     case FL_DARK1: return "darkgray"; 
@@ -431,21 +457,171 @@ namespace giac {
     } 
     return "fltkcolor"+print_INT_(color); 
   }
+#endif // GIAC_HAS_STO_38
 
-  string double2tex(double d){
+  static string double2tex(double d){
     char s[32];
+	
+#if 0 // def BESTA_OS
+    assert(0);
+    // returning an auto-var, when the string is constructed before the copy?
+    // not the niceest of things to do....
+    // BP: I don't understand where you see a problem, a string is constructed from s
+    // then the std::string is returned
+#else
     if (d<=-1e30 || d>=1e30)
-      sprintf(s,"%13g",d);
+      sprintfdouble(s,"%13g",d);
     else
-      sprintf(s,"%13.6f",d);
+      sprintfdouble(s,"%13.6f",d);
+#endif
     return s;
   }
 
-  string idnt2tex(const string & s0,bool & mathmode){
+  // convert UTF-8 string to wchar_t *, return adjusted length
+  // FIXME: use utf82unicode instead?
+  static unsigned int utf8(wchar_t * wline,const char * line,unsigned int n){
+    unsigned int i=0,j=0,c;
+    for (;i<n;i++){
+      c=line[i];
+      if ( (c & 0xc0) == 0x80)
+	continue;
+      if (c < 128){
+	wline[j]=c;
+	j++;
+	continue;
+      }
+      if ( (c & 0xe0) == 0xc0) {
+	i++;
+	c = (c & 0x1f) << 6 | (line[i] & 0x3f);
+	wline[j]=c;
+	j++;
+	continue;
+      } 
+      if ( (c & 0xf0) == 0xe0) {
+	i++;
+	c = (c & 0x0f) << 6 | (line[i] & 0x3f);
+	i++;
+	c = c << 6 | (line[i] & 0x3f);
+	wline[j]=c;
+	j++;
+	continue;
+      } 
+      if ( (c & 0xf1) == 0xf0) {
+	i++;
+	c = (c & 0x0f) << 6 | (line[i] & 0x3f);
+	i++;
+	c = c << 6 | (line[i] & 0x3f);
+	i++;
+	c = c << 6 | (line[i] & 0x3f);
+      } else 
+	c = 0xfffd;
+      wline[j]=c;
+      j++;
+    }
+    wline[j]=0;
+    return j;
+  }
+
+
+  int greek2tex(const string & s,string & texs,bool mathmode){
+    int n=int(s.size()),res=0;
+    wchar_t * w = new wchar_t[n+1];
+    n=utf8(w,s.c_str(),n);
+    for (int j=0;j<n;j++){
+      switch(w[j]){
+      case 8599: if (!mathmode) texs+="$"; texs+="\\nearrow"; texs+=mathmode?' ':'$'; res++; break;       
+      case 8600: if (!mathmode) texs+="$"; texs+="\\searrow"; texs+=mathmode?' ':'$'; res++; break;
+      case 8595: if (!mathmode) texs+="$"; texs+="\\downarrow"; texs+=mathmode?' ':'$'; res++; break;
+      case 8593: if (!mathmode) texs+="$"; texs+="\\uparrow"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x0386:  texs+="\\'A"; break;
+      case 0x0388:  texs+="\\'E"; break;
+      case 0x0389:  texs+="\\'H"; break;
+      case 0x038A:  texs+="\\'I"; break;
+      case 0x038C:  texs+="\\'O"; break;
+      case 0x038E:  texs+="\\'Y"; break;
+      case 0x038F:  if (!mathmode) texs+="$"; texs+="\\Omega"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x0390:  texs+="\'i"; break;
+      case 0x0391:  texs+="A"; break;
+      case 0x0392:  texs+="B"; break;
+      case 0x0393:  if (!mathmode) texs+="$"; texs+="\\Gamma"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x0394:  if (!mathmode) texs+="$"; texs+="\\Delta"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x0395:  texs+="E"; break;
+      case 0x0396:  texs+="Z"; break;
+      case 0x0397:  texs+="H"; break;
+      case 0x0398:  if (!mathmode) texs+="$"; texs+="\\Eta"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x0399:  texs+="I"; break;
+      case 0x039A:  texs+="K"; break;
+      case 0x039B:  if (!mathmode) texs+="$"; texs+="\\Lambda"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x039C:  texs+="M"; break;
+      case 0x039D:  texs+="N"; break;
+      case 0x039E:  if (!mathmode) texs+="$"; texs+="\\Xi"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x039F:  texs+="O"; break;
+      case 0x03A0:  if (!mathmode) texs+="$"; texs+="\\Pi"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03A1:  texs+="P"; break;
+      case 0x03A3:  if (!mathmode) texs+="$"; texs+="\\Sigma"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03A4:  texs+="T"; break;
+      case 0x03A5:  texs+="Y"; break;
+      case 0x03A6:  if (!mathmode) texs+="$"; texs+="\\Phi"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03A7:  texs+="X"; break;
+      case 0x03A8:  if (!mathmode) texs+="$"; texs+="\\Psi"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03A9:  if (!mathmode) texs+="$"; texs+="\\Omega"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03AA:  texs+="I"; break;
+      case 0x03AB:  texs+="Y"; break;
+      case 0x03AC:  if (!mathmode) texs+="$"; texs+="\\alpha"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03AD:  if (!mathmode) texs+="$"; texs+="\\epsilon"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03AE:  if (!mathmode) texs+="$"; texs+="\\eta"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03AF:  texs+="i"; res++; break;
+      case 0x03B0:  if (!mathmode) texs+="$"; texs+="\\upsilon"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03B1:  if (!mathmode) texs+="$"; texs+="\\alpha"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03B2:  if (!mathmode) texs+="$"; texs+="\\beta"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03B3:  if (!mathmode) texs+="$"; texs+="\\gamma"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03B4:  if (!mathmode) texs+="$"; texs+="\\delta"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03B5:  if (!mathmode) texs+="$"; texs+="\\epsilon"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03B6:  if (!mathmode) texs+="$"; texs+="\\zeta"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03B7:  if (!mathmode) texs+="$"; texs+="\\eta"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03B8:  if (!mathmode) texs+="$"; texs+="\\theta"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03B9:  texs+="i"; res++; break;
+      case 0x03BA:  if (!mathmode) texs+="$"; texs+="\\kappa"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03BB:  if (!mathmode) texs+="$"; texs+="\\lambda"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03BC:  if (!mathmode) texs+="$"; texs+="\\mu"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03BD:  if (!mathmode) texs+="$"; texs+="\\nu"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03BE:  if (!mathmode) texs+="$"; texs+="\\xi"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03BF:  if (!mathmode) texs+="$"; texs+="\\omicron"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03C0:  if (!mathmode) texs+="$"; texs+="\\pi"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03C1:  if (!mathmode) texs+="$"; texs+="\\rho"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03C2:  texs+="V"; res++; break;
+      case 0x03C3:  if (!mathmode) texs+="$"; texs+="\\sigma"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03C4:  if (!mathmode) texs+="$"; texs+="\\tau"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03C5:  if (!mathmode) texs+="$"; texs+="\\upsilon"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03C6:  if (!mathmode) texs+="$"; texs+="\\varphi"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03C7:  if (!mathmode) texs+="$"; texs+="\\chi"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03C8:  if (!mathmode) texs+="$"; texs+="\\psi"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03C9:  if (!mathmode) texs+="$"; texs+="\\omega"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03CA:  texs+="i"; res++; break;
+      case 0x03CB:  if (!mathmode) texs+="$"; texs+="\\upsilon"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03CC:  if (!mathmode) texs+="$"; texs+="\\omicron"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03CD:  if (!mathmode) texs+="$"; texs+="\\upsilon"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03CE:  if (!mathmode) texs+="$"; texs+="\\omega"; texs+=mathmode?' ':'$'; res++; break;
+      case 0x03D1:  texs+="J"; res++; break;
+      case 0x03D2:  texs+="j"; res++; break;
+      case 0x03D6:  texs+="v"; res++; break;
+      default: texs+=char(w[j] & 0xff);
+      }
+    }
+    delete [] w;
+    return res;
+  }
+
+
+  static string idnt2tex(const string & sorig,bool & mathmode){
+    string s0;
+    mathmode=greek2tex(sorig,s0,true)!=0;
+    if (mathmode)
+      return s0;
     mathmode=true;
-    int n=s0.size(),j;
+    int n=int(s0.size()),j;
     for (j=n-1;j>=2;--j){
-      if (isalpha(s0[j]))
+      if (s0[j]>32 && isalpha(s0[j]))
 	break;
     }
     string s=s0.substr(0,j+1),sadd;
@@ -485,7 +661,7 @@ namespace giac {
     return s0;
   }
 
-  string idnt2tex(const string & e){
+  static string idnt2tex(const string & e){
     bool mathmode;
     if (e.size()==3 && (e=="sin" || e=="cos" || e=="tan" || e=="exp" || e=="log"))
       return "\\"+e;
@@ -498,17 +674,17 @@ namespace giac {
       return mbox_begin+translate_underscore(s)+mbox_end;
   }
 
-  string idnt2tex(const gen & e,GIAC_CONTEXT){
+  static string idnt2tex(const gen & e,GIAC_CONTEXT){
     if (e==unsigned_inf)
       return "\\infty ";
     if (e==cst_pi)
       return "\\pi ";
     if (e==undef)
-      return "\\,"+mbox_begin+"undef"+mbox_end+"\\,";
+      return "\\,"+(mbox_begin+string("undef")+mbox_end)+"\\,";
     return idnt2tex(e.print(contextptr));
   }
 
-  void pnt2texlegende(FILE * file,const vecteur & arg,double xd,double yd,double xunit,int couleur,int labelpos,string * sres){
+  static void pnt2texlegende(FILE * file,const vecteur & arg,double xd,double yd,double xunit,int couleur,int labelpos,string * sres){
     // draw legende at xd,yd + 
     string ss;
     if (arg[2].type==_STRNG)
@@ -530,9 +706,9 @@ namespace giac {
   // This function is an adaptation of drawing.c from eukleides by C. Obrecht
   // v is the output history
   // output is written to file or to sres if file==NULL
-  bool pnt2tex(FILE * file,const vecteur & v,double xmin,double ymin,double xmax,double ymax,double & xd,double & yd,bool & drawlegende, int & labelpos,int & couleur,string * sres,GIAC_CONTEXT){
+  static bool pnt2tex_(FILE * file,const vecteur & v,double xmin,double ymin,double xmax,double ymax,double & xd,double & yd,bool & drawlegende, int & labelpos,int & couleur,string * sres,GIAC_CONTEXT){
     drawlegende=true;
-    int s=v.size();
+    int s=int(v.size());
     if (!s)
       return false;
     // set color
@@ -547,11 +723,12 @@ namespace giac {
       }
     }
     int width           =(ensemble_attributs & 0x00070000) >> 16; // 3 bits
-    int epaisseur_point =(ensemble_attributs & 0x00380000) >> 19; // 3 bits
-    int type_line       =(ensemble_attributs & 0x01c00000) >> 22; // 3 bits
+    // FIXME should be used!
+    // int epaisseur_point =(ensemble_attributs & 0x00380000) >> 19; // 3 bits
+    // int type_line       =(ensemble_attributs & 0x01c00000) >> 22; // 3 bits
     int type_point      =(ensemble_attributs & 0x0e000000) >> 25; // 3 bits
     labelpos        =(ensemble_attributs & 0x30000000) >> 28; // 2 bits
-    bool fill_polygon   =(ensemble_attributs & 0x40000000) >> 30;
+    bool fill_polygon   =((ensemble_attributs & 0x40000000) >> 30)!=0;
     couleur         =(ensemble_attributs & 0x0000ffff);
     string col(flcolor2pstrickscolor(couleur));
     ++width;
@@ -571,7 +748,7 @@ namespace giac {
       vecteur v=*point._SYMBptr->feuille._VECTptr;
       gen diametre=remove_at_pnt(v[0]);
       gen e1=diametre._VECTptr->front().evalf(1,contextptr),e2=diametre._VECTptr->back().evalf(1,contextptr);
-      gen centre=rdiv(e1+e2,2.0),rayon=abs(rdiv(e2-e1,2.0),contextptr);
+      gen centre=rdiv(e1+e2,gen(2.0),contextptr),rayon=abs(rdiv(e2-e1,gen(2.0),contextptr),contextptr);
       x=evalf_double(re(centre,contextptr),1,contextptr);
       y=evalf_double(im(centre,contextptr),1,contextptr);
       if ( (x.type==_DOUBLE_) && (y.type==_DOUBLE_) && (rayon.type==_DOUBLE_) ){
@@ -579,10 +756,11 @@ namespace giac {
 	yd=y._DOUBLE_val;
 	if (v.size()>2){
 	  gen theta1=evalf_double(v[1],1,contextptr),theta2=evalf_double(v[2],1,contextptr);
-	  bool rad=angle_radian(contextptr);
-	  angle_radian(true,contextptr);
+	  //grad
+	  int mode=get_mode_set_radian(contextptr);
 	  gen angle=arg(e2-e1,contextptr).evalf_double(1,contextptr);
-	  angle_radian(rad,contextptr);
+	  angle_mode(mode, contextptr);
+	  
 	  if (theta1.type==_DOUBLE_ && theta2.type==_DOUBLE_ && angle.type==_DOUBLE_){
 	    double t1=theta1._DOUBLE_val,t2=theta2._DOUBLE_val;
 	    if (t1>t2){
@@ -601,7 +779,7 @@ namespace giac {
 		double2tex(rayon._DOUBLE_val) + "}{" + 
 		double2tex(t1)+ "}{" + double2tex(t2) + "}\n";
 	    xd=x._DOUBLE_val+rayon._DOUBLE_val*std::cos(t1);
-	    yd=y._DOUBLE_val+rayon._DOUBLE_val*std::sin(t1);;
+	    yd=y._DOUBLE_val+rayon._DOUBLE_val*std::sin(t1);
 	    return true;
 	  }
 	}
@@ -632,7 +810,7 @@ namespace giac {
       return false;
     }
     vecteur & w=*point._VECTptr;
-    int ws=w.size();
+    int ws=int(w.size());
     if (ws==2){ 
       gen A=w[0].evalf(1,contextptr),B=w[1].evalf(1,contextptr);
       gen Ax=re(A,contextptr),Ay=im(A,contextptr).evalf(1,contextptr),
@@ -710,7 +888,14 @@ namespace giac {
     return true;
   }
 
-  void invectpnt2tex(FILE * file,const gen & g,double X1,double X2,double Y1,double Y2,double xunit,double yunit,string * resptr,GIAC_CONTEXT){
+  static bool pnt2tex(FILE * file,const vecteur & v,double xmin,double ymin,double xmax,double ymax,double & xd,double & yd,bool & drawlegende, int & labelpos,int & couleur,string * sres,GIAC_CONTEXT){
+    specialtexprint_double(true,contextptr);
+    bool b=pnt2tex_(file,v,xmin,ymin,xmax,ymax,xd,yd,drawlegende,labelpos,couleur,sres,contextptr);
+    specialtexprint_double(false,contextptr);
+    return b;
+  }
+
+  static void invectpnt2tex(FILE * file,const gen & g,double X1,double X2,double Y1,double Y2,double xunit,double yunit,string * resptr,GIAC_CONTEXT){
     if (g.type==_VECT){
       const_iterateur it=g._VECTptr->begin(),itend=g._VECTptr->end();
       for (;it!=itend;++it)
@@ -737,11 +922,24 @@ namespace giac {
 
   // evalf_double of a and splt re/im
   void evalfdouble2reim(const gen & a,gen & e,gen & f0,gen & f1,GIAC_CONTEXT){
-    try {
-      e=a.evalf_double(1,contextptr); // FIXME? level 1 does not work for non 0 context
-    } catch (std::runtime_error & error ){
-      cerr << error.what() << endl;
+    if (a.type==_CPLX){
+      f0=a._CPLXptr->evalf2double(1,contextptr);
+      f1=(a._CPLXptr+1)->evalf2double(1,contextptr);
+      if (a._CPLXptr->type==_DOUBLE_ && (a._CPLXptr+1)->type==_DOUBLE_)
+	e=a;
+      else
+	e=gen(f0._DOUBLE_val,f1._DOUBLE_val);
+      return ;
     }
+#ifndef NO_STDEXCEPT
+    try {
+#endif
+      e=a.evalf_double(1,contextptr); // FIXME? level 1 does not work for non 0 context
+#ifndef NO_STDEXCEPT
+    } catch (std::runtime_error & error ){
+      CERR << error.what() << endl;
+    }
+#endif
     if (e.type==_CPLX){
       f0=*e._CPLXptr;
       f1=*(e._CPLXptr+1);
@@ -752,7 +950,7 @@ namespace giac {
     }
   }
 
-  bool in_autoscale(const gen & g,vector<double> & vx,vector<double> & vy,vector<double> & vz,GIAC_CONTEXT){
+  static bool in_autoscale(const gen & g,vector<double> & vx,vector<double> & vy,vector<double> & vz,GIAC_CONTEXT){
     if (g.type==_VECT && g.subtype==_POINT__VECT && g._VECTptr->size()==3){
       vecteur v=*evalf_double(g,1,contextptr)._VECTptr;
       if (v[2].type==_CPLX)
@@ -768,7 +966,7 @@ namespace giac {
       bool ortho=false;
       const_iterateur it=g._VECTptr->begin(),itend=g._VECTptr->end();
       for (;it!=itend;++it){
-	ortho = ortho || in_autoscale(*it,vx,vy,vz,contextptr);
+	ortho = ortho | in_autoscale(*it,vx,vy,vz,contextptr);
       }
       return ortho;
     }
@@ -791,8 +989,23 @@ namespace giac {
     }
     if (g.is_symb_of_sommet(at_cercle)){
       gen c,r;
-      bool b=centre_rayon(g,c,r,false,contextptr);
-      vecteur v=makevecteur(c-r,c+r,c-cst_i*r,c+cst_i*r);
+      centre_rayon(g,c,r,false,contextptr);
+      if (is_zero(r)) r=1;
+      vecteur v;
+      if (g._SYMBptr->feuille.type==_VECT && g._SYMBptr->feuille._VECTptr->size()>=3){
+	v=*g._SYMBptr->feuille._VECTptr;
+	gen delta=v[2]-v[1];
+	v=makevecteur(c-r*exp(cst_i*(v[1]-0.1*delta),contextptr),
+		      c-r*exp(cst_i*v[1],contextptr),
+		      c-r*exp(cst_i*(3*v[1]+v[2])/gen(4),contextptr),
+		      c-r*exp(cst_i*(v[1]+v[2])/gen(2),contextptr),
+		      c-r*exp(cst_i*(v[1]+3*v[2])/gen(4),contextptr),
+		      c-r*exp(cst_i*v[2],contextptr),
+		      c-r*exp(cst_i*(v[2]+0.1*delta),contextptr)); 
+	// FIXME? centre_rayon returns (a-b)/2 for rayon instead of (b-a)/2...
+      }
+      else
+	v=makevecteur(c-r,c+r,c-cst_i*r,c+cst_i*r);
       in_autoscale(v,vx,vy,vz,contextptr);
       return true;
     }
@@ -813,7 +1026,7 @@ namespace giac {
       bool ortho=false;
       const_iterateur it=g._VECTptr->begin(),itend=g._VECTptr->end();
       for (;it!=itend;++it)
-	ortho = ortho || autoscaleg(*it,vx,vy,vz,contextptr);
+	ortho = ortho | autoscaleg(*it,vx,vy,vz,contextptr);
       return ortho;
     }
     if (g.is_symb_of_sommet(at_pnt)){
@@ -826,23 +1039,72 @@ namespace giac {
     return false;
   }
 
-  void zoom(double &m,double & M,double d){
+  void overwrite_viewbox(const gen & g,double & window_xmin,double & window_xmax,double & window_ymin,double & window_ymax,double &window_zmin,double & window_zmax){
+    if (g.type==_VECT){
+      vecteur v =*g._VECTptr;
+      for (int i=0;i<int(v.size());++i){
+	overwrite_viewbox(v[i],window_xmin,window_xmax,window_ymin,window_ymax,window_zmin,window_zmax);
+      }
+    }
+    if (g.is_symb_of_sommet(at_equal)){
+      gen f=g._SYMBptr->feuille;
+      if (f.type==_VECT && f._VECTptr->size()==2){
+	gen optname= f._VECTptr->front(),optvalue=f._VECTptr->back();
+	if (optvalue.is_symb_of_sommet(at_interval) && optname.type==_INT_ && optname.subtype==_INT_PLOT && optname.val>=_GL_X && optname.val<=_GL_Z){
+	  gen optvf=evalf_double(optvalue._SYMBptr->feuille,1,context0);
+	  if (optvf.type==_VECT && optvf._VECTptr->size()==2){
+	    gen a=optvf._VECTptr->front();
+	    gen b=optvf._VECTptr->back();
+	    if (a.type==_DOUBLE_ && b.type==_DOUBLE_){
+	      switch (optname.val){
+	      case _GL_X:
+		window_xmin=a._DOUBLE_val;
+		window_xmax=b._DOUBLE_val;
+		break;
+	      case _GL_Y:
+		window_ymin=a._DOUBLE_val;
+		window_ymax=b._DOUBLE_val;
+		break;
+	      case _GL_Z:
+		window_zmin=a._DOUBLE_val;
+		window_zmax=b._DOUBLE_val;
+		break;
+	      }
+	    } 
+	  }
+	}
+      }
+    }
+  }
+
+  static void zoom(double &m,double & M,double d){
     double x_center=(M+m)/2;
     double dx=(M-m);
-    if (dx==0)
-      dx=1;
+    if (dx==0){
+      dx=std::abs(M);
+      if (dx==0)
+	dx=1;
+    }
     dx *= d/2;
     m = x_center - dx;
     M = x_center + dx;
   }
 
-  void autoscaleminmax(vector<double> & v,double & m,double & M){
-    int s=v.size();
+  void autoscaleminmax(vector<double> & v,double & m,double & M,bool fullview){
+    int s=int(v.size());
+    if (s==0){
+      v.push_back(0);
+      ++s;
+    }
+    if (s==1){
+      v.push_back(v.front());
+      ++s;
+    }
     if (s>1){    
       sort(v.begin(),v.end());
       m=v[s/10];
       M=v[9*s/10];
-      if (2*(M-m)>(v[s-1]-v[0])){
+      if (fullview || 2*(M-m)>(v[s-1]-v[0]) || (M-m)<0.01*(v[s-1]-v[0])){
 	M=v[s-1];
 	m=v[0];
 	zoom(m,M,1.1);
@@ -852,14 +1114,13 @@ namespace giac {
     }
   }
 
-  string vectpnt2tex(const gen & g,GIAC_CONTEXT){
+  static string vectpnt2tex(const gen & g,GIAC_CONTEXT){
     string res;
     double X1=gnuplot_xmin,X2=gnuplot_xmax,Y1=gnuplot_ymin,Y2=gnuplot_ymax;
     vector<double> vx,vy,vz;
-    int s;
     autoscaleg(g,vx,vy,vz,contextptr);
-    autoscaleminmax(vx,X1,X2);
-    autoscaleminmax(vy,Y1,Y2);
+    autoscaleminmax(vx,X1,X2,false);
+    autoscaleminmax(vy,Y1,Y2,false);
     double xunit=giac::horiz_latex/(X2-X1);
     double yunit=(X2-X1)/(Y2-Y1)*xunit;
     res="\\begin{pspicture}("+double2tex(X1*xunit)+","+double2tex(Y1*xunit)+
@@ -876,47 +1137,54 @@ namespace giac {
     return res;
   }
    
-  string symbolic2tex(const symbolic & mys,GIAC_CONTEXT){
+  static string symbolic2tex(const symbolic & mys,GIAC_CONTEXT){
     const gen &feu=mys.feuille;
     if (mys.sommet==at_pnt && feu.type==_VECT && !is3d(mys))
       return vectpnt2tex(mys,contextptr);
-    if (mys.sommet.ptr->texprint)
-      return mys.sommet.ptr->texprint(feu,mys.sommet.ptr->s,contextptr);
-    string opstring=idnt2tex(mys.sommet.ptr->print(contextptr));
+    if (mys.sommet.ptr()->texprint)
+      return mys.sommet.ptr()->texprint(feu,mys.sommet.ptr()->s,contextptr);
+    if (mys.sommet==at_abs)
+      return '|'+gen2tex(feu,contextptr)+'|';
+    string opstring=idnt2tex(mys.sommet.ptr()->print(contextptr));
     if ( (feu.type==_VECT) && (feu._VECTptr->empty()) )
       return opstring+string("()");
-    if ( (feu.type!=_VECT) || (feu._VECTptr->front().type==_VECT && mys.sommet!=at_pow)){
+    if ( (feu.type!=_VECT) || (feu._VECTptr->front().type==_VECT && mys.sommet!=at_pow) ){
       if ((mys.sommet==at_neg) || (mys.sommet==at_plus)){
 	if (feu.type!=_SYMB) 
 	  return opstring+gen2tex(feu,contextptr) ;
-	if (feu._SYMBptr->sommet==at_inv || feu._SYMBptr->sommet==at_prod)
+	if (feu._SYMBptr->sommet==at_inv || !need_parenthesis(feu._SYMBptr->feuille))
 	  return opstring+gen2tex(feu,contextptr) ;
 	return opstring+string("\\left(") + gen2tex(feu,contextptr) +string("\\right)");
       }
-      if (mys.sommet==at_inv){
+      if (mys.sommet==at_inv && (feu.is_symb_of_sommet(at_prod) || feu.is_symb_of_sommet(at_plus) || feu.type<=_IDNT) ){
 	return string("\\frac{1}{") + gen2tex(feu,contextptr) +string("}");
       }
       return opstring + "\\left(" + gen2tex(feu,contextptr) +"\\right)" ;
     }
     string s;
-    int l=feu._VECTptr->size();
+    int l=int(feu._VECTptr->size());
     if ( mys.sommet==at_plus ){
       for (int i=0;i<l;++i){
 	gen e((*(feu._VECTptr))[i]);
 	if ((e.type==_SYMB) && (e._SYMBptr->sommet==at_neg)){
 	  s += "-";
-	  if (e._SYMBptr->feuille.type!=_CPLX && (e._SYMBptr->feuille.type!=_SYMB || e._SYMBptr->feuille._SYMBptr->sommet==at_inv ||  e._SYMBptr->feuille._SYMBptr->sommet==at_prod) )
+	  if (e._SYMBptr->feuille.type!=_CPLX && (e._SYMBptr->feuille.type!=_SYMB || e._SYMBptr->feuille._SYMBptr->sommet==at_inv ||  e._SYMBptr->feuille._SYMBptr->sommet==at_prod|| !need_parenthesis(e._SYMBptr->feuille)) )
 	    s += gen2tex(e._SYMBptr->feuille,contextptr) ;
 	  else
 	    s += "\\left(" + gen2tex(e._SYMBptr->feuille,contextptr) + "\\right)";
 	}
 	else {
-	  if ( ( (e.type==_INT_) || (e.type==_ZINT) ) && (!is_positive(e,0)) )
+	  if ( e.type<=_REAL  && !is_positive(e,0) )
 	    s += e.print(contextptr);
 	  else {
-	    if (i)
-	      s += opstring;
-	    s += gen2tex(e,contextptr);
+	    string sadd=gen2tex(e,contextptr);
+	    if (i){
+	      if (opstring=="+" && !sadd.empty() && sadd[0]=='-')
+		;
+	      else
+		s += opstring;
+	    }
+	    s += sadd;
 	  }
 	}
       } // end_for
@@ -949,11 +1217,11 @@ namespace giac {
       if ( v.back()==minus_one_half || v.back()==fraction(minus_one,plus_two) )
 	return "\\frac{1}{\\sqrt{"+gen2tex(v.front(),contextptr)+"}}";
       string res=gen2tex(v.front(),contextptr);
-      bool par = v.front().type>=_CPLX && v.front().type!=_IDNT && !ckmatrix(v.front());
-      if (par){
-	int ress=res.size(),i;
+      bool par = (v.front().type>=_CPLX || is_strictly_positive(-v.front(),contextptr) ) && v.front().type!=_IDNT && !ckmatrix(v.front());
+      if (par && !v.front().is_symb_of_sommet(at_plus)){
+	int ress=int(res.size()),i;
 	for (i=1;i<ress;++i){
-	  if (!isalpha(res[i]))
+	  if (res[i]<=32 || !isalpha(res[i]))
 	    break;
 	}
 	if (i+12<ress && res.substr(i,6)=="\\left(" && res.substr(ress-6,6)=="right)")
@@ -978,7 +1246,10 @@ namespace giac {
     case _INT_: case _ZINT: case _REAL:
       return e.print(contextptr);
     case _DOUBLE_:
-      return double2tex(e._DOUBLE_val);
+      if (specialtexprint_double(contextptr))
+	return double2tex(e._DOUBLE_val);
+      else
+	return e.print(contextptr);
     case _CPLX:
       return e.print(contextptr);
     case _IDNT:
@@ -995,10 +1266,12 @@ namespace giac {
       else
 	return _VECT2tex(*e._VECTptr,e.subtype,contextptr);
     case _POLY:
-      return mbox_begin+"polynome"+mbox_end+" "; 
+      return mbox_begin+string("polynome")+mbox_end+" "; 
+    case _SPOL1:
+      return gen2tex(spol12gen(*e._SPOL1ptr,contextptr),contextptr);
     case _FRAC:
       return string("\\frac{")+gen2tex(e._FRACptr->num,contextptr)+"}{"+gen2tex(e._FRACptr->den,contextptr)+'}';
-    case _EXT: case _ROOT:
+    case _EXT: 
       return "";
     case _STRNG:
       return idnt2tex(*e._STRNGptr);
@@ -1013,25 +1286,28 @@ namespace giac {
 	return fl_widget_texprint_function(e._POINTER_val);
       return "Done";
     default:
-      settypeerr("Tex convert "+e.print(contextptr));
+      return "Error in Tex conversion for "+e.print(contextptr);
     }
     return 0;
   }
   gen _latex(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
+#ifndef NSPIRE
     if (!secure_run && g.type==_VECT && g.subtype==_SEQ__VECT && g._VECTptr->size()>1 && (*g._VECTptr)[1].type==_STRNG){
       ofstream of((*g._VECTptr)[1]._STRNGptr->c_str());
       of << gen2tex(g._VECTptr->front(),contextptr) << endl;
       return plus_one;
     }
+#endif
     return string2gen(gen2tex(g,contextptr),false);
   }
-  const string _latex_s("latex");
-  unary_function_eval __latex(&_latex,_latex_s);
-  unary_function_ptr at_latex (&__latex,0,true);
+  static const char _latex_s []="latex";
+  static define_unary_function_eval (__latex,&_latex,_latex_s);
+  define_unary_function_ptr5( at_latex ,alias_at_latex,&__latex,0,true);
 
-  const string _TeX_s("TeX");
-  unary_function_eval __TeX(&_latex,_TeX_s);
-  unary_function_ptr at_TeX (&__TeX,0,true);
+  static const char _TeX_s []="TeX";
+  static define_unary_function_eval (__TeX,&_latex,_TeX_s);
+  define_unary_function_ptr5( at_TeX ,alias_at_TeX,&__TeX,0,true);
 
 
 
@@ -1039,12 +1315,12 @@ namespace giac {
     return graph2tex(file,v,X1,X2,Y1,Y2,Unit,Unit,filename,logo,contextptr);
   }
 
-  int ingraph2tex(FILE * file,const vecteur & v,double xunit,double yunit,double xmin, double ymin,double xmax,double ymax,GIAC_CONTEXT){
+  static int ingraph2tex(FILE * file,const vecteur & v,double xunit,double yunit,double xmin, double ymin,double xmax,double ymax,GIAC_CONTEXT){
     vecteur w;
     const_iterateur it=v.begin(),itend=v.end();
     for (;it!=itend;++it){
       gen sortie=*it;
-      // cerr << "graph2tex " << *it << endl;
+      // CERR << "graph2tex " << *it << endl;
       if (sortie.type==_POINTER_ && sortie.subtype==_FL_WIDGET_POINTER && fl_widget_updatepict_function)
 	sortie = fl_widget_updatepict_function(sortie);
       if (sortie.type!=_VECT)
@@ -1086,12 +1362,12 @@ namespace giac {
       // fprintf(file,"\\psframe[fillstyle=solid,fillcolor=gray](%.4f,%.4f)(%.4f,%.4f)\n",X1,Y1,X2,Y2);
       vector<logo_turtle> w=vecteur2turtlevect(v);
       vector<logo_turtle> * turtleptr=&w;
-      int l=turtleptr->size();
+      int l=int(turtleptr->size());
       if (l>0){
 	double labelsep(0.1/xunit),angle(45);
-	fprintf(file,"\%\\uput{%.4f}[%.4f](%.4f,%.4f){%s%i}\n",labelsep,angle,X2-100,Y2-25, "x ",int(turtleptr->back().x+.5));
-	fprintf(file,"\%\\uput{%.4f}[%.4f](%.4f,%.4f){%s%i}\n",labelsep,angle,X2-100,Y2-48, "y ",int(turtleptr->back().y+.5));
-	fprintf(file,"\%\\uput{%.4f}[%.4f](%.4f,%.4f){%s%i}\n",labelsep,angle,X2-100,Y2-65, "t ",int(turtleptr->back().theta+.5));
+	fprintf(file,"%s{%.4f}[%.4f](%.4f,%.4f){%s%i}\n","%\\uput",labelsep,angle,X2-100,Y2-25, "x ",int(turtleptr->back().x+.5));
+	fprintf(file,"%s{%.4f}[%.4f](%.4f,%.4f){%s%i}\n","%\\uput",labelsep,angle,X2-100,Y2-48, "y ",int(turtleptr->back().y+.5));
+	fprintf(file,"%s{%.4f}[%.4f](%.4f,%.4f){%s%i}\n","%\\uput",labelsep,angle,X2-100,Y2-65, "t ",int(turtleptr->back().theta+.5));
 	logo_turtle prec =(*turtleptr)[0];
 	for (int k=1;k<l;++k){
 	  logo_turtle current =(*turtleptr)[k];
@@ -1130,7 +1406,7 @@ namespace giac {
 	      if (current.direct){
 		if (rempli){
 		  fprintf(file,"\\pswedge*[fillcolor=");
-		  fprintf(file,flcolor2pstrickscolor(prec.color).c_str());
+		  fprintf(file,"%s",flcolor2pstrickscolor(prec.color).c_str());
 		  fprintf(file,"]");
 		}
 		else
@@ -1140,7 +1416,7 @@ namespace giac {
 	      else {
 		if (rempli){
 		  fprintf(file,"\\pswedge*[fillcolor=");
-		  fprintf(file,flcolor2pstrickscolor(prec.color).c_str());
+		  fprintf(file,"%s",flcolor2pstrickscolor(prec.color).c_str());
 		  fprintf(file,"]");
 		}
 		else
@@ -1161,7 +1437,7 @@ namespace giac {
 		printstring += "("+double2tex(t.x)+","+double2tex(t.y)+")";
 	      }
 	      printstring += "("+double2tex(current.x)+","+double2tex(current.y)+")\n";
-	      fprintf(file,printstring.c_str());
+	      fprintf(file,"%s",printstring.c_str());
 	    }
 	  } // end else (non-string turtle record)
 	  prec=current;
@@ -1202,7 +1478,7 @@ namespace giac {
   }
 
   std::string get_path(const string & st){
-    int s=st.size(),i;
+    int s=int(st.size()),i;
     for (i=s-1;i>=0;--i){
       if (st[i]=='/')
 	break;
@@ -1211,7 +1487,7 @@ namespace giac {
   }
 
   std::string remove_path(const std::string & st){
-    int s=st.size(),i;
+    int s=int(st.size()),i;
     for (i=s-1;i>=0;--i){
       if (st[i]=='/')
 	break;
@@ -1221,7 +1497,8 @@ namespace giac {
 
 
   int graph2tex(const string &s,const vecteur & v,double X1,double X2,double Y1,double Y2,double xunit,double yunit,bool logo,GIAC_CONTEXT){
-    check_secure();
+    if (is_undef(check_secure()))
+      return 0;
     // int file;
     // file = open (s.c_str(), O_WRONLY);
     // if (file==-1)
@@ -1232,17 +1509,17 @@ namespace giac {
     // Begin eukleides code with redirected stdout
     FILE * filecol=fopen((get_path(s)+"fltkcol.tex").c_str(),"w");
     if (!filecol){
-      cerr << "Unable to open color file fltkcol.tex" << endl;
+      CERR << "Unable to open color file fltkcol.tex" << endl;
       return 0;
     }
-    fprintf(filecol,tex_color.c_str());
+    fprintf(filecol,"%s",tex_color);
     fclose(filecol);
     FILE * file=fopen(s.c_str(), "w");
     if (!file){
-      cerr << "Unable to open file "+s << endl;
+      CERR << "Unable to open file "+s << endl;
       return 0;
     }
-    fprintf(file,tex_preamble.c_str());
+    fprintf(file,"%s",tex_preamble);
     fprintf(file,"\\input fltkcol.tex");
     graph2tex(file,v,X1,X2,Y1,Y2,xunit,yunit,s.c_str(),logo,contextptr);
     fprintf(file,"\\end{document}\n");
@@ -1253,6 +1530,7 @@ namespace giac {
   }
 
   gen _graph2tex(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     int i=erase_pos(contextptr);
     vecteur hist(history_out(contextptr).begin()+i,history_out(contextptr).end());
     return graph2tex(args,hist,contextptr);
@@ -1270,9 +1548,9 @@ namespace giac {
     if ( (args.type!=_VECT) || (args._VECTptr->size()<2) )
       return symbolic(at_graph2tex,args);
     vecteur & v=*args._VECTptr;
-    int vs=v.size();
+    int vs=int(v.size());
     if ( (v[0].type!=_STRNG) || (v[1].type!=_DOUBLE_) )
-      setsizeerr();
+      return gensizeerr();
     if ( (vs>2) && (v[2].type==_DOUBLE_) )
       gnuplot_xmin=v[2]._DOUBLE_val;
     if ( (vs>3) && (v[3].type==_DOUBLE_) )
@@ -1283,23 +1561,27 @@ namespace giac {
       gnuplot_ymax=v[5]._DOUBLE_val;
     return graph2tex(*v[0]._STRNGptr,hist,gnuplot_xmin,gnuplot_xmax,gnuplot_ymin,gnuplot_ymax,v[1]._DOUBLE_val,false,contextptr);
   }
-  const string _graph2tex_s("graph2tex");
-  unary_function_eval __graph2tex(&_graph2tex,_graph2tex_s);
-  unary_function_ptr at_graph2tex (&__graph2tex,0,true);
+  static const char _graph2tex_s []="graph2tex";
+  static define_unary_function_eval (__graph2tex,&_graph2tex,_graph2tex_s);
+  define_unary_function_ptr5( at_graph2tex ,alias_at_graph2tex,&__graph2tex,0,true);
 
   gen _graph3d2tex(const gen & args,GIAC_CONTEXT){
-    check_secure();
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    gen tmp=check_secure();
+    if (is_undef(tmp)) return tmp;
     if (args.type==_STRNG){
       string & s=*args._STRNGptr;
+#ifdef WITH_GNUPLOT
       bool clrplot;
       int out_handle;
       FILE * gnuplot_out_readstream,* stream = open_gnuplot(clrplot,gnuplot_out_readstream,out_handle);
       latex_replot(stream,s);
       gnuplot_wait(out_handle,gnuplot_out_readstream,5);
+#endif
       return string2gen(s,false);
     }
     else { // search in history for the last plot command answer == to an int
-      int s=min(history_out(contextptr).size(),history_in(contextptr).size());
+      int s=giacmin(int(history_out(contextptr).size()),int(history_in(contextptr).size()));
       for (int i=s-1;i>=0;--i){
 	if (history_out(contextptr)[i].is_symb_of_sommet(at_pnt) && history_out(contextptr)[i].subtype>=0)
 	  return history_out(contextptr)[i].subtype;
@@ -1309,9 +1591,9 @@ namespace giac {
       return undef;
     }
   }
-  const string _graph3d2tex_s("graph3d2tex");
-  unary_function_eval __graph3d2tex(&_graph3d2tex,_graph3d2tex_s);
-  unary_function_ptr at_graph3d2tex (&__graph3d2tex,0,true);
+  static const char _graph3d2tex_s []="graph3d2tex";
+  static define_unary_function_eval (__graph3d2tex,&_graph3d2tex,_graph3d2tex_s);
+  define_unary_function_ptr5( at_graph3d2tex ,alias_at_graph3d2tex,&__graph3d2tex,0,true);
 #ifndef NO_NAMESPACE_GIAC
 } // namespace giac
 #endif // ndef NO_NAMESPACE_GIAC

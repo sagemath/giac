@@ -1,21 +1,84 @@
 info_TEXINFOS = giac_es.texinfo
-EXTRA_DIST = xcasmenu xcasex keywords cas_es.tex html_* 
-html:	giac_es.texinfo
-	touch giac_es.html && makeinfo --html --no-split giac_es.texinfo
-dvi: cas_es.tex 
-	latex cas_es
-install-exec-hook: html
-	../../mkinstalldirs $(prefix)/share/giac/doc/es
-	cp -f *.html $(prefix)/share/giac/doc/es
-	cp -f html_* $(prefix)/share/giac/doc/es/
-	ln -sf ../en/casinter $(prefix)/share/giac/doc/es/casinter
-	ln -sf ../en/cascmd_en $(prefix)/share/giac/doc/es/cascmd_es
-	ln -sf ../fr/castor $(prefix)/share/giac/doc/es/castor
-	ln -sf ../fr/casexo $(prefix)/share/giac/doc/es/casexo
-	ln -sf ../fr/casrouge $(prefix)/share/giac/doc/es/casrouge
-	ln -sf ../fr/casgeo $(prefix)/share/giac/doc/es/casgeo
-	ln -sf ../fr/casexo $(prefix)/share/giac/doc/es/casexo
-	ln -sf ../fr/cascas $(prefix)/share/giac/doc/es/cascas
-	ln -sf ../fr/cassim $(prefix)/share/giac/doc/es/cassim
-	ln -sf ../fr/algo.html $(prefix)/share/giac/doc/es/
-	cp -f xcasmenu xcasex keywords $(prefix)/share/giac/doc/es/
+AM_MAKEINFOHTMLFLAGS = --no-split
+
+TEX_LOCAL = cas_es.tex
+PDF_LOCAL = cas_es.pdf
+PS_LOCAL = cas_es.ps
+DVI_LOCAL = cas_es.dvi
+
+EXTRA_DIST = cas_es.tex $(PDF_LOCAL) $(PS_LOCAL) $(DVI_LOCAL) # $(HTML_LOCAL) $(HTML_STAMPS) $(HTML_DIRS_LOCAL)
+
+the_LANG = es
+thelangdocdir = $(docdir)/$(the_LANG)
+dist_thelangdoc_DATA = html_mall html_mtt html_vall xcasmenu xcasex keywords 
+
+pdf-local: $(PDF_LOCAL)
+dvi-local: $(DVI_LOCAL)
+ps-local: $(PS_LOCAL)
+
+install-data-local: $(HTML_STAMPS) $(PDF_LOCAL) $(PS_LOCAL) $(DVI_LOCAL)
+	$(install_sh) -d $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
+#	$(INSTALL_DATA) $(PDF_LOCAL) $(DESTDIR)/$(the_LANG)
+#	$(INSTALL_DATA) $(PS_LOCAL) $(DESTDIR)/$(the_LANG)
+#	$(INSTALL_DATA) $(DVI_LOCAL) $(DESTDIR)/$(the_LANG)
+#	$(INSTALL_DATA) $(HTML_LOCAL) $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
+	$(INSTALL_DATA) $(dist_thelangdoc_DATA) $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
+
+LATEX2HTML_HOMEPAGE = "http://www-fourier.ujf-grenoble.fr/~parisse/giac.html"
+LATEX2HTML_ADDRESS = <A HREF=$(LATEX2HTML_HOMEPAGE)>giac</A> documentation written by
+LATEX2HTML_OPTIONS = -local_icons -no_math -html_version 3.2,math
+
+SUFFIXES = .tex .pdf .ps .dvi
+
+if DOC_PROGS
+
+RUN_PDFLATEX = TEXINPUTS=$(srcdir):$$TEXINPUTS $(PDFLATEX)
+RUN_LATEX = TEXINPUTS=$(srcdir):$$TEXINPUTS $(LATEX)
+RUN_MAKEINDEX = TEXINPUTS=$(srcdir):$$TEXINPUTS $(MAKEINDEX)
+RUN_LATEX2HTML = TEXINPUTS=$(srcdir):$$TEXINPUTS $(LATEX2HTML) $(LATEX2HTML_OPTIONS)
+
+.tex.pdf:
+	$(RUN_PDFLATEX) $<
+	$(RUN_PDFLATEX) $<
+	if $(EGREP) -q -e '\\makeindex' $<; then \
+		$(RUN_MAKEINDEX) `echo $@ | sed -e s/\.pdf/\.idx/` ; \
+	fi
+	$(RUN_PDFLATEX) $<
+
+.tex.dvi:
+	$(RUN_LATEX) $<
+	$(RUN_LATEX) $<
+	if $(EGREP) -q -e '\\makeindex' $<; then \
+		$(RUN_MAKEINDEX) `echo $@ | sed -e s/\.dvi/\.idx/` ; \
+	fi
+	$(RUN_LATEX) $<
+
+.dvi.ps:
+	$(DVIPS) -o $@ $<
+
+else
+
+.tex.pdf:
+	if [ ! -f "$@" ]; then \
+		echo '*** Error: TeX is not installed, and $@ is missing' ; \
+		exit 1 ; \
+	fi
+
+.tex.dvi:
+	if [ ! -f "$@" ]; then \
+		echo '*** Error: TeX is not installed, and $@ is missing' ; \
+		exit 1 ; \
+	fi
+
+.tex.ps:
+	if [ ! -f "$@" ]; then \
+		echo '*** Error: TeX is not installed, and $@ is missing' ; \
+		exit 1 ; \
+	fi
+
+dist-hook:
+	echo '*** Error: no tools to rebuild documentation is installed' ; \
+	exit 1
+
+endif
+

@@ -1,10 +1,18 @@
 // -*- mode:C++ ; compile-command: "g++ -I.. -g -c Print.cc" -*-
 #ifndef _PRINT_H
 #define _PRINT_H
-#include <vector>
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "vector.h"
 #include <string>
+#ifndef IN_GIAC
 #include <giac/first.h>
 #include <giac/gen.h>
+#else
+#include "first.h"
+#include "gen.h"
+#endif
 #ifdef HAVE_LIBFLTK
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Menu.H>
@@ -16,12 +24,15 @@
 #ifdef HAVE_LC_MESSAGES
 #include <locale.h>
 #endif
-#include <giac/giacintl.h>
+#include "giacintl.h"
 
+#ifdef HAVE_LIBFLTK
 #ifdef FL_DEVICE
 #include <FL/fl_printer_chooser.H>
+#else
+#include <FL/Fl_Printer.H>
 #endif // FL_DEVICE
-
+#endif
 
 
 #ifndef NO_NAMESPACE_XCAS
@@ -34,7 +45,7 @@ namespace xcas {
   extern bool printer_landscape;
   extern double pixel_scale; // size of 1 pixel on a page for printing
 
-  void widget_ps_print(Fl_Widget * widget,const std::string & fname0,bool eps=false,int pngpdf=3,bool preview=true);
+  void widget_ps_print(Fl_Widget * widget,const std::string & fname0,bool eps=false,int pngpdf=7,bool preview=true,bool hidemouseparam=true,bool askusersize=true);
   void widget_print(Fl_Widget * widget);
 
 #endif

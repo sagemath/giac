@@ -1,7 +1,6 @@
 // -*- mode:C++ ; compile-command: "g++-3.4 -I. -I.. -g -c Input.cc -Wall" -*-
-#include <giac/first.h>
 /*
- *  Copyright (C) 2005 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
+ *  Copyright (C) 2005,2014 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -14,11 +13,20 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#ifndef IN_GIAC
+#include <giac/first.h>
+#else
+#include "first.h"
+#endif
+#include <string>
 #ifdef HAVE_LIBFLTK
+#include "Input.h"
 #include <FL/Fl.H>
 #include <FL/fl_draw.H>
 #include <FL/Fl_Window.H>
@@ -26,17 +34,26 @@
 #include <FL/Fl_File_Chooser.H>
 #include <FL/Fl_Hold_Browser.H>
 #include <FL/Fl_Return_Button.H>
-#include "Input.h"
+#include <FL/Fl_Tooltip.H>
 #include "History.h"
 #include "Xcas1.h"
 #include "Tableur.h"
 #include "Graph3d.h"
 #include "Help1.h"
+#ifndef IN_GIAC
 #include <giac/plot.h>
 #include <giac/help.h>
 #include <giac/global.h>
+#else
+#include "plot.h"
+#include "help.h"
+#include "global.h"
+#endif
 #include <iostream>
 #include <fstream>
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 using namespace std;
 
 #ifndef NO_NAMESPACE_XCAS
@@ -45,7 +62,7 @@ namespace xcas {
 
 #define TAB_ARGS 6
 
-#ifdef __APPLE__
+#if defined __APPLE__ || defined WIN32
   bool use_external_browser = true ;
 #else
   bool use_external_browser = getenv("BROWSER") ;
@@ -54,24 +71,26 @@ namespace xcas {
   int Multiline_Input_tab::count=0;
 
   Fl_Help_Dialog * Xcas_help_window = new Fl_Help_Dialog();
+  Fl_Widget * Xcas_input_focus=0;
 
   void system_browser(const string & s){
     int i=system(s.c_str());
     if (i!=0){
-      fl_alert(("Error running browser command "+s).c_str());
+      fl_alert("%s",("Switching to internal browser, error running browser command "+s).c_str());
+      use_external_browser=false;
     }
   }
 
   bool read_aide(const string & progname,int language){
     string helpfile("aide_cas");
     int helpitems=0;
-    (*giac::vector_aide_ptr)=giac::readhelp(helpfile.c_str(),helpitems,false);
+    (*giac::vector_aide_ptr())=giac::readhelp(helpfile.c_str(),helpitems,false);
     if (!helpitems){
       if (getenv("XCAS_HELP"))
 	helpfile=getenv("XCAS_HELP");
       else
 	helpfile=giac::giac_aide_dir()+"aide_cas";
-      (*giac::vector_aide_ptr)=giac::readhelp(helpfile.c_str(),helpitems);
+      (*giac::vector_aide_ptr())=giac::readhelp(helpfile.c_str(),helpitems);
     }
     if (!helpitems){
       cerr << "// Unable to open help file "<< helpfile << endl;
@@ -79,12 +98,36 @@ namespace xcas {
     }
     else {
       cerr << "// Using help file " << helpfile << endl;
-      giac::xcasroot=giac::xcasroot_dir((char *) progname.c_str());
-      cerr << "// root dir " << giac::xcasroot << endl;
+      giac::xcasroot()=giac::xcasroot_dir((char *) progname.c_str());
+      /* patch for gsview TEMP, but does not work
+      if (!getenv("TEMP")){
+	if (giac::is_file_available("/tmp"))
+	  setenv("TEMP","/tmp",1);
+	else
+	  setenv("TEMP",giac::xcasroot().c_str(),1);
+      }
+      */
+      cerr << "// root dir " << giac::xcasroot() << endl;
       giac::html_help_init((char *) progname.c_str(),language);
       giac::update_completions();
       return true;
     }
+  }
+
+  // return the last keyword of s
+  std::string motclef(const std::string & s){
+    int l=s.size();
+    int i=l-1;
+    for (;i>=0;i--){
+      if (giac::isalphan(s[i]))
+	break;
+    }
+    l=i+1;
+    for (;i>=0;i--){
+      if (!giac::isalphan(s[i]))
+	return s.substr(i+1,l-1-i);
+    }
+    return s.substr(0,l);
   }
 
   string findtooltip(const giac::gen & g){
@@ -120,6 +163,33 @@ namespace xcas {
     return s;
   }
 
+  std::string split(const std::string & s,Fl_Widget * w){
+    fl_font(w->labelfont(),w->labelsize());
+    string res,ajout;
+    int fin=s.size(),debut=0;
+    int taille=w->w();
+    for (;debut<fin;){
+      int l=fin-debut;
+      ajout=s.substr(debut,l);
+      if (fl_width(ajout.c_str())<=taille)
+	return res+ajout;
+      for (--l;l>0;--l){
+	if (s[debut+l]==' '){
+	  ajout=s.substr(debut,l);
+	  if (fl_width(ajout.c_str())<=taille){
+	    res += ajout;
+	    res += '\n';
+	    break;
+	  }
+	}
+      }
+      if (l==0)
+	return res+ajout;
+      debut += l+1;
+    }
+    return res;
+  }
+
   void update_examples(const string & s,Fl_Browser * examples,Fl_Browser * related,Fl_Browser * syns,Fl_Output * output,Fl_Input ** argtab,int language){
     help_output(s,language);
     if (output->label())
@@ -130,7 +200,7 @@ namespace xcas {
     if (output->parent())
       output->parent()->redraw();
     if (examples && output ){
-      giac::aide cur_aide=giac::helpon(s,(*giac::vector_aide_ptr),language,(*giac::vector_aide_ptr).size(),false);
+      giac::aide cur_aide=giac::helpon(s,(*giac::vector_aide_ptr()),language,(*giac::vector_aide_ptr()).size(),false);
       string result=cur_aide.cmd_name;
       if (!cur_aide.syntax.empty()){
 	result=result+"("+cur_aide.syntax+")\n";
@@ -180,7 +250,7 @@ namespace xcas {
       vector<giac::localized_string>::const_iterator it=cur_aide.blabla.begin(),itend=cur_aide.blabla.end();
       for (;it!=itend;++it){
 	if (it->language==language){
-	  result = it->chaine +'\n'+result ;
+	  result = split(it->chaine,output) +'\n'+result ;
 	  break;
 	}
       }
@@ -191,11 +261,12 @@ namespace xcas {
       for (;jt!=jtend;++jt)
 	examples->add(jt->c_str());
       related->clear();
+      syns->clear();
       std::vector<giac::indexed_string>::const_iterator kt=cur_aide.related.begin(),ktend=cur_aide.related.end();
       for (;kt!=ktend;++kt){
-	related->add(kt->chaine.c_str());
+	string tmp=giac::localize(kt->chaine,language);
+	related->add(tmp.c_str());
       }
-      syns->clear();
       std::vector<giac::localized_string>::const_iterator lt=cur_aide.synonymes.begin(),ltend=cur_aide.synonymes.end();
       for (;lt!=ltend;++lt){
 	if (lt->chaine!=s)
@@ -231,6 +302,9 @@ namespace xcas {
       if (output && input && examples && related && syns){
 	update_examples(s,examples,related,syns,output,argtab,giac::language(giac::context0));
 	input->value(b->text(k));
+	if (Fl::event_clicks()){ 
+	  g->hide();
+	}
       }
       else
 	help_output(s,giac::language(giac::context0));
@@ -249,7 +323,7 @@ namespace xcas {
 	vector<string> v=giac::html_help(giac::html_mtt,s);
 	if (!v.empty()){
 	  if (use_external_browser)
-	    system_browser(giac::browser_command(v.front().c_str()));
+	    giac::system_browser_command(v.front());
 	  else {
 	    Xcas_help_window->load(v.front().c_str());
 	    if (!xcas::Xcas_help_window->visible())
@@ -265,7 +339,7 @@ namespace xcas {
   Fl_Window * handle_tab_w = 0;
   // Find a completion of s in v -> ans, return true if user OK
   // dx,dy=size of browser window
-  int handle_tab(const string & s,const vector<string> & v,int dx,int dy,int & remove,string & ans){
+  int handle_tab(const string & s,const vector<string> & v,int dx,int dy,int & remove,string & ans,bool allow_immediate_out){
     static Fl_Hold_Browser * browser = 0;
     static Fl_Hold_Browser * related = 0;
     static Fl_Hold_Browser * syns = 0;
@@ -279,11 +353,11 @@ namespace xcas {
     static Fl_Input * argtab[TAB_ARGS]={0,0,0,0,0,0};
     int L=16;
     const giac::context * contextptr=giac::context0;
-    if (Fl::focus() && Fl::focus()->window()){
-      dx=4*Fl::focus()->window()->w()/5;
-      dy=4*Fl::focus()->window()->h()/5;
-      L=Fl::focus()->labelsize()+2;
-      contextptr=get_context(Fl::focus());
+    if (xcas::Xcas_input_focus && xcas::Xcas_input_focus->window()){
+      dx=4*xcas::Xcas_input_focus->window()->w()/5;
+      dy=4*xcas::Xcas_input_focus->window()->h()/5;
+      L=xcas::Xcas_input_focus->labelsize()+2;
+      contextptr=get_context(xcas::Xcas_input_focus);
     }
     else {
       if (dx>500)
@@ -299,7 +373,7 @@ namespace xcas {
     remove=0;
     for (int i=ss-1;i>=0;--i,++remove){
       const char & ch =s[i];
-      if (giac::isalphan(ch) || ch=='&' || ch=='|' || ch=='=' || ch==':' || ch=='@' || ch=='<' || ch=='>' || ch=='+' || ch=='-' || ch=='/' || ch=='*' ||  ch=='$' || ch=='%')
+      if (giac::isalphan(ch) || ch=='&' || ch=='|' || ch=='=' || ch==':' || ch=='@' || ch=='<' || ch=='>' || ch=='+' || ch=='-' || ch=='/' || ch=='*' || ch=='$' || ch=='%')
 	res=ch+res;
       else {
 	if (!res.empty())
@@ -308,7 +382,8 @@ namespace xcas {
     }
     ss=res.size();
     if (!handle_tab_w){
-      handle_tab_w=new Fl_Window(dx,dy);
+      Fl_Group::current(0);
+      handle_tab_w=new Fl_Window(50,100,dx,dy,gettext("Index"));
       button0 = new Fl_Button(2,2,dx/3-4,L+2);
       button0->shortcut(0xff0d);
       button0->label(gettext("OK"));
@@ -320,16 +395,19 @@ namespace xcas {
       button2->label(gettext("Details"));
       button2->tooltip(gettext("Show full HTML help in browser"));
       browser = new Fl_Hold_Browser(2,2*L+4,dx/2-2,dy/2-(2*L+4));
+      browser->format_char(0);
       browser->type(2);
       browser->label(gettext("Index"));
       browser->align(FL_ALIGN_TOP);
       browser->callback((Fl_Callback*)handle_tab_cb_browser);
-      // order is important: related, syns, examples,input,output
+      // order is important: related,syns, examples,input,output
       related = new Fl_Hold_Browser(dx/2+2,2*L+4,dx/2-2,dy/4-(L+2));
       related->label(gettext("Related"));
+      related->format_char(0);
       related->align(FL_ALIGN_TOP);
       related->tooltip(gettext("Click for help on related command"));
       syns = new Fl_Hold_Browser(dx/2+2,related->y()+related->h()+L+2,dx/2-2,dy/4-(2*L+4));
+      syns->format_char(0);
       syns->label(gettext("Synonyms"));
       syns->align(FL_ALIGN_TOP);
       topic_help = new  Fl_Button(0,browser->y()+browser->h(),L,L+4);
@@ -339,7 +417,7 @@ namespace xcas {
       input->when(FL_WHEN_CHANGED |FL_WHEN_ENTER_KEY |FL_WHEN_NOT_CHANGED);
       // input->label("?");
       input->tooltip(gettext("Show commandnames starting from this text"));
-      output = new Fl_Multiline_Output(2,input->y()+input->h(),dx-4,2*L+6);
+      output = new Fl_Multiline_Output(2,input->y()+input->h(),dx-4,3*L+9);
       output->tooltip(gettext("Command short description and syntax"));
       // arguments
       int ypos=output->y()+output->h();
@@ -362,7 +440,6 @@ namespace xcas {
       examples->clear();
       related->clear();
     }
-    bool allow_immediate_out=true;
     if (ss)
       input->value(res.c_str());
     else {
@@ -372,18 +449,23 @@ namespace xcas {
     }
     input->position(ss,ss);
     vector<string> vres;
-    int vs=v.size(),i=0,r=-1;
+    int vs=v.size(),i=0,r=-1,i_=0;
     for (int k=0;k<vs;++k){
       vres.push_back(v[k]);
       browser->add(v[k].c_str());
       if (!i && v[k].substr(0,ss)==res){
 	i=k+1;
       }
+      if (v[k][0]==res[0]){
+	i_=k+1;
+      }
     }
     if (!i){
       if (allow_immediate_out)
 	return 0;
       else
+	i=i_;
+      if (!i)
 	i=1;
     }
     handle_tab_w->set_modal();
@@ -395,12 +477,16 @@ namespace xcas {
       handle_tab_w->hotspot(handle_tab_w);
       Fl::focus(input);
       for (;;) {
+	if (!handle_tab_w->shown()){
+	  r=0; break;
+	}
 	Fl_Widget *o = Fl::readqueue();
 	if (!o) Fl::wait();
 	else {
 	  if (o == topic_help){ help_fltk(input->value()); }
 	  if (o == button0) {r = 0; break;}
 	  if (o == button1) {r = 1; break;}
+	  if (o == button2)  browser_html_help(browser,examples,related,syns,output,argtab,giac::language(contextptr));
 	  int j=0;
 	  for (;j<TAB_ARGS;j++){
 	    if (o==argtab[j]){ 
@@ -410,7 +496,6 @@ namespace xcas {
 	    }
 	  }
 	  if (j!=TAB_ARGS){ r=0; break; }
-	  if (o == button2)  browser_html_help(browser,examples,related,syns,output,argtab,giac::language(contextptr));
 	  if ( o == examples && examples->value() ) { 
 	    string tmp=examples->text(examples->value());
 	    if (Fl::event_button()!=3 || (!tmp.empty() && tmp[0]==' ')){
@@ -454,19 +539,38 @@ namespace xcas {
 	  if (o == handle_tab_w) { r=1; break; }
 	  if (o == input){
 	    if (Fl::event_key(FL_Enter) || Fl::event_key(FL_KP_Enter)){
-	      Fl::focus(examples);
-	      browser_html_help(browser,examples,related,syns,output,argtab,giac::language(contextptr));
-	      // r=0;
-	      // break;
+	      if (Fl::event_state(FL_SHIFT |FL_CTRL | FL_ALT)){
+		Fl::focus(examples);
+		browser_html_help(browser,examples,related,syns,output,argtab,giac::language(contextptr));
+	      }
+	      else {
+		r=0;
+		break;
+	      }
 	    }
 	    else {
 	      const char * entree=input->value();
-	      for (i=0;i<vs;++i){
-		const char * ch=browser->text(i);
-		if (ch && strcmp(ch,entree)>=0)
-		  break;
+	      char nentree[256]; nentree[255]=0;
+	      char nch[256]; nentree[255]=0;
+	      for (int j=0;j<255;++j){
+		nentree[j]=tolower(entree[j]);
+		if (!entree[j]) break;
 	      }
-	      if (i<vs){
+	      for (i=1;i<=vs;++i){
+		const char * ch=browser->text(i);
+		for (int j=0;j<255;++j){
+		  nch[j]=tolower(ch[j]);
+		  if (!ch[j]) break;
+		}
+		if (ch){
+		  int comp=strcmp(nch,nentree);
+		  if (!comp)
+		    comp=strcmp(ch,entree);
+		  if (comp>=0)
+		    break;
+		}
+	      }
+	      if (i<=vs){
 		browser->value(i);
 		update_examples(browser->text(i),examples,related,syns,output,argtab,giac::language(contextptr));
 	      }
@@ -550,7 +654,7 @@ namespace xcas {
   }
 
   Multiline_Input_tab::Multiline_Input_tab(int x,int y,int w,int h,const char * l): 
-    Fl_Multiline_Input(x, y, w, h, l),completion_tab(giac::vector_completions_ptr),tableur(0),_g(giac::undef) {
+    Fl_Multiline_Input(x, y, w, h, l),handling(false),completion_tab(giac::vector_completions_ptr()),tableur(0),_g(giac::undef) {
     if (parent()){
       labelfont(parent()->labelfont());
       labelsize(parent()->labelsize());
@@ -658,11 +762,14 @@ namespace xcas {
   }
 
   int Multiline_Input_tab::handle(int event){
+    // if (handling)      return 0;
+    handling=true;
     string oldval(value());
     int res=in_handle(event);
     History_Pack * g=get_history_pack(this);
     if (g && value()!=oldval)
       g->modified(false);
+    handling=false;
     return res;
   }
 
@@ -701,10 +808,12 @@ namespace xcas {
 	  tmp2=tmpg->child(j);
 	  if (tmp2->y()>tmp->y()){
 	    tmp2->resize(tmp2->x(),tmp2->y()+L,tmp2->w(),tmp2->h());
+	    tmp2->redraw();
 	  }
 	  else {
 	    if (tmp2==tmp){
 	      tmp->Fl_Widget::resize(tmp->x(),tmp->y(),tmp->w(),tmp->h()+L);
+	      tmp->redraw();
 	      gr=dynamic_cast<Fl_Group *>(tmp);
 	    }
 	  }
@@ -741,9 +850,25 @@ namespace xcas {
     return lw>w()+20;
   }
 
+  int height(const char * ch,int labelsize){
+    int n=strlen(ch);
+    int h0=labelsize+4,res=n?h0+2:1;
+    int maxh=300;
+    for (int i=0;i<n-1;++i,++ch){
+      if (*ch=='\n'){
+	res += h0;
+	if (res>maxh)
+	  break;
+      }
+    }
+    return res;
+  }
+
   int Multiline_Input_tab::in_handle(int event){
     History_Pack * g=get_history_pack(this);
     if (g && event==FL_MOUSEWHEEL){
+      if (!Fl::event_inside(this))
+	return 0;
       if (Fl_Scroll * sc = dynamic_cast<Fl_Scroll *>(g->parent())){
 	int scy=sc->yposition()+labelsize()*Fl::e_dy;
 	if (scy<0)
@@ -756,8 +881,18 @@ namespace xcas {
 	return 1;
       }
     }
-    if (event==FL_FOCUS)
-      redraw();
+    if (event==FL_FOCUS || event==FL_PUSH || event==FL_KEYBOARD){
+      Xcas_input_focus=this;
+      autosave_disabled=false;
+    }
+    if (event==FL_FOCUS){
+      // Fl::focus(this);
+      // redraw();
+      return Fl_Multiline_Input::handle(event);
+    }
+    if (event==FL_UNFOCUS){
+      return Fl_Multiline_Input::handle(event);
+    }
     if (event==FL_PUSH && tableur)
       tableur->editing=true;
     if (g && event==FL_PASTE){
@@ -781,7 +916,15 @@ namespace xcas {
       }
     }
     if (event==FL_KEYBOARD) {
+      static string toolt;
+      string str;
       int key=Fl::event_key();
+      if (g && key==FL_F+9){
+	History_Fold * hf = get_history_fold(g);
+	if (!hf) return 0;
+	hf->eval();
+	return 1;
+      }
       if (Fl::event_text()){ 
 	int i=Fl::event_text()[0];
 	switch (i){
@@ -818,10 +961,26 @@ namespace xcas {
 	    resize_nl();
 	    return 1;
 	  }
+	  break;
+#ifndef __APPLE__
+	case '(':
+	  // Fl::belowmouse(this);
+	  str=motclef(string(value()).substr(0,position()));
+	  if (!str.empty()){
+	    toolt=writehelp(helpon(str,*giac::vector_aide_ptr(),giac::language(g?g->contextptr:0),giac::vector_aide_ptr()->size()),giac::language(g?g->contextptr:0));
+	    tooltip(toolt.c_str());
+	    int hh=height(toolt.c_str(),Fl_Tooltip::size());
+	    Fl_Tooltip::enter_area(this,0,-hh,0,0,toolt.c_str());
+	  }
+	  break;
+	case ')':
+	  tooltip("");
+	  break;
+#endif
 	}
       }
       if (key==FL_Enter || key==FL_KP_Enter){
-	if (Fl::event_shift()){
+	if (Fl::event_shift() || strlen(value())==0){
 	  insert("\n");
 	  if (!tableur)
 	    increase_size(this,labelsize()+1);
@@ -831,8 +990,15 @@ namespace xcas {
 	// keep warnings
 	giac::context * contextptr=g?g->contextptr:0;
 	ostringstream warnings ;
-	ostream * old=giac::logptr(contextptr);
+#ifdef WITH_MYOSTREAM
+	giac::my_ostream * old=giac::logptr(contextptr);
+	giac::my_ostream newptr(&warnings);
+	logptr(&newptr,contextptr);
+#else
+	my_ostream * old=giac::logptr(contextptr);
 	logptr(&warnings,contextptr);
+#endif
+	giac::first_error_line(contextptr)=0;
 	try {
 	  val=warn_equal(giac::gen(value(),contextptr),contextptr);
 	}
@@ -852,7 +1018,7 @@ namespace xcas {
 	  curline += ch;
 	  if (ch=='\n' || i==warns){
 	    debutline=curline.substr(0,min(size_t(10),curline.size()));
-	    if (debutline!="// Parsing" && debutline!="// Success")
+	    if (debutline!=gettext("// Parsing") && debutline!=gettext("// Success"))
 	      warn += curline;
 	    *old << curline;
 	    curline="";
@@ -861,9 +1027,15 @@ namespace xcas {
 	// check if there is a parse error at end of input
 	// if so then does like a event_shift
 	if (giac::first_error_line(contextptr)){
-	  static string logs;
+	  string logs;
+	  int col=giac::lexer_column_number(contextptr);
+	  string token=giac::error_token_name(contextptr);
 	  logs = gettext("Syntax error in compatibility mode: ")+giac::print_program_syntax(giac::xcas_mode(contextptr))+"\n";
-	  logs += gettext("Parse error line ")+giac::print_INT_(giac::first_error_line(contextptr))+ gettext(" at ") +giac::error_token_name(contextptr);
+	  logs += gettext("Parse error line ")+giac::print_INT_(giac::first_error_line(contextptr))+ gettext(" column ")+giac::print_INT_(col) + gettext(" at ") ;
+	  if (!token.empty() && token[0]=='%')
+	    logs += token.substr(1,token.size()-1);
+	  else
+	    logs += token;
 	  const char * ch=value();
 	  unsigned line=0,line_beg=0,line_end=0,taille=strlen(ch),i;
 	  for (i=0;i<taille;i++){
@@ -875,10 +1047,12 @@ namespace xcas {
 	      line_beg=i+1;
 	    }
 	  }
-	  if (i==taille){
-	    int ans=fl_ask((logs+'\n'+gettext("To get a newline, use shift-Enter. Reedit?")).c_str());
+	  if (line_beg+col>taille){
+	    int ans=fl_ask("%s",((logs+'\n')+gettext("To get a newline, use shift-Enter. Reedit?")).c_str());
 	    if (ans==1){
 	      position(taille,taille);
+	      Fl::focus(this);
+	      handle(FL_FOCUS);
 	      // insert("\n");
 	      // if (!tableur) increase_size(this,labelsize()+1);
 	      return 1;
@@ -886,9 +1060,12 @@ namespace xcas {
 	  }
 	  else {
 	    // position(line_beg,line_end);
-	    int ans=fl_ask((logs+"\nReedit?").c_str());
+	    int ans=fl_ask("%s",(logs+"\nReedit?").c_str());
 	    if (ans){
-	      position(line_end,line_end);
+	      i=line_beg+col-1;
+	      position(max(int(i-token.size()),0),i);
+	      Fl::focus(this);
+	      handle(FL_FOCUS);
 	      return 1;
 	    }
 	  }
@@ -900,7 +1077,7 @@ namespace xcas {
 	    clear_changed();
 	  }
 	  else
-	    fl_message(warn.c_str());
+	    fl_message("%s",warn.c_str());
 	}
 	position(size(), 0);
 	history.push_back(value());
@@ -963,6 +1140,7 @@ namespace xcas {
 	  redraw();
 	  g->_sel_begin=-1;
 	  int pos=g->set_sel_begin(this);
+	  g->_sel_begin=-1;
 	  --pos;
 	  if (pos>=0)
 	    g->focus(pos,true);
@@ -977,17 +1155,18 @@ namespace xcas {
 	  redraw();
 	  g->_sel_begin=-1;
 	  int pos=g->set_sel_begin(this)+1;
+	  g->_sel_begin=-1;
 	  g->focus(pos,true);
 	  return 1;
 	}
       }
       if (key==FL_Up || key==FL_Down){
-	if (Fl_Multiline_Input::handle(event)){
+	if (!Fl::event_state(FL_SHIFT |FL_CTRL | FL_ALT) && Fl_Multiline_Input::handle(event)){
 	  match();
 	  redraw();
 	  return 1;
 	}
-	if (!Fl::event_state(FL_SHIFT | FL_CTRL | FL_ALT))
+	if (!Fl::event_state(FL_CTRL | FL_ALT))
 	  return 0;
 	// not handled by the input, use history
 	int s=history.size();
@@ -1006,7 +1185,7 @@ namespace xcas {
 	  string v(value());
 	  int pos1=position(),pos2=mark();
 	  if (pos1>pos2)
-	    std::swap<int>(pos1,pos2);
+	    giac::swapint(pos1,pos2);
 	  value((v.substr(0,pos1)+history[count]+v.substr(pos2,v.size()-pos2)).c_str());
 	  position(pos1,pos1+history[count].size());
 	}
@@ -1014,7 +1193,7 @@ namespace xcas {
 	return 1;
       }
     }
-    if (!completion_tab || event!=FL_KEYBOARD || Fl::event_text()[0]!=9 ){
+    if (!completion_tab || event!=FL_KEYBOARD || (Fl::event_text() && Fl::event_text()[0]!=9 && Fl::event_key()!=FL_F+1)){
       const char * ch = value();
       unsigned l=strlen(ch);
       unsigned p=position();
@@ -1032,12 +1211,13 @@ namespace xcas {
     string s(value()),ans;
     if (position()<int(s.size()))
       s=s.substr(0,position());
+    int delta=s.size();
+    s=motclef(s);
+    delta -= s.size();
     int remove;
     if (int ii=handle_tab(s,*completion_tab,window()->w(),window()->h()/3,remove,ans)){
       window()->show();
-      Fl::focus(this);
-      handle(FL_FOCUS);
-      cut(-remove);
+      cut(-remove-delta);
       if (ii==1){
 	insert((ans+"()").c_str());
 	position(size()-1);
@@ -1049,6 +1229,8 @@ namespace xcas {
       if (parent())
 	parent_redraw(parent());
     }
+    Fl::focus(this);
+    handle(FL_FOCUS);
     return 1;
   }
 
@@ -1064,7 +1246,7 @@ namespace xcas {
       // }
       } */
 
-  // aka geoprint / geo_print
+  // geo_print / geoprint
   std::string _pnt2string(const giac::gen & g,const giac::context * contextptr){
     unsigned ta=taille(g,100);
     if (ta>100)
@@ -1088,7 +1270,8 @@ namespace xcas {
 	}
 	if (f0.is_symb_of_sommet(giac::at_cercle) && f0._SYMBptr->feuille.type==giac::_VECT){
 	  giac::gen centre,rayon;
-	  giac::centre_rayon(f0,centre,rayon,true,0);
+	  if (!giac::centre_rayon(f0,centre,rayon,true,0))
+	    return "cercle_error";
 	  if (!complex_mode(contextptr) && (centre.type<giac::_IDNT || centre.type==giac::_FRAC) )
 	    return "cercle(point("+giac::re(centre,contextptr).print(contextptr)+","+giac::im(centre,contextptr).print(contextptr)+"),"+rayon.print(contextptr)+")";
 	  else
@@ -1235,15 +1418,23 @@ namespace xcas {
   }
 
   int Comment_Multiline_Input::in_handle(int event){
-    if (event==FL_FOCUS)
-      redraw();
+    if (event==FL_FOCUS){
+      Xcas_input_focus=this;
+      autosave_disabled=false;
+      // Fl::focus(this);
+      // redraw();
+      return Fl_Multiline_Input::handle(event);
+    }
+    if (event==FL_UNFOCUS){
+      return Fl_Multiline_Input::handle(event);
+    }
     if (event==FL_KEYBOARD){
       redraw();
       int key=Fl::event_key();
       if ( (key==FL_Enter || key==FL_KP_Enter) 
 	   && Fl::event_shift()){
 	insert("\n");
-	increase_size(this,labelsize()+1);
+	increase_size(this,labelsize()+2);
 	return 1;
       }
       if (key==FL_BackSpace){
@@ -1252,15 +1443,60 @@ namespace xcas {
 	unsigned p=position();
 	unsigned m=mark();
 	if (l && p && p==m && p<=l && ch[p-1]=='\n'){
-	  increase_size(this,-labelsize()-1);
+	  increase_size(this,-labelsize()-2);
 	}
       }
-      int change_focus=0;
       History_Pack * hp = get_history_pack(this);
+      int change_focus=0;
       if (hp && ( (key==FL_Up && !line_start(position())) || key==FL_Page_Up))
 	change_focus=-1;
       if (hp && ( (key==FL_Down && line_end(position())==size()) || key==FL_Page_Down || key==FL_Enter))
 	change_focus=1;
+      if (key==FL_Enter){
+	string s=value();
+	s+=' ';
+	// search in s for a word with ., check if it's an existing filename or URL
+	int ss=s.size();
+	for (int i=0;i<ss;++i){
+	  if (s[i]==' ')
+	    continue;
+	  int wordbegin=i;
+	  bool haspoint=false;
+	  // begin of word
+	  for (++i;i<ss;++i){
+	    if (s[i]=='.' &&
+		i<ss-1 && s[i+1]>='a' && s[i+1]<='z' &&
+		i && (isalpha(s[i-1]) || (s[i-1]>='0' && s[i-1]<='9'))
+		)
+	      haspoint=true;
+	    if (s[i]==' ')
+	      break;
+	  }
+	  if (!haspoint)
+	    continue;
+	  string url;
+	  if (i>wordbegin+7 && (s.substr(wordbegin,7)=="http://" || s.substr(wordbegin,7)=="file://")){
+	    url=s.substr(wordbegin,i-wordbegin);
+	  }
+	  else {
+	    if (s[wordbegin]=='@'){
+	      url=s.substr(wordbegin+1,i-wordbegin-1);
+	    }
+	  }
+	  if (url.empty())
+	    continue;
+	  if (giac::is_file_available(url.c_str())){
+	    if (url[0]!='/')
+	      url=*giac::_pwd(0,0)._STRNGptr+"/"+url;
+	  }
+	  else {
+	    if (url.size()<7 || (url.substr(0,7)!="http://" && url.substr(0,7)!="file://"))
+	      url="http://"+url;
+	  }
+	  giac::system_browser_command(url);
+	  // break;
+	}
+      }
       if (change_focus && hp){
 	hp->_sel_begin=-1;
 	int pos=hp->set_sel_begin(this);

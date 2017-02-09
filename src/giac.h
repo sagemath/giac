@@ -20,6 +20,7 @@
 #include "subst.h"
 #include "usual.h"
 #include "intg.h"
+#include "intgab.h"
 #include "lin.h"
 #include "series.h"
 #include "vecteur.h"
@@ -41,5 +42,10 @@
 #include "pari.h"
 #include "quater.h"
 #include "desolve.h"
+#include "csturm.h"
+#include "ezgcd.h"
+#include "misc.h"
+#include "permu.h"
+#include "risch.h"
 
 #endif // _GIAC_GIAC_H

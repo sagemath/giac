@@ -4586,7 +4586,7 @@ x2**18 + (12202*x1**3 - 21094*x1**2 - 1757*x1 + 17009)*x2**17 + (-17263*x1**4 - 
 - 7212*x1 - 20040 ):;
 
 n:=43051;
-time(p:=gcd(p1%n,p2%n)); size(p); 
-time(q:=gcd(q1%n,q2%n)); size(q); 
-time(r:=gcd(r1%n,r2%n)); size(r);
+time(p:=gcd(p1 % n,p2 % n)); size(p); 
+time(q:=gcd(q1 % n,q2 % n)); size(q); 
+time(r:=gcd(r1 % n,r2 % n)); size(r);
 

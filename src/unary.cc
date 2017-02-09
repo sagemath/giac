@@ -1,7 +1,8 @@
-// -*- mode:C++ ; compile-command: "g++ -I.. -g -c unary.cc" -*-
-#include "first.h"
+// -*- mode:C++ ; compile-command: "g++ -I.. -g -c unary.cc -DIN_GIAC -DHAVE_CONFIG_H" -*-
+#include "giacPCH.h"
+
 /*
- *  Copyright (C) 2000,7 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
+ *  Copyright (C) 2000,14 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -14,8 +15,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 using namespace std;
 #include "unary.h"
@@ -26,38 +26,35 @@ using namespace std;
 #include "input_lexer.h"
 #include "symbolic.h"
 #include "input_lexer.h"
+#include "rpn.h"
+#include "sparse.h"
+#include "giacintl.h"
 
 #ifndef NO_NAMESPACE_GIAC
 namespace giac {
 #endif // ndef NO_NAMESPACE_GIAC
   // unary_function_ptr
+
   gen unary_function_ptr::operator () (const gen & arg,const context * context_ptr) const{
-    return (*ptr)(arg,context_ptr);
+    return (*ptr())(arg,context_ptr);
+    // return (*ptr)(arg,context_ptr);
     this->dbgprint();
   }
 
-  void unary_function_ptr::dbgprint() const {
-    cerr << ptr->s << endl; 
+  const char * unary_function_ptr::dbgprint() const {
+#ifndef NSPIRE
+    CERR << ptr()->s << endl; 
+#endif
+    return ptr()->s;
   }
 
-  string unary_function_abstract::print(GIAC_CONTEXT) const { 
-    int lang=language(contextptr);
-    multimap<string,localized_string>::iterator it=back_lexer_localization_map.find(s),backend=back_lexer_localization_map.end(),itend=back_lexer_localization_map.upper_bound(s);
-    if (it!=backend){
-      for (;it!=itend;++it){
-	if (it->second.language==lang)
-	  return it->second.chaine;
-      }
-    }
-    return s;
-    /*
-    if (rpn_mode) 
-      return enmajuscule(s); 
-    else 
-      return s; 
-    */
-  }
+#if 0 // def __x86_64__
+  bool unary_function_ptr::quoted() const { return (ptr()->index_quoted_function & 0x1) || ( ((longlong) _ptr) & 0x1); }
+#else
+  bool unary_function_ptr::quoted() const { return (ptr()->index_quoted_function & 0x1) || ( ((size_t) _ptr) & 0x1); }
+#endif
 
+  /*
   unary_function_ptr::unary_function_ptr(const unary_function_ptr & myptr):ptr(myptr.ptr),ref_count(myptr.ref_count),quoted(myptr.quoted){
     if (ref_count)
       ++(*ref_count);
@@ -70,21 +67,117 @@ namespace giac {
   }
 
   unary_function_ptr::unary_function_ptr(const unary_function_abstract & myptr,int myquoted,int parser_token): quoted(myquoted) {
-    ref_count = new int(1);
     ptr = myptr.recopie();
     if (parser_token)
       if (!lexer_functions_register(*this,ptr->s,parser_token))
-	setsizeerr("Unable to register "+ptr->s);
+	setsizeerr(gettext("Unable to register ")+ptr->s);
   }
+  */
+
   // global unary_function_abstract pointer, no reference count here
-  unary_function_ptr::unary_function_ptr(const unary_function_abstract * myptr): ptr(myptr),ref_count(0),quoted(0){}
 
-  unary_function_ptr::unary_function_ptr(const unary_function_abstract * myptr,int myquoted,int parser_token): ptr(myptr),ref_count(0),quoted(myquoted){
+#ifdef NO_UNARY_FUNCTION_COMPOSE
+  unary_function_ptr::unary_function_ptr(const unary_function_eval * myptr,int myquoted,int parser_token): _ptr((size_t)myptr){
+    if (myquoted)
+      *((size_t *) &_ptr) |= 0x1;
     if (parser_token)
-      if (!lexer_functions_register(*this,ptr->s,parser_token))
-	setsizeerr("Unable to register "+ptr->s);
+      if (!lexer_functions_register(*this,myptr->s,parser_token))
+	setsizeerr(gettext("Unable to register ")+string(myptr->s));
   }
 
+  unary_function_ptr::unary_function_ptr(const alias_unary_function_eval * myptr,int myquoted,int parser_token):_ptr((size_t)myptr) {     
+    if (myquoted)
+      *((size_t *) &_ptr) |= 0x1;
+    if (parser_token)
+      if (!lexer_functions_register(*this,myptr->s,parser_token))
+	setsizeerr(gettext("Unable to register ")+string(myptr->s));
+  }
+
+  /*
+  unary_function_ptr::unary_function_ptr(const unary_function_eval * myptr,int parser_token): _ptr(myptr){
+    if (parser_token)
+      if (!lexer_functions_register(*this,myptr->s,parser_token))
+	setsizeerr(gettext("Unable to register ")+string(myptr->s));
+  }
+  unary_function_ptr::unary_function_ptr(const alias_unary_function_eval * myptr,int parser_token):_ptr((const unary_function_eval *)myptr) {     
+    if (parser_token)
+      if (!lexer_functions_register(*this,myptr->s,parser_token))
+	setsizeerr(gettext("Unable to register ")+string(myptr->s));
+  }
+
+  */
+  const char * unary_function_eval::print(GIAC_CONTEXT) const { 
+    if (abs_calc_mode(contextptr)==38){ 
+      if (calc_mode(contextptr)==38){
+	const char * maj = hp38_display_in_maj(s);
+	return maj?maj:s;
+      }
+      else
+	return s;
+    }
+    int lang=language(contextptr);
+    multimap<string,localized_string>::iterator it=back_lexer_localization_map().find(s),backend=back_lexer_localization_map().end(),itend=back_lexer_localization_map().upper_bound(s);
+    if (it!=backend){
+      for (;it!=itend;++it){
+	if (it->second.language==lang)
+	  return it->second.chaine.c_str();
+      }
+    }
+    return s;
+  }
+
+#else //  NO_UNARY_FUNCTION_COMPOSE
+  unary_function_ptr::unary_function_ptr(const unary_function_abstract * myptr,int myquoted,int parser_token): _ptr(myptr){
+    if (myquoted)
+      *((size_t *) &_ptr) |= 0x1;
+    if (parser_token)
+      if (!lexer_functions_register(*this,myptr->s,parser_token))
+	setsizeerr(gettext("Unable to register ")+string(myptr->s));
+  }
+
+  unary_function_ptr::unary_function_ptr(const alias_unary_function_eval * myptr,int myquoted,int parser_token):_ptr((const unary_function_abstract *)myptr) {     
+    if (myquoted)
+      *((size_t *) &_ptr) |= 0x1;
+    if (parser_token)
+      if (!lexer_functions_register(*this,myptr->s,parser_token))
+	setsizeerr(gettext("Unable to register ")+string(myptr->s));
+  }
+
+  /*
+  unary_function_ptr::unary_function_ptr(const unary_function_abstract * myptr,int parser_token): _ptr(myptr){
+    if (parser_token)
+      if (!lexer_functions_register(*this,myptr->s,parser_token))
+	setsizeerr(gettext("Unable to register ")+string(myptr->s));
+  }
+
+  unary_function_ptr::unary_function_ptr(const alias_unary_function_eval * myptr,int parser_token):_ptr((const unary_function_abstract *)myptr) {     
+    if (parser_token)
+      if (!lexer_functions_register(*this,myptr->s,parser_token))
+	setsizeerr(gettext("Unable to register ")+string(myptr->s));
+  }
+  */
+
+  const char * unary_function_abstract::print(GIAC_CONTEXT) const { 
+    if (abs_calc_mode(contextptr)==38){ 
+      if (calc_mode(contextptr)==38){
+	const char * maj = hp38_display_in_maj(s);
+	return maj?maj:s;
+      }
+      return s;
+    }
+    int lang=language(contextptr);
+    multimap<string,localized_string>::iterator it=back_lexer_localization_map().find(s),backend=back_lexer_localization_map().end(),itend=back_lexer_localization_map().upper_bound(s);
+    if (it!=backend){
+      for (;it!=itend;++it){
+	if (it->second.language==lang)
+	  return it->second.chaine.c_str();
+      }
+    }
+    return s; 
+  }
+#endif //  NO_UNARY_FUNCTION_COMPOSE
+
+  /*
   // copy constructor
   unary_function_ptr & unary_function_ptr::operator = (const unary_function_ptr & acopier){
     if (ref_count){
@@ -109,15 +202,43 @@ namespace giac {
       }
     }
   }
+  */
 
-  gen apply(const gen & e,const unary_function_ptr & f){
+  gen apply(const gen & e,const unary_function_ptr & f,GIAC_CONTEXT){
+    if (e.type==_MAP){
+      gen_map res;
+      gen g(res);
+      map_apply(*e._MAPptr,f,*g._MAPptr,contextptr);
+      return g;
+    }
     if (e.type!=_VECT)
-      return f(e,0);
+      return f(e,contextptr);
     const_iterateur it=e._VECTptr->begin(),itend=e._VECTptr->end();
+    //    if (itend==it && abs_calc_mode(contextptr)==38) return gensizeerr();
     vecteur v;
     v.reserve(itend-it);
-    for (;it!=itend;++it)
-      v.push_back(f(*it,0));
+    for (;it!=itend;++it){
+      gen tmp=f(*it,contextptr);
+      if (is_undef(tmp))
+	return gen2vecteur(tmp);
+      v.push_back(tmp);
+    }
+    return gen(v,e.subtype);
+  }
+
+  gen apply(const gen & e,const unary_function_ptr * f,GIAC_CONTEXT){
+    if (e.type!=_VECT)
+      return (*f)(e,contextptr);
+    const_iterateur it=e._VECTptr->begin(),itend=e._VECTptr->end();
+    // if (itend==it && abs_calc_mode(contextptr)==38) return gensizeerr();
+    vecteur v;
+    v.reserve(itend-it);
+    for (;it!=itend;++it){
+      gen tmp=(*f)(*it,contextptr);
+      if (is_undef(tmp))
+	return gen2vecteur(tmp);
+      v.push_back(tmp);
+    }
     return gen(v,e.subtype);
   }
 
@@ -127,19 +248,34 @@ namespace giac {
     const_iterateur it=e._VECTptr->begin(),itend=e._VECTptr->end();
     vecteur v;
     v.reserve(itend-it);
-    for (;it!=itend;++it)
-      v.push_back(f(*it));
+    for (;it!=itend;++it){
+      gen tmp=f(*it);
+      if (is_undef(tmp))
+	return gen2vecteur(tmp);
+      v.push_back(tmp);
+    }
     return gen(v,e.subtype);
   }
 
   gen apply(const gen & e, gen (* f) (const gen &,const context *),GIAC_CONTEXT ){
+    if (e.type==_MAP){
+      gen_map res;
+      gen g(res);
+      map_apply(*e._MAPptr,*g._MAPptr,contextptr,f);
+      return g;
+    }
     if (e.type!=_VECT)
       return f(e,contextptr);
     const_iterateur it=e._VECTptr->begin(),itend=e._VECTptr->end();
+    // if (itend==it && abs_calc_mode(contextptr)==38) return gensizeerr();
     vecteur v;
     v.reserve(itend-it);
-    for (;it!=itend;++it)
-      v.push_back(f(*it,contextptr));
+    for (;it!=itend;++it){
+      gen tmp=f(*it,contextptr);
+      if (is_undef(tmp))
+	return gen2vecteur(tmp);
+      v.push_back(tmp);
+    }
     return gen(v,e.subtype);
   }
 
@@ -150,37 +286,59 @@ namespace giac {
       const_iterateur it=e2._VECTptr->begin(),itend=e2._VECTptr->end();
       vecteur v;
       v.reserve(itend-it);
-      for (;it!=itend;++it)
-	v.push_back(f(e1,*it));
+      for (;it!=itend;++it){
+	gen tmp=f(e1,*it);
+	if (is_undef(tmp))
+	  return gen2vecteur(tmp);
+	v.push_back(tmp);
+      }
       return gen(v,e2.subtype);
     }
     if (e2.type!=_VECT){
       const_iterateur it=e1._VECTptr->begin(),itend=e1._VECTptr->end();
       vecteur v;
       v.reserve(itend-it);
-      for (;it!=itend;++it)
-	v.push_back(f(*it,e2));
+      for (;it!=itend;++it){
+	gen tmp=f(*it,e2);
+	if (is_undef(tmp))
+	  return gen2vecteur(tmp);
+	v.push_back(tmp);
+      }
       return gen(v,e1.subtype);
     }
     const_iterateur it1=e1._VECTptr->begin(),it1end=e1._VECTptr->end();
     const_iterateur it2=e2._VECTptr->begin(),it2end=e2._VECTptr->end();
-    if (it2end-it2!=it1end-it1)
-      setdimerr();
+    // if (it2end-it2!=it1end-it1) return gendimerr();
     vecteur v;
     v.reserve(it1end-it1);
-    for (;it1!=it1end;++it1,++it2)
-      v.push_back(f(*it1,*it2));
+    for (;it1!=it1end && it2!=it2end;++it1,++it2){
+      gen tmp=f(*it1,*it2);
+      if (is_undef(tmp))
+	return gen2vecteur(tmp);
+      v.push_back(tmp);
+    }
     return gen(v,e1.subtype);
   }
 
   gen apply(const gen & e, const context * contextptr,const gen_op_context & f ){
+    if (e.type==_MAP){
+      gen_map res;
+      gen g(res);
+      map_apply(*e._MAPptr,*g._MAPptr,contextptr,f);
+      return g;
+    }
     if (e.type!=_VECT)
       return f(e,contextptr);
     const_iterateur it=e._VECTptr->begin(),itend=e._VECTptr->end();
+    // if (itend==it && abs_calc_mode(contextptr)==38) return gensizeerr();
     vecteur v;
     v.reserve(itend-it);
-    for (;it!=itend;++it)
-      v.push_back(f(*it,contextptr));
+    for (;it!=itend;++it){
+      gen tmp=f(*it,contextptr);
+      if (is_undef(tmp))
+	return gen2vecteur(tmp);
+      v.push_back(tmp);
+    }
     return gen(v,e.subtype);
   }
 
@@ -191,26 +349,37 @@ namespace giac {
       const_iterateur it=e2._VECTptr->begin(),itend=e2._VECTptr->end();
       vecteur v;
       v.reserve(itend-it);
-      for (;it!=itend;++it)
-	v.push_back(f(e1,*it,contextptr));
+      for (;it!=itend;++it){
+	gen tmp=f(e1,*it,contextptr);
+	if (is_undef(tmp))
+	  return gen2vecteur(tmp);
+	v.push_back(tmp);
+      }
       return gen(v,e2.subtype);
     }
     if (e2.type!=_VECT){
       const_iterateur it=e1._VECTptr->begin(),itend=e1._VECTptr->end();
       vecteur v;
       v.reserve(itend-it);
-      for (;it!=itend;++it)
-	v.push_back(f(*it,e2,contextptr));
+      for (;it!=itend;++it){
+	gen tmp=f(*it,e2,contextptr);
+	if (is_undef(tmp))
+	  return gen2vecteur(tmp);
+	v.push_back(tmp);
+      }
       return gen(v,e1.subtype);
     }
     const_iterateur it1=e1._VECTptr->begin(),it1end=e1._VECTptr->end();
     const_iterateur it2=e2._VECTptr->begin(),it2end=e2._VECTptr->end();
-    if (it2end-it2!=it1end-it1)
-      setdimerr();
+    // if (it2end-it2!=it1end-it1) return gendimerr();
     vecteur v;
     v.reserve(it1end-it1);
-    for (;it1!=it1end;++it1,++it2)
-      v.push_back(f(*it1,*it2,contextptr));
+    for (;it1!=it1end && it2!=it2end;++it1,++it2){
+      gen tmp=f(*it1,*it2,contextptr);
+      if (is_undef(tmp))
+	return gen2vecteur(tmp);
+      v.push_back(tmp);
+    }
     return gen(v,e1.subtype);
   }
 
@@ -220,8 +389,12 @@ namespace giac {
     const_iterateur it=e1._VECTptr->begin(),itend=e1._VECTptr->end();
     vecteur v;
     v.reserve(itend-it);
-    for (;it!=itend;++it)
-      v.push_back(f(*it,e2));
+    for (;it!=itend;++it){
+      gen tmp=f(*it,e2);
+      if (is_undef(tmp))
+	return gen2vecteur(tmp);
+      v.push_back(tmp);
+    }
     return gen(v,e1.subtype);
   }
 
@@ -231,8 +404,12 @@ namespace giac {
     const_iterateur it=e1._VECTptr->begin(),itend=e1._VECTptr->end();
     vecteur v;
     v.reserve(itend-it);
-    for (;it!=itend;++it)
-      v.push_back(f(*it,e2,contextptr));
+    for (;it!=itend;++it){
+      gen tmp=f(*it,e2,contextptr);
+      if (is_undef(tmp))
+	return gen2vecteur(tmp);
+      v.push_back(tmp);
+    }
     return gen(v,e1.subtype);
   }
 
@@ -242,8 +419,12 @@ namespace giac {
     const_iterateur it=e2._VECTptr->begin(),itend=e2._VECTptr->end();
     vecteur v;
     v.reserve(itend-it);
-    for (;it!=itend;++it)
-      v.push_back(f(e1,*it));
+    for (;it!=itend;++it){
+      gen tmp=f(e1,*it);
+      if (is_undef(tmp))
+	return gen2vecteur(tmp);
+      v.push_back(tmp);
+    }
     return gen(v,e2.subtype);
   }
 
@@ -253,57 +434,72 @@ namespace giac {
     const_iterateur it=e2._VECTptr->begin(),itend=e2._VECTptr->end();
     vecteur v;
     v.reserve(itend-it);
-    for (;it!=itend;++it)
-      v.push_back(f(e1,*it,contextptr));
+    for (;it!=itend;++it){
+      gen tmp=f(e1,*it,contextptr);
+      if (is_undef(tmp))
+	return gen2vecteur(tmp);
+      v.push_back(tmp);
+    }
     return gen(v,e2.subtype);
   }
 
-  
+#ifdef NO_UNARY_FUNCTION_COMPOSE
+#ifdef NSPIRE
+  template<class T> nio::ios_base<T> & operator << (nio::ios_base<T> & os,const unary_function_eval & o) { return os << o.s ; }
+#else
+  ostream & operator << (ostream & os,const unary_function_eval & o) { return os << o.s ; }
+#endif
+#else
   // unary_function_abstract
   unary_function_abstract * unary_function_abstract::recopie() const{
-    unary_function_abstract * ptr=new unary_function_abstract(s);
+    unary_function_abstract * ptr=new unary_function_abstract(index_quoted_function,s);
     ptr->D = D;
     return ptr;
   }
 
   unary_function_unary * unary_function_unary::recopie() const{
-    unary_function_unary * ptr=new unary_function_unary(op,s);
+    unary_function_unary * ptr=new unary_function_unary(index_quoted_function,op,s);
     ptr->D = D;
     return ptr;
   }
 
   unary_function_eval * unary_function_eval::recopie() const{
-    unary_function_eval * ptr=new unary_function_eval(op,s);
+    unary_function_eval * ptr=new unary_function_eval(index_quoted_function,op,s);
     ptr->D = D;
     return ptr;
   }
 
+  // I/O
+  ostream & operator << (ostream & os,const unary_function_abstract & o){ return os << o.s; }
+  ostream & operator << (ostream & os,const unary_function_unary & o) { return os << o.s ; }
+  ostream & operator << (ostream & os,const unary_function_eval & o) { return os << o.s ; }
+
   unary_function_compose * unary_function_compose::recopie() const{
-    unary_function_compose * ptr=new unary_function_compose(op_v);
+    unary_function_compose * ptr=new unary_function_compose(index_quoted_function,op_v);
     ptr->D = D;
     return ptr;
   }
 
   unary_function_list * unary_function_list::recopie() const{
-    unary_function_list * ptr=new unary_function_list(op_l);
+    unary_function_list * ptr=new unary_function_list(index_quoted_function,op_l);
     ptr->D = D;
     return ptr;
   }
 
   unary_function_constant * unary_function_constant::recopie() const{
-    unary_function_constant * ptr=new unary_function_constant(constant);
+    unary_function_constant * ptr=new unary_function_constant(index_quoted_function,constant);
     ptr->D = D;
     return ptr;
   }
 
   unary_function_innerprod * unary_function_innerprod::recopie() const{
-    unary_function_innerprod * ptr=new unary_function_innerprod(i);
+    unary_function_innerprod * ptr=new unary_function_innerprod(index_quoted_function,i);
     ptr->D = D;
     return ptr;
   }
   
   unary_function_user * unary_function_user::recopie() const{
-    unary_function_user * ptr=new unary_function_user(f,s,printsommet,texprint,cprint);
+    unary_function_user * ptr=new unary_function_user(index_quoted_function,f,s,printsommet,texprint,cprint);
     ptr->D = D;
     return ptr;
   }
@@ -318,14 +514,16 @@ namespace giac {
     return res;
   }
 
-  unary_function_compose::unary_function_compose(const vector<unary_function_ptr> & myop_v) : unary_function_abstract(":: ") {
+  unary_function_compose::unary_function_compose(unsigned u,const vector<unary_function_ptr> & myop_v) : unary_function_abstract(u,0) {
+    string * sptr=new string(":: ");
     vector<unary_function_ptr>::const_iterator it=myop_v.begin(),itend=myop_v.end();
     for (;it!=itend;++it){
       op_v.push_back( (*it) );
-      s += it->ptr->s;
-      s +=" ";
+      *sptr += it->ptr()->s;
+      *sptr +=" ";
     }
-    s += string(";");
+    *sptr += string(";");
+    s=sptr->c_str();
   }
 
   gen unary_function_list::operator () (const gen & arg,const context * context_ptr) const{
@@ -336,20 +534,22 @@ namespace giac {
     return res;
   }
 
-  unary_function_list::unary_function_list(const vector<unary_function_ptr> & myop_v) : unary_function_abstract("{ ") {
+  unary_function_list::unary_function_list(unsigned u,const vector<unary_function_ptr> & myop_v) : unary_function_abstract(u,0) {
+    string * sptr=new string("{ ");
     vector<unary_function_ptr>::const_iterator it=myop_v.begin(),itend=myop_v.end();
     for (;it!=itend;++it){
       op_l.push_back( (*it) );
-      s += it->ptr->s;
-      s +=" ";
+      *sptr += it->ptr()->s;
+      *sptr +=" ";
     }
-    s += string("}");
+    *sptr += string("}");
+    s=sptr->c_str();
   }
 
 
   gen unary_function_innerprod::operator () (const gen & arg,const context * contextptr) const{
     if (arg.type!=_VECT)
-      setsizeerr(arg.print(contextptr)+ " should be of type _VECT (unary.cc)");
+      setsizeerr(arg.print(contextptr)+ gettext(" should be of type _VECT (unary.cc)"));
     vecteur res;
     // remove i indices from arg
     vecteur::const_iterator jt=arg._VECTptr->begin(),jtend=arg._VECTptr->end();
@@ -369,51 +569,30 @@ namespace giac {
     return res;
   }
 
-  // I/O
-  ostream & operator << (ostream & os,const unary_function_abstract & o){ return os << o.s; }
-  ostream & operator << (ostream & os,const unary_function_unary & o) { return os << o.s ; }
-  ostream & operator << (ostream & os,const unary_function_eval & o) { return os << o.s ; }
   ostream & operator << (ostream & os,const unary_function_compose & p){ return os << p.s;} 
   ostream & operator << (ostream & os,const unary_function_list & p){ return os<< p.s; }
   ostream & operator << (ostream & os,const unary_function_constant & c){ return os<< c.s; }
   ostream & operator << (ostream & os,const unary_function_innerprod & i){ return os<< i.s; }
 
+#endif // NO_UNARY_FUNCTION_COMPOSE
 
-  string printsommetasoperator(const gen & feuille,const string & sommetstr_orig,GIAC_CONTEXT){
+  string printsommetasoperator(const gen & feuille,const char * sommetstr_orig,GIAC_CONTEXT){
     if (feuille.type!=_VECT)
       return feuille.print(contextptr);
     string sommetstr(sommetstr_orig);
-    if (isalpha(sommetstr[0]) || sommetstr[0]=='%')
+    if ( (sommetstr[0]>32 && isalpha(sommetstr[0])) || sommetstr[0]=='%' || sommetstr[0]=='.')
       sommetstr=' '+sommetstr+' ';
-    if (sommetstr==_pow_s) {
-      gen pui=feuille._VECTptr->back();
-      gen arg=feuille._VECTptr->front();
-      if ( pui==plus_one_half )
-	return "sqrt("+arg.print(contextptr)+')';
-      if ( pui==minus_one_half  || pui==fraction(minus_one,plus_two) )
-	return "1/sqrt("+arg.print(contextptr)+')';
-      if (arg.type==_SYMB && arg._SYMBptr->sommet!=at_neg && !arg._SYMBptr->sommet.ptr->printsommet){
-	bool puisymb=pui.type==_SYMB;
-	sommetstr=arg.print(contextptr)+"^";
-	if (puisymb)
-	  sommetstr += "(";
-	sommetstr += pui.print(contextptr);
-	if (puisymb)
-	  sommetstr += ")";
-	return sommetstr;
-      }
-    }
     vecteur::const_iterator itb=feuille._VECTptr->begin(),itend=feuille._VECTptr->end();
     if (itb==itend)
       return "";
     string s;
     if (itb->type==_FRAC && sommetstr!="=")
-      s='('+itb->print(contextptr)+")";
+      s='('+itb->print(contextptr)+')';
     else {
       if ( sommetstr=="=" || itb->type==_IDNT || (itb->type<=_CPLX && is_positive(*itb,contextptr)) )
 	s=itb->print(contextptr);
       else
-	s='('+itb->print(contextptr)+")";
+	s='('+itb->print(contextptr)+')';
     }
     ++itb;
     for (;;){
@@ -427,9 +606,10 @@ namespace giac {
     }
   }
     
-  string texprintsommetasoperator(const gen & feuille,const string & sommetstr,GIAC_CONTEXT){
+  string texprintsommetasoperator(const gen & feuille,const char * sommetstr_orig,GIAC_CONTEXT){
     if (feuille.type!=_VECT)
       return feuille.print(contextptr);
+    string sommetstr(sommetstr_orig);
     vecteur::const_iterator itb=feuille._VECTptr->begin(),itend=feuille._VECTptr->end();
     if (itb==itend)
       return "";
@@ -454,9 +634,15 @@ namespace giac {
     }
   }
 
-  partial_derivative_onearg::partial_derivative_onearg(gen (* mydf) (const gen & args) ) :     df(unary_function_ptr(unary_function_unary(mydf,""))) {}
+#ifdef NO_UNARY_FUNCTION_COMPOSE
 
-  partial_derivative_onearg::partial_derivative_onearg(gen (* mydf) (const gen & args,const context * contextptr) ) :     df(unary_function_ptr(unary_function_eval(mydf,""))) {}
+  partial_derivative::partial_derivative(gen (* mydf) (const gen & argss,const context * contextptr) ) :     df(unary_function_ptr(new unary_function_eval(0,mydf,""))) {}
+
+#else
+  partial_derivative_onearg::partial_derivative_onearg(gen (* mydf) (const gen & args) ) :     df(unary_function_ptr(new unary_function_unary(0,mydf,""))) {}
+  partial_derivative_onearg::partial_derivative_onearg(gen (* mydf) (const gen & args,const context * contextptr) ) :     df(unary_function_ptr(new unary_function_eval(0,mydf,""))) {}
+#endif
+
 
 #ifndef NO_NAMESPACE_GIAC
 } // namespace giac

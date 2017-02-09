@@ -1,7 +1,6 @@
-// -*- mode:C++ ; compile-command: "g++-3.4 -I. -I.. -g -c Equation.cc -Wall" -*-
-#include <giac/first.h>
+// -*- mode:C++ ; compile-command: "g++-3.4 -I. -I.. -g -c Equation.cc -DHAVE_CONFIG_H -DIN_GIAC -Wall" -*-
 /*
- *  Copyright (C) 2005 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
+ *  Copyright (C) 2005,2014 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -14,11 +13,20 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#ifndef IN_GIAC
+#include <giac/first.h>
+#else
+#include "first.h"
+#endif
+#include <string>
 #ifdef HAVE_LIBFLTK
+#include "Equation.h"
 #include <FL/Fl.H>
 #include <FL/fl_draw.H>
 #include <FL/Fl_Window.H>
@@ -27,8 +35,11 @@
 #include <FL/Fl_Hold_Browser.H>
 #include <FL/Fl_PNG_Image.H>
 #include <FL/Fl_Return_Button.H>
-#include "Equation.h"
+#ifndef IN_GIAC
 #include <giac/giac.h>
+#else
+#include "giac.h"
+#endif
 #include "History.h"
 #include "Xcas1.h"
 #include "Input.h"
@@ -45,6 +56,194 @@ namespace xcas {
 
   unsigned max_prettyprint_equation=5000;
   
+#ifdef _HAVE_FL_UTF8_HDR_
+  Fl_Font cst_greek_translate(string & s0){
+    string s1(s0);
+    s0="";
+    int n=s1.size();
+    for (int i=0;i<n;++i){
+      if (!isalpha(s1[i])){
+	s0 += s1[i];
+	continue;
+      }
+      string s;
+      for (;i<n;++i){
+	if (!isalpha(s1[i])){
+	  --i;
+	  break;
+	}
+	s+=s1[i];
+      }
+      bool done=false;
+      switch (s.size()){
+      case 2:
+	if (s=="mu"){
+	  s0+="μ";
+	  done=true;
+	}
+	if (s=="nu"){
+	  s0+="ν";
+	  done=true;
+	}
+	if (s=="pi"){
+	  s0+="π";
+	  done=true;
+	}
+	if (s=="xi"){
+	  s0+="ξ";
+	  done=true;
+	}
+	if (s=="Xi"){
+	  s0+="Ξ";
+	  done=true;
+	}
+	break;
+      case 3:
+	if (s=="chi"){
+	  s0+="χ";
+	  done=true;
+	}
+	if (s=="phi"){
+	  s0+="φ";
+	  done=true;
+	}
+	if (s=="Phi"){
+	  s0+="Φ";
+	  done=true;
+	}
+	if (s=="eta"){
+	  s0+="η";
+	  done=true;
+	}
+	if (s=="rho"){
+	  s0+="ρ";
+	  done=true;
+	}
+	if (s=="tau"){
+	  s0+="τ";
+	  done=true;
+	}
+	if (s=="psi"){
+	  s0+="ψ";
+	  done=true;
+	}
+	if (s=="Psi"){
+	  s0+="Ψ";
+	  done=true;
+	}
+	break;
+      case 4:
+	if (s=="beta"){
+	  s0+="β";
+	  done=true;
+	}
+	if (s=="Beta"){
+	  s0+="β";
+	  done=true;
+	}
+	if (s=="zeta"){
+	  s0+="ζ";
+	  done=true;
+	}
+	if (s=="Zeta"){
+	  s0+="ζ";
+	  done=true;
+	}
+	if (s=="alef"){
+	  s0+="ℵ";
+	  done=true;
+	}
+	break;
+      case 5:
+	if (s=="alpha"){
+	  s0+="α";
+	  done=true;
+	}
+	if (s=="delta"){
+	  s0+="δ";
+	  done=true;
+	}
+	if (s=="Delta"){
+	  s0+="Δ";
+	  done=true;
+	}
+	if (s=="gamma"){
+	  s0+="γ";
+	  done=true;
+	}
+	if (s=="Gamma"){
+	  s0+="Γ";
+	  done=true;
+	}
+	if (s=="kappa"){
+	  s0+="κ";
+	  done=true;
+	}
+	if (s=="theta"){
+	  s0+="θ";
+	  done=true;
+	}
+	if (s=="Theta"){
+	  s0+="Θ";
+	  done=true;
+	}
+	if (s=="sigma"){
+	  s0+="σ";
+	  done=true;
+	}
+	if (s=="Sigma"){
+	  s0+="Σ";
+	  done=true;
+	}
+	if (s=="Omega"){
+	  s0+="Ω";
+	  done=true;
+	}
+	if (s=="omega"){
+	  s0+="ω";
+	  done=true;
+	}
+	break;
+      case 6:
+	if (s=="lambda"){
+	  s0+="λ";
+	  done=true;
+	}
+	if (s=="Lambda"){
+	  s0+="λ";
+	  done=true;
+	}
+	break;
+      case 7:
+	if (s=="epsilon"){
+	  s0+="ε";
+	  done=true;
+	}
+	if (s=="product"){
+	  s0="Π";
+	  done=true;
+	}
+	break;
+      case 8:
+	if (s=="infinity"){
+	  s0+="∞";
+	  done=true;
+	}
+	break;
+      case 11:
+	if (s=="euler_gamma"){
+	  s0+="ϒ";
+	  done=true;
+	}
+	break;
+      } // end switch
+      if (!done)
+	s0+=s;
+    } // end for (int i=0;i<n;i++)
+    return FL_HELVETICA;
+  }
+#else
+
   Fl_Font cst_greek_translate(string & s0){
     int n=s0.size(),j;
     for (j=n-1;j>=2;--j){
@@ -77,11 +276,11 @@ namespace xcas {
       return FL_SYMBOL;
     }
     if (s=="im"){
-      s0="�"+sadd;
+      s0="Á"+sadd;
       return FL_SYMBOL;      
     }
     if (s=="re"){
-      s0="�"+sadd;
+      s0="Â"+sadd;
       return FL_SYMBOL;
     }
     break;
@@ -187,7 +386,7 @@ namespace xcas {
       return FL_SYMBOL;
     }
     if (s=="aleph"){
-      s0="�"+sadd;
+      s0="À"+sadd;
       return FL_SYMBOL;
     }
     break;
@@ -201,7 +400,7 @@ namespace xcas {
       return FL_SYMBOL;
     }
     if (s=="approx"){
-      s0="�"+sadd;
+      s0="»"+sadd;
       return FL_SYMBOL;      
     }
     break;
@@ -217,7 +416,7 @@ namespace xcas {
     break;
     case 8:
     if (s=="infinity"){
-      s0="�"+sadd;
+      s0="¥"+sadd;
       return FL_SYMBOL;
     }
     break;
@@ -230,7 +429,7 @@ namespace xcas {
     }
     return FL_HELVETICA;
   }
-
+#endif
 
   int Equation_binary_search_pos(const eqwdata & e,int x,int y){
     int ss=e.g._STRNGptr->size();
@@ -290,6 +489,27 @@ namespace xcas {
     if (g.type!=_VECT || g._VECTptr->empty())
       return eqwdata(0,0,0,0,attributs(0,0,0),undef);
     return Equation_total_size(g._VECTptr->back());
+  }
+
+  // find smallest value of y and height
+  void Equation_y_dy(const gen & g,int & y,int & dy){
+    y=0; dy=0;
+    if (g.type==_EQW){
+      y=g._EQWptr->y;
+      dy=g._EQWptr->dy;
+    }
+    if (g.type==_VECT){
+      iterateur it=g._VECTptr->begin(),itend=g._VECTptr->end();
+      for (;it!=itend;++it){
+	int Y,dY;
+	Equation_y_dy(*it,Y,dY);
+	// Y, Y+dY and y,y+dy
+	int ymax=giacmax(y+dy,Y+dY);
+	if (Y<y)
+	  y=Y;
+	dy=ymax-y;
+      }
+    }
   }
 
   void Equation_translate(gen & g,int deltax,int deltay){
@@ -363,7 +583,10 @@ namespace xcas {
     if (g.type!=_SYMB)
       return Equation_compute_size(g,a,windowhsize,contextptr);
     unary_function_ptr & u=g._SYMBptr->sommet;
-    gen arg=g._SYMBptr->feuille;
+    gen arg=g._SYMBptr->feuille,rootof_value;
+    if (u==at_rootof && arg.type==_VECT && arg._VECTptr->size()==2 && arg._VECTptr->front().type==_VECT && has_rootof_value(arg._VECTptr->back(),rootof_value,contextptr)){
+      return Equation_compute_symb_size(horner_rootof(*arg._VECTptr->front()._VECTptr,rootof_value,contextptr),a,windowhsize,contextptr);
+    }
     if (u==at_multistring){
       gen tmp=_multistring(arg,contextptr);
       tmp.subtype=1;
@@ -376,7 +599,7 @@ namespace xcas {
       iterateur it=v.begin(),itend=v.end();
       for (;it!=itend;++it){
 	if ( (it->type==_SYMB) && (it->_SYMBptr->sommet==at_makevector) )
-	  *it=_makevector(it->_SYMBptr->feuille);
+	  *it=_makevector(it->_SYMBptr->feuille,contextptr);
       }
       return Equation_compute_size(v,a,windowhsize,contextptr);
     }
@@ -387,23 +610,33 @@ namespace xcas {
 	return Equation_compute_size(arg,a,windowhsize,contextptr);
     }
     if (u==at_sqrt)
-      return Equation_compute_size(symbolic(at_pow,makevecteur(arg,plus_one_half)),a,windowhsize,contextptr);
+      return Equation_compute_size(symbolic(at_pow,gen(makevecteur(arg,plus_one_half),_SEQ__VECT)),a,windowhsize,contextptr);
     if (u==at_division){
       if (arg.type!=_VECT || arg._VECTptr->size()!=2)
 	return Equation_compute_size(arg,a,windowhsize,contextptr);
       gen tmp;
+#ifdef SMARTPTR64
+      * ((longlong * ) &tmp) = longlong(new ref_fraction(Tfraction<gen>(arg._VECTptr->front(),arg._VECTptr->back()))) << 16;
+#else
+      tmp.__FRACptr = new ref_fraction(Tfraction<gen>(arg._VECTptr->front(),arg._VECTptr->back()));
+#endif
       tmp.type=_FRAC;
-      tmp._FRACptr = new fraction(arg._VECTptr->front(),arg._VECTptr->back());
-      tmp.ptr_val.ref_count = new int(1);
       return Equation_compute_size(tmp,a,windowhsize,contextptr);
     }
     if (u==at_prod){
       gen n,d;
-      if (rewrite_prod_inv(arg,n,d))
-	return Equation_compute_size(fraction(n,d),a,windowhsize,contextptr);
+      if (rewrite_prod_inv(arg,n,d)){
+	if (n.is_symb_of_sommet(at_neg))
+	  return Equation_compute_size(symbolic(at_neg,Tfraction<gen>(-n,d)),a,windowhsize,contextptr);
+	return Equation_compute_size(Tfraction<gen>(n,d),a,windowhsize,contextptr);
+      }
     }
-    if (u==at_inv)
-      return Equation_compute_size(fraction(plus_one,arg),a,windowhsize,contextptr);
+    if (u==at_inv){
+      if ( (is_integer(arg) && is_positive(-arg,contextptr))
+	   || (arg.is_symb_of_sommet(at_neg)))
+	return Equation_compute_size(symbolic(at_neg,Tfraction<gen>(plus_one,-arg)),a,windowhsize,contextptr);
+      return Equation_compute_size(Tfraction<gen>(plus_one,arg),a,windowhsize,contextptr);
+    }
     if (u==at_expr && arg.type==_VECT && arg.subtype==_SEQ__VECT && arg._VECTptr->size()==2 && arg._VECTptr->back().type==_INT_){
       gen varg1=Equation_compute_size(arg._VECTptr->front(),a,windowhsize,contextptr);
       eqwdata vv(Equation_total_size(varg1));
@@ -415,12 +648,14 @@ namespace xcas {
     int llp=int(fl_width("("));
     int lrp=int(fl_width(")"));
     int lc=int(fl_width(","));
-    string us=u.ptr->s;
+    string us=u.ptr()->s;
     fl_font(cst_greek_translate(us),a.fontsize);
     int ls=int(fl_width(us.c_str()));
     fl_font(FL_HELVETICA,a.fontsize);
-    if (isalpha(u.ptr->s[0]))
+    if (isalpha(u.ptr()->s[0]))
       ls += 2;
+    if (u==at_abs)
+      ls = 2;
     // special cases first int, sigma, /, ^
     // and if printed as printsommetasoperator
     // otherwise print with usual functional notation
@@ -594,13 +829,13 @@ namespace xcas {
 	res.push_back(eqwdata(vv.dx+a.fontsize,vv.dy+4,vv.x,vv.y,a,at_sqrt,0));
 	return gen(res,_SEQ__VECT);
       }
-      if (vv.g.type==_FUNC)
+      if (vv.g.type==_FUNC || vv.g.is_symb_of_sommet(at_pow))
 	x=llp;
       Equation_translate(varg,x,0);
       Equation_vertical_adjust(vv.dy,vv.y,h,y);
       vecteur res(1,varg);
       // 2nd arg translated 
-      if (vv.g.type==_FUNC)
+      if (vv.g.type==_FUNC || vv.g.is_symb_of_sommet(at_pow))
 	x+=vv.dx+lrp;
       else
 	x+=vv.dx+1;
@@ -621,6 +856,23 @@ namespace xcas {
       res.push_back(eqwdata(x,h,0,y,a,u,0));
       return gen(res,_SEQ__VECT);
     }
+    if (u==at_factorial){
+      vecteur v;
+      gen varg=Equation_compute_size(arg,a,windowhsize,contextptr);
+      eqwdata vv=Equation_total_size(varg);
+      bool paren=need_parenthesis(vv.g) || vv.g==at_prod || vv.g==at_division || vv.g==at_pow;
+      if (paren)
+	x+=llp;
+      Equation_translate(varg,x,0);
+      Equation_vertical_adjust(vv.dy,vv.y,h,y);
+      v.push_back(varg);
+      x += vv.dx;
+      if (paren)
+	x+=lrp;
+      varg=eqwdata(x+4,h,0,y,a,u,0);
+      v.push_back(varg);
+      return gen(v,_SEQ__VECT);
+    }
     if (u==at_sto){ // A:=B, *it -> B
       gen varg=Equation_compute_size(arg._VECTptr->back(),a,windowhsize,contextptr);
       eqwdata vv=Equation_total_size(varg);
@@ -639,7 +891,7 @@ namespace xcas {
       Equation_vertical_adjust(vv.dy,vv.y,h,y);
       v[0]=varg;
       x += vv.dx;
-      if (need_parenthesis(vv.g.type))
+      if (need_parenthesis(vv.g))
 	x+=lrp;
       v.push_back(eqwdata(x,h,0,y,a,u,0));
       return gen(v,_SEQ__VECT);
@@ -662,8 +914,8 @@ namespace xcas {
       v.push_back(eqwdata(x,h,0,y,a,u,0));
       return gen(v,_SEQ__VECT);      
     }
-    bool binaryop= (u.ptr->printsommet==&printsommetasoperator) || equalposcomp(binary_op_tab,u);
-    if ( u!=at_sto && u.ptr->printsommet!=NULL && !binaryop ){
+    bool binaryop= (u.ptr()->printsommet==&printsommetasoperator) || equalposcomp(binary_op_tab(),u);
+    if ( u!=at_sto && u.ptr()->printsommet!=NULL && !binaryop ){
       gen tmp=string2gen(g.print(contextptr),false);
       return Equation_compute_size(symbolic(at_expr,gen(makevecteur(tmp,xcas_mode(contextptr)),_SEQ__VECT)),a,windowhsize,contextptr);
     }
@@ -680,10 +932,11 @@ namespace xcas {
       else
 	gtmp=*it;
       // unary op, shift arg position horizontally
-      x=ls+llp;
       eqwdata vv=Equation_total_size(gtmp);
+      bool paren = u!=at_neg || (vv.g!=at_prod && need_parenthesis(vv.g)) ;
+      x=ls+(paren?llp:0);
       gen tmp=gtmp; Equation_translate(tmp,x,0);
-      x=x+vv.dx+lrp;
+      x=x+vv.dx+(paren?lrp:0);
       Equation_vertical_adjust(vv.dy,vv.y,h,y);
       return gen(makevecteur(tmp,eqwdata(x,h,0,y,a,u,0)),_EQW__VECT);
     }
@@ -761,7 +1014,7 @@ namespace xcas {
     }
   }
 
-  // windowhsize is used for g of type HIST_EQW (history) right justify answers
+  // windowhsize is used for g of type HIST__VECT (history) right justify answers
   // Returns either a eqwdata type object (terminal) or a vector 
   // (of subtype _EQW__VECT or _HIST__VECT)
   gen Equation_compute_size(const gen & g,const attributs & a,int windowhsize,GIAC_CONTEXT){
@@ -822,21 +1075,34 @@ namespace xcas {
       Equation_translate(tmp,0,vsize);
       return tmp;
     }
+    /* SERIES */
+    if (g.type==_SPOL1){
+      int sf=series_flags(contextptr);
+      if (sf & (1<<5) && !(sf & (1<<4))){
+	identificateur tt(string(1,series_variable_name(contextptr)));
+	gen remains,gg=sparse_poly12gen(*g._SPOL1ptr,tt,remains,!(sf & (1<<6)));
+	if ( (sf & (1<<6)) && !is_zero(remains))
+	  gg += symb_of(gen("O",contextptr),remains);
+	return Equation_compute_size(gg,a,windowhsize,contextptr);
+      }
+    }
     /*****************
      *   FRACTIONS   *
      *****************/
     if (g.type==_FRAC){
+      if (is_integer(g._FRACptr->num) && is_positive(-g._FRACptr->num,contextptr))
+	return Equation_compute_size(symbolic(at_neg,fraction(-g._FRACptr->num,g._FRACptr->den)),a,windowhsize,contextptr);
       gen v1=Equation_compute_size(g._FRACptr->num,a,windowhsize,contextptr);
       eqwdata vv1=Equation_total_size(v1);
       gen v2=Equation_compute_size(g._FRACptr->den,a,windowhsize,contextptr);
       eqwdata vv2=Equation_total_size(v2);
       // Center the fraction
       int w1=vv1.dx,w2=vv2.dx;
-      int w=max(w1,w2)+2;
+      int w=max(w1,w2)+6;
       vecteur v(3);
-      v[0]=v1; Equation_translate(v[0],(w-w1)/2,4-vv1.y);
-      v[1]=v2; Equation_translate(v[1],(w-w2)/2,-vv2.dy-vv2.y);
-      v[2]=eqwdata(w,4+vv1.dy+vv2.dy,0,-vv2.dy,a,at_division,0);
+      v[0]=v1; Equation_translate(v[0],(w-w1)/2,11-vv1.y);
+      v[1]=v2; Equation_translate(v[1],(w-w2)/2,7-vv2.dy-vv2.y);
+      v[2]=eqwdata(w,4+vv1.dy+vv2.dy,0,7-vv2.dy,a,at_division,0);
       return gen(v,_SEQ__VECT);
     }
     /***************
@@ -851,12 +1117,13 @@ namespace xcas {
       /***************
        *   HISTORY   *
        ***************/
+#if 0
       if (g.subtype==_HIST__VECT){ 
 	int l=windowhsize;
 	vecteur vplot;
 	for (int i=0;it!=itend;++it,++i){
 	  gen tmpg(*it);
-	  if (!rpn_mode && it->type==_VECT && !it->_VECTptr->empty()){
+	  if (!rpn_mode(contextptr) && it->type==_VECT && !it->_VECTptr->empty()){
 	    if (it->_VECTptr->front().type==_STRNG)
 	      tmpg=makevecteur(it->_VECTptr->front(),string2gen("",false));
 	    gen tmpback=it->_VECTptr->back();
@@ -890,7 +1157,7 @@ namespace xcas {
 	  iterateur jt=tmp.begin(); // this is the question
 	  // compute the size of writing the history level i
 	  eqwdata w(Equation_total_size(*jt));
-	  if (rpn_mode) // ignore question
+	  if (rpn_mode(contextptr)) // ignore question
 	    v.push_back(eqwdata(1,1,x,-y,w.eqw_attributs,string2gen("",false)));
 	  else { 
 	    y += w.dy + 2;
@@ -918,10 +1185,43 @@ namespace xcas {
 	// cerr << v << endl;
 	gen res=gen(v,_HIST__VECT); Equation_translate(res,0,y); return res;
       } // END HISTORY
+#else
+      if (g.subtype==_HIST__VECT){ 
+	vecteur v;
+	v.reserve(g._VECTptr->size());
+	// vertical gluing
+	int W=0,H=0;
+	for (int i=0;it!=itend;++it,++i){
+	  gen g=*it;
+	  if (g.type==_VECT && g.subtype==_SEQ__VECT)
+	    g.subtype=_PRINT__VECT;
+	  gen cur_size=Equation_compute_size(g,a,windowhsize,contextptr);
+	  eqwdata tmp=Equation_total_size(cur_size);
+#if 0
+	  int Y,dY;
+	  Equation_y_dy(cur_size,Y,dY);
+	  Equation_translate(cur_size,0,Y-y-H);
+	  H += dY+2;
+#else
+	  if (ckmatrix(*it))
+	    Equation_translate(cur_size,0,tmp.y-y-H+a.fontsize/2); 
+	  else
+	    Equation_translate(cur_size,0,tmp.y-y-H-a.fontsize/2); 
+	  H += tmp.dy+2;
+#endif
+	  v.push_back(cur_size);
+	  W = giacmax(W,tmp.dx);
+	}
+	gen mkvect(at_makevector);
+	mkvect.subtype=_PRINT__VECT;
+	v.push_back(eqwdata(W,H,0,-y-H,a,mkvect,0));
+	return gen(v,_EQW__VECT);
+      } // END HISTORY
+#endif
       /***************
        *   MATRICE   *
        ***************/
-      if (ckmatrix(g) && g.subtype!=_SEQ__VECT){
+      if (ckmatrix(g) && g.subtype!=_SEQ__VECT && g.subtype!=_SET__VECT && g.subtype!=_POLY1__VECT && g._VECTptr->front().subtype!=_SEQ__VECT){
 	gen mkvect(at_makevector);
 	mkvect.subtype=_SEQ__VECT;
 	gen mkmat(at_makevector);
@@ -982,7 +1282,7 @@ namespace xcas {
        *   SEQUENCES/VECTORS   *
        *************************/
       // horizontal gluing
-      x += a.fontsize/2;
+      if (g.subtype!=_PRINT__VECT) x += a.fontsize/2;
       int ncols=itend-it;
       //ncols=min(ncols,5);
       for (;it!=itend;++it){
@@ -996,7 +1296,7 @@ namespace xcas {
 					       ),contextptr);
 	eqwdata tmp=Equation_total_size(cur_size);
 	Equation_translate(cur_size,x-tmp.x,0); v.push_back(cur_size);
-	x=x+tmp.dx+a.fontsize;
+	x=x+tmp.dx+((g.subtype==_PRINT__VECT)?2:a.fontsize);
 	Equation_vertical_adjust(tmp.dy,tmp.y,h,y);
       }
       gen mkvect(at_makevector);
@@ -1015,6 +1315,8 @@ namespace xcas {
     }
     if (g.type!=_SYMB){
       string s=g.print(contextptr);
+      if (s.size()>2000)
+	s=s.substr(0,2000)+"...";
       fl_font(cst_greek_translate(s),a.fontsize);
       int i=int(fl_width(s.c_str()));
       gen tmp=eqwdata(i,a.fontsize,0,0,a,g);
@@ -1037,7 +1339,7 @@ namespace xcas {
     if (end_sel>=0)
       sel1=min(end_sel,css);
     if (sel0>sel1)
-      std::swap<int>(sel0,sel1);
+      giac::swapint(sel0,sel1);
     return cs.substr(sel0,sel1-sel0);
   }
 
@@ -1048,10 +1350,10 @@ namespace xcas {
     gen gg=e.g;
     bool selected=e.selected && Fl::focus()==eq;
     int fontsize=e.eqw_attributs.fontsize;
-    int text_color=e.eqw_attributs.text_color;
-    int background=e.eqw_attributs.background;
+    Fl_Color text_color=Fl_Color(e.eqw_attributs.text_color);
+    Fl_Color background=Fl_Color(e.eqw_attributs.background);
     fl_font(FL_HELVETICA,fontsize);
-    fl_color(text_color);
+    fl_color(selected?background:text_color);
     if (gg.type==_POINTER_) {
       // wg->resize(e.x-x,y-e.y-e.dy,e.dx,e.dy);
       // wg->draw(); // automatically done if it belongs to the group
@@ -1096,25 +1398,35 @@ namespace xcas {
 	if (end_sel>=0)
 	  sel1=min(end_sel+1,css);
 	if (sel0>sel1)
-	  std::swap<int>(sel0,sel1);
+	  giac::swapint(sel0,sel1);
 	int deltax=int(fl_width(cs.substr(0,sel0).c_str()));
 	cs=cs.substr(sel0,sel1-sel0);
 	int dx=int(fl_width(cs.c_str()));
-	check_fl_rectf(eq->x()+e.x-x+deltax,eq->y()+y-e.y-e.dy+1,dx,e.dy+1,eq->clip_x,eq->clip_y,eq->clip_w,eq->clip_h,0,0);
+	fl_color(text_color);
+	check_fl_rectf(eq->x()+e.x-x+deltax,eq->y()+y-e.y-e.dy+1,dx,e.dy+3,eq->clip_x,eq->clip_y,eq->clip_w,eq->clip_h,0,0);
 	fl_color(background);
 	check_fl_draw(cs.c_str(),eq->x()+e.x-x+deltax,eq->y()+y-e.y+vsize-e.dy,eq->clip_x,eq->clip_y,eq->clip_w,eq->clip_h,0,0);
       }
       return;
     }
     if (selected){
-      check_fl_rectf(eq->x()+e.x-x,eq->y()+y-e.y-e.dy+1,e.dx,e.dy+1,eq->clip_x,eq->clip_y,eq->clip_w,eq->clip_h,0,0);
+      fl_color(text_color);
+      check_fl_rectf(eq->x()+e.x-x,eq->y()+y-e.y-e.dy+1,e.dx,e.dy+3,eq->clip_x,eq->clip_y,eq->clip_w,eq->clip_h,0,0);
       fl_color(background);
     }
     string s=gg.print(contextptr);
     if (gg.type==_IDNT && !s.empty() && s[0]=='_')
       s=s.substr(1,s.size()-1);
-    fl_font(cst_greek_translate(s),fontsize);
-    fl_color(selected?background:text_color);
+    if (s.size()>2000)
+      s=s.substr(0,2000)+"...";
+    Fl_Font font=cst_greek_translate(s);
+    if (gg.type==_IDNT && font==FL_HELVETICA 
+#if !defined(WIN32) && !defined(__APPLE__)
+	&& gg!=cst_pi
+#endif
+	)
+      font=FL_TIMES_BOLD_ITALIC; // FL_HELVETICA_BOLD_ITALIC;
+    fl_font(font,fontsize);
     // cerr << s.size() << endl;
     check_fl_draw(s.c_str(),eq->x()+e.x-x,eq->y()+y-e.y,eq->clip_x,eq->clip_y,eq->clip_w,eq->clip_h,0,0);
     return;
@@ -1154,13 +1466,12 @@ namespace xcas {
     int y1=y0+w.dy; // upper coordinate of the master vector
     if (selected){
       fl_color(text_color);
-      check_fl_rectf(eqx+w.x-x,eqy+y-w.y-w.dy+1,w.dx,w.dy+1,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
+      check_fl_rectf(eqx+w.x-x,eqy+y-w.y-w.dy+1,w.dx,w.dy+3,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
     }
     else {
       fl_color(background);
       // fl_rectf(w.x-x,y-w.y-w.dy,w.dx,w.dy-2);
     }
-    fl_color(selected?background:text_color);
     // draw arguments of v
     const_iterateur it=v.begin(),itend=v.end()-1;
     if (oper==at_multistring){
@@ -1200,7 +1511,7 @@ namespace xcas {
     if (g.subtype==_HIST__VECT){ // For history, we must write history levels
       it=v.begin();
       int nlevels=(itend-it)/2-1,wlevel;
-      int skip=2; // int skip=2-rpn_mode;
+      int skip=2; // int skip=2-rpn_mode(contextptr);
       for (int i=0;it!=itend;it+=skip,++i){
 	eqwdata tmp=Equation_total_size(*it);
 	fl_font(FL_HELVETICA,tmp.eqw_attributs.fontsize);
@@ -1214,11 +1525,11 @@ namespace xcas {
 	  yy=y-tmp.y-(tmp.dy-tmp.eqw_attributs.fontsize)/2;
 	if (yy<0 || yy>y-lowery)	  
 	  continue;
-	if (rpn_mode)
+	if (rpn_mode(contextptr))
 	  wlevel=nlevels-i;
 	else
 	  wlevel=i;
-	if (wlevel || !rpn_mode)
+	if (wlevel || !rpn_mode(contextptr))
 	  check_fl_draw((print_INT_(wlevel)+": ").c_str(),eqx-x,eqy+yy,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
       }
       return; // nothing else to do
@@ -1275,12 +1586,12 @@ namespace xcas {
 	  fontsize=varg2.eqw_attributs.fontsize;
 	  fl_font(FL_HELVETICA,fontsize);
 	  if (varg2.x+varg2.dx<rightx)
-	    check_fl_draw(",",eqx+varg2.x+varg2.dx-x,eqy+y-varg2.baseline,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
+	    check_fl_draw(",",eqx+varg2.x+varg2.dx-x+1,eqy+y-varg2.baseline,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
 	}
 	return;
       }
       if (u==at_makevector){ // draw [] delimiters for vector/matrices
-	if (oper.subtype!=_SEQ__VECT){
+	if (oper.subtype!=_SEQ__VECT && oper.subtype!=_PRINT__VECT){
 	  int decal=1;
 	  switch (oper.subtype){
 	  case _MATRIX__VECT: decal=2; break;
@@ -1300,6 +1611,17 @@ namespace xcas {
 	    check_fl_line(eqx+x0-x-1,eqy+y-y0+1,eqx+x0-x-fontsize/4,eqy+y-y0+1,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
 	    check_fl_line(eqx+x0-x-1,eqy+y-y1+1,eqx+x0-x-fontsize/4,eqy+y-y1+1,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
 	  }
+	} // end if oper.subtype!=SEQ__VECT
+	if (oper.subtype!=_MATRIX__VECT && oper.subtype!=_PRINT__VECT){
+	  // print commas between args
+	  it=v.begin(),itend=v.end()-2;
+	  for (;it!=itend;++it){
+	    eqwdata varg2=Equation_total_size(*it);
+	    fontsize=varg2.eqw_attributs.fontsize;
+	    fl_font(FL_HELVETICA,fontsize);
+	    if (varg2.x+varg2.dx<rightx)
+	      check_fl_draw(",",eqx+varg2.x+varg2.dx-x+1,eqy+y-varg2.baseline,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
+	  }
 	}
 	return;
       }
@@ -1311,8 +1633,12 @@ namespace xcas {
       x0=w.x-x;
       y0=y-w.baseline;
       if (u==at_pow){
-	if (!need_parenthesis(tmp.g))
+	if (!need_parenthesis(tmp.g)&& tmp.g!=at_pow && tmp.g!=at_prod && tmp.g!=at_division)
 	  return;
+	if (tmp.g==at_pow){
+	  fontsize=tmp.eqw_attributs.fontsize+2;
+	  fl_font(FL_HELVETICA,fontsize);
+	}
 	if (tmp.x-lpsize<rightx)
 	  check_fl_draw("(",eqx+tmp.x-x-lpsize,eqy+y-tmp.baseline,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
 	if (tmp.x+tmp.dx<rightx)
@@ -1338,14 +1664,41 @@ namespace xcas {
 	}
 	return;
       }
+      if (u==at_abs){
+	y0 =1+y-w.y;
+	int h=w.dy;
+	if (x0<rightx){
+	  check_fl_line(eqx+x0+2,eqy+y0-1,eqx+x0+2,eqy+y0-h+3,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
+	  check_fl_line(eqx+x0+1,eqy+y0-1,eqx+x0+1,eqy+y0-h+3,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
+	  check_fl_line(eqx+x0+w.dx-1,eqy+y0-1,eqx+x0+w.dx-1,eqy+y0-h+3,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
+	  check_fl_line(eqx+x0+w.dx,eqy+y0-1,eqx+x0+w.dx,eqy+y0-h+3,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
+	}
+	return;
+      }
       if (u==at_sqrt){
 	y0 =1+y-w.y;
 	int h=w.dy;
 	if (x0<rightx){
-	  check_fl_line(eqx+x0+2,eqy+y0-h/2,eqx+x0+fontsize/2,eqy+y0-2,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
-	  check_fl_line(eqx+x0+fontsize/2,eqy+y0-2,eqx+x0+fontsize,eqy+y0-h,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
-	  check_fl_line(eqx+x0+fontsize,eqy+y0-h,eqx+x0+w.dx-1,eqy+y0-h,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
+	  check_fl_line(eqx+x0+2,eqy+y0-h/2,eqx+x0+fontsize/2,eqy+y0-1,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
+	  check_fl_line(eqx+x0+fontsize/2,eqy+y0-1,eqx+x0+fontsize,eqy+y0-h+3,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
+	  check_fl_line(eqx+x0+fontsize,eqy+y0-h+3,eqx+x0+w.dx-1,eqy+y0-h+3,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
+	  ++y0;
+	  check_fl_line(eqx+x0+2,eqy+y0-h/2,eqx+x0+fontsize/2,eqy+y0-1,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
+	  check_fl_line(eqx+x0+fontsize/2,eqy+y0-1,eqx+x0+fontsize,eqy+y0-h+3,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
+	  check_fl_line(eqx+x0+fontsize,eqy+y0-h+3,eqx+x0+w.dx-1,eqy+y0-h+3,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
 	}
+	return;
+      }
+      if (u==at_factorial){
+	check_fl_draw("!",eqx+w.x+w.dx-4-x,eqy+y-w.baseline,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
+	if (!need_parenthesis(tmp.g)
+	    && tmp.g!=at_pow && tmp.g!=at_prod && tmp.g!=at_division
+	    )
+	  return;
+	if (tmp.x-lpsize<rightx)
+	  check_fl_draw("(",eqx+tmp.x-x-lpsize,eqy+y-tmp.baseline,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
+	if (tmp.x+tmp.dx<rightx)
+	  check_fl_draw(")",eqx+tmp.x+tmp.dx-x,eqy+y-tmp.baseline,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
 	return;
       }
       if (u==at_integrate){
@@ -1369,8 +1722,12 @@ namespace xcas {
 	return;
       }
       if (u==at_division){
-	if (x0<rightx)
-	  check_fl_line(eqx+x0+1,eqy+y0-2,eqx+x0+w.dx-1,eqy+y0-2,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
+	if (x0<rightx){
+	  int yy=eqy+y0-6;
+	  check_fl_line(eqx+x0+2,yy,eqx+x0+w.dx-2,yy,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
+	  ++yy;
+	  check_fl_line(eqx+x0+2,yy,eqx+x0+w.dx-2,yy,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
+	}
 	return;
       }
       if (u==at_limit && v.size()>=4){
@@ -1394,8 +1751,8 @@ namespace xcas {
       }
       bool parenthesis=true;
       string opstring(",");
-      if (u.ptr->printsommet==&printsommetasoperator || equalposcomp(binary_op_tab,u) )
-	opstring=u.ptr->s.c_str();
+      if (u.ptr()->printsommet==&printsommetasoperator || equalposcomp(binary_op_tab(),u) )
+	opstring=u.ptr()->s;
       else {
 	if (u==at_sto)
 	  opstring=":=";
@@ -1415,8 +1772,35 @@ namespace xcas {
 	  if (tmp.x+tmp.dx<rightx)
 	    check_fl_draw(")",eqx+tmp.x-x+tmp.dx,eqy+y-tmp.baseline,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
 	}
-	if (w.x<rightx)
-	  check_fl_draw(u.ptr->s.c_str(),eqx+w.x-x,eqy+y-w.baseline,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
+	if (w.x<rightx){
+#if 1
+	  if (u==at_neg){
+	    int xx=w.x-x;
+	    int cx=eqx+xx+2,cy=eqy+y-w.baseline-fontsize/3,ch=giacmax(2,(fontsize+5)/6);
+	    if (fontsize<16) --cx; else ++cy;
+	    if (fontsize<12) --cx;
+	    if (fontsize>23) ++cx;
+	    if (fontsize>29) ++cx;
+	    if (fontsize>37) ++cx;
+	    fl_line(cx-ch,cy,cx+ch-1,cy);
+	    --cy;
+	    fl_line(cx-ch,cy,cx+ch-1,cy);
+	    if (fontsize>13){
+	      --cy;
+	      fl_line(cx-ch,cy,cx+ch-1,cy);
+	      if (fontsize>23){
+		cy+=3;
+		fl_line(cx-ch,cy,cx+ch-1,cy);
+	      }
+	    }
+	  }
+	  else
+	    check_fl_draw(u.ptr()->s,eqx+w.x-x,eqy+y-w.baseline,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
+#else
+	  fl_font(FL_TIMES_BOLD,fontsize);
+	  check_fl_draw(u.ptr()->s,eqx+w.x-x,eqy+y-w.baseline,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
+#endif
+	}
 	return;
       }
       // write first open parenthesis
@@ -1447,18 +1831,26 @@ namespace xcas {
 	}
 	++it;
 	if (it==itend){
-	  if (u.ptr->printsommet==&printsommetasoperator || u==at_sto || equalposcomp(binary_op_tab,u))
+	  if (u.ptr()->printsommet==&printsommetasoperator || u==at_sto || equalposcomp(binary_op_tab(),u))
 	    return;
 	  else
 	    break;
 	}
 	// write operator
 	if (u==at_prod){
-	  int cx=eqx+xx+4,cy=eqy+y-tmp.baseline-fontsize/3,ch=1;
-	  fl_line(cx-ch,cy,cx+ch,cy);
+#if 1
+	  // check_fl_draw(".",eqx+xx+3,eqy+y-tmp.baseline-fontsize/3,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
+	  fl_font(FL_TIMES_ITALIC,fontsize);
+	  check_fl_draw(opstring.c_str(),eqx+xx+1,eqy+y-tmp.baseline,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
+#else
+	  int cx=eqx+xx+5,cy=-3+eqy+y-tmp.baseline-fontsize/3,ch=giacmax(2,fontsize/6);
+	  // fl_line(cx-ch+1,cy,cx+ch-1,cy); // horizontal (smaller to avoid confusion with -)
+	  if (fontsize<16) --cx;
+	  if (fontsize<12) --cx;
+	  fl_line(cx,cy+ch,cx,cy-ch);
 	  fl_line(cx-ch,cy+ch,cx+ch,cy-ch);
 	  fl_line(cx-ch,cy-ch,cx+ch,cy+ch);
-	  // check_fl_draw(".",eqx+xx+3,eqy+y-tmp.baseline-fontsize/3,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
+#endif
 	}
 	else {
 	  gen tmpgen;
@@ -1488,7 +1880,7 @@ namespace xcas {
 	}
       } // end for (;;)
       if (w.x<rightx){
-	s = u.ptr->s;
+	s = u.ptr()->s;
 	fl_font(cst_greek_translate(s),fontsize);
 	s += '(';
 	check_fl_draw(s.c_str(),eqx+w.x-x,eqy+y-w.baseline,equat->clip_x,equat->clip_y,equat->clip_w,equat->clip_h,0,0);
@@ -1651,8 +2043,8 @@ namespace xcas {
       if (g._EQWptr->g.type==_STRNG){
 	// compute begin/end_sel
 	if (y1<y2){
-	  std::swap<int>(y1,y2);
-	  std::swap<int>(x1,x2);
+	  giac::swapint(y1,y2);
+	  giac::swapint(x1,x2);
 	}
 	eq->begin_sel=Equation_binary_search_pos(*g._EQWptr,x1,y1);
 	eq->end_sel=Equation_binary_search_pos(*g._EQWptr,x2,y2);
@@ -1678,8 +2070,8 @@ namespace xcas {
     bool selectall=true,find_first_sel=false,find_last_sel=false;
     if (itend->type==_EQW && itend->_EQWptr->g==at_multistring){
       if (y1<y2){
-	std::swap<int>(y1,y2);
-	std::swap<int>(x1,x2);
+	giac::swapint(y1,y2);
+	giac::swapint(x1,x2);
       }
       find_first_sel=true;
       selectall=false;
@@ -2329,6 +2721,7 @@ namespace xcas {
       return;
     }
     else {
+      // if shift-arrow, extend selection, mode==0 do not deselect
       if (mode==1)
 	Equation_select(g,false);
     }
@@ -2471,7 +2864,7 @@ namespace xcas {
       return false; 
     }
     if (g.type==_VECT && g.subtype==_HIST__VECT && !position.empty()){
-      if ( (position.front().val%2) ^ rpn_mode){
+      if ( (position.front().val%2) ^ rpn_mode(contextptr)){
 	g=save_g;
 	return false;
       }
@@ -2582,10 +2975,27 @@ namespace xcas {
     return replace_selection_wo_save(f,active_search);
   }
 
+  void Equation::adjust_widget_size(){
+    // recompute widget size
+    eqwdata e=Equation_total_size(data);
+    int maxh=window()?(window()->h())/3:1000;
+    int scrollsize=3;
+    if (e.dx>w()-2*labelsize())
+      scrollsize=labelsize()+3;
+    int newh=min(e.dy+scrollsize+1,maxh); // =max(min(vv.dy+20,400),60);
+    increase_size(this,newh-h());
+    int largeur=labelsize();
+    vscroll->resize(x()+Fl_Group::w()-largeur,y(),largeur,Fl_Group::h()-labelsize());
+    hscroll->resize(x(),y()+Fl_Group::h()-labelsize(),Fl_Group::w()-2*largeur,labelsize());
+    menubar->resize(hscroll->x()+hscroll->w(),hscroll->y(),this->w()-hscroll->w(),hscroll->h());
+  }
+
   bool Equation::replace_selection_wo_save(const gen & f,bool active_search){
     bool res=Equation_replace_selection(f,this,w(),active_search);
     if (res)
       save_data();
+    // recompute widget size
+    adjust_widget_size();
     if (!active_search)
       fl_select();
     adjust_xy_sel();
@@ -2657,18 +3067,22 @@ namespace xcas {
   
   // if nothing selected, select active -> select something
   // Parse selection
-  void Equation::insure_something_selected(){
+  void Equation::insure_something_selected(bool selectall){
     bool has_selection=false;
     gen g=Equation_selected2gen(this,data,has_selection);
     if (!has_selection){
-      // Check for something active, desactive and select
-      g=Equation_selected2gen(this,data,has_selection,1);
-      if (has_selection){
-	desactivate_and_select();
-      }
+      if (selectall)
+	select();
       else {
-	select_up(0);
-	g=Equation_selected2gen(this,data,has_selection);
+	// Check for something active, desactive and select
+	g=Equation_selected2gen(this,data,has_selection,1);
+	if (has_selection){
+	  desactivate_and_select();
+	}
+	else {
+	  select_up(0);
+	  g=Equation_selected2gen(this,data,has_selection);
+	}
       }
     }
   }
@@ -2778,7 +3192,7 @@ namespace xcas {
 	  if (eq->end_sel>=0)
 	    end_sel=min(eq->end_sel,ss);
 	  if (end_sel<begin_sel)
-	    std::swap<int>(begin_sel,end_sel);
+	    giac::swapint(begin_sel,end_sel);
 	  if (end_sel<ss)
 	    s = s.substr(0,begin_sel)+s.substr(end_sel,ss-end_sel);
 	  else
@@ -2831,7 +3245,7 @@ namespace xcas {
 	  eq->need_active_parse=false;
 	  return ;
 	}
-	begin_sel=min(eq->begin_sel,it0->_EQWptr->g._STRNGptr->size());
+	begin_sel=giacmin(eq->begin_sel,it0->_EQWptr->g._STRNGptr->size());
 	*it0->_EQWptr->g._STRNGptr=it0->_EQWptr->g._STRNGptr->substr(0,begin_sel)+it->_EQWptr->g._STRNGptr->substr(end_sel,ss-end_sel);
 	Equation_select(*it0,true,true);
 	eq->active_pos=begin_sel;
@@ -3053,7 +3467,8 @@ namespace xcas {
 	  return true;
 	}
 	else {
-	  tmp=gen(makevecteur(g,Equation_nullstring()),_SEQ__VECT);
+	  tmp=gen(makevecteur(g,0),_SEQ__VECT);
+	  // tmp=gen(makevecteur(g,Equation_nullstring()),_SEQ__VECT);
 	  replace_down_left_activate(symbolic(f,tmp));
 	  return false;
 	}
@@ -3188,11 +3603,13 @@ namespace xcas {
 	return false;
       }
       s=*act->_EQWptr->g._STRNGptr;
-      int pos=max(min(active_pos,s.size()),0);
+      int pos=giacmax(giacmin(active_pos,s.size()),0);
       active_pos=pos;
       int toend=s.size()-pos;
       s=s.substr(0,active_pos)+paste_s+s.substr(active_pos,toend);
-      gen g=string2gen(s,false);
+      gen g(s,contextptr);
+      if (giac::first_error_line(contextptr))
+	g=string2gen(s,false);
       if (!needmulti){
 	if (replace_selection(g,1))
 	  active_pos = pos+paste_s.size();
@@ -3229,7 +3646,9 @@ namespace xcas {
 	if (it->type==_EQW && it->_EQWptr->g.type==_STRNG)
 	  s += '\n'+*it->_EQWptr->g._STRNGptr;
       }
-      g=string2gen(s,false);
+      g=gen(s,contextptr);
+      if (giac::first_error_line(contextptr))
+	g=string2gen(s,false);
       desactivate_and_select();
       // count newline in paste_s, add to n, activate this line, cursor
       // at end of this line - the value of toend
@@ -3257,7 +3676,9 @@ namespace xcas {
       return false;
     }
     // remove selection and replace
-    gen g=string2gen(paste_s,false);
+    gen g(paste_s,contextptr);
+    if (giac::first_error_line(contextptr))
+      g=string2gen(paste_s,false);
     if (needmulti)
       g=symbolic(at_expr,g);
     replace_selection(g);
@@ -3314,12 +3735,12 @@ namespace xcas {
       eqwdata & e=*it->_EQWptr;
       if (e.x>x || e.x+e.dx<x || e.y>y || e.y+e.dy<y)
 	return -1;
-      if ((eq && !eq->output_equation) && e.g.type==_FUNC && !e.g._FUNCptr->ptr->printsommet && e.g!=at_makesuite && e.g!=at_makelist && e.g!=at_makevector ){
+      if ((eq && !eq->output_equation) && e.g.type==_FUNC && !e.g._FUNCptr->ptr()->printsommet && e.g!=at_makesuite && e.g!=at_makelist && e.g!=at_makevector ){
 	eqwdata f(e);
-	f.g=string2gen(e.g._FUNCptr->ptr->s,false);
+	f.g=string2gen(e.g._FUNCptr->ptr()->s,false);
 	int pos=Equation_binary_search_pos(f,x,y);
 	string ans,debut=f.g._STRNGptr->substr(0,pos);
-	if (handle_tab(debut,*giac::vector_completions_ptr,eq->h()/2,eq->w()/2,pos,ans)){
+	if (handle_tab(debut,*giac::vector_completions_ptr(),eq->h()/2,eq->w()/2,pos,ans)){
 	  gen tmp(ans,contextptr);
 	  if (tmp.type==_SYMB){
 	    e.g=tmp._SYMBptr->sommet;
@@ -3489,8 +3910,20 @@ namespace xcas {
   }
 
   int Equation::handle(int event){
-    if (Fl::focus()!=this && event==FL_MOUSEWHEEL)
-      return 0;
+    if (event==FL_MOUSEWHEEL){
+      eqwdata e=Equation_total_size(data);
+      if (Fl::event_inside(this) && vscroll && h()<e.dy){
+	int n=Fl::e_dy;
+	int v=vscroll->value();
+	if (n<0 && v==0)
+	  return 0;
+	if (n>0 && v>e.dy-h()+1)
+	  return 0;
+	return vscroll->handle(event);
+      }
+      else
+	return 0;
+    }
     xcas::History_Pack * hp=get_history_pack(this);
     giac::context * cptr=hp?hp->contextptr:0;
     if (is_context_busy(cptr)){
@@ -3513,10 +3946,13 @@ namespace xcas {
     const giac::context * contextptr = get_context(this);
     if (event==FL_FOCUS || event==FL_PUSH){
       redraw();
+      Xcas_input_focus=this;
       Fl::focus(this);
       if (event==FL_FOCUS)
 	return 1;
     }
+    if (event==FL_KEYBOARD)
+      Xcas_input_focus=this;
     bool is_history=(data.type==_VECT && data.subtype==_HIST__VECT);
     bool complete_level_selected=false;
     eqwdata data_eqwdata=Equation_total_size(data);
@@ -3684,7 +4120,7 @@ namespace xcas {
 	break;
       default:
 	if (modifiable){
-	  ch=Fl::event_text()[0];
+	  ch=Fl::event_text()?Fl::event_text()[0]:0;
 	  int es=Fl::event_state();
 	  if (es== FL_ALT || es==1572864){ 
 	    return 0;
@@ -3693,7 +4129,8 @@ namespace xcas {
 	      gen e;
 	      select_user_var(100,200,e,0);
 	      if (output_equation){
-		parse_desactivate();
+		if (!parse_desactivate())
+		  insure_something_selected(true);
 		eval_function(e);
 	      }
 	      return 1;
@@ -3710,8 +4147,14 @@ namespace xcas {
 	    Fl::copy(s.c_str(),s.size(),1);
 	    return 1;
 	  }
-	  if (ch==19){ // Ctrl-S
+	  if (ch==18){ // Ctrl-R
 	    in_Xcas_input_1arg(this,"integrate");
+	    return 1;
+	  }
+	  if (ch==19){ // Ctrl-S
+	    if (!parse_desactivate())
+	      insure_something_selected(true);
+	    eval_function(at_simplify);
 	    return 1;
 	  }
 	  if (ch==4){ // Ctrl-D
@@ -3719,12 +4162,14 @@ namespace xcas {
 	    return 1;
 	  }
 	  if (ch==5){ // Ctrl-E
-	    parse_desactivate();
+	    if (!parse_desactivate())
+	      insure_something_selected(true);
 	    eval_function(at_eval);
 	    return 1;
 	  }
 	  if (ch==6){ // Ctrl-F
-	    parse_desactivate();
+	    if (!parse_desactivate())
+	      insure_something_selected(true);
 	    eval_function(at_factor);
 	    return 1;
 	  }
@@ -3733,16 +4178,18 @@ namespace xcas {
 	    return 1;
 	  }
 	  if (ch==14){ // Ctrl-N
-	    parse_desactivate();
+	    if (!parse_desactivate())
+	      insure_something_selected(true);
 	    eval_function(at_normal);
 	    return 1;
 	  }
 	  if (ch==16){ // Ctrl-P
-	    parse_desactivate();
+	    if (!parse_desactivate())
+	      insure_something_selected(true);
 	    eval_function(at_partfrac);
 	    return 1;
 	  }
-	  if (ch>=17 && ch<=20) // Ctrl-Q R T
+	  if (ch>=17 && ch<=20) // Ctrl-Q T
 	    return 0;
 	  if (ch==22){ // Ctrl-V
 	    Fl::paste(*this,1);
@@ -3750,10 +4197,12 @@ namespace xcas {
 	  }
 	  if (ch==26){ // Ctrl-Z
 	    rcl_data(-1);
+	    adjust_widget_size();
 	    return 1;
 	  }
 	  if (ch==25){ // Ctrl-Y
 	    rcl_data(1);
+	    adjust_widget_size();
 	    return 1;
 	  }
 	  if (ch==9){ // tab, ctrl-I
@@ -3765,7 +4214,7 @@ namespace xcas {
 	      string fin=s.substr(active_pos,s.size()-active_pos);
 	      s=s.substr(0,active_pos);
 	      int remove=active_pos;
-	      if (handle_tab(s,(*vector_completions_ptr),h()/2,w()/2,remove,ans)){
+	      if (handle_tab(s,(*vector_completions_ptr()),h()/2,w()/2,remove,ans)){
 		int l=s.size()-remove;
 		if (l<0)
 		  l=0;
@@ -3783,7 +4232,7 @@ namespace xcas {
 	      if (pos>0 && pos<int(s.size()))
 		s=s.substr(0,pos);
 	      int remove;
-	      if (gs.type==_SYMB && handle_tab(s,(*vector_completions_ptr),h()/2,w()/2,remove,ans)){
+	      if (gs.type==_SYMB && handle_tab(s,(*vector_completions_ptr()),h()/2,w()/2,remove,ans)){
 		// FIXME remove remove chars
 		gen gf=gen("'"+s+ans+"'",contextptr);
 		if (gf.type==_FUNC)
@@ -3801,6 +4250,13 @@ namespace xcas {
 	    }
 	    if (switch_expr(this)){
 	      redraw();
+	      return 1;
+	    }
+	    else {
+	      gen g=get_selection();
+	      replace_selection(string2gen(g.print(),false));
+	      deselect_and_activate();
+	      need_active_parse=true;
 	      return 1;
 	    }
 	  }
@@ -3899,6 +4355,7 @@ namespace xcas {
       const giac::context * contextptr = get_context(eq);
       if (eq){
 	Fl::focus(eq);
+	Xcas_input_focus=eq;
 	string s =eq->get_data().print(contextptr);
 	Fl::selection(*eq,s.c_str(),s.size());
 	eq->select();
@@ -3914,14 +4371,16 @@ namespace xcas {
     Equation * eq = dynamic_cast<Equation *>(wid);
     if (!eq)
       return;
+    Xcas_input_focus=eq;
     eq->replace_selection_wo_save(evaled_g);
   }
 
-  void cb_Equation_Function(Fl_Menu_* m ,const unary_function_ptr & u) {
+  void cb_Equation_Function(Fl_Menu_* m ,const unary_function_ptr * u) {
     if (m){
       Equation * eq = dynamic_cast<Equation *>(m->parent());
       if (eq){
 	Fl::focus(eq);
+	Xcas_input_focus=eq;
 	eq->save_data();
 	xcas::History_Pack * hp=get_history_pack(eq);
 	giac::context * cptr=hp?hp->contextptr:0;
@@ -3934,8 +4393,34 @@ namespace xcas {
     cb_Equation_Function(m,at_evalf);
   }
 
+  static void cb_Equation_Eval(Fl_Menu_* m , void*) {
+    cb_Equation_Function(m,at_eval);
+  }
+
+  static void cb_Equation_Exact(Fl_Menu_* m , void*) {
+    cb_Equation_Function(m,at_exact);
+  }
+
   static void cb_Equation_Simplify(Fl_Menu_* m , void*) {
     cb_Equation_Function(m,at_simplify);
+  }
+
+
+  static void cb_Equation_Editselection(Fl_Menu_* m , void*) {
+    if (m){
+      Equation * eq = dynamic_cast<Equation *>(m->parent());
+      if (eq){
+	Fl::focus(eq);
+	Xcas_input_focus=eq;
+	eq->save_data();
+	xcas::History_Pack * hp=get_history_pack(eq);
+	giac::context * cptr=hp?hp->contextptr:0;
+	gen g=eq->get_selection();
+	eq->replace_selection(string2gen(g.print(),false));
+	eq->deselect_and_activate();
+	eq->need_active_parse=true;
+      }
+    }
   }
 
   static void cb_Equation_Normal(Fl_Menu_* m , void*) {
@@ -3950,6 +4435,7 @@ namespace xcas {
     if (m){
       Equation * eq = dynamic_cast<Equation *>(m->parent());
       if (eq){
+	Xcas_input_focus=eq;
 	eq->rcl_data(-1);
       }
     }
@@ -3959,6 +4445,7 @@ namespace xcas {
     if (m){
       Equation * eq = dynamic_cast<Equation *>(m->parent());
       if (eq){
+	Xcas_input_focus=eq;
 	eq->rcl_data(1);
       }
     }
@@ -3967,10 +4454,13 @@ namespace xcas {
   Fl_Menu_Item Equation_menu[] = {
     {gettext("M"), 0,  0, 0, 64, 0, 0, 14, 56},
     {gettext("Select all"), 0,  (Fl_Callback*)cb_Equation_Select, 0, 0, 0, 0, 14, 56},
-    {gettext("Normal"), 0,  (Fl_Callback*)cb_Equation_Normal, 0, 0, 0, 0, 14, 56},
-    {gettext("Simplify"), 0,  (Fl_Callback*)cb_Equation_Simplify, 0, 0, 0, 0, 14, 56},
-    {gettext("Factor"), 0,  (Fl_Callback*)cb_Equation_Factor, 0, 0, 0, 0, 14, 56},
-    {gettext("Evalf"), 0,  (Fl_Callback*)cb_Equation_Evalf, 0, 0, 0, 0, 14, 56},
+    {gettext("Edit selection"), 0,  (Fl_Callback*)cb_Equation_Editselection, 0, 0, 0, 0, 14, 56},
+    {gettext("simplify"), 0,  (Fl_Callback*)cb_Equation_Simplify, 0, 0, 0, 0, 14, 56},
+    {gettext("normal"), 0,  (Fl_Callback*)cb_Equation_Normal, 0, 0, 0, 0, 14, 56},
+    {gettext("factor"), 0,  (Fl_Callback*)cb_Equation_Factor, 0, 0, 0, 0, 14, 56},
+    {gettext("approx"), 0,  (Fl_Callback*)cb_Equation_Evalf, 0, 0, 0, 0, 14, 56},
+    {gettext("exact"), 0,  (Fl_Callback*)cb_Equation_Exact, 0, 0, 0, 0, 14, 56},
+    {gettext("eval"), 0,  (Fl_Callback*)cb_Equation_Eval, 0, 0, 0, 0, 14, 56},
     {gettext("Back"), 0,  (Fl_Callback*)cb_Equation_Back, 0, 0, 0, 0, 14, 56},
     {gettext("Forward"), 0,  (Fl_Callback*)cb_Equation_Forward, 0, 0, 0, 0, 14, 56},
     {0},
@@ -3996,8 +4486,7 @@ namespace xcas {
     setscroll();
   }
 
-  Equation::Equation(int x, int y, int w, int h): Fl_Group(x, y, max(w,20), max(h,20)){
-    const giac::context * contextptr = get_context(this);
+  Equation::Equation(int x, int y, int w, int h,const char * ch): Fl_Group(x, y, max(w,20), max(h,20)){
     xleft=0;
     ytop=h;
     xcur=0;
@@ -4010,11 +4499,11 @@ namespace xcas {
     cb_select=0;
     undo_history.clear();
     undo_history_pos=0;
-    attr=attributs(14,FL_WHITE,Xcas_equation_color);
+    attr=attributs(14,Xcas_equation_background_color,Xcas_equation_color);
     labelsize(14);
     modifiable=true;
     output_equation=true;
-    data=Equation_nullstring(attr,0,contextptr);
+    data=Equation_nullstring(attr,0,context0);
     Fl_Group::end();
     add_scroll_menu();
   }
@@ -4033,7 +4522,7 @@ namespace xcas {
     cb_select=0;
     undo_history.clear();
     undo_history_pos=0;
-    attr=attributs(14,FL_WHITE,Xcas_equation_color);
+    attr=attributs(14,Xcas_equation_background_color,Xcas_equation_color);
     labelsize(14);
     modifiable=true;
     output_equation=true;
@@ -4071,9 +4560,34 @@ namespace xcas {
     add_scroll_menu();
   }
 
+  Equation::Equation(int x, int y, int w, int h, const char* l,const gen & g,attributs myattr,GIAC_CONTEXT) : Fl_Group(x, y, max(w,20), max(h,20), l){ 
+    labelsize(min(max(myattr.fontsize,10),16));
+    xleft=0;
+    ytop=h;
+    xcur=0;
+    ycur=0;
+    begin_sel=-1;
+    end_sel=-1;
+    cb_escape=0;
+    cb_enter=0;
+    cb_backspace=0;
+    cb_select=0;
+    undo_history.clear();
+    undo_history_pos=0;
+    attr=myattr;
+    modifiable=true;
+    output_equation=true;
+    if (taille(g,max_prettyprint_equation)<max_prettyprint_equation)
+      data=Equation_compute_size(g,attr,w,contextptr);
+    else
+      data=Equation_compute_size(string2gen("Object_too_large",false),attr,w,contextptr);
+    Fl_Group::end();
+    add_scroll_menu();
+  }
+
   void Equation::resize(int x, int y, int w, int h){
     Fl_Widget::resize(x,y,w,h);
-    int L=giac::min(20,labelsize());
+    int L=giac::giacmin(20,labelsize());
     vscroll->resize(x+Fl_Group::w()-L,y,L,Fl_Group::h()-L);
     hscroll->resize(x,y+Fl_Group::h()-L,Fl_Group::w()-2*L,L);
     menubar->resize(hscroll->x()+hscroll->w(),hscroll->y(),2*L,L);
@@ -4081,12 +4595,14 @@ namespace xcas {
   }
 
   Equation::~Equation(){
+    if (Xcas_input_focus==this)
+      Xcas_input_focus=0;
     remove(hscroll);
     remove(vscroll);
     remove(menubar);
     delete vscroll;
     delete hscroll;
-    delete menubar->menu();
+    delete [] menubar->menu();
     delete menubar;
   }
 
@@ -4097,6 +4613,7 @@ namespace xcas {
       return false;
     vecteur v(*res._VECTptr);
     int s=v.size();
+    Fl_Group::current(0);
     Fl_Window * w = new Fl_Window(dx,dy);
     Fl_Return_Button * button0 = new Fl_Return_Button(2,2,dx/2-4,16);
     button0->shortcut(0xff0d);
@@ -4155,7 +4672,7 @@ namespace xcas {
 	o->type(FL_VERTICAL);
       else
 	o->type(FL_HORIZONTAL);
-      o->labelsize(giac::min(20,ptr->labelsize()));
+      o->labelsize(giac::giacmin(20,ptr->labelsize()));
     };
 
 #ifndef NO_NAMESPACE_XCAS

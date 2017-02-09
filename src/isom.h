@@ -1,6 +1,6 @@
 // -*- mode:C++ ; compile-command: "g++ -I.. -g -c isom.cc " -*- 
 /*
- *  Copyright (C) 2001 R. De Graeve, Institut Fourier, 38402 St Martin d'Heres
+ *  Copyright (C) 2001,2014 R. De Graeve, Institut Fourier, 38402 St Martin d'Heres
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -13,8 +13,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef _GIAC_ISOM_H
@@ -27,15 +26,12 @@ namespace giac {
 #endif // ndef NO_NAMESPACE_GIAC
 
   vecteur isom(const vecteur & M,GIAC_CONTEXT);
-  extern const std::string _isom_s;
-  gen symb_isom(const gen & args);
-  extern unary_function_ptr at_isom ;
+  gen _isom(const gen & args,GIAC_CONTEXT);
+  gen _mkisom(const gen & args,GIAC_CONTEXT);
+  extern const unary_function_ptr * const  at_isom ;
 
   vecteur mkisom(const gen & n,int b,GIAC_CONTEXT);
-  gen symb_mkisom(const gen & args);
-  gen symb_mkisom(const gen & q,const gen & x);
-  extern const std::string _mkisom_s;
-  extern unary_function_ptr at_mkisom;
+  extern const unary_function_ptr * const  at_mkisom;
 
 #ifndef NO_NAMESPACE_GIAC
 } // namespace giac

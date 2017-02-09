@@ -1,10 +1,19 @@
 // -*- mode:C++ ; compile-command: "g++ -I.. -g -c Help1.cc" -*-
 #ifndef _HELP_H
 #define _HELP_H
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#ifndef IN_GIAC
 #include <giac/first.h>
 #include <giac/gen.h>
 #include <giac/identificateur.h>
-#include <vector>
+#else
+#include "first.h"
+#include "gen.h"
+#include "identificateur.h"
+#endif
+#include "vector.h"
 #include <string>
 #include <iostream>
 #ifdef HAVE_LIBFLTK
@@ -19,7 +28,7 @@
 #ifdef HAVE_LC_MESSAGES
 #include <locale.h>
 #endif
-#include <giac/giacintl.h>
+#include "giacintl.h"
 
 #ifndef NO_NAMESPACE_XCAS
 namespace xcas {

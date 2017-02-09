@@ -2,7 +2,7 @@
 #include "Help1.h"
 #include "Xcas1.h"
 /*
- *  Copyright (C) 2000 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
+ *  Copyright (C) 2000,2014 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -15,17 +15,19 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 #ifdef HAVE_LIBFLTK
 #include <FL/fl_ask.H>
 #include <FL/fl_ask.H>
 #include <FL/Fl_Hold_Browser.H>
 #include <fstream>
-#include <vector>
+#include "vector.h"
 #include <algorithm>
 #include <fcntl.h>
 #include <cmath>
@@ -48,34 +50,76 @@ namespace xcas {
     string res;
     for (int i=0;i<l;++i){
       if (s[i]!='&'){
-	if (s[i]=='\n')
+	switch(s[i]){
+	case '\n':
 	  res += ' ';
-	else
+	  break;
+	case 'é': case 'è': case 'É':
+	  res += 'e';
+	  break;
+	case 'à':
+	  res += 'a';
+	  break;
+	case 'ô':
+	  res += 'o';
+	  break;
+	default:
 	  res += s[i];
+	}
       }
       else {
 	int pos=s.find(';',i);
 	if (pos>=l || pos<=i)
 	  res +=s[i];
 	else {
-	  string motif=s.substr(i,pos-i);
+	  unsigned code=0,base=10;
+	  char c;
+	  for (int cur=i+2;cur<=pos;++cur){
+	    c=s[cur];
+	    if (c=='x' || c=='X')
+	      base=16;
+	    if (c=='o' || c=='O')
+	      base=8;
+	    if (c!=';'){
+	      if (base!=16)
+		code = code*base+c-'0';
+	      else {
+		if (c>='A' && c<='F')
+		  code = code*base + c-'A'+10;
+		if (c>='a' && c<='f')
+		  code = code*base + c-'a'+10;
+		if (c>='0' && c<='9')
+		  code = code*base + c-'0';
+	      }
+	      continue;
+	    }
+	    switch (code){
+	    case 0xe8: case 0xe9: case 0xea:
+	      c='e';
+	      break;
+	    case 0xe0: case 0xe2:
+	      c='a';
+	      break;
+	    case 0xf4:
+	      c='o';
+	      break;
+	    case 0xf9: case 0xfb:
+	      c='u';
+	      break;
+	    case 0xe7:
+	      c='c';
+	      break;
+	    case 238:
+	      c='i';
+	      break;
+	    case 0x2019:
+	      c=' ';
+	      break;
+	    } // end switch
+	    break;
+	  } // end loop for (cur=i;cur<pos;++cur)
 	  i=pos;
-	  if (motif=="&#233")
-	    res += "é";
-	  if (motif=="&#232")
-	    res += "è";
-	  if (motif=="&#234")
-	    res += "ê";
-	  if (motif=="&#224")
-	    res += "à";
-	  if (motif=="&#244")
-	    res += "ô";
-	  if (motif=="&#246")
-	    res += "o";
-	  if (motif=="&#201")
-	    res += "E";
-	  if (motif=="&#238")
-	    res += "î";
+	  res += c;
 	}
       }
     }
@@ -86,22 +130,59 @@ namespace xcas {
     int l=s.size();
     string res;
     for (int i=0;i<l;++i){
+      unsigned char c=s[i];
+      if (i<l-1 && c==0xc3){
+	++i;
+	c=s[i];
+	switch (c){
+	case 0xa8: case 0xa9: case 0xaa: case 0xab:
+	  res += 'e';
+	  break;
+	case 0xa7:
+	  res += 'c';
+	  break;
+	case 0xa0: case 0xa1: case 0xa2: case 0xa4:
+	  res +='a';
+	  break;
+	case 0xb9: case 0xba: case 0xbb: case 0xbc:
+	  res +='u';
+	  break;
+	case 0xb4: case 0xb5: case 0xb6:
+	  res +='o';
+	  break;
+	case 0xae: case 0xaf:
+	  res += 'i';
+	  break;
+	}
+	continue;
+      }
       switch (s[i]){
-      case 'é':
+	case 'é': case 'è': case 'É':
+	  res += 'e';
+	  break;
+	case 'à':
+	  res += 'a';
+	  break;
+	case 'ô':
+	  res += 'o';
+	  break;
+	  /*
+      case 'Ã©':
 	res += 'e'; // "&#233;";
 	break;
-      case 'è':
+      case 'Ã¨':
 	res +='e'; // "&#232;";
 	break;
-      case 'ê':
+      case 'Ãª':
 	res += 'e'; // "&#234;";
 	break;
-      case 'à':
+      case 'Ã ':
 	res += 'a'; // "&#224;";
 	break;
-      case 'î':
+      case 'Ã®':
 	res += 'i'; // "&#238;";
 	break;
+	  */
       default:
 	res += tolower(s[i]);
       }
@@ -123,12 +204,13 @@ namespace xcas {
 #else
       int dx=460,dy=260,l=20;
 #endif
-      if (Fl::focus() && Fl::focus()->window()){
-	dx=max(dx,2*Fl::focus()->window()->w()/3);
-	dy=max(dy,2*Fl::focus()->window()->h()/3);
-	l=Fl::focus()->window()->labelsize();
+      if (xcas::Xcas_input_focus && xcas::Xcas_input_focus->window()){
+	dx=max(dx,2*xcas::Xcas_input_focus->window()->w()/3);
+	dy=max(dy,2*xcas::Xcas_input_focus->window()->h()/3);
+	l=xcas::Xcas_input_focus->window()->labelsize();
       }
       l += 6;
+      Fl_Group::current(0);
       w = new Fl_Window(dx,dy);
       w->label(gettext("Find word in HTML help"));
       button0 = new Fl_Button(2,2,dx/2-4,l);
@@ -164,8 +246,17 @@ namespace xcas {
 	else {
 	  if (o == button0) { // view help file
 	    int tmp=br->value(); 
-	    if (tmp) 
-	      system((browser_command(v[tmp-1])).c_str());
+	    if (tmp) {
+	      if (use_external_browser)
+		system_browser_command(v[tmp-1]);
+	      else {
+		use_external_browser=false;
+		if (Xcas_help_window){
+		  Xcas_help_window->load((v[tmp-1]).c_str());
+		  xcas::Xcas_help_window->show();
+		}
+	      }
+	    }
 	    else {
 	      if (!br->size())
 		in->do_callback();

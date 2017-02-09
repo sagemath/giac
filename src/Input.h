@@ -1,11 +1,20 @@
 // -*- mode:C++ ; compile-command: "g++ -I.. -g -c Input.cc" -*-
 #ifndef _INPUT_H
 #define _INPUT_H
-#include <vector>
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "vector.h"
 #include <string>
+#ifndef IN_GIAC
 #include <giac/first.h>
 #include <giac/gen.h>
 #include <giac/identificateur.h>
+#else
+#include "first.h"
+#include "gen.h"
+#include "identificateur.h"
+#endif
 #ifdef HAVE_LIBFLTK
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Menu.H>
@@ -18,7 +27,7 @@
 #ifdef HAVE_LC_MESSAGES
 #include <locale.h>
 #endif
-#include <giac/giacintl.h>
+#include <giacintl.h>
 
 #ifndef NO_NAMESPACE_XCAS
 namespace xcas {
@@ -30,6 +39,8 @@ namespace xcas {
   // alert if the command is not successfull
   void system_browser(const std::string & s);
 
+  // return the last keyword of s
+  std::string motclef(const std::string & s);
 
 #ifdef HAVE_LIBFLTK
 
@@ -40,15 +51,20 @@ namespace xcas {
   // Use the function read_aide to load completions from a help file
   bool read_aide(const std::string & helpfilename,int language);
   // Help window for the application, return 0 if cancel, 1 if add () or 2 if no ()
-  int handle_tab(const std::string & s,const std::vector<std::string> & v,int dx,int dy,int & remove,std::string & ans);
+  int handle_tab(const std::string & s,const std::vector<std::string> & v,int dx,int dy,int & remove,std::string & ans,bool allow_immediate_out=true);
+
+  int height(const char *,int);
 
   class Flv_Table_Gen ;
 
   void Multiline_default_callback(Fl_Widget * w,void *);
 
+  extern Fl_Widget * Xcas_input_focus;
+
   class Multiline_Input_tab:public Fl_Multiline_Input {
     static int count;
     static std::vector<std::string> history;
+    bool handling;
     int in_handle(int);
   public:
     std::vector<std::string> * completion_tab ;
@@ -62,6 +78,7 @@ namespace xcas {
     void set_g(const giac::gen & g);
     void match(); // Show matching parenthesis, [ , etc. region 
     Multiline_Input_tab(int x,int y,int w,int h,const char * l= 0);
+    virtual ~Multiline_Input_tab() { if (Xcas_input_focus==this) Xcas_input_focus=0;}
     void resize_nl(); // resize input and parents according to number of lines
     bool need_nl(); 
     // return true if current line up to position is too large to be displayed
@@ -91,6 +108,7 @@ namespace xcas {
     Comment_Multiline_Input(int x,int y,int w,int h,const char * l=0);
     virtual FL_EXPORT int handle(int);    
     virtual FL_EXPORT int in_handle(int);    
+    virtual ~Comment_Multiline_Input() { if (Xcas_input_focus==this) Xcas_input_focus=0;}
   };
 
   // Convert a pnt to a user-readable string

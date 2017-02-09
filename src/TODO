@@ -1,3 +1,6 @@
+GIAC_GENERIC_CONSTANTS -> mode par défaut dans configure.in
+plot3d.cc: plan clic en pointillé
+====================
 * nodisp() puis ans()
 ---
 * Cleanup

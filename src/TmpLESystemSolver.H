@@ -1,4 +1,7 @@
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
+#include "first.h"
 #ifdef HAVE_LIBCOCOA
 #ifndef CoCoA_LESystemSolver_H
 #define CoCoA_LESystemSolver_H
@@ -18,8 +21,7 @@
 //   GNU General Public License for more details.
 
 //   You should have received a copy of the GNU General Public License
-//   along with CoCoA; if not, write to the Free Software
-//   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//   along with CoCoA; if not, see <http://www.gnu.org/licenses/>
 
 #include <CoCoA/matrix.H>
 

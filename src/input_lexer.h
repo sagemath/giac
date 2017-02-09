@@ -7,7 +7,7 @@
 /*
  *  Original version by GiNaC 
  *  Copyright (C) 1999-2000 Johannes Gutenberg University Mainz, Germany
- *  Modified for Giac (c) 2001, Bernard Parisse, Institut Fourier
+ *  Modified for Giac (c) 2001,2014 Bernard Parisse, Institut Fourier
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,12 +20,14 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef __GIAC_INPUT_LEXER_H__
 #define __GIAC_INPUT_LEXER_H__
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 #include "first.h"
 
 extern "C" {
@@ -47,22 +49,89 @@ typedef struct yy_buffer_state *YY_BUFFER_STATE;
 extern int giac_yyerror(void *scanner,const char *s);
 extern int giac_yylex(YYSTYPE * yylval_param ,void * yyscanner);
 
-
 #ifndef NO_NAMESPACE_GIAC
 namespace giac {
 #endif // ndef NO_NAMESPACE_GIAC
-  extern std::vector<int> lexer_localization_vector;
-  std::map<std::string,std::string> & lexer_localization_map();
-  extern std::multimap<std::string,localized_string> back_lexer_localization_map;
+  std::vector<int> & lexer_localization_vector();
+#ifdef NSPIRE
+  ustl::map<std::string,std::string> & lexer_localization_map();
+  ustl::multimap<std::string,localized_string> & back_lexer_localization_map();
   // lexer_localization_map translates keywords from the locale to giac 
   // lexer_localization_vector is the list of languages currently translated
-  void update_lexer_localization(const std::vector<int> & v,std::map<std::string,std::string> &lexer_map,std::multimap<std::string,localized_string> &back_lexer_map);
+  void update_lexer_localization(const std::vector<int> & v,ustl::map<std::string,std::string> &lexer_map,ustl::multimap<std::string,localized_string> &back_lexer_map);
+#else
+  std::map<std::string,std::string> & lexer_localization_map();
+  std::multimap<std::string,localized_string> & back_lexer_localization_map();
+  // lexer_localization_map translates keywords from the locale to giac 
+  // lexer_localization_vector is the list of languages currently translated
+  void update_lexer_localization(const std::vector<int> & v,std::map<std::string,std::string> &lexer_map,std::multimap<std::string,localized_string> &back_lexer_map,GIAC_CONTEXT);
+#endif
   
 
+#ifdef NSPIRE
+  ustl::map<std::string,std::vector<std::string> > & lexer_translator();
+  ustl::map<std::string,std::vector<std::string> > & library_functions();
+#else
   std::map<std::string,std::vector<std::string> > & lexer_translator();
   std::map<std::string,std::vector<std::string> > & library_functions();
-  sym_tab & lexer_functions();
-  sym_tab & syms();
+#endif
+  map_charptr_gen & lexer_functions();
+
+#ifdef STATIC_BUILTIN_LEXER_FUNCTIONS
+    // gen alias for static initialization on 32 bits processor
+    struct charptr_gen_unary {
+      const char * s;
+      unsigned char type;  // see dispatch.h
+      signed char subtype;
+      unsigned short reserved; 
+      size_t _FUNC_; // unary_function_ptr *
+    };
+  extern const charptr_gen_unary builtin_lexer_functions[] ;
+  extern const unsigned builtin_lexer_functions_number;
+  extern const size_t builtin_lexer_functions_[];
+#else
+  extern unsigned builtin_lexer_functions_number;
+#endif
+
+  /* integer values */
+  struct lexer_tab_int_type {
+    const char * keyword;
+    unsigned char status;
+    int value;
+    signed char subtype;
+    short int return_value;
+  };
+  extern const lexer_tab_int_type lexer_tab_int_values[];
+  extern const lexer_tab_int_type * const lexer_tab_int_values_begin;
+  extern const lexer_tab_int_type * const lexer_tab_int_values_end;
+  std::string translate_at(const char * ch);
+
+  inline bool tri (const std::pair<const char *,gen> & a ,const std::pair<const char *,gen> & b){
+    return strcmp(a.first, b.first) < 0;
+  }
+  bool tri1(const lexer_tab_int_type & a,const lexer_tab_int_type & b);
+ 
+  typedef std::pair<const char *,gen> charptr_gen;
+  charptr_gen * builtin_lexer_functions_begin();
+  charptr_gen * builtin_lexer_functions_end();
+#ifdef STATIC_BUILTIN_LEXER_FUNCTIONS
+#ifdef NSPIRE
+  std::vector<size_t> * builtin_lexer_functions_();
+#else
+  extern const size_t builtin_lexer_functions_[];
+#endif
+#else
+  extern const size_t * const builtin_lexer_functions_;
+#endif
+
+  extern bool builtin_lexer_functions_sorted;
+
+  // return true/false to tell if s is recognized. return the appropriate gen if true
+  bool CasIsBuildInFunction(char const *s, gen &g);
+
+  int lock_syms_mutex();
+  void unlock_syms_mutex();
+  sym_string_tab & syms();
   // The lexer recognize first static declared symbols as declared in
   // input_lexer.ll, then it does 2 steps:
   // step 1: look in lexer_translator if the name is a recognized
@@ -74,16 +143,18 @@ namespace giac {
   // to keep the parser token returned by the lexer
 
   // Used to keep track of functions inserted during an insmod
+  extern bool doing_insmod ;
   std::vector<user_function> & registered_lexer_functions();
   
-  class unary_function_ptr;
+  struct unary_function_ptr;
   // Return true if s is associated to a function with non prefix syntax
-  bool has_special_syntax(const std::string & s);
-  bool lexer_functions_register(const unary_function_ptr & u,const std::string & s,int parser_token);
+  bool has_special_syntax(const char * s);
+  bool lexer_functions_register(const unary_function_ptr & u,const char * s,int parser_token);
+  inline bool lexer_functions_register(const unary_function_ptr * u,const char * s,int parser_token){ return lexer_functions_register(*u,s,parser_token); }
   bool lexer_function_remove(const std::vector<user_function> & v);
 
   // return the token associated to the string, T_SYMBOL if not found
-  int find_or_make_symbol(const std::string & s,gen & res,GIAC_CONTEXT);
+  int find_or_make_symbol(const std::string & s,gen & res,void * scanner,bool check38,GIAC_CONTEXT);
   
   /** Add to the list of predefined symbols for the lexer. */
   void set_lexer_symbols(const vecteur & l,GIAC_CONTEXT);

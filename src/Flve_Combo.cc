@@ -11,7 +11,14 @@
 //	Included are select from list, text with list, incremental search
 //	======================================================================
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#ifndef IN_GIAC
 #include <giac/first.h>
+#else
+#include "first.h"
+#endif
 #ifdef HAVE_LIBFLTK
 
 #include <FL/Fl.H>
@@ -57,11 +64,11 @@ protected:
 	int handle(int event);
 };
 
-class Flvt_Input : public Fl_Input
+class Flvt_Input : public public_input
 {
 public:
 	Flvt_Input( int x,int y,int w,int h,const char *l=0 ) :
-		Fl_Input(x,y,w,h,l) {};
+		public_input(x,y,w,h,l) {};
 protected:
 	int handle(int event);
 	void draw(void);

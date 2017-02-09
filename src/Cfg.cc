@@ -1,7 +1,15 @@
 // -*- mode:C++ ; compile-command: "g++ -I. -I.. -g -c Cfg.cc -Wall" -*-
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#ifndef IN_GIAC
 #include <giac/first.h>
+#else
+#include "first.h"
+#endif
 /*
- *  Copyright (C) 2005 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
+ *  Copyright (C) 2005,2014 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -14,8 +22,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_LIBFLTK
@@ -29,9 +36,15 @@
 #include <FL/Fl_Tile.H>
 #include <FL/Fl_Output.H>
 #endif
+#ifndef IN_GIAC
 #include <giac/global.h>
 #include <giac/gen.h>
 #include <giac/prog.h>
+#else
+#include "global.h"
+#include "gen.h"
+#include "prog.h"
+#endif
 #include "History.h"
 #include "Xcas1.h"
 #include "Cfg.h"
@@ -64,6 +77,8 @@ namespace xcas {
 
   Fl_Check_Button *Xcas_Approx_mode=(Fl_Check_Button *)0;
 
+  Fl_Input *Xcas_Autosimplify=(Fl_Input *)0;
+
   Fl_Check_Button *Xcas_Angle_radian=(Fl_Check_Button *)0;
 
   Fl_Check_Button *Xcas_Increasing_power=(Fl_Check_Button *)0;
@@ -77,6 +92,8 @@ namespace xcas {
   Fl_Check_Button *Xcas_Complex_variables=(Fl_Check_Button *)0;
 
   Fl_Return_Button *Xcas_Cas_setup_OK=(Fl_Return_Button *)0;
+
+  Fl_Button *Xcas_Cas_setup_defaults=(Fl_Return_Button *)0;
 
   Fl_Button *Xcas_cas_setup_OKSave=(Fl_Button *)0;
 
@@ -156,6 +173,39 @@ namespace xcas {
     {0}
   };
 
+  static void cb_Xcas_Cas_setup_defaults(Fl_Return_Button* rb, void* userdata) {
+    Xcas_Epsilon->value(1e-12);
+    Xcas_Proba_Epsilon->value(1e-15);
+    Xcas_Threads->value(1);
+    // giac::variables_are_files(Xcas_Save_var->value(),contextptr);
+    Xcas_Complex_mode->value(false);
+    Xcas_Complex_variables->value(false);
+    do_maple_mode=0; Xcas_Style->value("xcas");
+    Xcas_Increasing_power->value(false);
+    Xcas_Angle_radian->value(true);
+    Xcas_Approx_mode->value(false);
+    Xcas_Autosimplify->value("regroup");
+    do_scientific_format=0; Xcas_Float_style_output->value("standard");
+    do_integer_format=10; Xcas_Integer_style_output->value("10"); 
+    do_max_recursion_level=100;Xcas_recursion_level->value(do_max_recursion_level);
+    do_eval_level=25;Xcas_eval_level->value(do_eval_level);
+    Xcas_prog_eval_level->value(1);
+    Xcas_Newton->value(20);
+    do_debug_infolevel=0;Xcas_debug_infolevel->value(do_debug_infolevel);
+    Xcas_sqrt->value(true);
+    Xcas_all_trig_sol->value(false);
+    Xcas_Set_Digits->value(12);
+    if (Xcas_update_mode_ptr)
+      Xcas_update_mode_ptr();
+    History_Fold * hf=get_history_fold(Xcas_input_focus);
+    if (hf){
+      hf->update_status_count=-1;
+      hf->update_status();
+    }
+    if (Xcas_input_focus)
+      Fl::focus(Xcas_input_focus);
+  }
+
   static void cb_Xcas_Cas_setup_OK(Fl_Return_Button* rb, void* userdata) {
     const giac::context * contextptr = context0;
     if (userdata)
@@ -164,7 +214,6 @@ namespace xcas {
     giac::epsilon(fabs(Xcas_Epsilon->value()),contextptr);
     giac::proba_epsilon(contextptr)=fabs(Xcas_Proba_Epsilon->value());
     giac::threads=max(giac::absint(int(Xcas_Threads->value())),1);
-    giac::NEWTON_DEFAULT_ITERATION==max(giac::absint(int(Xcas_Newton->value())),20);
     // giac::variables_are_files(Xcas_Save_var->value(),contextptr);
     giac::complex_mode(Xcas_Complex_mode->value(),contextptr);
     giac::complex_variables(Xcas_Complex_variables->value(),contextptr);
@@ -172,17 +221,29 @@ namespace xcas {
     giac::increasing_power(Xcas_Increasing_power->value(),contextptr);
     giac::angle_radian(Xcas_Angle_radian->value(),contextptr);
     giac::approx_mode(Xcas_Approx_mode->value(),contextptr);
+    if (strlen(Xcas_Autosimplify->value())<3)
+      giac::_autosimplify(0,contextptr);
+    else
+      giac::_autosimplify(gen(Xcas_Autosimplify->value(),contextptr),contextptr);
     giac::scientific_format(do_scientific_format,contextptr);
     giac::integer_format(do_integer_format,contextptr);
     giac::MAX_RECURSION_LEVEL=do_max_recursion_level;
     giac::eval_level(contextptr)= giac::DEFAULT_EVAL_LEVEL=do_eval_level;
     giac::prog_eval_level_val(int(Xcas_prog_eval_level->value()),contextptr);
+    giac::NEWTON_DEFAULT_ITERATION=max(giac::absint(int(Xcas_Newton->value())),20);
     giac::debug_infolevel=do_debug_infolevel;
     giac::withsqrt(Xcas_sqrt->value(),contextptr);
     giac::all_trig_sol(Xcas_all_trig_sol->value(),contextptr);
     giac::set_decimal_digits(int(Xcas_Set_Digits->value()),contextptr);
     if (Xcas_update_mode_ptr)
       Xcas_update_mode_ptr();
+    History_Fold * hf=get_history_fold(Xcas_input_focus);
+    if (hf){
+      hf->update_status_count=-1;
+      hf->update_status();
+    }
+    if (Xcas_input_focus)
+      Fl::focus(Xcas_input_focus);
   }
 
   static void cb_Xcas_cas_setup_OKSave(Fl_Button*, void* userdata) {
@@ -196,6 +257,8 @@ namespace xcas {
 
   static void cb_Xcas_Cancel_cas_setup(Fl_Button*, void*) {
     Xcas_Cancel_cas_setup->window()->hide();
+    if (Xcas_input_focus)
+      Fl::focus(Xcas_input_focus);
   }
 
   static void cb_Xcas_Integer_style_standard(Fl_Menu_*, void*) {
@@ -234,7 +297,8 @@ namespace xcas {
 
   void xcas_cas_setup_init()
   {
-    Fl_Double_Window* o = Xcas_Cas_Setup = new Fl_Double_Window(355, 315, gettext("Xcas Cas Setup"));
+    Fl_Group::current(0);
+    Fl_Double_Window* o = Xcas_Cas_Setup = new Fl_Double_Window(20,80,355, 315, gettext("Xcas Cas Setup"));
     { Fl_Menu_Button* o = Xcas_Float_style = new Fl_Menu_Button(125, 15, 95, 25, gettext("Float format"));
     o->align(FL_ALIGN_CLIP);
     o->menu(menu_Xcas_Float_style);
@@ -263,6 +327,10 @@ namespace xcas {
     o->down_box(FL_DOWN_BOX);
     o->selection_color((Fl_Color)1);
     o->align(68|FL_ALIGN_INSIDE);
+    }
+    { Fl_Input* o = Xcas_Autosimplify = new Fl_Input(175, 205, 55, 25, gettext("autosimplify"));
+    o->tooltip(gettext("Command automatically executed after evaluation (auto-simplification) for example nop or regroup or simplify"));
+    o->value("regroup");
     }
     { Fl_Check_Button* o = Xcas_Angle_radian = new Fl_Check_Button(240, 75, 100, 25, gettext("radian"));
     o->tooltip(gettext("Radian or degree angle mode"));
@@ -297,27 +365,31 @@ namespace xcas {
     o->selection_color((Fl_Color)1);
     o->align(68|FL_ALIGN_INSIDE);
     }
-    { Fl_Return_Button* o = Xcas_Cas_setup_OK = new Fl_Return_Button(15, 280, 100, 25, gettext("Apply"));
+    { Fl_Return_Button* o = Xcas_Cas_setup_OK = new Fl_Return_Button(10, 280, 80, 25, gettext("Apply"));
     o->callback((Fl_Callback*)cb_Xcas_Cas_setup_OK);
     o->align(FL_ALIGN_CLIP);
     }
-    { Fl_Button* o = Xcas_cas_setup_OKSave = new Fl_Button(130, 280, 95, 25, gettext("Save"));
+    { Fl_Button* o = Xcas_cas_setup_OKSave = new Fl_Button(100, 280, 75, 25, gettext("Save"));
     o->shortcut(0xff1b);
     o->callback((Fl_Callback*)cb_Xcas_cas_setup_OKSave);
     o->align(FL_ALIGN_CLIP);
     }
-    { Fl_Button* o = Xcas_Cancel_cas_setup = new Fl_Button(245, 280, 95, 25, gettext("Cancel"));
+    { Fl_Button* o = Xcas_Cancel_cas_setup = new Fl_Button(185, 280, 75, 25, gettext("Cancel"));
     o->shortcut(0xff1b);
     o->callback((Fl_Callback*)cb_Xcas_Cancel_cas_setup);
     o->align(FL_ALIGN_CLIP);
     }
+    { Fl_Button* o =   Xcas_Cas_setup_defaults = new Fl_Button(270, 280, 75, 25, gettext("Default"));
+    o->callback((Fl_Callback*)cb_Xcas_Cas_setup_defaults);
+    o->align(FL_ALIGN_CLIP);
+    }
     { Fl_Value_Input* o = Xcas_Threads = new Fl_Value_Input(130, 230, 40, 25, gettext("threads"));
     o->tooltip(gettext("Maximal number of threads in parallel"));
-    o->maximum(10);
+    o->maximum(2*giac::threads);
+    o->minimum(1);
     o->step(1);
-    o->value(1);
+    o->value(giac::threads);
     o->align(68);
-    o->deactivate();
     }
     { Fl_Check_Button* o = Xcas_sqrt = new Fl_Check_Button(240, 245, 100, 25, gettext("Sqrt"));
     o->tooltip(gettext("Factor 2nd order poly using sqrt"));
@@ -410,6 +482,7 @@ or default eval level)"));
     Xcas_Increasing_power->value(giac::increasing_power(contextptr));
     Xcas_Angle_radian->value(giac::angle_radian(contextptr));
     Xcas_Approx_mode->value(giac::approx_mode(contextptr));
+    Xcas_Autosimplify->value(giac::autosimplify(contextptr).c_str());
     Xcas_sqrt->value(giac::withsqrt(contextptr));
     Xcas_all_trig_sol->value(giac::all_trig_sol(contextptr));
     Xcas_Set_Digits->value(giac::decimal_digits(contextptr));
@@ -434,7 +507,7 @@ or default eval level)"));
     Fl_Widget * foc = Fl::focus();
     if (foc && (foc=Fl::focus()->window()) ){
       xcas::change_group_fontsize(Xcas_Cas_Setup,foc->labelsize());
-      Xcas_Cas_Setup->resize(20,20,3*foc->w()/4,3*foc->h()/4);
+      Xcas_Cas_Setup->resize(20,80,3*foc->w()/4,3*foc->h()/4);
     }
     Xcas_Cas_Setup->show();
   }
@@ -518,6 +591,8 @@ or default eval level)"));
     giac::class_minimum=Xcas_Class_min->value();
     giac::class_size=Xcas_Class_size->value();
     Xcas_Plot_Setup_OK->window()->hide();
+    if (Xcas_input_focus)
+      Fl::focus(Xcas_input_focus);
   }
 
   static void cb_Xcas_Plot_Setup_OKSave(Fl_Button*, void* userdata) {
@@ -531,6 +606,8 @@ or default eval level)"));
   
   static void cb_Xcas_Plot_Setup_Cancel(Fl_Button*, void*) {
     Xcas_Plot_Setup_Cancel->window()->hide();
+    if (Xcas_input_focus)
+      Fl::focus(Xcas_input_focus);
   }
   
   static void cb_Xcas_To_W(Fl_Button*, void*) {
@@ -543,7 +620,8 @@ or default eval level)"));
 
   void xcas_plot_setup_init()
   { 
-    Fl_Double_Window* o = Xcas_Plot_Setup = new Fl_Double_Window(300, 230, gettext("Xcas Plot Setup"));
+    Fl_Group::current(0);
+    Fl_Double_Window* o = Xcas_Plot_Setup = new Fl_Double_Window(20,80,300, 230, gettext("Xcas Plot Setup"));
     { Fl_Group* o = Plot_setup_w = new Fl_Group(0, 0, 300, 320, gettext("Plot setup"));
     o->box(FL_SHADOW_BOX);
     o->color(FL_BACKGROUND2_COLOR);
@@ -753,7 +831,7 @@ or default eval level)"));
     Fl_Widget * foc = Fl::focus();
     if (foc && (foc=foc->window())){
       xcas::change_group_fontsize(Xcas_Plot_Setup,foc->labelsize());
-      Xcas_Plot_Setup->resize(20,20,3*foc->w()/4,3*foc->h()/4);
+      Xcas_Plot_Setup->resize(20,80,3*foc->w()/4,3*foc->h()/4);
     }
     Xcas_Plot_Setup->show();
   }
