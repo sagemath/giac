@@ -1,5 +1,5 @@
 /*  All these constants are #define to be used in switch () case :
- *  Copyright (C) 2000 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
+ *  Copyright (C) 2000,2014 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -12,8 +12,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef _GIAC_DISPATCH_H
@@ -23,6 +22,10 @@
 #ifndef NO_NAMESPACE_GIAC
 namespace giac {
 #endif // ndef NO_NAMESPACE_GIAC
+
+#if !defined DOUBLEVAL && (defined __amd64 || defined __x86_64) && !defined SMARTPTR64 
+#define DOUBLEVAL 1
+#endif
 
   enum {
     _DECALAGE=8, // 2^8=256
@@ -54,7 +57,8 @@ namespace giac {
     _MAP=17, // map<gen.gen> * _MAPptr
     _EQW=18, // eqwdata * _EQWptr
     _GROB=19, // grob * _GROBptr
-    _POINTER_=20 // void * _POINTER_val
+    _POINTER_=20, // void * _POINTER_val
+    _FLOAT_=21 // immediate, _FLOAT_val
   } ;
 
   enum gen_binary_types {
@@ -65,7 +69,10 @@ namespace giac {
     _INT___IDNT = _INT_*_DISPATCHBASE+_IDNT,
     _INT___SYMB = _INT_*_DISPATCHBASE+_SYMB,
     _INT___DOUBLE_ = _INT_*_DISPATCHBASE+_DOUBLE_,
+    _INT___FLOAT_ = _INT_*_DISPATCHBASE+_FLOAT_,
     _INT___VECT = _INT_*_DISPATCHBASE+_VECT,
+    _INT___MAP = _INT_*_DISPATCHBASE+_MAP,
+    _INT___REAL = _INT_*_DISPATCHBASE+_REAL,
     _ZINT__INT_ = _ZINT*_DISPATCHBASE+_INT_,
     _ZINT__ZINT =_ZINT*_DISPATCHBASE+_ZINT,
     _ZINT__CPLX = _ZINT*_DISPATCHBASE+_CPLX,
@@ -73,7 +80,10 @@ namespace giac {
     _ZINT__IDNT = _ZINT*_DISPATCHBASE+_IDNT,
     _ZINT__SYMB = _ZINT*_DISPATCHBASE+_SYMB,
     _ZINT__DOUBLE_ = _ZINT*_DISPATCHBASE+_DOUBLE_,
+    _ZINT__FLOAT_ = _ZINT*_DISPATCHBASE+_FLOAT_,
     _ZINT__VECT = _ZINT*_DISPATCHBASE+_VECT,
+    _ZINT__MAP = _ZINT*_DISPATCHBASE+_MAP,
+    _ZINT__REAL = _ZINT*_DISPATCHBASE+_REAL,
     _CPLX__INT_ = _CPLX*_DISPATCHBASE+_INT_,
     _CPLX__ZINT = _CPLX*_DISPATCHBASE+_ZINT,
     _CPLX__CPLX = _CPLX*_DISPATCHBASE+_CPLX,
@@ -81,8 +91,10 @@ namespace giac {
     _CPLX__IDNT = _CPLX*_DISPATCHBASE+_IDNT,
     _CPLX__SYMB = _CPLX*_DISPATCHBASE+_SYMB,
     _CPLX__DOUBLE_ = _CPLX*_DISPATCHBASE+_DOUBLE_,
+    _CPLX__FLOAT_ = _CPLX*_DISPATCHBASE+_FLOAT_,
     _CPLX__REAL = _CPLX*_DISPATCHBASE+_REAL,
     _CPLX__VECT = _CPLX*_DISPATCHBASE+_VECT,
+    _CPLX__MAP = _CPLX*_DISPATCHBASE+_MAP,
     _POLY__INT_ = _POLY*_DISPATCHBASE+_INT_,
     _POLY__ZINT = _POLY*_DISPATCHBASE+_ZINT,
     _POLY__CPLX = _POLY*_DISPATCHBASE+_CPLX,
@@ -90,7 +102,9 @@ namespace giac {
     _POLY__IDNT = _POLY*_DISPATCHBASE+_IDNT,
     _POLY__SYMB = _POLY*_DISPATCHBASE+_SYMB,
     _POLY__DOUBLE_ = _POLY*_DISPATCHBASE+_DOUBLE_,
+    _POLY__FLOAT_ = _POLY*_DISPATCHBASE+_FLOAT_,
     _POLY__VECT = _POLY*_DISPATCHBASE+_VECT,
+    _POLY__MAP = _POLY*_DISPATCHBASE+_MAP,
     _POLY__USER = _POLY*_DISPATCHBASE+_USER,
     _POLY__REAL = _POLY*_DISPATCHBASE+_REAL,
     _POLY__EXT = _POLY*_DISPATCHBASE+_EXT,
@@ -101,7 +115,9 @@ namespace giac {
     _IDNT__IDNT = _IDNT*_DISPATCHBASE+_IDNT,
     _IDNT__SYMB = _IDNT*_DISPATCHBASE+_SYMB,
     _IDNT__DOUBLE_ = _IDNT*_DISPATCHBASE+_DOUBLE_,
+    _IDNT__FLOAT_ = _IDNT*_DISPATCHBASE+_FLOAT_,
     _IDNT__VECT = _IDNT*_DISPATCHBASE+_VECT,
+    _IDNT__MAP = _IDNT*_DISPATCHBASE+_MAP,
     _SYMB__INT_=  _SYMB*_DISPATCHBASE+_INT_,
     _SYMB__ZINT = _SYMB*_DISPATCHBASE+_ZINT,
     _SYMB__CPLX = _SYMB*_DISPATCHBASE+_CPLX,
@@ -109,7 +125,9 @@ namespace giac {
     _SYMB__IDNT = _SYMB*_DISPATCHBASE+_IDNT,
     _SYMB__SYMB = _SYMB*_DISPATCHBASE+_SYMB,
     _SYMB__DOUBLE_ = _SYMB*_DISPATCHBASE+_DOUBLE_,
+    _SYMB__FLOAT_ = _SYMB*_DISPATCHBASE+_FLOAT_,
     _SYMB__VECT = _SYMB*_DISPATCHBASE+_VECT,
+    _SYMB__MAP = _SYMB*_DISPATCHBASE+_MAP,
     _DOUBLE___INT_=  _DOUBLE_*_DISPATCHBASE+_INT_,
     _DOUBLE___ZINT = _DOUBLE_*_DISPATCHBASE+_ZINT,
     _DOUBLE___CPLX = _DOUBLE_*_DISPATCHBASE+_CPLX,
@@ -117,10 +135,26 @@ namespace giac {
     _DOUBLE___IDNT = _DOUBLE_*_DISPATCHBASE+_IDNT,
     _DOUBLE___SYMB = _DOUBLE_*_DISPATCHBASE+_SYMB,
     _DOUBLE___DOUBLE_ = _DOUBLE_*_DISPATCHBASE+_DOUBLE_,
+    _DOUBLE___FLOAT_ = _DOUBLE_*_DISPATCHBASE+_FLOAT_,
     _DOUBLE___VECT = _DOUBLE_*_DISPATCHBASE+_VECT,
+    _DOUBLE___MAP = _DOUBLE_*_DISPATCHBASE+_MAP,
     _DOUBLE___REAL = _DOUBLE_*_DISPATCHBASE+_REAL,
+    _DOUBLE___FRAC = _DOUBLE_*_DISPATCHBASE+_FRAC,
+    _FLOAT___INT_=  _FLOAT_*_DISPATCHBASE+_INT_,
+    _FLOAT___ZINT = _FLOAT_*_DISPATCHBASE+_ZINT,
+    _FLOAT___CPLX = _FLOAT_*_DISPATCHBASE+_CPLX,
+    _FLOAT___POLY = _FLOAT_*_DISPATCHBASE+_POLY,
+    _FLOAT___IDNT = _FLOAT_*_DISPATCHBASE+_IDNT,
+    _FLOAT___SYMB = _FLOAT_*_DISPATCHBASE+_SYMB,
+    _FLOAT___FLOAT_ = _FLOAT_*_DISPATCHBASE+_FLOAT_,
+    _FLOAT___DOUBLE_ = _FLOAT_*_DISPATCHBASE+_DOUBLE_,
+    _FLOAT___VECT = _FLOAT_*_DISPATCHBASE+_VECT,
+    _FLOAT___MAP = _FLOAT_*_DISPATCHBASE+_MAP,
+    _FLOAT___REAL = _FLOAT_*_DISPATCHBASE+_REAL,
+    _FLOAT___FRAC = _FLOAT_*_DISPATCHBASE+_FRAC,
     _VECT__INT_=  _VECT*_DISPATCHBASE+_INT_,
     _VECT__DOUBLE_ = _VECT*_DISPATCHBASE+_DOUBLE_,
+    _VECT__FLOAT_ = _VECT*_DISPATCHBASE+_FLOAT_,
     _VECT__ZINT = _VECT*_DISPATCHBASE+_ZINT,
     _VECT__CPLX = _VECT*_DISPATCHBASE+_CPLX,
     _VECT__POLY = _VECT*_DISPATCHBASE+_POLY,
@@ -130,12 +164,31 @@ namespace giac {
     _VECT__EXT = _VECT*_DISPATCHBASE+_EXT,
     _VECT__FRAC = _VECT*_DISPATCHBASE+_FRAC,
     _VECT__REAL = _VECT*_DISPATCHBASE+_REAL,
+    _VECT__MAP = _VECT*_DISPATCHBASE+_MAP,
+    _MAP__INT_=  _MAP*_DISPATCHBASE+_INT_,
+    _MAP__DOUBLE_ = _MAP*_DISPATCHBASE+_DOUBLE_,
+    _MAP__FLOAT_ = _MAP*_DISPATCHBASE+_FLOAT_,
+    _MAP__ZINT = _MAP*_DISPATCHBASE+_ZINT,
+    _MAP__CPLX = _MAP*_DISPATCHBASE+_CPLX,
+    _MAP__POLY = _MAP*_DISPATCHBASE+_POLY,
+    _MAP__IDNT = _MAP*_DISPATCHBASE+_IDNT,
+    _MAP__SYMB = _MAP*_DISPATCHBASE+_SYMB,
+    _MAP__VECT = _MAP*_DISPATCHBASE+_VECT,
+    _MAP__MAP = _MAP*_DISPATCHBASE+_MAP,
+    _MAP__EXT = _MAP*_DISPATCHBASE+_EXT,
+    _MAP__FRAC = _MAP*_DISPATCHBASE+_FRAC,
+    _MAP__REAL = _MAP*_DISPATCHBASE+_REAL,
     _FRAC__VECT = _FRAC*_DISPATCHBASE+_VECT,
+    _FRAC__MAP = _FRAC*_DISPATCHBASE+_MAP,
     _FRAC__FRAC = _FRAC*_DISPATCHBASE+_FRAC,
+    _FRAC__FLOAT_ = _FRAC*_DISPATCHBASE+_FLOAT_,
+    _FRAC__DOUBLE_ = _FRAC*_DISPATCHBASE+_DOUBLE_,
     _FRAC__INT_=  _FRAC*_DISPATCHBASE+_INT_,
+    _FRAC__REAL=  _FRAC*_DISPATCHBASE+_REAL,
     _SPOL1__SPOL1 = _SPOL1*_DISPATCHBASE+_SPOL1,
     _EXT__EXT = _EXT*_DISPATCHBASE+_EXT,
     _EXT__VECT = _EXT*_DISPATCHBASE+_VECT,
+    _EXT__MAP = _EXT*_DISPATCHBASE+_MAP,
     _EXT__INT_=  _EXT*_DISPATCHBASE+_INT_,
     _EXT__POLY=  _EXT*_DISPATCHBASE+_POLY,
     _STRNG__STRNG = _STRNG*_DISPATCHBASE+_STRNG,
@@ -144,17 +197,23 @@ namespace giac {
     _ZINT__MOD = _ZINT*_DISPATCHBASE+_MOD,
     _MOD__ZINT = _MOD*_DISPATCHBASE+_ZINT,
     _MOD__VECT = _MOD*_DISPATCHBASE+_VECT,
+    _MOD__MAP = _MOD*_DISPATCHBASE+_MAP,
     _VECT__MOD = _VECT*_DISPATCHBASE+_MOD,
+    _MAP__MOD = _MAP*_DISPATCHBASE+_MOD,
     _MOD__POLY = _MOD*_DISPATCHBASE+_POLY,
     _POLY__MOD = _POLY*_DISPATCHBASE+_MOD,
     _INT___MOD=  _INT_*_DISPATCHBASE+_MOD,
     _MOD__INT_=  _MOD*_DISPATCHBASE+_INT_,
     _REAL__CPLX = _REAL*_DISPATCHBASE+_CPLX,
+    _REAL__ZINT = _REAL*_DISPATCHBASE+_ZINT,
     _REAL__REAL = _REAL*_DISPATCHBASE+_REAL,
     _REAL__INT_ = _REAL*_DISPATCHBASE+_INT_,
     _REAL__DOUBLE_ = _REAL*_DISPATCHBASE+_DOUBLE_,
+    _REAL__FLOAT_ = _REAL*_DISPATCHBASE+_FLOAT_,
     _REAL__POLY = _REAL*_DISPATCHBASE+_POLY,
     _REAL__VECT = _REAL*_DISPATCHBASE+_VECT,
+    _REAL__MAP = _REAL*_DISPATCHBASE+_MAP,
+    _REAL__FRAC = _REAL*_DISPATCHBASE+_FRAC,
     _USER__USER=  _USER*_DISPATCHBASE+_USER,
     _USER__INT_=  _USER*_DISPATCHBASE+_INT_,
     _USER__POLY=  _USER*_DISPATCHBASE+_POLY
@@ -184,13 +243,24 @@ namespace giac {
     _SORTED__VECT=19,
     _POINT__VECT=20,
     _POLYEDRE__VECT=21,
-    _RGBA__VECT=22
+    _RGBA__VECT=22,
+    _LIST__VECT=23,
+    _LOGO__VECT=24,
+    _GGB__VECT=25,
+    _INTERVAL__VECT=26,
+    _GGBVECT=27,
+    _PRINT__VECT=28,
+    _TUPLE__VECT=29,
   } ;
 
   enum symb_subtypes {
     _GLOBAL__EVAL =-1,
-    _SPREAD__SYMB =314 // do not use this value elsewhere
+    _SPREAD__SYMB =123 // do not use this value elsewhere
   } ;
+
+  enum map_subtypes {
+    _SPARSE_MATRIX=2,
+  };
 
   enum point_styles {
     _STYLE_DOT=0,
@@ -300,7 +370,10 @@ namespace giac {
     _GL_ROTATION_AXIS=100,
     _GL_X_AXIS_COLOR=101,
     _GL_Y_AXIS_COLOR=102,
-    _GL_Z_AXIS_COLOR=103
+    _GL_Z_AXIS_COLOR=103,
+    _GL_LOGX=104,
+    _GL_LOGY=105,
+    _GL_LOGZ=106,
   };
 
   enum solver_methods {
@@ -330,15 +403,35 @@ namespace giac {
     _SIMPSON=23,
     _UNFACTORED=24,
     _FADEEV=25,
-    _BAREISS=26
+    _BAREISS=26,
+    _ROMBERGT=27,
+    _ROMBERGM=28,
+    _GAUSS15=29,
   };
 
   enum groebner_switches {
     _WITH_COCOA=0,
     _WITH_F5=1,
     _TDEG_ORDER=2,
-    _PLEX_ORDER=3,
-    _REVLEX_ORDER=4
+    _PLEX_ORDER=6,
+    _REVLEX_ORDER=4,
+    _MODULAR_CHECK=5,
+    _3VAR_ORDER=3,
+    _7VAR_ORDER=7, // GROEBNER_VARS==15 : double revlex 7 params at end, 7 variables
+    _11VAR_ORDER=11, // GROEBNER_VARS==15 : 3 params at end, 11 variables
+    // use negative values for RUR
+    _16VAR_ORDER=16, // 16 variables to eliminate
+    _32VAR_ORDER=32, // 32 variables to eliminate
+    _48VAR_ORDER=48, // 48 variables to eliminate // not implemented currently
+    _64VAR_ORDER=64, // 64 variables to eliminate
+    _RUR_REVLEX=-4,
+    _RUR_3VAR=-3,
+    _RUR_7VAR=-7,
+    _RUR_11VAR=-11,
+    _RUR_16VAR=-16,
+    _RUR_32VAR=-32,
+    _RUR_48VAR=-48,
+    _RUR_64VAR=-64,
   };
 
   enum int_subtypes {
@@ -364,18 +457,28 @@ namespace giac {
     _FL_WIDGET_POINTER=1,
     _FL_IMAGE_POINTER=2,
     _CONTEXT_POINTER=3,
-    _THREAD_POINTER=4
+    _THREAD_POINTER=4,
+    _VARFUNCDEF_POINTER=5,
+    _APPLET_POINTER=6
   };
 
   enum color_values {
+#ifdef GIAC_HAS_STO_38
+    _WHITE=0,
+#else
     _BLACK=0,
+#endif
     _RED=1,
     _GREEN=2,
     _YELLOW=3,
     _BLUE=4,
     _MAGENTA=5,
     _CYAN=6,
+#ifdef GIAC_HAS_STO_38
+    _BLACK=7,
+#else
     _WHITE=7,
+#endif
     _POINT_LOSANGE= 1 << 25,
     _POINT_PLUS = 1 << 26,
     _POINT_INVISIBLE = 1 << 27,
@@ -411,6 +514,9 @@ namespace giac {
     _POINT_WIDTH_6 = 5 << 19,
     _POINT_WIDTH_7 = 6 << 19,
     _POINT_WIDTH_8 = 7 << 19,
+#ifdef BESTA_OS
+#pragma diag_suppress 61
+#endif
     _HIDDEN_NAME = 1 << 31
   };
 
@@ -440,6 +546,49 @@ namespace giac {
     _POSTFIX_OPERATOR=2,
     _BINARY_OPERATOR=3,
     _NARY_OPERATOR=4
+  };
+
+  enum is_num_mask {
+    num_mask_withint=1,
+    num_mask_withfrac=2,
+  };
+
+  enum step_special {
+    step_nothing_special=0,
+    step_ratfrac=1,
+    step_cyclotomic=2,
+    step_nthroot=3,
+    step_linearizable=4,
+    step_triglinearizable=5,
+    step_polyexp=6,
+    step_ratfracexp=7,
+    step_backsubst=8,
+    step_ratfractrig=9,
+    step_ratfracpow=10,
+    step_ratfracsqrfree=11,
+    step_ratfrachermite=12,
+    step_ratfracfinal=13,
+    step_ratfracchgvar=14,
+    step_linear=15,
+    step_funclinear=16,
+    step_fuuprime=17,
+    step_bypart=18,
+    step_bypart1=19,
+    step_risch=20,
+    step_rrefexchange=21,
+    step_rrefpivot=22,
+    step_rrefpivot0=23,
+    step_rrefend=24,
+    step_extrema1=25,
+    step_extrema2=26,
+    step_extrema3=27,
+    step_extrema4=28,
+    step_extrema5=29,
+    step_extrema6=30,
+    step_extrema7=31,
+    step_extrema8=32,
+    step_integrate_header=33,
+    step_derive_header=34,
   };
 
 #ifndef NO_NAMESPACE_GIAC

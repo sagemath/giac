@@ -15,13 +15,7 @@ dragong(l/2);
 tourne_droite(90);
 dragond(l/2);
 fsi;
-}
-\end{verbatim}
-Ou encore en utilisant une seule proc\'edure {\tt dragon2} mais avec un 
-param\`etre suppl\'ementaire {\tt s} (si {\tt s=1} on a un dragon gauche et 
-si {\tt s=-1} on a un dragon droit).\\
-On tape :
-\begin{verbatim}
+};
 dragon2(l,s):={
 si (l<10) alors
 avance(l);

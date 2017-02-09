@@ -4,4 +4,4 @@ xcas
 	can_open_multiple_files=true
 	expects_uris=false
 	requires_terminal=false
-	mime_types=application/xcas;
+	mime_types=application/x-xcas;

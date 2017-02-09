@@ -14,17 +14,22 @@
 //   GNU General Public License for more details.
 
 //   You should have received a copy of the GNU General Public License
-//   along with CoCoA; if not, write to the Free Software
-//   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//   along with CoCoA; if not, see <http://www.gnu.org/licenses/>.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
+#include "first.h"
+#ifdef USE_GMP_REPLACEMENTS
+#undef HAVE_LIBCOCOA
+#endif
 #ifdef HAVE_LIBCOCOA
 #include "TmpFGLM.H"
 #include "TmpLESystemSolver.H"
 #include "CoCoA/DenseMatrix.H"
 #include "CoCoA/symbol.H"
 #include "CoCoA/QBGenerator.H"
-#include "CoCoA/RingDistrMPoly.H"
+#include "CoCoA/RingDistrMPolyInlPP.H"
 #include "CoCoA/RingHom.H"
 #include "CoCoA/SparsePolyRing.H"
 
@@ -170,8 +175,8 @@ namespace CoCoADortmund
       if (RemainderMightBeIndependent)
       {
         // Create a system of linear equations from matrix map
-        matrix M = NewDenseMatrix(K, MatrixMap.size(), NumCols),
-               b = NewDenseMatrix(K, MatrixMap.size(), 1);
+        matrix M = NewDenseMat(K, MatrixMap.size(), NumCols),
+               b = NewDenseMat(K, MatrixMap.size(), 1);
         size_t j = 0; // Current row
 
         for (map<PPMonoidElem, struct MatrixMapEntry>::iterator entry = MatrixMap.begin(); entry != MatrixMap.end(); ++entry, ++j)
@@ -188,7 +193,7 @@ namespace CoCoADortmund
         }
 
         // Check if M*x = b has a solution
-        matrix x = NewDenseMatrix(K, NumCols, 1);
+        matrix x = NewDenseMat(K, NumCols, 1);
         if (LESystemSolver(x, M, b))
         {
           // Compute new Groebner Basis polynomial

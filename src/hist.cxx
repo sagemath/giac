@@ -5,12 +5,13 @@
 #ifdef FL_DEVICE
 #include <FL/Fl_Printer.H>
 #endif
-/* */ namespace xcas { extern int printer_format; extern bool printer_landscape; void widget_ps_print(Fl_Widget * widget,const std::string & fname,bool eps,int pngpdf,bool preview); void widget_print(Fl_Widget * widget);}
+/* */ namespace xcas { extern int printer_format; extern bool printer_landscape; void widget_ps_print(Fl_Widget * widget,const std::string & fname,bool eps,int pngpdf,bool preview,bool,bool ); void widget_print(Fl_Widget * widget);}
 #ifdef HAVE_MALLOC_H
 #include <malloc.h>
 #endif
 static char ** xcas_argv; 
-static int xcas_argc,xcas_user_level; 
+static int xcas_argc,xcas_user_level,update_xcas=0; 
+static xcas::objet_bidon mon_objet_bidon; 
 static giac::vecteur rpn_menu; 
 static giac::vecteur rpn_description; 
 static unsigned rpn_menu_page; 
@@ -19,57 +20,57 @@ static giac::vecteur home_menu, rpnn_menu[5];
 
 void Xcas_alt_ctrl_cb(int i) {
   if (!(i & 1)){
-  Xcas_Alpha_Keyboard->hide();
-  Xcas_Scientific_Keyboard->show();
-}
+    Xcas_Alpha_Keyboard->hide();
+    Xcas_Scientific_Keyboard->show();
+  }
 }
 
 Fl_Widget * Xcas_current_session() {
   Fl_Widget * wid=Xcas_Main_Tab->value();
-  if (xcas::History_Fold * hf=dynamic_cast<xcas::History_Fold *>(wid))
-    wid=hf->pack;
-  return wid;
+    if (xcas::History_Fold * hf=dynamic_cast<xcas::History_Fold *>(wid))
+      wid=hf->pack;
+    return wid;
 }
 
 const giac::context * Xcas_get_context() {
   Fl_Widget * wid=Xcas_Main_Tab->value();
-  if (xcas::History_Fold * hf=dynamic_cast<xcas::History_Fold *>(wid))
-    wid=hf->pack;
-  return xcas::get_context(wid);
+    if (xcas::History_Fold * hf=dynamic_cast<xcas::History_Fold *>(wid))
+      wid=hf->pack;
+    return xcas::get_context(wid);
 }
 
 void Xcas_Keyboard_Switch(unsigned u) {
   bool always_show=u&0x8000;
-   bool always_hide=u&0x4000;
-   if (u & 1){
-    if ( always_hide || (!always_show && Xcas_Keyboard_Group->visible()) ) {
-      Xcas_Keyboard_Group->hide(); 
-    } else {
-      Xcas_Keyboard_Group->show(); 
-    }
-   }
-   if (u & 2){
-     if ( always_hide || (!always_show && Xcas_Messages->visible() ) ){
-       Xcas_Messages->hide(); 
-     } else {
-       Xcas_Messages->show(); 
+     bool always_hide=u&0x4000;
+     if (u & 1){
+      if ( always_hide || (!always_show && Xcas_Keyboard_Group->visible()) ) {
+        Xcas_Keyboard_Group->hide(); 
+      } else {
+        Xcas_Keyboard_Group->show(); 
+      }
      }
-   }
-   if (u & 4){
-     if (always_hide || (!always_show && Xcas_Bandeau_Keys->visible() ) ){
-       Xcas_Bandeau_Keys->hide(); 
-     } else {
-       Xcas_Bandeau_Keys->show(); 
+     if (u & 2){
+       if ( always_hide || (!always_show && Xcas_Messages->visible() ) ){
+         Xcas_Messages->hide(); 
+       } else {
+         Xcas_Messages->show(); 
+       }
      }
-   }
-   if (u & 8){
-     if (always_hide || (!always_show &&Xcas_Messages->visible() ) ){
-       Xcas_Messages->hide(); 
-     } else {
-       Xcas_Messages->show(); 
+     if (u & 4){
+       if (always_hide || (!always_show && Xcas_Bandeau_Keys->visible() ) ){
+         Xcas_Bandeau_Keys->hide(); 
+       } else {
+         Xcas_Bandeau_Keys->show(); 
+       }
      }
-   }
-   Xcas_resize_mainwindow();
+     if (u & 8){
+       if (always_hide || (!always_show &&Xcas_Messages->visible() ) ){
+         Xcas_Messages->hide(); 
+       } else {
+         Xcas_Messages->show(); 
+       }
+     }
+     Xcas_resize_mainwindow();
 }
 
 int hist_max(int i,int j) {
@@ -82,766 +83,838 @@ int hist_min(int i,int j) {
 
 bool Xcas_save_all(Fl_Group * wid) {
   int n=wid->children();
-    for (int i=0;i<n;++i){
-      if (xcas::History_Fold * f=dynamic_cast<xcas::History_Fold *>(wid->child(i))){
-	if (f->pack->_modified){
-	  char chaine[25]; // enough even for very large numbers!
-	  sprintf(chaine,"%i",i+1);
-	  std::string name="session "+std::string(chaine)+" ";
-	  if (f->pack->url)
-	    name += *f->pack->url ;
-	  int j=xcas::confirm_close((name+gettext(" has changed. Save?")).c_str());
-	  if (j==0)
-	    return false;
-	  if (j!=2)
-	    f->pack->save(name.c_str());
-	  else
-	    f->pack->clear_modified();
-	  f->autosave_rm();
-	}
-      } // end if dynamic...
-    } // end for
-    return true;
+      for (int i=0;i<n;++i){
+        if (xcas::History_Fold * f=dynamic_cast<xcas::History_Fold *>(wid->child(i))){
+  	if (f->pack->_modified){
+  	  char chaine[25]; // enough even for very large numbers!
+  	  sprintf(chaine,"%i",i+1);
+  	  std::string name="session "+std::string(chaine)+" ";
+  	  if (f->pack->url)
+  	    name += *f->pack->url ;
+  	  int j=xcas::confirm_close((name+gettext(" has changed. Save?")).c_str());
+  	  if (j==0)
+  	    return false;
+  	  if (j!=2)
+  	    f->pack->save(name.c_str());
+  	  else
+  	    f->pack->clear_modified();
+  	  f->autosave_rm();
+  	}
+        } // end if dynamic...
+      } // end for
+      return true;
 }
 
 void latex_save_DispG(const char * filename) {
   double xunit=giac::horiz_latex/(Xcas_DispG_->window_xmax-Xcas_DispG_->window_xmin);
-  double yunit=giac::vert_latex/(Xcas_DispG_->window_ymax-Xcas_DispG_->window_ymin);
-  graph2tex(filename,Xcas_DispG_->plot_instructions,Xcas_DispG_->window_xmin,Xcas_DispG_->window_xmax,Xcas_DispG_->window_ymin,Xcas_DispG_->window_ymax,xunit,yunit,false,giac::context0);
+    double yunit=giac::vert_latex/(Xcas_DispG_->window_ymax-Xcas_DispG_->window_ymin);
+    graph2tex(filename,Xcas_DispG_->plot_instructions,Xcas_DispG_->window_xmin,Xcas_DispG_->window_xmax,Xcas_DispG_->window_ymin,Xcas_DispG_->window_ymax,xunit,yunit,false,giac::context0);
 }
 
 void a_propos() {
-  std::string s("xcas "); s+=VERSION; s+=" (c) 2000-8, Bernard Parisse, Renee De Graeve\n";
-  s += "http://www-fourier.ujf-grenoble.fr/~parisse/giac.html, ftp://ftp-fourier.ujf-grenoble.fr/xcas\n";
-  s += "If you like xcas, please link your webpage to the above link to help other find it\n";
-  s += "Software licensed under the GPL, General Public License version 3.0 or later\nSee the file COPYING in this package for more details\nOr browse http://www.gnu.org\n";
-  s += "French documentation (c) Renee de Graeve\n";
-  s += "This documentation is freely redistribuable for non commercial purpose\n";
-  s += "Math ML support, xcas online: Jean-Pierre Branchard\n";
-  s += "Java interface: Loic Le Coq\n";
-  s += "OpenOffice interface: Christophe Devalland, Serge Moutou\n";
-  s += "Tutorial (dxcas) with B. Ycart\n";
-  s += "Spanish localization, J. Manrique Lopez\n";
-  s += "Debian package: Carlos Enrique Carleos Artime\n";
-  s += "Mac OS X port thanks to Jean-Yves Avenard and IREM Grenoble\n";
-  s += "Tablor by Guillaume Connan, Pgiac by Jean-Michel Sarlat\n";
-  s += "FreeBSD port and agreg tests by Frederic Han\n";
-  s += "Windows port suggestions and tests by Mike Ady\n";
-  s += "Xcas early testers: Christiane Serret (lycée de Crest),\nMichèle Gandit (lycée international de Grenoble)\nStephane Lejoly, Jean-Joel Bataille, Jean-Eric Visca, Thierry Xuereb\nPaul Magnien, Denis Le Fur, Phil Pham\nSébastien Celles, Gérard Vinel, Robert Rolland, Robert Sétif\nJuan Antonio Martinez Rojas, Nicolas Rosillo (Spain)\n";
-  s += "Francois Maltey (Mupacs)\nFrederic Faure, Emilien Kia, Andreas Thillosen (giac)\n";
-  s += "Francois Boisson (grace a lui xcas est utilisable a l'agregation de maths)\n";
-  s += "Uses GMP, (c) T. Granlund & al.\n";
-#ifdef HAVE_LIBMPFR
-  s += "Longfloat support by MPFR, G. Hanrot, P. Zimmermann, V. Lefevre & al. \n";
-#endif //
-#ifdef HAVE_LIBCOCOA
-  s += "Groebner Basis F5 code by CoCoA, J. Abbott & al. \n";
-#endif
-  s += "Interface using FLTK (c) Bill Spitzak et al\n";
-  s += "FLVW code (c)Larry Charlton and others\n";
-  s += "OpenGL / Mesa (c) 1999-2005  Brian Paul\n";
-#ifdef HAVE_LIBPARI
-  s += "Contains PARI code (c) Henri Cohen & al.\n";
-#endif //
-#ifdef HAVE_LIBGSL
-  s += "Contains GSL code (c) Mark Galassi, James Theiler & al\n";
-#endif //
-#ifdef HAVE_LIBNTL
-  s += "Contains NTL code (c) Victor Shoup\n";
-#endif //
-  s += "Postscript output 2-d inspired by eukleides (c) Christian Obrecht\n";
-  s += "3-d exports from gl2ps, (c) 1999-2006 Christophe Geuzaine\n";
-  s += "Implicitplot3d code derived from Paul Bourke and Cory Gene Bloyd\n";
-  Xcas_parse_error_output->value(s.c_str());
-  Fl::focus(Xcas_parse_error_output);
+  std::string s("xcas "); s+=VERSION; s+=" (c) 2000-14, Bernard Parisse, Renee De Graeve\n";
+    s += "http://www-fourier.ujf-grenoble.fr/~parisse/giac.html\n";
+    s += "If you like Xcas, please link your webpage to the above link to help other find it\n";
+    s += "Software licensed under the GPL, General Public License version 3.0 or later\nSee the file COPYING in this package for more details\nOr browse http://www.gnu.org\n";
+    s += "French documentation (c) Renee de Graeve\n";
+    s += "This documentation is freely redistribuable for non commercial purpose\n";
+    s += "Math ML support, Xcas online: Jean-Pierre Branchard\n";
+    s += "OpenOffice interface: Christophe Devalland, Serge Moutou\n";
+    s += "Qcas interface: Loic Le Coq, Frederic Han\n";
+    s += "Androcas interface: Thomas Luka\n";
+    s += "SmartCAS interface: Nicolas Pujol\n";
+    s += "Tutorial (dxcas) with B. Ycart\n";
+    s += "Greek localization, Alkiviadis Akritas, Eugenia Kelepesi-Akritas, George Nasopoulos, Nikos Larisis\n";
+    s += "Spanish localization, Xavier Vidaux, J. Manrique Lopez\n";
+    s += "Debian package: Carlos Enrique Carleos Artime\n";
+    s += "Mac OS X port thanks to Jean-Yves Avenard and IREM Grenoble\n";
+    s += "Tablor by Guillaume Connan, Pgiac by Jean-Michel Sarlat\n";
+    s += "FreeBSD port, sage interface and agreg tests by Frederic Han\n";
+    s += "Windows port suggestions and tests by Mike Ady\n";
+    s += "Thanks to the geogebra team, especially Zoltán Kovács, Michael Borcherds, Markus Hohenwater, Zbyněk Konečný\n";
+    s += "Xcas early testers: Christiane Serret (lycée de Crest),\nMichèle Gandit (lycée international de Grenoble)\nStephane Lejoly, Jean-Joel Bataille, Jean-Eric Visca, Thierry Xuereb\nPaul Magnien, Denis Le Fur, Phil Pham\nSébastien Celles, Gérard Vinel, Robert Rolland, Robert Sétif\nJuan Antonio Martinez Rojas, Nicolas Rosillo (Spain)\n";
+    s += "Francois Maltey (Mupacs)\nFrederic Faure, Emilien Kia, Andreas Thillosen (giac)\n";
+    s += "Francois Boisson (grace a lui xcas est utilisable a l'agregation de maths)\n";
+    s += "Luc Briel, Georges Dubouloz, Emmanuel Gaunard, Laurent Hofer, Yvan Duron, Martin Deraux (bugs, suggestions)...\n";
+    s += "Uses GMP, (c) T. Granlund & al.\n";
+  #ifdef HAVE_LIBMPFR
+    s += "Longfloat support by MPFR, Guillaume Hanrot, Vincent Lefèvre, Patrick Pélissier, Philippe Théveny and Paul Zimmermann \n";
+  #endif //
+  #ifdef HAVE_LIBMPFI
+    s += "Arithmetic interval support by MPFI, Fabrice Rouillier, Nathalie Revol, Sylvain Chevillard, Hong Diep Nguyen, Christoph Lauter and Philippe Théveny \n";
+  #endif //
+  #ifdef HAVE_LIBCOCOA
+    s += "Alternative Groebner Basis code by CoCoA, J. Abbott & al. \n";
+  #endif
+    s += "Interface using FLTK (c) Bill Spitzak et al\n";
+    s += "FLVW code (c)Larry Charlton and others\n";
+    s += "OpenGL / Mesa (c) 1999-2005  Brian Paul\n";
+  #ifdef HAVE_LIBPARI
+    s += "Contains PARI code (c) Henri Cohen & al.\n";
+  #endif //
+  #ifdef HAVE_LIBLAPACK
+    s += "Contains LAPACK code (c) see http://www.netlib.org/lapack/\n";
+    s += "Might also contain ATLAS code (c) see http://math-atlas.sourceforge.net/\n";
+  #endif 
+  #ifdef HAVE_LIBGSL
+    s += "Contains GSL code (c) Mark Galassi, James Theiler & al\n";
+  #endif //
+  #ifdef HAVE_LIBNTL
+    s += "Contains NTL code (c) Victor Shoup\n";
+  #endif //
+    s += "Postscript output 2-d inspired by eukleides (c) Christian Obrecht\n";
+    s += "3-d exports from gl2ps, (c) 1999-2006 Christophe Geuzaine\n";
+    s += "Implicitplot3d code derived from Paul Bourke and Cory Gene Bloyd\n";
+    s += "TinyMT code from Mutsuo Saito and Makoto Matsumoto\n";
+    Xcas_parse_error_output->value(s.c_str());
+    Fl::focus(Xcas_parse_error_output);
 }
 
 void rpn_button(xcas::No_Focus_Button * wid,int i) {
   unsigned si=rpn_menu_page*6+i;
-  giac::gen e;
-  const giac::context * contextptr = xcas::get_context(Fl::focus());
-  if (rpn_menu.size()>si){
-    e=rpn_menu[si];
-    if ( (e.type==giac::_VECT) && (e._VECTptr->size()==2))
-      e= e._VECTptr->back();
-  }
-  else 
-    return;
-  if (e.type==giac::_VECT){
-    giac::vecteur tmp(1,giac::string2gen('"'+std::string("BACK")+'"'));
-    if ((rpn_menu.back().type==giac::_VECT) && (rpn_menu.back()._VECTptr->front().type==giac::_STRNG) && (*rpn_menu.back()._VECTptr->front()._STRNGptr==std::string("BACK")) )
-      rpn_menu.pop_back();
-    tmp.push_back(rpn_menu);
-    rpn_menu=*e._VECTptr;
-    rpn_menu.push_back(tmp);
-    show_rpn_menu(0);
-    return;
-  }
-  try {
-    e=giac::gen(e.print(),contextptr);
-  }
-  catch (std::runtime_error & err) 
-  { }
-  xcas::Equation * eqwptr=dynamic_cast<xcas::Equation *> (Fl::focus());
-  xcas::History_Pack * hp=get_history_pack(eqwptr);
-  const giac::context * cptr=hp?hp->contextptr:0;
-  if (eqwptr && e.is_symb_of_sommet(giac::at_program) ){
-     make_thread(giac::symbolic(giac::at_of,makevecteur(e,eqwptr->get_selection())),eval_level(cptr),xcas::Equation_eval_callback,eqwptr,cptr);
-     return;
-  }
-  if (e.type==giac::_FUNC){
-    xcas::help_output(e._FUNCptr->ptr->s,giac::language(contextptr));
-    if (eqwptr){
-      eqwptr->parse_desactivate();
-      if (eqwptr->output_equation){
-        eqwptr->eval_function(e);
-      }
-      else 
-        eqwptr->replace_selection(giac::symbolic(*e._FUNCptr,eqwptr->get_selection()));
+    giac::gen e;
+    if (!(xcas::Xcas_input_focus)) return;
+    const giac::context * contextptr = xcas::get_context(xcas::Xcas_input_focus);
+    if (rpn_menu.size()>si){
+      e=rpn_menu[si];
+      if ( (e.type==giac::_VECT) && (e._VECTptr->size()==2))
+        e= e._VECTptr->back();
+    }
+    else 
+      return;
+    if (e.type==giac::_VECT){
+      giac::vecteur tmp(1,giac::string2gen('"'+std::string("BACK")+'"'));
+      if ((rpn_menu.back().type==giac::_VECT) && (rpn_menu.back()._VECTptr->front().type==giac::_STRNG) && (*rpn_menu.back()._VECTptr->front()._STRNGptr==std::string("BACK")) )
+        rpn_menu.pop_back();
+      tmp.push_back(rpn_menu);
+      rpn_menu=*e._VECTptr;
+      rpn_menu.push_back(tmp);
+      show_rpn_menu(0);
       return;
     }
-    if (e.subtype)
-      xcas::in_Xcas_input_1arg(Fl::focus(),e._FUNCptr->ptr->s.c_str(),false);
-    else
-      xcas::in_Xcas_input_1arg(Fl::focus(),(e._FUNCptr->ptr->s+" ").c_str(),false);
-    return;
-  } // end e.type==FUNC
-  std::string s=e.print();
-  if (!s.empty())
-    xcas::in_Xcas_input_char(Fl::focus(),s.c_str(),s[0]);
+    try {
+      e=giac::gen(e.print(),contextptr);
+    }
+    catch (std::runtime_error & err) 
+    { }
+    xcas::Equation * eqwptr=dynamic_cast<xcas::Equation *> (xcas::Xcas_input_focus);
+    xcas::History_Pack * hp=get_history_pack(eqwptr);
+    const giac::context * cptr=hp?hp->contextptr:0;
+    if (eqwptr && e.is_symb_of_sommet(giac::at_program) ){
+       make_thread(giac::symbolic(giac::at_of,makevecteur(e,eqwptr->get_selection())),eval_level(cptr),xcas::Equation_eval_callback,eqwptr,cptr);
+       return;
+    }
+    if (e.type==giac::_FUNC){
+      xcas::help_output(e._FUNCptr->ptr()->s,giac::language(contextptr));
+      if (eqwptr){
+        eqwptr->parse_desactivate();
+        if (eqwptr->output_equation){
+          eqwptr->eval_function(e);
+        }
+        else 
+          eqwptr->replace_selection(giac::symbolic(*e._FUNCptr,eqwptr->get_selection()));
+        return;
+      }
+      if (e.subtype)
+        xcas::in_Xcas_input_1arg(xcas::Xcas_input_focus,e._FUNCptr->ptr()->s,false);
+      else
+        xcas::in_Xcas_input_1arg(xcas::Xcas_input_focus,(e._FUNCptr->ptr()->s+std::string(" ")).c_str(),false);
+      return;
+    } // end e.type==FUNC
+    std::string s=e.print();
+    if (!s.empty())
+      xcas::in_Xcas_input_char(xcas::Xcas_input_focus,s.c_str(),s[0]);
 }
 
 void show_rpn_menu(unsigned i) {
   rpn_menu_page=i;
-  unsigned j=i*6;
-  fl_font(Xcas_F1_Key->labelfont(),Xcas_F1_Key->labelsize());
-  for (int k=0;k<6;k++){
-    std::string s;
-    rpn_menu_is_directory[k]=false;
-    if (rpn_menu.size()>j+k){
-      giac::gen e=rpn_menu[j+k];
-      if ( (e.type==giac::_VECT) && (e._VECTptr->size()==2)){
-        e=e._VECTptr->front();
-        rpn_menu_is_directory[k]=true;
-        s=e.print();
-        if (s[0]=='"')
-          s=s.substr(1,s.size()-2);
-      }
-      else {
-        if (e.type==giac::_FUNC)
-          s=e._FUNCptr->ptr->s;
-        else
-          s=e.print();
-        if (e.type==giac::_VECT)
+    unsigned j=i*6;
+    fl_font(Xcas_F1_Key->labelfont(),Xcas_F1_Key->labelsize());
+    for (int k=0;k<6;k++){
+      std::string s;
+      rpn_menu_is_directory[k]=false;
+      if (rpn_menu.size()>j+k){
+        giac::gen e=rpn_menu[j+k];
+        if ( (e.type==giac::_VECT) && (e._VECTptr->size()==2)){
+          e=e._VECTptr->front();
           rpn_menu_is_directory[k]=true;
+          s=e.print();
+          if (s[0]=='"')
+            s=s.substr(1,s.size()-2);
+        }
+        else {
+          if (e.type==giac::_FUNC)
+            s=e._FUNCptr->ptr()->s;
+          else
+            s=e.print();
+          if (e.type==giac::_VECT)
+            rpn_menu_is_directory[k]=true;
+        }
       }
+      else
+        s="";
+      while(fl_width(s.c_str())>Xcas_F1_Key->w())
+        s=s.substr(0,s.size()-1);
+      rpn_menu_string[k]=s;
     }
-    else
-      s="";
-    while(fl_width(s.c_str())>Xcas_F1_Key->w())
-      s=s.substr(0,s.size()-1);
-    rpn_menu_string[k]=s;
-  }
-  Xcas_F1_Key->label(rpn_menu_string[0].c_str());
-  Xcas_F1_Key->labelcolor(rpn_menu_is_directory[0]);    
-  Xcas_F2_Key->label(rpn_menu_string[1].c_str());
-  Xcas_F2_Key->labelcolor(rpn_menu_is_directory[1]);    
-  Xcas_F3_Key->label(rpn_menu_string[2].c_str());
-  Xcas_F3_Key->labelcolor(rpn_menu_is_directory[2]);    
-  Xcas_F4_Key->label(rpn_menu_string[3].c_str());
-  Xcas_F4_Key->labelcolor(rpn_menu_is_directory[3]);    
-  Xcas_F5_Key->label(rpn_menu_string[4].c_str());
-  Xcas_F5_Key->labelcolor(rpn_menu_is_directory[4]);    
-  Xcas_F6_Key->label(rpn_menu_string[5].c_str());
-  Xcas_F6_Key->labelcolor(rpn_menu_is_directory[5]);    
-  Xcas_F1_Key->color(xcas::Xcas_background_color);    
-  Xcas_F2_Key->color(xcas::Xcas_background_color);    
-  Xcas_F3_Key->color(xcas::Xcas_background_color);    
-  Xcas_F4_Key->color(xcas::Xcas_background_color);    
-  Xcas_F5_Key->color(xcas::Xcas_background_color);    
-  Xcas_F6_Key->color(xcas::Xcas_background_color);    
-  Xcas_VAR_Key->color(xcas::Xcas_background_color);   
-  Xcas_Home_button->color(xcas::Xcas_background_color);    
-  Xcas_CST_Key->color(xcas::Xcas_background_color);    
-  Xcas_PREV_Key->color(xcas::Xcas_background_color);    
-  Xcas_NXT_Key->color(xcas::Xcas_background_color);    
-  Xcas_Bandeau_Keys->redraw();
+    Xcas_F1_Key->label(rpn_menu_string[0].c_str());
+    Xcas_F1_Key->labelcolor(rpn_menu_is_directory[0]);    
+    Xcas_F2_Key->label(rpn_menu_string[1].c_str());
+    Xcas_F2_Key->labelcolor(rpn_menu_is_directory[1]);    
+    Xcas_F3_Key->label(rpn_menu_string[2].c_str());
+    Xcas_F3_Key->labelcolor(rpn_menu_is_directory[2]);    
+    Xcas_F4_Key->label(rpn_menu_string[3].c_str());
+    Xcas_F4_Key->labelcolor(rpn_menu_is_directory[3]);    
+    Xcas_F5_Key->label(rpn_menu_string[4].c_str());
+    Xcas_F5_Key->labelcolor(rpn_menu_is_directory[4]);    
+    Xcas_F6_Key->label(rpn_menu_string[5].c_str());
+    Xcas_F6_Key->labelcolor(rpn_menu_is_directory[5]);    
+    Xcas_F1_Key->color(xcas::Xcas_background_color);    
+    Xcas_F2_Key->color(xcas::Xcas_background_color);    
+    Xcas_F3_Key->color(xcas::Xcas_background_color);    
+    Xcas_F4_Key->color(xcas::Xcas_background_color);    
+    Xcas_F5_Key->color(xcas::Xcas_background_color);    
+    Xcas_F6_Key->color(xcas::Xcas_background_color);    
+    Xcas_VAR_Key->color(xcas::Xcas_background_color);   
+    Xcas_Home_button->color(xcas::Xcas_background_color);    
+    Xcas_CST_Key->color(xcas::Xcas_background_color);    
+    Xcas_PREV_Key->color(xcas::Xcas_background_color);    
+    Xcas_NXT_Key->color(xcas::Xcas_background_color);    
+    Xcas_Bandeau_Keys->redraw();
 }
 
 void Xcas_resize_mainwindow() {
   int h=Xcas_Main_Window_->h();
-    int w_=Xcas_Main_Window_->w(),i=Xcas_Main_Window_->labelsize(),y=i+4;
-    int dy=0;
-    int bs=Xcas_Messages->visible()?4*y:0;
-    int bottom=bs;
-    int kh=4*(i+5); // keyboard size
-    int bh=(i+5); // bandeau size
-    if (Xcas_Keyboard_Group->visible()) dy += kh ;
-    if (Xcas_Bandeau_Keys->visible()) dy += bh;
-    Xcas_main_menu->resize(0,0,w_,y);
-    Xcas_Main_Tab->resize(0,y,w_,h-y-bottom-dy);
-    Xcas_Main_Tab->redraw();
-    Xcas_Keyboard_Group->resize(0,h-bottom-dy,w_,kh);
-    Xcas_Keyboard_Group->redraw();
-    Xcas_Bandeau_Keys->resize(0,h-bottom-bh,w_,bh);
-    Xcas_Bandeau_Keys->redraw();
-    Xcas_Messages->resize(0,h-bottom,w_,bs);
-    Xcas_Messages->redraw();
-    Xcas_Main_Window_->init_sizes();
+      int w_=Xcas_Main_Window_->w(),i=Xcas_Main_Window_->labelsize(),y=i+4;
+      int dy=0;
+      int bs=Xcas_Messages->visible()?4*y:0;
+      int bottom=bs;
+      int kh=4*(i+5); // keyboard size
+      int bh=(i+5); // bandeau size
+      if (Xcas_Keyboard_Group->visible()) dy += kh ;
+      if (Xcas_Bandeau_Keys->visible()) dy += bh;
+      Xcas_main_menu->resize(0,0,w_,y);
+      Xcas_Main_Tab->resize(0,y,w_,h-y-bottom-dy);
+      Xcas_Main_Tab->redraw();
+      Xcas_Keyboard_Group->resize(0,h-bottom-dy,w_,kh);
+      Xcas_Keyboard_Group->redraw();
+      Xcas_Bandeau_Keys->resize(0,h-bottom-bh,w_,bh);
+      Xcas_Bandeau_Keys->redraw();
+      Xcas_Messages->resize(0,h-bottom,w_,bs);
+      Xcas_Messages->redraw();
+      Xcas_Main_Window_->init_sizes();
 }
 
 void Xcas_change_labelsize(int i) {
   xcas::change_group_fontsize(Xcas_Main_Window_,i);
-    Xcas_resize_mainwindow();
-    if (xcas::Xcas_Debug_Window){ 
-      xcas::Xcas_Debug_Window->labelfont(Xcas_Main_Window_->labelfont());
-      xcas::change_group_fontsize(xcas::Xcas_Debug_Window,i);
-    }
-    if (xcas::Xcas_DispG_Window){
-       xcas::Xcas_DispG_Window->labelfont(Xcas_Main_Window_->labelfont());
-       xcas::change_group_fontsize(xcas::Xcas_DispG_Window,i);
-    }
-    if (Xcas_Script_Window){
-       Xcas_Script_Window->labelfont(Xcas_Main_Window_->labelfont());
-       xcas::change_group_fontsize(Xcas_Script_Window,i);
-    }
-    int n=xcas::styletable_n;
-    for (int k=0;k<n;++k)
-      xcas::styletable[k].size=i;
-//Xcas_History_font_output->value(giac::print_INT_(i).c_str());
+      Xcas_resize_mainwindow();
+      if (xcas::Xcas_Debug_Window){ 
+        xcas::Xcas_Debug_Window->labelfont(Xcas_Main_Window_->labelfont());
+        xcas::change_group_fontsize(xcas::Xcas_Debug_Window,i);
+      }
+      if (xcas::Xcas_DispG_Window){
+         xcas::Xcas_DispG_Window->labelfont(Xcas_Main_Window_->labelfont());
+         xcas::change_group_fontsize(xcas::Xcas_DispG_Window,i);
+      }
+      if (Xcas_Script_Window){
+         Xcas_Script_Window->labelfont(Xcas_Main_Window_->labelfont());
+         xcas::change_group_fontsize(Xcas_Script_Window,i);
+      }
+      Fl_Menu_Bar * menu = dynamic_cast<Fl_Menu_Bar *>(Xcas_Main_Window_->child(0));
+      if (menu) 
+        menu->labelfont(Xcas_Main_Window_->labelfont());
+      xcas::change_group_fontsize(menu,i);
+  //Xcas_History_font_output->value(giac::print_INT_(i).c_str());
 }
 
-giac::gen Xcas_widget_size(const giac::gen & g) {
+giac::gen Xcas_widget_size(const giac::gen & g,const giac::context * cptr) {
   int f=14,ff=0;
-    int x=Xcas_Main_Window_->x(),y=Xcas_Main_Window_->y(),w=Xcas_Main_Window_->w(),h=Xcas_Main_Window_->h();
-    const giac::context * contextptr=Xcas_get_context();
-    if (g.type==giac::_VECT){
-      giac::vecteur & v=*g._VECTptr;
-      int s=v.size();
-      if (s && v[0].type==giac::_INT_)
-	f=v[0].val;
-      if (s && v[0].type==giac::_DOUBLE_)
-	f=int(v[0]._DOUBLE_val);
-      if (s && v[0].type==giac::_VECT){
-        giac::vecteur & w = *v[0]._VECTptr;
-        int ws=w.size();
-        if (ws && w[0].type==giac::_INT_)
-	 ff=w[0].val;
-        if (ws && w[0].type==giac::_DOUBLE_)
-	 ff=int(w[0]._DOUBLE_val);
-        if (ws>1 && w[1].type==giac::_INT_)
-	 f=w[1].val;
-        if (ws>1 && w[1].type==giac::_DOUBLE_)
-	 f=int(w[1]._DOUBLE_val);
-      }
-      if (s>1 && v[1].type==giac::_INT_)
-	x=v[1].val;
-      if (s>1 && v[1].type==giac::_DOUBLE_)
-	x=int(v[1]._DOUBLE_val);
-      if (s>2 && v[2].type==giac::_INT_)
-	y=v[2].val;
-      if (s>2 && v[2].type==giac::_DOUBLE_)
-	y=int(v[2]._DOUBLE_val);
-      if (s>3 && v[3].type==giac::_INT_)
-	w=v[3].val;
-      if (s>3 && v[3].type==giac::_DOUBLE_)
-	w=int(v[3]._DOUBLE_val);
-      if (s>4 && v[4].type==giac::_INT_)
-	h=v[4].val;
-      if (s>4 && v[4].type==giac::_DOUBLE_)
-	h=int(v[4]._DOUBLE_val);
-      if (s>5 && v[5].type==giac::_INT_) { 
-        int i=v[5].val;
-        if (i%2) Xcas_Keyboard_Group->show(); else Xcas_Keyboard_Group->hide(); 
-        if (i/2) Xcas_Bandeau_Keys->show(); else Xcas_Bandeau_Keys->hide(); 
-      }
-      if (s>6 && v[6].type==giac::_INT_){ // Arg 6 was used for number of windows, now for auto-help
-        Xcas_automatic_help_browser->value(v[6].val % 2);
-        Xcas_automatic_completion_browser->value(v[6].val/2);
-      }
-      if (s>7 && v[7].type==giac::_INT_){ // Arg 7 was used for showing bandeau
-        if (v[7].val) Xcas_Messages->show(); else Xcas_Messages->hide();
-      }
-      if (s>8 && v[8].type==giac::_VECT){ // colors (was pretty print in old xcas)
-        giac::vecteur w=*giac::evalf_double(v[8],1,contextptr)._VECTptr;
-        int ws=w.size();
-        if (ws>=10){
-          xcas::Xcas_input_color=Fl_Color(int(w[0]._DOUBLE_val));
-          xcas::Xcas_input_background_color=Fl_Color(int(w[1]._DOUBLE_val));
-	  xcas::Xcas_comment_color=Fl_Color(int(w[2]._DOUBLE_val));
-	  xcas::Xcas_comment_background_color=Fl_Color(int(w[3]._DOUBLE_val));
-	  xcas::Xcas_log_color=Fl_Color(int(w[4]._DOUBLE_val));
-	  xcas::Xcas_log_background_color=Fl_Color(int(w[5]._DOUBLE_val));
-	  xcas::Xcas_equation_color=Fl_Color(int(w[6]._DOUBLE_val));
-	  xcas::Xcas_equation_background_color=Fl_Color(int(w[7]._DOUBLE_val));
-	  xcas::Xcas_editor_color=Fl_Color(int(w[8]._DOUBLE_val));
-	  xcas::Xcas_editor_background_color=Fl_Color(int(w[9]._DOUBLE_val));
-        }
-        if (ws>=11)
-	  xcas::Xcas_background_color=Fl_Color(int(w[10]._DOUBLE_val));
-        xcas::set_colors(Xcas_Main_Window_);
-      }
-      if (s>9 && v[9].type==giac::_STRNG){
-	std::string browser=*v[9]._STRNGptr;
-	if (browser.size()!=0 && browser!="builtin"){
-#ifdef WIN32 // FIXME, check_file_path under windows
-           setenv("BROWSER",browser.c_str(),1);
-           xcas::use_external_browser=true;
-#else
-          if (!giac::check_file_path(browser))
-            fl_alert(("Error, browser "+browser+" not found").c_str());
-          else {
-           setenv("BROWSER",browser.c_str(),1);
-           xcas::use_external_browser=true;
+      int x=Xcas_Main_Window_->x(),y=Xcas_Main_Window_->y(),w=Xcas_Main_Window_->w(),h=Xcas_Main_Window_->h();
+      const giac::context * contextptr=Xcas_get_context();
+      if (g.type==giac::_VECT){
+        giac::vecteur & v=*g._VECTptr;
+        int s=v.size();
+        if (s && v[0].type==giac::_INT_)
+  	f=v[0].val;
+        if (s && v[0].type==giac::_DOUBLE_)
+  	f=int(v[0]._DOUBLE_val);
+        if (s && v[0].type==giac::_VECT){
+          giac::vecteur & w = *v[0]._VECTptr;
+          int ws=w.size();
+          if (ws && w[0].type==giac::_INT_)
+  	 ff=w[0].val;
+          if (ws && w[0].type==giac::_DOUBLE_)
+  	 ff=int(w[0]._DOUBLE_val);
+          if (ws>1 && w[1].type==giac::_INT_)
+  	 f=w[1].val;
+          if (ws>1 && w[1].type==giac::_DOUBLE_)
+  	 f=int(w[1]._DOUBLE_val);
+          if (ws>2 && w[2].type==giac::_INT_){
+           xcas::Flv_Table_Gen::def_rows=giac::absint(w[2].val);
+           Xcas_default_rows->value(giac::absint(w[2].val));
           }
-#endif
+          if (ws>3 && w[3].type==giac::_INT_){
+           xcas::Flv_Table_Gen::def_cols=giac::absint(w[3].val);
+           Xcas_default_cols->value(giac::absint(w[3].val));
+          }
         }
-        else
-          xcas::use_external_browser=false;
-      }
-      if (s>10 ){ // User level
-	if (v[10].type==giac::_INT_)
-          xcas_user_level=v[10].val;
-	if (v[10].type==giac::_DOUBLE_)
-          xcas_user_level=int(v[10]._DOUBLE_val); 
-        std::string ss;
-        switch(xcas_user_level){
-          case 0: ss=gettext("CAS"); break;
-          case 1: ss=gettext("Program CAS"); break;
-          case 2: ss=gettext("Spreadsheet"); break;
-          case 3: ss=gettext("Geometry"); break;
-          case 8: ss=gettext("Tortue"); break;
+        if (s>1 && v[1].type==giac::_INT_)
+  	x=v[1].val;
+        if (s>1 && v[1].type==giac::_DOUBLE_)
+  	x=int(v[1]._DOUBLE_val);
+        if (s>2 && v[2].type==giac::_INT_)
+  	y=v[2].val;
+        if (s>2 && v[2].type==giac::_DOUBLE_)
+  	y=int(v[2]._DOUBLE_val);
+        if (s>3 && v[3].type==giac::_INT_)
+  	w=v[3].val;
+        if (s>3 && v[3].type==giac::_DOUBLE_)
+  	w=int(v[3]._DOUBLE_val);
+        if (s>4 && v[4].type==giac::_INT_)
+  	h=v[4].val;
+        if (s>4 && v[4].type==giac::_DOUBLE_)
+  	h=int(v[4]._DOUBLE_val);
+        if (s>5 && v[5].type==giac::_INT_) { 
+          int i=v[5].val;
+          if (i%2) Xcas_Keyboard_Group->show(); else Xcas_Keyboard_Group->hide(); 
+          if (i/2) Xcas_Bandeau_Keys->show(); else Xcas_Bandeau_Keys->hide(); 
         }
-        Xcas_level_output->value(gettext(ss.c_str()));
+        if (s>6 && v[6].type==giac::_INT_){ // Arg 6 was used for number of windows, now for auto-help
+          Xcas_automatic_help_browser->value(v[6].val % 2);
+          Xcas_automatic_completion_browser->value( (v[6].val/2) %2);
+          xcas::do_helpon=Xcas_automatic_completion_browser->value();
+          Xcas_tooltip_disabled->value( (v[6].val/4) %2);
+  	Xcas_disable_try_parse_test_i->value(v[6].val/8);
+          Fl_Tooltip::enable(!Xcas_tooltip_disabled->value());
+          giac::try_parse_i(0)=giac::try_parse_i(xcas::get_context(xcas::Xcas_input_focus))=!Xcas_disable_try_parse_test_i->value();
+        }
+        if (s>7 && v[7].type==giac::_INT_){ // Arg 7 was used for showing bandeau
+          if (v[7].val) Xcas_Messages->show(); else Xcas_Messages->hide();
+        }
+        if (s>8 && v[8].type==giac::_VECT){ // colors (was pretty print in old xcas)
+          giac::vecteur w=*giac::evalf_double(v[8],1,contextptr)._VECTptr;
+          int ws=w.size();
+          if (ws>=10){
+            xcas::Xcas_input_color=Fl_Color(int(w[0]._DOUBLE_val));
+            xcas::Xcas_input_background_color=Fl_Color(int(w[1]._DOUBLE_val));
+  	  xcas::Xcas_comment_color=Fl_Color(int(w[2]._DOUBLE_val));
+  	  xcas::Xcas_comment_background_color=Fl_Color(int(w[3]._DOUBLE_val));
+  	  xcas::Xcas_log_color=Fl_Color(int(w[4]._DOUBLE_val));
+  	  xcas::Xcas_log_background_color=Fl_Color(int(w[5]._DOUBLE_val));
+  	  xcas::Xcas_equation_color=Fl_Color(int(w[6]._DOUBLE_val));
+  	  xcas::Xcas_equation_background_color=Fl_Color(int(w[7]._DOUBLE_val));
+  	  xcas::Xcas_editor_color=Fl_Color(int(w[8]._DOUBLE_val));
+  	  xcas::Xcas_editor_background_color=Fl_Color(int(w[9]._DOUBLE_val));
+          }
+          if (ws>=11)
+  	  xcas::Xcas_background_color=Fl_Color(int(w[10]._DOUBLE_val));
+          xcas::set_colors(Xcas_Main_Window_);
+        }
+        xcas::use_external_browser=false;
+        unsetenv("BROWSER");
+        if (s>9 && v[9].type==giac::_STRNG){
+  	std::string browser=*v[9]._STRNGptr;
+  	if (browser.size()!=0 && browser!="builtin"){
+  #ifdef WIN32 // FIXME, check_file_path under windows
+             setenv("BROWSER",browser.c_str(),1);
+             xcas::use_external_browser=true;
+  #else
+            if (!giac::check_file_path(browser))
+              fl_alert("%s",("Error, browser "+browser+" not found").c_str());
+            else {
+             setenv("BROWSER",browser.c_str(),1);
+             xcas::use_external_browser=true;
+            }
+  #endif
+          }
+        }
+        if (s>10 ){ // User level
+  	if (v[10].type==giac::_INT_)
+            xcas_user_level=v[10].val;
+  	if (v[10].type==giac::_DOUBLE_)
+            xcas_user_level=int(v[10]._DOUBLE_val); 
+          std::string ss;
+          switch(xcas_user_level){
+            case 0: ss=gettext("CAS"); break;
+            case 1: ss=gettext("Program CAS"); break;
+            case 2: ss=gettext("Spreadsheet"); break;
+            case 3: ss=gettext("Geometry"); break;
+            case 8: ss=gettext("Turtle"); break;
+          }
+          Xcas_level_output->value(gettext(ss.c_str()));
+        }
+        if (s>11){ 
+          if (v[11].type==giac::_INT_)
+            giac::step_infolevel(v[11].val,contextptr);
+          if (v[11].type==giac::_DOUBLE_)
+            giac::step_infolevel(v[12]._DOUBLE_val,contextptr);
+          if (giac::step_infolevel(contextptr) && xcas::Xcas_DispG_Window) xcas::Xcas_DispG_Window->show();
+        }     
+        if (s>12 && v[12].type==giac::_STRNG){
+  	std::string browser=*v[12]._STRNGptr;
+  	if (browser.size()!=0)
+  	  setenv("GIAC_PREVIEW",browser.c_str(),1);
+        }
+        if (s>13 && v[13].type==giac::_STRNG){
+  	std::string browser=*v[13]._STRNGptr;
+  	if (browser.size()!=0)
+  	  setenv("http_proxy",browser.c_str(),1);
+        }
       }
-      if (s>11){ 
-        if (v[11].type==giac::_INT_)
-          xcas::file_save_context=!v[11].val;
-        if (v[11].type==giac::_DOUBLE_)
-          xcas::file_save_context=!v[12]._DOUBLE_val;
-      }     
-      if (s>12 && v[12].type==giac::_STRNG){
-	std::string browser=*v[12]._STRNGptr;
-	if (browser.size()!=0)
-	  setenv("GIAC_PREVIEW",browser.c_str(),1);
+      else {
+        if (g.type!=giac::_INT_)
+  	return giac::zero;
+        f=g.val;
       }
-    }
-    else {
-      if (g.type!=giac::_INT_)
-	return giac::zero;
-      f=g.val;
-    }
-    f=f>0?f:-f;
-    f=f>8?f:8;
-    f=f>40?40:f;
-    if (ff>=xcas::fonts_available)
-      ff=0;
-    Xcas_Main_Window_->labelfont(ff);
-    Xcas_change_labelsize(f);
-    Xcas_Main_Window_->resize(x,y,w,h);
-    Xcas_resize_mainwindow(); 	
-    return giac::plus_one;
+      f=f>0?f:-f;
+      f=f>8?f:8;
+      f=f>40?40:f;
+      if (ff>=xcas::fonts_available)
+        ff=0;
+      Xcas_Main_Window_->labelfont(ff);
+      Xcas_change_labelsize(f);
+      Xcas_Main_Window_->resize(x,y,w,h);
+      Xcas_resize_mainwindow(); 	
+      return giac::plus_one;
 }
 
 void make_history() {
   Fl_Group * s = Xcas_Main_Tab;
-        Fl_Group::current(0);
-s->handle(FL_FOCUS);
-xcas::History_Fold * w = new xcas::History_Fold(s->x()+2,s->y()+s->labelsize()+4,s->w()-4,s->h()-s->labelsize()-6,1);
-w->end();
-w->pack->contextptr = giac::clone_context(giac::context0);
-w->handle(FL_FOCUS);
-w->pack->handle(FL_FOCUS);
-w->labelsize(s->labelsize());
-w->pack->eval=xcas::Xcas_eval;
-w->pack->_insert=xcas::Xcas_pack_insert;
-w->pack->_select=xcas::Xcas_pack_select;  
-Fl_Group::current(0);
-if (xcas_user_level==8){
-  Fl_Widget * e=new_program(hist_max(w->pack->w()-w->pack->_printlevel_w,1),w->h()/3,w->pack);
-  e->labelsize(w->labelsize());
-  w->pack->add_entry(-1,e);
-  Fl_Widget * l=new_logo(hist_max(w->pack->w()-w->pack->_printlevel_w,1),(w->h())/2,w->pack);
-  l->labelsize(w->labelsize());
-  w->pack->add_entry(0,l);
-}
-if (xcas_user_level==3){
-  Fl_Widget * e=new_figure(hist_max(w->pack->w()-w->pack->_printlevel_w,1),w->pack->h()-2*w->labelsize(),w->pack,false);
-  e->labelsize(w->labelsize());
-  w->pack->add_entry(-1,e);
-  w->add_entry(-1);
-}
-if (xcas_user_level==2){
-  Fl_Widget * e=new_tableur(hist_max(w->pack->w()-w->pack->_printlevel_w,1),w->pack->h()-2*w->labelsize(),w->pack);
-  e->labelsize(w->labelsize());
-  w->pack->add_entry(-1,e);
-  w->add_entry(-1);
-}
-if (xcas_user_level==1){
-  Fl_Widget * e=new_program(hist_max(w->pack->w()-w->pack->_printlevel_w,1),w->pack->h()/2,w->pack);
-  e->labelsize(w->labelsize());
-  w->pack->add_entry(-1,e);
-  w->add_entry(-1);
-}
-if (!w->pack->children()) 
-  w->add_entry(-1);
-w->pack->clear_modified();
-xcas::change_group_fontsize(w,Xcas_Main_Window_->labelsize());
-Xcas_Main_Tab->add(w);
-Xcas_Main_Tab->value(Xcas_Main_Tab->child(Xcas_Main_Tab->children()-1));
-Xcas_resize_mainwindow();
-Xcas_Main_Tab->redraw();
+          Fl_Group::current(0);
+  s->handle(FL_FOCUS);
+  xcas::History_Fold * w = new xcas::History_Fold(s->x()+2,s->y()+s->labelsize()+4,s->w()-4,s->h()-s->labelsize()-6,1);
+  w->end();
+  w->pack->contextptr = giac::clone_context(giac::context0);
+  w->handle(FL_FOCUS);
+  w->pack->handle(FL_FOCUS);
+  w->labelsize(s->labelsize());
+  w->pack->eval=xcas::Xcas_eval;
+  w->pack->_insert=xcas::Xcas_pack_insert;
+  w->pack->_select=xcas::Xcas_pack_select;  
+  Fl_Group::current(0);
+  if (xcas_user_level==8){
+    Fl_Widget * e=new_program(hist_max(w->pack->w()-w->pack->_printlevel_w,1),w->h()/3,w->pack);
+    e->labelsize(w->labelsize());
+    w->pack->add_entry(-1,e);
+    Fl_Widget * l=new_logo(hist_max(w->pack->w()-w->pack->_printlevel_w,1),(w->h())/2,w->pack);
+    l->labelsize(w->labelsize());
+    w->pack->add_entry(0,l);
+  }
+  if (xcas_user_level==3){
+    Fl_Widget * e=new_figure(hist_max(w->pack->w()-w->pack->_printlevel_w,1),w->pack->h()-2*w->labelsize(),w->pack,false);
+    e->labelsize(w->labelsize());
+    w->pack->add_entry(-1,e);
+    w->add_entry(-1);
+  }
+  if (xcas_user_level==2){
+    Fl_Widget * e=new_tableur(hist_max(w->pack->w()-w->pack->_printlevel_w,1),w->pack->h()-2*w->labelsize(),w->pack);
+    e->labelsize(w->labelsize());
+    w->pack->add_entry(-1,e);
+    w->add_entry(-1);
+  }
+  if (xcas_user_level==1){
+    Fl_Widget * e=new_program(hist_max(w->pack->w()-w->pack->_printlevel_w,1),w->pack->h()/2,w->pack);
+    e->labelsize(w->labelsize());
+    w->pack->add_entry(-1,e);
+    w->add_entry(-1);
+  }
+  if (!w->pack->children()) 
+    w->add_entry(-1);
+  w->pack->clear_modified();
+  std::cerr << Xcas_Main_Window_->labelfont() << std::endl;
+  w->labelfont(Xcas_Main_Window_->labelfont());
+  w->pack->labelfont(Xcas_Main_Window_->labelfont());
+  xcas::change_group_fontsize(w,Xcas_Main_Window_->labelsize());
+  Xcas_Main_Tab->add(w);
+  Xcas_Main_Tab->value(Xcas_Main_Tab->child(Xcas_Main_Tab->children()-1));
+  Xcas_resize_mainwindow();
+  Xcas_Main_Tab->redraw();
 }
 
 void load_history(int mws) {
   Fl_Group * s = Xcas_Main_Tab;
-Fl_Group::current(0);
-xcas::History_Fold * w = new xcas::History_Fold(s->x()+2,s->y()+s->labelsize()+4,s->w()-4,s->h()-s->labelsize()-6,1);
-w->end();
-w->pack->contextptr = giac::clone_context(giac::context0);
-w->pack->labelsize(Xcas_Main_Window_->labelsize());
-w->pack->eval=xcas::Xcas_eval;
-w->pack->_insert=xcas::Xcas_pack_insert;
-w->pack->_select=xcas::Xcas_pack_select;  
-if (!w->pack->insert_before(-1,true,mws)){
-  delete w;
-  return;
-}
-w->pack->clear_modified();
-w->pack->focus(0,true);
-xcas::change_group_fontsize(w,w->pack->labelsize());
-Xcas_Main_Tab->add(w);
-Xcas_Main_Tab->value(Xcas_Main_Tab->child(Xcas_Main_Tab->children()-1));
-Xcas_resize_mainwindow();
-Xcas_Main_Tab->redraw();
+  Fl_Group::current(0);
+  xcas::History_Fold * w = new xcas::History_Fold(s->x()+2,s->y()+s->labelsize()+4,s->w()-4,s->h()-s->labelsize()-6,1);
+  w->end();
+  w->pack->contextptr = giac::clone_context(giac::context0);
+  w->pack->labelsize(Xcas_Main_Window_->labelsize());
+  w->pack->eval=xcas::Xcas_eval;
+  w->pack->_insert=xcas::Xcas_pack_insert;
+  w->pack->_select=xcas::Xcas_pack_select;  
+  if (!w->pack->insert_before(-1,true,mws)){
+    delete w;
+    return;
+  }
+  w->pack->clear_modified();
+  w->pack->focus(0,true);
+  std::cerr << Xcas_Main_Window_->labelfont() << std::endl;
+  w->labelfont(Xcas_Main_Window_->labelfont());
+  w->pack->labelfont(Xcas_Main_Window_->labelfont());
+  xcas::add_recent_filename(*w->pack->url,true);
+  xcas::change_group_fontsize(w,w->pack->labelsize());
+  Xcas_Main_Tab->add(w);
+  Xcas_Main_Tab->value(Xcas_Main_Tab->child(Xcas_Main_Tab->children()-1));
+  Xcas_resize_mainwindow();
+  Xcas_Main_Tab->redraw();
 }
 
 void load_filename(const char * filename,bool modified) {
   Fl_Group * s = Xcas_Main_Tab;
-        Fl_Group::current(0);
-        xcas::History_Fold * w = new xcas::History_Fold(s->x()+2,s->y()+s->labelsize()+4,s->w()-4,s->h()-s->labelsize()-6,1);
-        w->end();
-        w->pack->contextptr = giac::clone_context(giac::context0);
-        w->pack->labelsize(s->labelsize());
-        w->pack->eval=xcas::Xcas_eval;
-        w->pack->_insert=xcas::Xcas_pack_insert;
-        w->pack->_select=xcas::Xcas_pack_select;  
-	w->pack->new_url(filename);
-        w->pack->insert_url(filename,-1);
-        w->labelfont(w->pack->labelfont());
-        xcas::change_group_fontsize(w,w->pack->labelsize());
-        if (!modified)
-          w->pack->clear_modified();
-        else {
-          w->autosave(true);  
-          if (w->pack->url){ delete w->pack->url; w->pack->url=0; }
-          w->label("Unnamed");
-        }
-        w->pack->focus(0,true);
-        Xcas_Main_Tab->add(w); 
-        Xcas_Main_Tab->value(Xcas_Main_Tab->child(Xcas_Main_Tab->children()-1));
-        Xcas_resize_mainwindow();
-        s->redraw();
+          xcas::History_Fold * w=xcas::load_history_fold(s->x()+2,s->y()+s->labelsize()+4,s->w()-4,s->h()-s->labelsize()-6,s->labelsize(),filename,modified);
+          // w->pack->focus(0,true);
+          Xcas_Main_Tab->add(w); 
+          Xcas_Main_Tab->value(Xcas_Main_Tab->child(Xcas_Main_Tab->children()-1));
+          Xcas_resize_mainwindow();
+          s->redraw();
 }
 
 void cb_Insert_Example(Fl_Widget * w , void*) {
   static std::string menu_buffer;
-    if (xcas::fl_handle_lock)
-      return ;
-    const giac::context * contextptr=Xcas_get_context();
-    Fl_Menu_ * m =dynamic_cast<Fl_Menu_ *>(w);
-    if (!m)
-      return ;
-    menu_buffer = (giac::giac_aide_dir()+"examples/");
-    int pos=m->value();
-    const Fl_Menu_Item * m0 = m->menu();
-    const Fl_Menu_Item * mi = m->menu();
-    std::string tmp="Exemples/";
-    for (int i=0;;i++){
-      const Fl_Menu_Item * m1=mi;
-      for (;;){
-        mi=m1;
-        m1=m1->next();
-        if (m1-m0>pos)
+      if (xcas::fl_handle_lock)
+        return ;
+      const giac::context * contextptr=Xcas_get_context();
+      Fl_Menu_ * m =dynamic_cast<Fl_Menu_ *>(w);
+      if (!m)
+        return ;
+      menu_buffer = (giac::giac_aide_dir()+"examples/");
+      int pos=m->value();
+      const Fl_Menu_Item * m0 = m->menu();
+      const Fl_Menu_Item * mi = m->menu();
+      std::string tmp="Exemples/";
+      for (int i=0;;i++){
+        const Fl_Menu_Item * m1=mi;
+        for (;;){
+          mi=m1;
+          m1=m1->next();
+          if (m1-m0>pos)
+            break;
+        }
+        if (mi-m0>=pos)
           break;
+        if (i>1){
+          tmp += mi->text ;
+          tmp += '/';
+        }
+        ++mi;
       }
-      if (mi-m0>=pos)
-        break;
-      if (i>1){
-        tmp += mi->text ;
-        tmp += '/';
+      menu_buffer += tmp;
+      tmp="";
+      std::string last=m->text();
+      std::vector<std::string> vfile;
+      unsigned ls=last.size(),is=0;
+      for (;is<ls;++is){
+        if (last[is]==','){
+          vfile.push_back(tmp);
+          tmp="";
+        }
+        else tmp+=last[is];
       }
-      ++mi;
-    }
-    menu_buffer += tmp;
-    tmp="";
-    std::string last=m->text();
-    std::vector<std::string> vfile;
-    unsigned ls=last.size(),is=0;
-    for (;is<ls;++is){
-      if (last[is]==','){
-        vfile.push_back(tmp);
-        tmp="";
+      vfile.push_back(tmp);
+      int i=1;
+      std::string filename=vfile.front();
+  #ifdef __APPLE__
+      std::string thepath="/tmp/";
+  #else
+      std::string thepath="";
+  #endif
+      if (giac::is_file_available((thepath+filename).c_str())){
+        i=fl_ask("%s",("File "+std::string(m->text())+" exists. Overwrite?").c_str());
       }
-      else tmp+=last[is];
-    }
-    vfile.push_back(tmp);
-    int i=1;
-    if (giac::is_file_available(vfile.front().c_str())){
-      i=fl_ask(("File "+std::string(m->text())+" exists. Overwrite?").c_str());
-    }
-    if (i){
-      ls=vfile.size();
-      for (is=0;is<ls;++is){
-        std::ifstream in((menu_buffer+vfile[is]).c_str());
-        std::ofstream out(vfile[is].c_str());
-        i=xcas::stream_copy(in,out);
-        in.close();
-        out.close();
+      if (i){
+        ls=vfile.size();
+        for (is=0;is<ls;++is){
+          std::ifstream in((menu_buffer+vfile[is]).c_str());
+          std::ofstream out((thepath+vfile[is]).c_str());
+          i=xcas::stream_copy(in,out);
+          in.close();
+          out.close();
+        }
       }
-    }
-    load_filename(vfile.front().c_str(),false);
+      load_filename((thepath+filename).c_str(),false);
 }
 
-void cb_Insert_ItemName(Fl_Widget * w , void* ptr) {
+void cb_Insert_ItemName(Fl_Widget * w , void*) {
   static std::string menu_buffer;
-    if (xcas::fl_handle_lock)
-      return ;
-    Fl_Menu_ * m =dynamic_cast<Fl_Menu_ *>(w);
-    if (!m)
-      return ;
-    menu_buffer = m->text();
-    int pos=menu_buffer.find(':');
-    if (pos>0 && pos<menu_buffer.size()) menu_buffer=menu_buffer.substr(0,pos);
-    Fl_Widget * f = Fl::focus();
-    const giac::context * contextptr = xcas::get_context(f);
-    giac::gen tmp(menu_buffer,contextptr);
-    if (Xcas_automatic_help_browser->value())
-      xcas::browser_help(tmp,giac::language(contextptr));
-    else
-      xcas::help_output(menu_buffer,giac::language(contextptr));
-    if (tmp.type==giac::_FUNC){
-      if (xcas::Equation * eqwptr = dynamic_cast<xcas::Equation *>(f)){
-	eqwptr->parse_desactivate();
-	if (eqwptr->output_equation)
-	  eqwptr->eval_function(tmp);
-	else 
-	  eqwptr->replace_selection(giac::symbolic(*tmp._FUNCptr,eqwptr->get_selection()));
-	return;
+      if (xcas::fl_handle_lock)
+        return ;
+      Fl_Menu_ * m =dynamic_cast<Fl_Menu_ *>(w);
+      if (!m)
+        return ;
+      menu_buffer = m->text();
+      int pos=menu_buffer.find(':');
+      if (pos>0 && pos<menu_buffer.size()) menu_buffer=menu_buffer.substr(0,pos);
+      Fl_Widget * f = xcas::Xcas_input_focus;
+      if (!f) return;
+      const giac::context * contextptr = xcas::get_context(f);
+      giac::gen tmp(menu_buffer,contextptr);
+      if (Xcas_automatic_help_browser->value())
+        xcas::browser_help(tmp,giac::language(contextptr));
+      else
+        xcas::help_output(menu_buffer,giac::language(contextptr));
+      if (tmp.type==giac::_FUNC){
+        if (xcas::Equation * eqwptr = dynamic_cast<xcas::Equation *>(f)){
+  	eqwptr->parse_desactivate();
+  	if (eqwptr->output_equation)
+  	  eqwptr->eval_function(tmp);
+  	else 
+  	  eqwptr->replace_selection(giac::symbolic(*tmp._FUNCptr,eqwptr->get_selection()));
+  	return;
+        }
+        menu_buffer += '(';
       }
-      menu_buffer += '(';
-    }
-    static std::string ans;
-    ans=menu_buffer;
-    int remove;
-    Fl_Widget * wid=f->window();
-    if (!wid) wid=f;
-    if (Xcas_automatic_completion_browser->value())
-      xcas::handle_tab(menu_buffer,(*giac::vector_completions_ptr),2*wid->w()/3,2*wid->h()/3,remove,ans);
-    Fl::focus(f);
-    if (Fl_Input * in = dynamic_cast<Fl_Input *>(f))
-      in->insert(ans.c_str());
-    else {
-     Fl::e_text = (char * ) ans.c_str();
-     Fl::e_length = ans.size();
-     // Fl::e_keysym = '\n';
-     xcas::fl_handle(f);
-    }
+      static std::string ans;
+      ans=menu_buffer;
+      int remove;
+      Fl_Widget * wid=f->window();
+      if (!wid) wid=f;
+      pos=menu_buffer.find('('); // detect a composite unit
+      if (menu_buffer.size()>1 && menu_buffer!="%0" && !(pos>0 && pos<menu_buffer.size()) && Xcas_automatic_completion_browser->value()){
+        if (!xcas::handle_tab(menu_buffer,(*giac::vector_completions_ptr()),2*wid->w()/3,2*wid->h()/3,remove,ans))
+         return;
+      }
+      Fl::focus(f);
+        if (xcas::Xcas_Text_Editor * in =dynamic_cast<xcas::Xcas_Text_Editor *>(f)){
+  	    in->buffer()->insert(in->insert_position(),ans.c_str());
+  	    in->insert_position(in->insert_position()+ans.size());
+  	  return;
+  	}
+      if (Fl_Input * in = dynamic_cast<Fl_Input *>(f))
+        in->insert(ans.c_str());
+      else {
+       Fl::e_text = (char * ) ans.c_str();
+       Fl::e_length = ans.size();
+       // Fl::e_keysym = '\n';
+       xcas::fl_handle(f);
+      }
 }
 
 void cb_Assistant_ItemName(Fl_Widget * wid , void* ptr) {
   static std::string menu_buffer;
-    if (xcas::fl_handle_lock)
-      return ;
-    Fl_Menu_ * m =dynamic_cast<Fl_Menu_ *>(wid);
-    if (!m)
-      return ;
-    menu_buffer = m->text();
-    int pos=menu_buffer.find(':');
-    if (pos>0 && pos<menu_buffer.size()) menu_buffer=menu_buffer.substr(0,pos);
-    static std::string ans; 
-    int remove,ii;
-    Fl_Widget * w=Fl::focus();
-    Fl_Window * wd=wid->window();
-    if (
-	(ii=xcas::handle_tab(menu_buffer,(*giac::vector_completions_ptr),wd->w()/3,wd->h()/3,remove,ans)) ){ 
-      if (ii==1)
-	ans = ans +"()";
-      Fl::e_text = (char * ) ans.c_str();
-      Fl::e_length = ans.size();
-      if (w){
-	xcas::fl_handle(w);
-	if (Fl_Input * in =dynamic_cast<Fl_Input *>(w)){
-	  if (ii==1) in->position(in->position()-1);
-	}
+      if (xcas::fl_handle_lock)
+        return ;
+      Fl_Menu_ * m =dynamic_cast<Fl_Menu_ *>(wid);
+      if (!m)
+        return ;
+      menu_buffer = m->text();
+      int pos=menu_buffer.find(':');
+      if (pos>0 && pos<menu_buffer.size()) menu_buffer=menu_buffer.substr(0,pos);
+      static std::string ans;
+      ans = menu_buffer;
+      int remove,ii;
+      Fl_Widget * w=xcas::Xcas_input_focus;
+      const giac::context * contextptr = xcas::get_context(w);
+      xcas::help_output(menu_buffer,giac::language(contextptr));
+      Fl_Window * wd=wid->window();
+      if (!Xcas_automatic_completion_browser->value())
+        ii=1;
+      else
+        ii=xcas::handle_tab(menu_buffer,(*giac::vector_completions_ptr()),wd->w()/3,wd->h()/3,remove,ans);
+      Fl::focus(w);
+      if (ii){ 
+        if (ii==1)
+  	ans = ans +"()";
+        if (xcas::Xcas_Text_Editor * in =dynamic_cast<xcas::Xcas_Text_Editor *>(w)){
+  	  if (ii>=1){
+  	    in->buffer()->insert(in->insert_position(),ans.c_str());
+  	    in->insert_position(in->insert_position()+ans.size()-1);
+  	  }
+  	  return;
+  	}
+        Fl::e_text = (char * ) ans.c_str();
+        Fl::e_length = ans.size();
+        if (w){
+  	xcas::fl_handle(w);
+  	if (Fl_Input * in =dynamic_cast<Fl_Input *>(w)){
+  	  if (ii==1) in->position(in->position()-1);
+  	}
+        }
       }
-    }
+      else { if (w) w->redraw(); }
 }
 
 void load_autorecover_data() {
   #ifdef WIN32
-    std::string configname=giac::xcasroot+giac::xcasrc;
-#else
-    std::string configname=giac::home_directory()+giac::xcasrc;
-#endif //
-   if (!giac::is_file_available(configname.c_str())){
-    Xcas_widget_size(giac::makevecteur(18,100,50,900,600,0,0,1));
-    FILE * f =fopen(configname.c_str(),"w");
-    if (f){
-      fclose(f);
-     // Xcas_Main_Window_->hide();
-     int n=fl_choice(gettext("Choose start mode"),gettext("Maple"),gettext("Xcas"),gettext("Other")),mm=-1; // n==0 maple, 1 xcas, 2 other
-     if (n==2){
-        mm=fl_choice(gettext("Choose start mode"),gettext("Tortue"),gettext("Spreadsheet"),gettext("Geometry"));
-        if (mm==0) mm=7;
+      std::string configname=giac::xcasroot()+giac::xcasrc();
+  #else
+      std::string configname=giac::home_directory()+giac::xcasrc();
+  #endif //
+     if (!giac::is_file_available(configname.c_str())){
+      Xcas_widget_size(giac::makevecteur(14,40,90,900,550,0,0,1),0);
+      FILE * f =fopen(configname.c_str(),"w");
+      if (f){
+        fclose(f);
+       // Xcas_Main_Window_->hide();
+       int n=fl_choice(gettext("Choose start mode"),gettext("Maple"),gettext("Xcas"),gettext("Other")),mm=-1; // n==0 maple, 1 xcas, 2 other
+       if (n==2){
+          mm=fl_choice(gettext("Choose start mode"),gettext("Turtle"),gettext("Spreadsheet"),gettext("Geometry"));
+          if (mm==0) mm=7;
+       }
+  #ifdef IPAQ // default with bandeau
+       std::string configs="widget_size(12,1,1,300,240,1,2,1,";
+  #else // ifndef IPAQ, 
+       std::string configs="widget_size(14,40,90,900,550,"+giac::print_INT_(n!=0)+",2,0,";
+  #endif // IPAQ
+       configs += '7';
+       configs += ','; 
+       configs += '"'; 
+  // #ifndef WIN32
+       configs += Xcas_browser_name();
+  // #endif
+       configs += '"' ; 
+       configs += ','; // end BROWSER
+       configs+=giac::print_INT_(mm+1);
+       configs += ",0";
+       configs +=");xcas_mode(";
+       if (n==0)
+        configs+='1'; 
+       else
+        configs+='0';
+       configs += ");xyztrange(-10.0,10.0,-10.0,10.0,-10.0,10.0,-10.0,10.0,-10.0,10.0,-1.4,1.1,1,0.0,1.0);";
+       std::ofstream configfile(configname.c_str());
+       configfile << configs << std::endl;
+       configfile.close();
+       // fl_alert("%s",("Configuration written to "+configname + "\nUse the Cfg menu to modify.\nLaunching tutorial.").c_str());
+       n=fl_ask("%s",gettext("Launch tutorial in browser?"));
+       if (n==1){
+         if (giac::language(giac::context0)==1)
+           giac::system_browser_command(doc_prefix+"tutoriel/index.html");
+         else
+           giac::system_browser_command(doc_prefix+"casinter/index.html");
+       }
+       giac::protected_read_config(giac::context0); // read xcas.rc
+       xcas::History_cb_Kill(Xcas_current_session(),0);
+       make_history();
+      } // if (f) ...
      }
-#ifdef IPAQ // default with bandeau
-     std::string configs="widget_size(12,1,1,300,240,1,0,1,";
-#else // ifndef IPAQ, 
-     std::string configs="widget_size(18,100,50,900,600,"+giac::print_INT_(n!=0)+",0,0,";
-#endif // IPAQ
-     configs += '7';
-     configs += ','; 
-     configs += '"'; 
-     configs += Xcas_browser_name();
-     configs += '"' ; 
-     configs += ','; // end BROWSER
-     configs+=giac::print_INT_(mm+1);
-     configs += ",0";
-     configs +=");xcas_mode(";
-     if (n==0)
-      configs+='1'; 
-     else
-      configs+='0';
-     configs += ");xyztrange(-10.0,10.0,-10.0,10.0,-10.0,10.0,-10.0,10.0,-10.0,10.0,-1.4,1.1,1,0.0,1.0);";
-     std::ofstream configfile(configname.c_str());
-     configfile << configs << std::endl;
-     configfile.close();
-     if (giac::language(giac::context0)==1)
-       xcas::system_browser(giac::browser_command(doc_prefix+"tutoriel/index.html").c_str());
-     else
-       xcas::system_browser(giac::browser_command(doc_prefix+"casinter/index.html").c_str());
-     // fl_alert(("Configuration written to "+configname + "\nUse the Cfg menu to modify.\nLaunching tutorial.").c_str());
-     // n=fl_ask(gettext("Launch tutorial?"));
-     // if (n==1)
-     giac::protected_read_config(giac::context0); // read xcas.rc
-     xcas::History_cb_Kill(Xcas_current_session(),0);
-     make_history();
-    } // if (f) ...
-   }
-    std::vector<xcas::time_string> v;
-    char buf[1024];
-    bool autoload=true;
-    if (xcas::autosave_folder.empty())
-      autoload=getcwd(buf,1023);
-    else
-      strcpy(buf,xcas::autosave_folder.c_str());
-    if ( autoload && has_autorecover_data(buf,v)){
-      // Ask user: ignore or run file
-      int i=fl_ask(gettext("Auto-recovery files found. Load ?"),gettext("Yes"),gettext("No"));
-      if (i!=1)
-	return;
-      xcas::geo_run=xcas::sheet_run=false;
-      // Remove empty new session
-      if (Xcas_Main_Tab->children()){
-        xcas::History_Fold * hf = dynamic_cast<xcas::History_Fold *>(Xcas_Main_Tab->child(0));
-        if (hf && hf->pack && hf->pack->children() < 2 ) { hf->pack->close(""); Xcas_Main_Tab->remove(hf);}
+      std::vector<xcas::time_string> v;
+      char buf[1024];
+      bool autoload=true;
+      if (xcas::autosave_folder.empty())
+        autoload=getcwd(buf,1023);
+      else
+        strcpy(buf,xcas::autosave_folder.c_str());
+      if ( autoload && has_autorecover_data(buf,v)){
+        // Ask user: ignore or run file
+        int i=fl_ask("%s",gettext("Auto-recovery files found. Load ?"),gettext("Yes"),gettext("No"));
+        if (i!=1)
+  	return;
+        xcas::geo_run=xcas::sheet_run=false;
+        // Remove empty new session
+        if (Xcas_Main_Tab->children()){
+          xcas::History_Fold * hf = dynamic_cast<xcas::History_Fold *>(Xcas_Main_Tab->child(0));
+          if (hf && hf->pack && hf->pack->children() < 2 ) { hf->pack->close(""); Xcas_Main_Tab->remove(hf);}
+        }
+        std::sort(v.begin(),v.end());
+        int vs=v.size();
+        for (int i=0;i<vs;++i){
+          load_filename(v[i].s.c_str(),true);
+          unlink(v[i].s.c_str());
+        }
+        fl_message("%s",gettext("Autorecover files have been loaded. Geometry and spreadsheet were not reevaled"));
       }
-      sort(v.begin(),v.end());
-      int vs=v.size();
-      for (int i=0;i<vs;++i){
-        load_filename(v[i].s.c_str(),true);
-        unlink(v[i].s.c_str());
-      }
-      fl_message("Autorecover files have been loaded. Geometry and spreadsheet were not reevaled");
-    }
 }
 
 void gnuplot_setview() {
   #ifdef WITH_GNUPLOT
-  bool clrplot=false;
-  int out_handle;
-  FILE * gnuplot_out_readstream,* stream = giac::open_gnuplot(clrplot,gnuplot_out_readstream,out_handle);
-  fprintf(stream,"%s %f,%f,%f,%f\n%s\n","set view ",Xcas_Rot_x->value(),Xcas_Rot_z->value(),Xcas_X_scale->value(),Xcas_Z_scale->value(),"replot");
-  fflush(stream);
-  giac::gnuplot_wait(out_handle,gnuplot_out_readstream,2);  
-#endif //
+    bool clrplot=false;
+    int out_handle;
+    FILE * gnuplot_out_readstream,* stream = giac::open_gnuplot(clrplot,gnuplot_out_readstream,out_handle);
+    fprintf(stream,"%s %f,%f,%f,%f\n%s\n","set view ",Xcas_Rot_x->value(),Xcas_Rot_z->value(),Xcas_X_scale->value(),Xcas_Z_scale->value(),"replot");
+    fflush(stream);
+    giac::gnuplot_wait(out_handle,gnuplot_out_readstream,2);  
+  #endif //
 }
 
 std::string Xcas_browser_name() {
   #ifdef __APPLE__ //
-return "open";
-#endif // 
-if (getenv("BROWSER"))
-  return getenv("BROWSER");
-std::string tmp;
-tmp="/usr/bin/firefox";
-if (giac::is_file_available(tmp.c_str()))
-   return tmp;
-tmp="/usr/bin/mozilla";
-if (giac::is_file_available(tmp.c_str()))
-   return tmp;
-tmp="/usr/bin/dillo";
-if (giac::is_file_available(tmp.c_str()))
-   return tmp;
-#ifdef WIN32 //
-  tmp="/cygdrive/c/Program Files/Mozilla Firefox/firefox.exe";
- // if (giac::is_file_available(tmp.c_str())) return "'"+tmp+"'";
-  return "'/cygdrive/c/Program Files/Internet Explorer/IEXPLORE.EXE'";
-#endif // 
-return "";
+  return "open";
+  #endif // apple
+  if (getenv("BROWSER"))
+    return getenv("BROWSER");
+  #ifdef WIN32 //
+    return "cygstart.exe";
+  #endif // win32
+  std::string tmp;
+  tmp="/usr/bin/firefox";
+  if (giac::is_file_available(tmp.c_str()))
+     return tmp;
+  tmp="/usr/bin/mozilla";
+  if (giac::is_file_available(tmp.c_str()))
+     return tmp;
+  tmp="/usr/bin/dillo";
+  if (giac::is_file_available(tmp.c_str()))
+     return tmp;
+  #ifdef WIN32 //
+    tmp="/cygdrive/c/Program Files/Mozilla Firefox/firefox.exe";
+   // if (giac::is_file_available(tmp.c_str())) return "'"+tmp+"'";
+    return "'/cygdrive/c/Program Files/Internet Explorer/IEXPLORE.EXE'";
+  #endif // 
+  return "";
 }
 
 void Xcas_load_general_setup() {
-  //
-Xcas_down_compatibility->value(!xcas::file_save_context);
-Xcas_html_browser->value(Xcas_browser_name().c_str());
-xcas::change_group_fontsize(Xcas_General_Setup,Xcas_Main_Window_->labelsize());
-Xcas_General_Setup->resize(20,20,3*Xcas_Main_Window_->w()/4,3*Xcas_Main_Window_->h()/4);
-  Xcas_General_Setup->show();
+  // xcas::file_save_context has been removed for xcas 1.1.3
+  int ste=giac::step_infolevel(Xcas_get_context());
+  Xcas_stepbystep->value(ste);
+  Xcas_html_browser->value(Xcas_browser_name().c_str());
+  static std::string proxy;
+  if (getenv("http_proxy")){
+    proxy=getenv("http_proxy");
+    Xcas_proxy->value(proxy.c_str());
+  }
+  xcas::change_group_fontsize(Xcas_General_Setup,Xcas_Main_Window_->labelsize());
+  Xcas_General_Setup->resize(20,20,3*Xcas_Main_Window_->w()/4,3*Xcas_Main_Window_->h()/4);
+    Xcas_General_Setup->show();
 }
 
 void Xcas_update_mode() {
   Fl_Widget * wid = Xcas_current_session();
-  xcas::History_Fold * hf=xcas::get_history_fold(wid);
-  if (hf) hf->update_status();
+    xcas::History_Fold * hf=xcas::get_history_fold(wid);
+    if (hf) hf->update_status();
 }
 
 void Xcas_save_config(const giac::context * contextptr) {
   #ifdef WIN32 
-// Save config in home_dir or if not available in $XCAS_ROOT or current dir
-std::string s((giac::home_directory()));
-if (s.size()<2 && getenv("XCAS_ROOT"))
-  s=getenv("XCAS_ROOT")+std::string("/");
-if (s.size()<2)
-  s="";
-std::cerr << "Saving preferences in file " << s+giac::xcasrc << std::endl;
-std::ofstream of((s+giac::xcasrc).c_str());
-#else
-std::ofstream of((giac::home_directory()+giac::xcasrc).c_str());
-#endif //
-   of << "widget_size([" << giac::print_INT_(Xcas_Main_Window_->labelfont()) << "," << giac::print_INT_(Xcas_Main_Window_->labelsize()) << "]," << Xcas_Main_Window_->x() << "," << Xcas_Main_Window_->y() << "," << Xcas_Main_Window_->w() << "," << Xcas_Main_Window_->h() << "," ;
-   of << Xcas_Keyboard_Group->visible()+2*Xcas_Bandeau_Keys->visible() <<",";
-   of << Xcas_automatic_help_browser->value()+2*Xcas_automatic_completion_browser->value();
-   of << "," << Xcas_Messages->visible() ;
-   of << ",[" ; 
-   of << giac::print_INT_(xcas::Xcas_input_color) << "," << giac::print_INT_(xcas::Xcas_input_background_color) << "," << giac::print_INT_(xcas::Xcas_comment_color) << "," << giac::print_INT_(xcas::Xcas_comment_background_color) << "," << giac::print_INT_(xcas::Xcas_log_color) << "," << giac::print_INT_(xcas::Xcas_log_background_color) << "," << giac::print_INT_(xcas::Xcas_equation_color) << "," << giac::print_INT_(xcas::Xcas_equation_background_color) << "," << giac::print_INT_(xcas::Xcas_editor_color) << "," << giac::print_INT_(xcas::Xcas_editor_background_color) << "," << giac::print_INT_(xcas::Xcas_background_color) ;
-   of << "]";
-   if (getenv("BROWSER")&&xcas::use_external_browser)
-     of << "," << '"' << getenv("BROWSER") << '"' ;
-   else
-     of << "," << '"' << "builtin" << '"' ;
-   of << "," << xcas_user_level ;
-   of << "," << int(Xcas_down_compatibility->value()) ;
-   if (getenv("GIAC_PREVIEW"))
-     of << "," << '"' << getenv("GIAC_PREVIEW") << '"' ;
-   of << ");" << std::endl;
-   of << giac::cas_setup_string(contextptr) << ";" << std::endl;
-   of << giac::geo_setup_string() << ";" << std::endl;
-   giac::vecteur vv(*giac::_lsmod(giac::zero,contextptr)._VECTptr);
-   giac::const_iterateur it=vv.begin(),itend=vv.end();
-   for (;it!=itend;++it)
-     of << "insmod(" << it->print(contextptr) << ");" << std::endl;
+  // Save config in home_dir or if not available in $XCAS_ROOT or current dir
+  std::string s((giac::home_directory()));
+  if (s.size()<2 && getenv("XCAS_ROOT"))
+    s=getenv("XCAS_ROOT")+std::string("/");
+  if (s.size()<2)
+    s="";
+  std::cerr << "Saving preferences in file " << s+giac::xcasrc() << std::endl;
+  std::ofstream of((s+giac::xcasrc()).c_str());
+  #else
+  std::ofstream of((giac::home_directory()+giac::xcasrc()).c_str());
+  #endif //
+     of << "widget_size([" << giac::print_INT_(Xcas_Main_Window_->labelfont()) << "," << giac::print_INT_(Xcas_Main_Window_->labelsize()) << "," << giac::print_INT_(xcas::Flv_Table_Gen::def_rows) << "," << giac::print_INT_(xcas::Flv_Table_Gen::def_cols) << "]," << Xcas_Main_Window_->x() << "," << Xcas_Main_Window_->y() << "," << Xcas_Main_Window_->w() << "," << Xcas_Main_Window_->h() << "," ;
+     of << Xcas_Keyboard_Group->visible()+2*Xcas_Bandeau_Keys->visible() <<",";
+     of << Xcas_automatic_help_browser->value()+2*Xcas_automatic_completion_browser->value()+4*Xcas_tooltip_disabled->value() + 8*Xcas_disable_try_parse_test_i->value();
+     of << "," << Xcas_Messages->visible() ;
+     of << ",[" ; 
+     of << giac::print_INT_(xcas::Xcas_input_color) << "," << giac::print_INT_(xcas::Xcas_input_background_color) << "," << giac::print_INT_(xcas::Xcas_comment_color) << "," << giac::print_INT_(xcas::Xcas_comment_background_color) << "," << giac::print_INT_(xcas::Xcas_log_color) << "," << giac::print_INT_(xcas::Xcas_log_background_color) << "," << giac::print_INT_(xcas::Xcas_equation_color) << "," << giac::print_INT_(xcas::Xcas_equation_background_color) << "," << giac::print_INT_(xcas::Xcas_editor_color) << "," << giac::print_INT_(xcas::Xcas_editor_background_color) << "," << giac::print_INT_(xcas::Xcas_background_color) ;
+     of << "]";
+     if (getenv("BROWSER")&&xcas::use_external_browser)
+       of << "," << '"' << getenv("BROWSER") << '"' ;
+     else
+       of << "," << '"' << "builtin" << '"' ;
+     of << "," << xcas_user_level ;
+     of << "," << int(Xcas_stepbystep->value()) ;
+     if (getenv("GIAC_PREVIEW"))
+       of << "," << '"' << getenv("GIAC_PREVIEW") << '"' ;
+     else
+       of << "," << '"' << '"' ;
+     if (getenv("http_proxy"))
+       of << "," << '"' << getenv("http_proxy") << '"' ;
+     else
+       of << "," << '"' << '"' ;
+     of << ");" << std::endl;
+     of << giac::cas_setup_string(contextptr) << ";" << std::endl;
+     of << giac::geo_setup_string() << ";" << std::endl;
+     of << "autosimplify(" << giac::unlocalize(giac::autosimplify(contextptr)) << ")";
+     giac::vecteur vv(*giac::_lsmod(giac::zero,contextptr)._VECTptr);
+     giac::const_iterateur it=vv.begin(),itend=vv.end();
+     for (;it!=itend;++it)
+       of << "insmod(" << it->print(contextptr) << ");" << std::endl;
 }
 
 Fl_Window *Xcas_Main_Window_=(Fl_Window *)0;
@@ -856,7 +929,7 @@ static void cb_Xcas_open_session(Fl_Menu_*, void*) {
   load_history(0);
 }
 
-static void cb_Xcas_open_session1(Fl_Menu_*, void*) {
+static void cb_Xcas_open_recovery(Fl_Menu_*, void*) {
   xcas::recovery_mode=true; load_history(0); xcas::recovery_mode=false;
 }
 
@@ -870,6 +943,14 @@ static void cb_Xcas_open_ti89(Fl_Menu_*, void*) {
 
 static void cb_Xcas_open_v200(Fl_Menu_*, void*) {
   load_history(7);
+}
+
+static void cb_Xcas_CloneOffline(Fl_Menu_*, void*) {
+  std::string html5=giac::browser_command("doc/xcasfr.html#"+xcas::widget_html5(Xcas_current_session())); std::cout << html5 << std::endl; system(html5.c_str());
+}
+
+static void cb_Xcas_CloneOnline(Fl_Menu_*, void*) {
+  std::string html5="http://www-fourier.ujf-grenoble.fr/~parisse/xcasfr.html#"+xcas::widget_html5(Xcas_current_session()); std::cout << html5 << std::endl; giac::system_browser_command(html5);
 }
 
 static void cb_Xcas_Insert_Session(Fl_Menu_*, void*) {
@@ -920,11 +1001,6 @@ static void cb_Xcas_Close(Fl_Menu_*, void*) {
   xcas::History_cb_Kill(Xcas_current_session(),0);
 }
 
-static void cb_Xcas_a_propos(Fl_Menu_*, void*) {
-  a_propos();   Xcas_Messages->show(); 
-  Xcas_resize_mainwindow();
-}
-
 static void cb_Xcas_Print_Preview(Fl_Menu_*, void*) {
   xcas::History_cb_Preview(Xcas_current_session(),0);
 }
@@ -950,10 +1026,16 @@ static void cb_Xcas_LaTeX_Print_Selection(Fl_Menu_*, void*) {
 }
 
 static void cb_Xcas_screen_capture(Fl_Menu_*, void*) {
-  xcas::widget_ps_print(Xcas_Main_Window_,"window",true,3,true);
+  xcas::widget_ps_print(Xcas_Main_Window_,"window",true,3,true,false,true);
 }
 
-static void cb_Xcas_quit(Fl_Menu_*, void*) {
+static void cb_Xcas_create_links(Fl_Menu_*, void*) {
+  #ifdef __APPLE__
+system("/usr/X11/bin/xterm -fn 10x20 -e sudo /Applications/usr/bin/makelinks");
+#endif
+}
+
+static void cb_Xcas_quit_update(Fl_Menu_*, void*) {
   Fl::remove_idle(xcas::Xcas_idle_function,0);
 if (!Xcas_save_all(Xcas_Main_Tab)){
   Fl::add_idle(xcas::Xcas_idle_function,0);
@@ -969,6 +1051,12 @@ Xcas_DispG_Window_->hide();
 if (xcas::Xcas_Debug_Window) xcas::Xcas_Debug_Window->hide();
 if (xcas::handle_tab_w)
   xcas::handle_tab_w->hide();
+update_xcas=1;
+}
+
+static void cb_Xcas_quit(Fl_Menu_*, void*) {
+  cb_Xcas_quit_update(0,0); 
+update_xcas=0;
 }
 
 static void cb_Xcas_Execute_Worksheet(Fl_Menu_*, void*) {
@@ -984,11 +1072,11 @@ static void cb_Xcas_Remove_Answers(Fl_Menu_*, void*) {
 }
 
 static void cb_Xcas_Undo(Fl_Menu_*, void*) {
-  if (xcas::get_history_pack(Fl::focus())) xcas::History_cb_Undo(Fl::focus(),0); else xcas::History_cb_Undo(Xcas_current_session(),0);
+  if (xcas::get_history_pack(xcas::Xcas_input_focus)) xcas::History_cb_Undo(xcas::Xcas_input_focus,0); else xcas::History_cb_Undo(Xcas_current_session(),0);
 }
 
 static void cb_Xcas_Redo(Fl_Menu_*, void*) {
-  if (xcas::get_history_pack(Fl::focus())) xcas::History_cb_Redo(Fl::focus(),0); else xcas::History_cb_Redo(Xcas_current_session(),0);
+  if (xcas::get_history_pack(xcas::Xcas_input_focus)) xcas::History_cb_Redo(xcas::Xcas_input_focus,0); else xcas::History_cb_Redo(Xcas_current_session(),0);
 }
 
 static void cb_Xcas_Paste(Fl_Menu_*, void*) {
@@ -1001,13 +1089,20 @@ static void cb_Xcas_Delete(Fl_Menu_*, void*) {
 
 static void cb_Xcas_Tex_Selection(Fl_Menu_*, void*) {
   static std::string s; giac::gen g;
-    const giac::context * contextptr=xcas::get_context(Fl::focus());
+    const giac::context * contextptr=xcas::get_context(xcas::Xcas_input_focus);
   try {
-   if (xcas::Equation * ptr=dynamic_cast<xcas::Equation *> (Fl::focus()))
+   if (xcas::Xcas_Text_Editor * ptr=dynamic_cast<xcas::Xcas_Text_Editor *> (xcas::Xcas_input_focus)){
+     int a,b;
+     ptr->buffer()->selection_position(&a,&b);
+    char * ch=ptr->buffer()->text_range(a,b);
+    g=giac::gen(ch,contextptr);
+    free(ch);
+  }
+   if (xcas::Equation * ptr=dynamic_cast<xcas::Equation *> (xcas::Xcas_input_focus))
     g=ptr->get_selection();
-   if (xcas::Flv_Table_Gen * ptr=dynamic_cast<xcas::Flv_Table_Gen *> (Fl::focus()))
+   if (xcas::Flv_Table_Gen * ptr=dynamic_cast<xcas::Flv_Table_Gen *> (xcas::Xcas_input_focus))
     g=extractmatricefromsheet(ptr->selected);
-   if (Fl_Input_ * ptr=dynamic_cast<Fl_Input *>(Fl::focus())){
+   if (Fl_Input_ * ptr=dynamic_cast<Fl_Input *>(xcas::Xcas_input_focus)){
     int i=ptr->position(),j=ptr->mark();
     if (i>j) std::swap<int>(i,j);
     s=ptr->value();
@@ -1032,12 +1127,13 @@ static void cb_Xcas_Add_Entry1(Fl_Menu_*, void*) {
 static void cb_Xcas_Add_Parameter(Fl_Menu_*, void*) {
   std::string tmp,name;
 double tmin,tmax,tcur,tstep;
-Fl_Widget * wid = Fl::focus();
+Fl_Widget * wid = xcas::Xcas_input_focus;
 int pos;
 xcas::History_Pack * hp=xcas::get_history_pack(wid,pos);
-if (hp && xcas::figure_param_dialog(Fl::focus(),false,tmin,tmax,tcur,tstep,name,false,tmp)){
+if (hp && xcas::figure_param_dialog(xcas::Xcas_input_focus,false,tmin,tmax,tcur,tstep,name,false,tmp)){
  if (hp){
-    hp->add_entry(pos);
+   Fl_Widget * q=xcas::new_question_multiline_input(giac::giacmax(hp->w()-hp->_printlevel_w,1),hp->labelsize()+12);	
+    hp->add_entry(pos,q);
     hp->set_value(pos,tmp,true);
  }
 };
@@ -1105,7 +1201,8 @@ Xcas_update_mode();
 }
 
 static void cb_Xcas_show_DispG(Fl_Menu_*, void*) {
-  Xcas_DispG_Window_->show(); Xcas_DispG_Cancel_->hide();
+  Xcas_DispG_Window_->show(); 
+Xcas_DispG_Cancel_->hide();
 }
 
 static void cb_Xcas_show_keyboard(Fl_Menu_*, void*) {
@@ -1125,7 +1222,8 @@ static void cb_Xcas_show_script_window(Fl_Menu_*, void*) {
 }
 
 static void cb_Xcas_hide_DispG(Fl_Menu_*, void*) {
-  Xcas_DispG_Window_->hide(); Xcas_DispG_Cancel_->hide();
+  Xcas_DispG_Window_->hide(); 
+Xcas_DispG_Cancel_->hide();
 }
 
 static void cb_Xcas_hide_keyboard(Fl_Menu_*, void*) {
@@ -1142,19 +1240,36 @@ static void cb_Xcas_hide_msg(Fl_Menu_*, void*) {
 
 static void cb_Xcas_index_Francais(Fl_Menu_*, void*) {
   const giac::context * contextptr=Xcas_get_context();
+// doc_prefix=giac::set_language(1,giac::context0);
 doc_prefix=giac::set_language(1,contextptr);
 giac::html_help_init("aide_cas",1);
 }
 
 static void cb_Xcas_index_English(Fl_Menu_*, void*) {
   const giac::context * contextptr=Xcas_get_context();
+// doc_prefix=giac::set_language(2,giac::context0);
 doc_prefix=giac::set_language(2,contextptr);
 giac::html_help_init("aide_cas",1);
 }
 
 static void cb_Xcas_index_Espanol(Fl_Menu_*, void*) {
   const giac::context * contextptr=Xcas_get_context();
+// doc_prefix=giac::set_language(3,giac::context0);
 doc_prefix=giac::set_language(3,contextptr);
+giac::html_help_init("aide_cas",1);
+}
+
+static void cb_Xcas_index_Greek(Fl_Menu_*, void*) {
+  const giac::context * contextptr=Xcas_get_context();
+// doc_prefix=giac::set_language(4,giac::context0);
+doc_prefix=giac::set_language(4,contextptr);
+giac::html_help_init("aide_cas",1);
+}
+
+static void cb_Xcas_index_Chinese(Fl_Menu_*, void*) {
+  const giac::context * contextptr=Xcas_get_context();
+// doc_prefix=giac::set_language(4,giac::context0);
+doc_prefix=giac::set_language(8,contextptr);
 giac::html_help_init("aide_cas",1);
 }
 
@@ -1271,9 +1386,9 @@ static void cb_Save_config(Fl_Menu_*, void*) {
 static void cb_Xcas_help_index(Fl_Menu_*, void*) {
   static std::string ans; 
    int remove,ii;
-   Fl_Widget * w=Fl::focus();
+   Fl_Widget * w=xcas::Xcas_input_focus;
    if (
-   (ii=xcas::handle_tab("",(*giac::vector_completions_ptr),Xcas_Main_Window_->w()/3,Xcas_Main_Window_->h()/3,remove,ans)) ){ 
+   (ii=xcas::handle_tab("",(*giac::vector_completions_ptr()),Xcas_Main_Window_->w()/3,Xcas_Main_Window_->h()/3,remove,ans)) ){ 
     if (ii==1)
       ans = ans +"()";
     Fl::e_text = (char * ) ans.c_str();
@@ -1293,7 +1408,7 @@ static void cb_Xcas_help_find(Fl_Menu_*, void*) {
 
 static void cb_Xcas_help_casinter(Fl_Menu_*, void*) {
   if (xcas::use_external_browser)
-           xcas::system_browser(giac::browser_command(doc_prefix+"casinter/index.html").c_str());
+           giac::system_browser_command(doc_prefix+"casinter/index.html");
         else {
          if (xcas::Xcas_help_window){
            xcas::Xcas_help_window->load((giac::giac_aide_dir()+doc_prefix+"casinter/index.html").c_str());
@@ -1302,10 +1417,14 @@ static void cb_Xcas_help_casinter(Fl_Menu_*, void*) {
          };
 }
 
-static void cb_Xcas_help_CASmenu(Fl_Menu_*, void*) {
+static void cb_Xcas_help_fiches(Fl_Menu_*, void*) {
+  if (giac::language(Xcas_get_context())==1) giac::system_browser_command(giac::giac_aide_dir()+"doc/fr/troussesurvie_fr.pdf"); else giac::system_browser_command(giac::giac_aide_dir()+"doc/en/troussesurvie_en.pdf");
+}
+
+static void cb_Xcas_help_CAS(Fl_Menu_*, void*) {
   const giac::context * contextptr=Xcas_get_context();
 if (xcas::use_external_browser)
-           xcas::system_browser(giac::browser_command(doc_prefix+"cascmd_"+giac::find_lang_prefix(giac::language(contextptr))+"index.html").c_str());
+           giac::system_browser_command(doc_prefix+"cascmd_"+giac::find_lang_prefix(giac::language(contextptr))+"index.html");
         else {
          if (xcas::Xcas_help_window){
            xcas::Xcas_help_window->load((giac::giac_aide_dir()+doc_prefix+"cascmd_"+giac::find_lang_prefix(giac::language(contextptr))+"index.html").c_str());
@@ -1316,18 +1435,31 @@ if (xcas::use_external_browser)
 
 static void cb_Xcas_help_algo(Fl_Menu_*, void*) {
   if (xcas::use_external_browser)
-           xcas::system_browser(giac::browser_command(doc_prefix+"algo.html").c_str());
+           giac::system_browser_command(doc_prefix+"algo.html");
+        else {
+         if (xcas::Xcas_help_window){ //disabled because it crashes with builin browser
+           fl_message("%s",("Open with your browser "+giac::giac_aide_dir()+doc_prefix+"algo.html").c_str());
+           // xcas::Xcas_help_window->load((giac::giac_aide_dir()+doc_prefix+"algo.html").c_str());
+           // xcas::Xcas_help_window->show();
+          }
+         };
+}
+
+static void cb_Xcas_help_algo_pdf(Fl_Menu_*, void*) {
+  if (xcas::use_external_browser)
+           giac::system_browser_command(doc_prefix+"algo.pdf");
         else {
          if (xcas::Xcas_help_window){
-           xcas::Xcas_help_window->load((giac::giac_aide_dir()+doc_prefix+"algo.html").c_str());
-           xcas::Xcas_help_window->show();
+           fl_message("%s",("Open "+giac::giac_aide_dir()+doc_prefix+"algo.pdf").c_str());
+           // xcas::Xcas_help_window->load((giac::giac_aide_dir()+doc_prefix+"algo.pdf").c_str());
+           // xcas::Xcas_help_window->show();
           }
          };
 }
 
 static void cb_Xcas_help_Geo(Fl_Menu_*, void*) {
   if (xcas::use_external_browser)
-           xcas::system_browser(giac::browser_command(doc_prefix+"casgeo/index.html").c_str());
+           giac::system_browser_command(doc_prefix+"casgeo/index.html");
         else {
          if (xcas::Xcas_help_window){
            xcas::Xcas_help_window->load((giac::giac_aide_dir()+doc_prefix+"casgeo/index.html").c_str());
@@ -1338,7 +1470,7 @@ static void cb_Xcas_help_Geo(Fl_Menu_*, void*) {
 
 static void cb_Xcas_help_Prog(Fl_Menu_*, void*) {
   if (xcas::use_external_browser)
-           xcas::system_browser(giac::browser_command(doc_prefix+"casrouge/index.html").c_str());
+           giac::system_browser_command(doc_prefix+"casrouge/index.html");
         else {
          if (xcas::Xcas_help_window){
            xcas::Xcas_help_window->load((giac::giac_aide_dir()+doc_prefix+"casrouge/index.html").c_str());
@@ -1349,7 +1481,7 @@ static void cb_Xcas_help_Prog(Fl_Menu_*, void*) {
 
 static void cb_Xcas_help_Tableur(Fl_Menu_*, void*) {
   if (xcas::use_external_browser)
-           xcas::system_browser(giac::browser_command(doc_prefix+"cassim/index.html").c_str());
+           giac::system_browser_command(doc_prefix+"cassim/index.html");
         else {
          if (xcas::Xcas_help_window){
            xcas::Xcas_help_window->load((giac::giac_aide_dir()+doc_prefix+"cassim/index.html").c_str());
@@ -1360,7 +1492,7 @@ static void cb_Xcas_help_Tableur(Fl_Menu_*, void*) {
 
 static void cb_Xcas_help_Tortue(Fl_Menu_*, void*) {
   if (xcas::use_external_browser)
-           xcas::system_browser(giac::browser_command(doc_prefix+"castor/index.html").c_str());
+           giac::system_browser_command(doc_prefix+"castor/index.html");
         else {
          if (xcas::Xcas_help_window){
            xcas::Xcas_help_window->load((giac::giac_aide_dir()+doc_prefix+"castor/index.html").c_str());
@@ -1371,7 +1503,7 @@ static void cb_Xcas_help_Tortue(Fl_Menu_*, void*) {
 
 static void cb_Xcas_help_Exercices(Fl_Menu_*, void*) {
   if (xcas::use_external_browser)
-           xcas::system_browser(giac::browser_command(doc_prefix+"casexo/index.html").c_str());
+           giac::system_browser_command(doc_prefix+"casexo/index.html");
         else {
          if (xcas::Xcas_help_window){
            xcas::Xcas_help_window->load((giac::giac_aide_dir()+doc_prefix+"casexo/index.html").c_str());
@@ -1382,7 +1514,7 @@ static void cb_Xcas_help_Exercices(Fl_Menu_*, void*) {
 
 static void cb_Xcas_help_Amusement(Fl_Menu_*, void*) {
   if (xcas::use_external_browser)
-           xcas::system_browser(giac::browser_command(doc_prefix+"cascas/index.html").c_str());
+           giac::system_browser_command(doc_prefix+"cascas/index.html");
         else {
          if (xcas::Xcas_help_window){
            xcas::Xcas_help_window->load((giac::giac_aide_dir()+doc_prefix+"cascas/index.html").c_str());
@@ -1393,7 +1525,7 @@ static void cb_Xcas_help_Amusement(Fl_Menu_*, void*) {
 
 static void cb_Xcas_help_PARI(Fl_Menu_*, void*) {
   if (xcas::use_external_browser)
-           xcas::system_browser(giac::browser_command(giac::giac_aide_dir()+"doc/pari/index.html").c_str());
+           giac::system_browser_command(giac::giac_aide_dir()+"doc/pari/index.html");
         else {
          if (xcas::Xcas_help_window){
            xcas::Xcas_help_window->load((giac::giac_aide_dir()+"doc/pari/index.html").c_str());
@@ -1403,44 +1535,73 @@ static void cb_Xcas_help_PARI(Fl_Menu_*, void*) {
 }
 
 static void cb_Xcas_help_forum(Fl_Menu_*, void*) {
-  xcas::system_browser((giac::browser_command("http://pcm1.e.ujf-grenoble.fr/XCAS")).c_str());
+  const giac::context * contextptr = xcas::get_context(xcas::Xcas_input_focus);
+ giac::system_browser_command(giac::language(contextptr)==4?"http://www.inf.uth.gr/xcas/":"http://xcas.e.ujf-grenoble.fr/XCAS");
+}
+
+static void cb_Xcas_help_lycee_card(Fl_Menu_*, void*) {
+  giac::system_browser_command("http://www-fourier.ujf-grenoble.fr/~parisse/irem/placlycee.pdf");
+}
+
+static void cb_Xcas_help_lycee(Fl_Menu_*, void*) {
+  giac::system_browser_command("http://www-fourier.ujf-grenoble.fr/~parisse/irem.html");
+}
+
+static void cb_Xcas_help_algo_lycee(Fl_Menu_*, void*) {
+  giac::system_browser_command("http://www-fourier.ujf-grenoble.fr/~parisse/algoxcas.html");
 }
 
 static void cb_Xcas_help_connan(Fl_Menu_*, void*) {
-  xcas::system_browser((giac::browser_command("http://gconnan.free.fr/?page=33")).c_str());
+  giac::system_browser_command("http://gconnan.free.fr/?page=33");
 }
 
-static void cb_Xcas_help_bacs(Fl_Menu_*, void*) {
-  xcas::system_browser((giac::browser_command("http://www-fourier.ujf-grenoble.fr/~parisse/irem.html#bacs")).c_str());
+static void cb_Xcas_help_alb(Fl_Menu_*, void*) {
+  giac::system_browser_command("http://lycee-rodezlaroque.eap.entmip.fr/le-lycee/xcas/");
+}
+
+static void cb_Xcas_help_cheval(Fl_Menu_*, void*) {
+  giac::system_browser_command("http://courelectr.free.fr/Xcas/Xcas_calcul_formel_lycee.pdf");
+}
+
+static void cb_Xcas_help_han(Fl_Menu_*, void*) {
+  giac::system_browser_command("http://www.math.jussieu.fr/~han/xcas");
+}
+
+static void cb_Xcas_help_capes(Fl_Menu_*, void*) {
+  giac::system_browser_command("http://www-fourier.ujf-grenoble.fr/~parisse/capes.html");
 }
 
 static void cb_Xcas_help_agreg(Fl_Menu_*, void*) {
-  xcas::system_browser((giac::browser_command("http://www-fourier.ujf-grenoble.fr/~parisse/agreg.html")).c_str());
+  giac::system_browser_command("http://www-fourier.ujf-grenoble.fr/~parisse/agreg.html");
+}
+
+static void cb_Xcas_help_agregint(Fl_Menu_*, void*) {
+  giac::system_browser_command("http://www-fourier.ujf-grenoble.fr/~parisse/agregint.html");
 }
 
 static void cb_Xcas_help_load(Fl_Menu_*, void*) {
   #ifdef WIN32
-  fl_message("Xcas will launch your browser to get the help archive giacshare.tgz.\nAfter the download is completed, please unarchive casdoc.tgz\nin the Xcas directory (c:Ês by default)");
- xcas::system_browser(giac::browser_command("http://www-fourier.ujf-grenoble.fr/~parisse/giac/casdoc.tgz").c_str());
+  fl_message("%s","Xcas will launch your browser to get the help archive giacshare.tgz.\nAfter the download is completed, please unarchive casdoc.tgz\nin the Xcas directory (c:Ês by default)");
+ giac::system_browser_command("http://www-fourier.ujf-grenoble.fr/~parisse/giac/casdoc.tgz");
  return;
 #endif
-  std::string path=giac::xcasroot;
+  std::string path=giac::xcasroot();
  int s=path.size(),i=s-1;
  for (--i;i>0;--i){
    if (path[i]=='/')
      break;
  }
  path=path.substr(0,i+1)+"share";
- i=fl_ask(("Check that you can write over "+path+",\ncheck that your Internet connection is ready\nand check that wget, tar and gzip are installed.\nProceed?").c_str());
+ i=fl_ask("%s",("Check that you can write over "+path+",\ncheck that your Internet connection is ready\nand check that wget, tar and gzip are installed.\nProceed?").c_str());
   if (i){
-    fl_message(("Executing: mkdir /tmp ; cd /tmp && wget http://www-fourier.ujf-grenoble.fr/~parisse/giac/giacshare.tgz && cd "+path+" && tar xvfz /tmp/giacshare.tgz").c_str());
+    fl_message("%s",("Executing: mkdir /tmp ; cd /tmp && wget http://www-fourier.ujf-grenoble.fr/~parisse/giac/giacshare.tgz && cd "+path+" && tar xvfz /tmp/giacshare.tgz").c_str());
     system(("mkdir /tmp ; cd /tmp && wget http://www-fourier.ujf-grenoble.fr/~parisse/giac/giacshare.tgz && cd "+path+" && tar xvfz /tmp/giacshare.tgz").c_str());
   };
 }
 
 static void cb_Xcas_help_tutorial(Fl_Menu_*, void*) {
   if (xcas::use_external_browser)
-           xcas::system_browser((giac::browser_command(doc_prefix+"tutoriel/index.html")).c_str());
+           giac::system_browser_command(doc_prefix+"tutoriel/index.html");
         else {
          if (xcas::Xcas_help_window){
            xcas::Xcas_help_window->load((giac::giac_aide_dir()+doc_prefix+"tutoriel/index.html").c_str());
@@ -1450,7 +1611,7 @@ static void cb_Xcas_help_tutorial(Fl_Menu_*, void*) {
 }
 
 static void cb_Xcas_help_solution(Fl_Menu_*, void*) {
-  const char * ch=fl_input(gettext("Exercice number (from 1 to 25)?"));
+  const char * ch=fl_input(gettext("Exercise number (from 1 to 25)?"));
 if (!ch) return;
 int i=atoi(ch);
 if (i>0 && i<26){
@@ -1472,6 +1633,11 @@ static void cb_Xcas_help_make_index(Fl_Menu_*, void*) {
 giac::html_help_init("aide_cas",language(contextptr),true,true);
 }
 
+static void cb_Xcas_a_propos(Fl_Menu_*, void*) {
+  a_propos();   Xcas_Messages->show(); 
+  Xcas_resize_mainwindow();
+}
+
 static void cb_Xcas_Add_Entry(Fl_Menu_*, void*) {
   xcas::cb_New_Input(Xcas_current_session(),0);
 }
@@ -1480,29 +1646,49 @@ static void cb_Xcas_Add_Comment(Fl_Menu_*, void*) {
   xcas::History_cb_New_Comment_Input(Xcas_current_session(),0);
 }
 
-static void cb_Xcas_Add_Tableur(Fl_Menu_*, void*) {
-  xcas::History_cb_New_Tableur(Xcas_current_session(),0);
+static void cb_Xcas_Add_Expression(Fl_Menu_*, void*) {
+  xcas::History_cb_New_Equation(Xcas_current_session(),0);
+}
+
+static void cb_Xcas_help_i(Fl_Menu_*, void*) {
+  int mode=giac::xcas_mode(Xcas_get_context()); if (mode==1 || mode==2) xcas::in_Xcas_input_char(xcas::Xcas_input_focus,"I",'I'); else xcas::in_Xcas_input_char(xcas::Xcas_input_focus,"i",'i');
+}
+
+static void cb_Xcas_help_e(Fl_Menu_*, void*) {
+  int mode=giac::xcas_mode(Xcas_get_context()); if (mode==1 || mode==2) xcas::in_Xcas_input_char(xcas::Xcas_input_focus,"exp(1)",'e'); else xcas::in_Xcas_input_char(xcas::Xcas_input_focus,"e",'e');
+}
+
+static void cb_Xcas_Add_Program(Fl_Menu_*, void*) {
+  xcas::History_cb_New_Program(Xcas_current_session(),0);
 }
 
 static void cb_Xcas_help_attributs(Fl_Menu_*, void*) {
   static int res=0;
 bool untranslate=false,approx=false,formel=false;
-Fl_Widget * w=Fl::focus();
+Fl_Widget * w=xcas::Xcas_input_focus;
 Fl_Input_ * i=dynamic_cast<Fl_Input_*>(w);
+xcas::Xcas_Text_Editor * ed=dynamic_cast<xcas::Xcas_Text_Editor *>(w);
 if (i && xcas::change_line_type(res,false,approx,"Attributs",false,formel,untranslate,false,
 Xcas_Main_Window_->labelsize())!=1){
   std::string s="display="+xcas::print_color(res);
   i->insert(s.c_str()); 
+  Fl::focus(i);
+}
+if (ed && xcas::change_line_type(res,false,approx,"Attributs",false,formel,untranslate,false,
+Xcas_Main_Window_->labelsize())!=1){
+  std::string s="display="+xcas::print_color(res);
+  ed->insert(s.c_str()); 
+  Fl::focus(ed);
 };
 }
 
 static void cb_Xcas_help_plot(Fl_Menu_*, void*) {
   int pos;
 std::string arg;
-xcas::History_Pack * f=xcas::get_history_pack(Fl::focus(),pos);
+xcas::History_Pack * f=xcas::get_history_pack(xcas::Xcas_input_focus,pos);
 if (f && tablefunc_dialog(f,arg,true,0,gettext("Graph of a function"))){
 	f->add_entry(pos);
-	arg="plotfunc(" +arg+")";
+	arg="plot(" +arg+")";
 	f->set_value(pos,arg,true);
       };
 }
@@ -1510,7 +1696,7 @@ if (f && tablefunc_dialog(f,arg,true,0,gettext("Graph of a function"))){
 static void cb_Xcas_help_plotparam2d(Fl_Menu_*, void*) {
   int pos;
 std::string arg;
-xcas::History_Pack * f=xcas::get_history_pack(Fl::focus(),pos);
+xcas::History_Pack * f=xcas::get_history_pack(xcas::Xcas_input_focus,pos);
 if (f && plotparam_dialog(f,arg,0)){
 	f->add_entry(pos);
 	arg="plotparam(" +arg+")";
@@ -1521,7 +1707,7 @@ if (f && plotparam_dialog(f,arg,0)){
 static void cb_Xcas_help_plotpolar(Fl_Menu_*, void*) {
   int pos;
 std::string arg;
-xcas::History_Pack * f=xcas::get_history_pack(Fl::focus(),pos);
+xcas::History_Pack * f=xcas::get_history_pack(xcas::Xcas_input_focus,pos);
 if (f && plotparam_dialog(f,arg,-1)){
 	f->add_entry(pos);
 	arg="plotpolar(" +arg+")";
@@ -1532,8 +1718,8 @@ if (f && plotparam_dialog(f,arg,-1)){
 static void cb_Xcas_help_plotarea(Fl_Menu_*, void*) {
   int pos;
 std::string arg;
-xcas::History_Pack * f=xcas::get_history_pack(Fl::focus(),pos);
-if (f && tablefunc_dialog(f,arg,true,0,gettext("Area under curve"))){
+xcas::History_Pack * f=xcas::get_history_pack(xcas::Xcas_input_focus,pos);
+if (f && tablefunc_dialog(f,arg,true,2,gettext("Area under curve"))){
 	f->add_entry(pos);
 	arg="plotarea(" +arg+")";
 	f->set_value(pos,arg,true);
@@ -1543,7 +1729,7 @@ if (f && tablefunc_dialog(f,arg,true,0,gettext("Area under curve"))){
 static void cb_Xcas_help_plotimplicit(Fl_Menu_*, void*) {
   int pos;
 std::string arg;
-xcas::History_Pack * f=xcas::get_history_pack(Fl::focus(),pos);
+xcas::History_Pack * f=xcas::get_history_pack(xcas::Xcas_input_focus,pos);
 if (f && plotparam_dialog(f,arg,3)){
 	f->add_entry(pos);
 	arg="plotimplicit(" +arg+")";
@@ -1554,7 +1740,7 @@ if (f && plotparam_dialog(f,arg,3)){
 static void cb_Xcas_help_plot3d(Fl_Menu_*, void*) {
   int pos;
 std::string arg;
-xcas::History_Pack * f=xcas::get_history_pack(Fl::focus(),pos);
+xcas::History_Pack * f=xcas::get_history_pack(xcas::Xcas_input_focus,pos);
 if (f && tablefunc_dialog(f,arg,true,1,gettext("Graph of a function"))){
 	f->add_entry(pos);
 	arg="plotfunc(" +arg+")";
@@ -1565,7 +1751,7 @@ if (f && tablefunc_dialog(f,arg,true,1,gettext("Graph of a function"))){
 static void cb_Xcas_help_plotparam3d(Fl_Menu_*, void*) {
   int pos;
 std::string arg;
-xcas::History_Pack * f=xcas::get_history_pack(Fl::focus(),pos);
+xcas::History_Pack * f=xcas::get_history_pack(xcas::Xcas_input_focus,pos);
 if (f && plotparam_dialog(f,arg,1)){
 	f->add_entry(pos);
 	arg="plotparam(" +arg+")";
@@ -1576,7 +1762,7 @@ if (f && plotparam_dialog(f,arg,1)){
 static void cb_Xcas_help_plotseq(Fl_Menu_*, void*) {
   int pos;
 std::string arg,u0param;
-xcas::History_Pack * f=xcas::get_history_pack(Fl::focus(),pos);
+xcas::History_Pack * f=xcas::get_history_pack(xcas::Xcas_input_focus,pos);
 if (f && tableseq_dialog(f,arg,true,gettext("Graph of a recurrent sequence"),u0param)){
 	f->add_entry(pos);
 	arg=u0param+"; plotseq(" +arg+")";
@@ -1587,7 +1773,7 @@ if (f && tableseq_dialog(f,arg,true,gettext("Graph of a recurrent sequence"),u0p
 static void cb_Xcas_help_plotfield(Fl_Menu_*, void*) {
   int pos;
 std::string arg;
-xcas::History_Pack * f=xcas::get_history_pack(Fl::focus(),pos);
+xcas::History_Pack * f=xcas::get_history_pack(xcas::Xcas_input_focus,pos);
 if (f && plotparam_dialog(f,arg,2)){
 	f->add_entry(pos);
 	arg="plotfield(" +arg+")";
@@ -1598,7 +1784,7 @@ if (f && plotparam_dialog(f,arg,2)){
 static void cb_Xcas_help_iplotode(Fl_Menu_*, void*) {
   int pos;
 std::string arg;
-xcas::History_Pack * f=xcas::get_history_pack(Fl::focus(),pos);
+xcas::History_Pack * f=xcas::get_history_pack(xcas::Xcas_input_focus,pos);
 if (f && plotparam_dialog(f,arg,2)){
 	f->add_entry(pos);
 	arg="interactive_plotode(" +arg+")";
@@ -1614,284 +1800,343 @@ static void cb_Xcas_Add_Figure3d(Fl_Menu_*, void*) {
   xcas::History_cb_New_Figure3d(Xcas_current_session(),0);
 }
 
-static void cb_Xcas_Add_Figurex(Fl_Menu_*, void*) {
-  xcas::History_cb_New_Figurex(Xcas_current_session(),0);
-}
-
-static void cb_Xcas_Add_Figure3dx(Fl_Menu_*, void*) {
-  xcas::History_cb_New_Figure3dx(Xcas_current_session(),0);
-}
-
-static void cb_Xcas_Add_Program(Fl_Menu_*, void*) {
-  xcas::History_cb_New_Program(Xcas_current_session(),0);
-}
-
-static void cb_Xcas_Add_Expression(Fl_Menu_*, void*) {
-  xcas::History_cb_New_Equation(Xcas_current_session(),0);
+static void cb_Xcas_Add_Tableur(Fl_Menu_*, void*) {
+  xcas::History_cb_New_Tableur(Xcas_current_session(),0);
 }
 
 static void cb_Xcas_Add_Logo(Fl_Menu_*, void*) {
   xcas::History_cb_New_Logo(Xcas_current_session(),0);
 }
 
+unsigned char menu_Xcas_main_menu_i18n_done = 0;
 Fl_Menu_Item menu_Xcas_main_menu[] = {
- {gettext("File"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("New session"), 0,  (Fl_Callback*)cb_Xcas_new_session, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Open"), 0x8006f,  (Fl_Callback*)cb_Xcas_open_session, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Open (recovery mode)"), 0x8006f,  (Fl_Callback*)cb_Xcas_open_session1, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Import"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("maple worksheet"), 0,  (Fl_Callback*)cb_Xcas_open_maple, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("ti89 program"), 0,  (Fl_Callback*)cb_Xcas_open_ti89, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("V200 program"), 0,  (Fl_Callback*)cb_Xcas_open_v200, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"File", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"New session", 0,  (Fl_Callback*)cb_Xcas_new_session, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Open", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"File", 0x8006f,  (Fl_Callback*)cb_Xcas_open_session, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
- {gettext("Insert"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("xcas session"), 0,  (Fl_Callback*)cb_Xcas_Insert_Session, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("figure"), 0,  (Fl_Callback*)cb_Xcas_Insert_Figure, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("spreadsheet"), 0,  (Fl_Callback*)cb_Xcas_Insert_Tableur, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("program"), 0,  (Fl_Callback*)cb_Xcas_Insert_Program, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Open (recovery mode)", 0,  (Fl_Callback*)cb_Xcas_open_recovery, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Import", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"maple worksheet", 0,  (Fl_Callback*)cb_Xcas_open_maple, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"ti89 program", 0,  (Fl_Callback*)cb_Xcas_open_ti89, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"V200 program", 0,  (Fl_Callback*)cb_Xcas_open_v200, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
- {gettext("Save"), 0x80073,  (Fl_Callback*)cb_Xcas_save_current_session, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Save as"), 0,  (Fl_Callback*)cb_Xcas_save_current_session_as, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Save all"), 0,  (Fl_Callback*)cb_Xcas_save_all_sessions, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Export as"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("xcas text"), 0,  (Fl_Callback*)cb_Xcas_Export_Xcas, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("maple text"), 0,  (Fl_Callback*)cb_Xcas_Export_Maple, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("mupad text"), 0,  (Fl_Callback*)cb_Xcas_Export_Mupad, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("ti text"), 0,  (Fl_Callback*)cb_Xcas_Export_TI, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Clone", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Offline", 0,  (Fl_Callback*)cb_Xcas_CloneOffline, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Online", 0,  (Fl_Callback*)cb_Xcas_CloneOnline, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
- {gettext("Kill"), 0,  (Fl_Callback*)cb_Xcas_Close, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("About"), 0,  (Fl_Callback*)cb_Xcas_a_propos, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Print"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("preview"), 0,  (Fl_Callback*)cb_Xcas_Print_Preview, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("to printer"), 0,  (Fl_Callback*)cb_Xcas_Print_Printer, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("preview selected levels"), 0,  (Fl_Callback*)cb_Xcas_Print_Preview_Selected, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Insert", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"xcas session", 0,  (Fl_Callback*)cb_Xcas_Insert_Session, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"figure", 0,  (Fl_Callback*)cb_Xcas_Insert_Figure, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"spreadsheet", 0,  (Fl_Callback*)cb_Xcas_Insert_Tableur, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"program", 0,  (Fl_Callback*)cb_Xcas_Insert_Program, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
- {gettext("LaTeX"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("latex preview"), 0,  (Fl_Callback*)cb_Xcas_LaTeX_Print_Preview, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("latex print"), 0,  (Fl_Callback*)cb_Xcas_LaTeX_Print_Printer, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("latex print selection"), 0,  (Fl_Callback*)cb_Xcas_LaTeX_Print_Selection, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Save", 0x80073,  (Fl_Callback*)cb_Xcas_save_current_session, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Save as", 0,  (Fl_Callback*)cb_Xcas_save_current_session_as, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Save all", 0,  (Fl_Callback*)cb_Xcas_save_all_sessions, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Export as", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"xcas text", 0,  (Fl_Callback*)cb_Xcas_Export_Xcas, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"maple text", 0,  (Fl_Callback*)cb_Xcas_Export_Maple, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"mupad text", 0,  (Fl_Callback*)cb_Xcas_Export_Mupad, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"ti text", 0,  (Fl_Callback*)cb_Xcas_Export_TI, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
- {gettext("Screen capture"), 0,  (Fl_Callback*)cb_Xcas_screen_capture, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Quit"), 0x40071,  (Fl_Callback*)cb_Xcas_quit, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Kill", 0,  (Fl_Callback*)cb_Xcas_Close, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Print", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"preview", 0,  (Fl_Callback*)cb_Xcas_Print_Preview, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"to printer", 0,  (Fl_Callback*)cb_Xcas_Print_Printer, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"preview selected levels", 0,  (Fl_Callback*)cb_Xcas_Print_Preview_Selected, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
- {gettext("Edit"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Execute worksheet"), 0x4ffc6,  (Fl_Callback*)cb_Xcas_Execute_Worksheet, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Execute below"), 0,  (Fl_Callback*)cb_Xcas_Execute_Below, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Remove answers"), 0,  (Fl_Callback*)cb_Xcas_Remove_Answers, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Undo"), 0x4007a,  (Fl_Callback*)cb_Xcas_Undo, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Redo"), 0x40079,  (Fl_Callback*)cb_Xcas_Redo, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Paste"), 0,  (Fl_Callback*)cb_Xcas_Paste, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Del selected levels"), 0,  (Fl_Callback*)cb_Xcas_Delete, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("selection -> LaTeX"), 0x40074,  (Fl_Callback*)cb_Xcas_Tex_Selection, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("New entry"), 0x8006e,  (Fl_Callback*)cb_Xcas_Add_Entry1, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("New parameter"), 0x40070,  (Fl_Callback*)cb_Xcas_Add_Parameter, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Insert newline"), 0,  (Fl_Callback*)cb_Xcas_Insert_Newline, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Merge selected levels"), 0,  (Fl_Callback*)cb_Xcas_Merge, 0, 16, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("New group"), 0,  (Fl_Callback*)cb_Xcas_Add_HF, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Group selected levels"), 0,  (Fl_Callback*)cb_Xcas_Fold, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Degroup selected levels"), 0,  (Fl_Callback*)cb_Xcas_Flatten, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"LaTeX", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"latex preview", 0,  (Fl_Callback*)cb_Xcas_LaTeX_Print_Preview, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"latex print", 0,  (Fl_Callback*)cb_Xcas_LaTeX_Print_Printer, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"latex print selection", 0,  (Fl_Callback*)cb_Xcas_LaTeX_Print_Selection, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
- {gettext("Cfg"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Cas configuration"), 0,  (Fl_Callback*)cb_Xcas_cas_config_, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Graph configuration"), 0,  (Fl_Callback*)cb_Xcas_graph_config_, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("General configuration"), 0,  (Fl_Callback*)cb_Xcas_general_config_, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Mode (syntax)"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("xcas"), 0,  (Fl_Callback*)cb_Xcas_Set_Xcas0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("maple"), 0,  (Fl_Callback*)cb_Xcas_Set_Maple0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("mupad"), 0,  (Fl_Callback*)cb_Xcas_Set_Mupad0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("ti89/92"), 0,  (Fl_Callback*)cb_Xcas_Set_TI0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Screen capture", 0,  (Fl_Callback*)cb_Xcas_screen_capture, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"--- ", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Create links (Mac OS)", 0,  (Fl_Callback*)cb_Xcas_create_links, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Quit and update Xcas", 0,  (Fl_Callback*)cb_Xcas_quit_update, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"--- ", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Quit", 0x40071,  (Fl_Callback*)cb_Xcas_quit, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
- {gettext("Show"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("DispG"), 0,  (Fl_Callback*)cb_Xcas_show_DispG, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("keyboard"), 0,  (Fl_Callback*)cb_Xcas_show_keyboard, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("bandeau"), 0,  (Fl_Callback*)cb_Xcas_show_bandeau, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("msg"), 0,  (Fl_Callback*)cb_Xcas_show_msg, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Show script window"), 0,  (Fl_Callback*)cb_Xcas_show_script_window, 0, 16, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Edit", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Execute worksheet", 0x4ffc6,  (Fl_Callback*)cb_Xcas_Execute_Worksheet, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Execute below", 0,  (Fl_Callback*)cb_Xcas_Execute_Below, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Remove answers below", 0,  (Fl_Callback*)cb_Xcas_Remove_Answers, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Undo", 0x4007a,  (Fl_Callback*)cb_Xcas_Undo, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Redo", 0x40079,  (Fl_Callback*)cb_Xcas_Redo, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Paste", 0,  (Fl_Callback*)cb_Xcas_Paste, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Del selected levels", 0,  (Fl_Callback*)cb_Xcas_Delete, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"selection -> LaTeX", 0x40074,  (Fl_Callback*)cb_Xcas_Tex_Selection, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"New entry", 0x8006e,  (Fl_Callback*)cb_Xcas_Add_Entry1, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"New parameter", 0x40070,  (Fl_Callback*)cb_Xcas_Add_Parameter, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Insert newline", 0,  (Fl_Callback*)cb_Xcas_Insert_Newline, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Merge selected levels", 0,  (Fl_Callback*)cb_Xcas_Merge, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"New group", 0,  (Fl_Callback*)cb_Xcas_Add_HF, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Group selected levels", 0,  (Fl_Callback*)cb_Xcas_Fold, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Degroup selected levels", 0,  (Fl_Callback*)cb_Xcas_Flatten, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
- {gettext("Hide"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("DispG"), 0,  (Fl_Callback*)cb_Xcas_hide_DispG, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("keyboard"), 0,  (Fl_Callback*)cb_Xcas_hide_keyboard, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("bandeau"), 0,  (Fl_Callback*)cb_Xcas_hide_bandeau, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("msg"), 0,  (Fl_Callback*)cb_Xcas_hide_msg, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Cfg", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Cas configuration", 0,  (Fl_Callback*)cb_Xcas_cas_config_, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Graph configuration", 0,  (Fl_Callback*)cb_Xcas_graph_config_, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"General configuration", 0,  (Fl_Callback*)cb_Xcas_general_config_, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Mode (syntax)", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"xcas", 0,  (Fl_Callback*)cb_Xcas_Set_Xcas0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"maple", 0,  (Fl_Callback*)cb_Xcas_Set_Maple0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"mupad", 0,  (Fl_Callback*)cb_Xcas_Set_Mupad0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"ti89/92", 0,  (Fl_Callback*)cb_Xcas_Set_TI0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
- {gettext("Index language"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("francais"), 0,  (Fl_Callback*)cb_Xcas_index_Francais, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("english"), 0,  (Fl_Callback*)cb_Xcas_index_English, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("espanol"), 0,  (Fl_Callback*)cb_Xcas_index_Espanol, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Show", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"DispG", 0x80064,  (Fl_Callback*)cb_Xcas_show_DispG, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"keyboard", 0,  (Fl_Callback*)cb_Xcas_show_keyboard, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"bandeau", 0,  (Fl_Callback*)cb_Xcas_show_bandeau, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"msg", 0,  (Fl_Callback*)cb_Xcas_show_msg, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Show script window", 0,  (Fl_Callback*)cb_Xcas_show_script_window, 0, 16, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
- {gettext("Colors"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("default background"), 0,  (Fl_Callback*)cb_Xcas_background_color_item, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("input text"), 0,  (Fl_Callback*)cb_Xcas_input_text_color, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("input background"), 0,  (Fl_Callback*)cb_Xcas_input_text_background_color, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("comment text"), 0,  (Fl_Callback*)cb_Xcas_comment_color_item, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("comment background"), 0,  (Fl_Callback*)cb_Xcas_comment_background_color_item, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("log text"), 0,  (Fl_Callback*)cb_Xcas_log_color_item, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("log background"), 0,  (Fl_Callback*)cb_Xcas_log_background_color_item, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("equation text"), 0,  (Fl_Callback*)cb_Xcas_equation_color_item, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("equation background"), 0,  (Fl_Callback*)cb_Xcas_equation_background_color_item, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("editor text"), 0,  (Fl_Callback*)cb_Xcas_editor_color_item, 0, 16, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("editor background"), 0,  (Fl_Callback*)cb_Xcas_editor_background_color_item, 0, 16, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Hide", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"DispG", 0,  (Fl_Callback*)cb_Xcas_hide_DispG, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"keyboard", 0,  (Fl_Callback*)cb_Xcas_hide_keyboard, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"bandeau", 0,  (Fl_Callback*)cb_Xcas_hide_bandeau, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"msg", 0,  (Fl_Callback*)cb_Xcas_hide_msg, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
- {gettext("Session font"), 0,  (Fl_Callback*)cb_Xcas_change_current_fontsize, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("All fonts"), 0,  (Fl_Callback*)cb_Xcas_change_fontsize, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("browser"), 0,  (Fl_Callback*)cb_Xcas_browser, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Save configuration"), 0,  (Fl_Callback*)cb_Save_config, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Index language", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"francais", 0,  (Fl_Callback*)cb_Xcas_index_Francais, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"english", 0,  (Fl_Callback*)cb_Xcas_index_English, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"espanol", 0,  (Fl_Callback*)cb_Xcas_index_Espanol, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"greek", 0,  (Fl_Callback*)cb_Xcas_index_Greek, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"chinese", 0,  (Fl_Callback*)cb_Xcas_index_Chinese, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
- {gettext("Help"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Index"), 0,  (Fl_Callback*)cb_Xcas_help_index, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Find word in HTML help"), 0xffc9,  (Fl_Callback*)cb_Xcas_help_find, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Interface"), 0,  (Fl_Callback*)cb_Xcas_help_casinter, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Manuals"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("CAS reference"), 0,  (Fl_Callback*)cb_Xcas_help_CASmenu, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Algorithmes"), 0,  (Fl_Callback*)cb_Xcas_help_algo, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Geometry"), 0,  (Fl_Callback*)cb_Xcas_help_Geo, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Programmation"), 0,  (Fl_Callback*)cb_Xcas_help_Prog, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Tableur"), 0,  (Fl_Callback*)cb_Xcas_help_Tableur, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Tortue"), 0,  (Fl_Callback*)cb_Xcas_help_Tortue, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Exercices"), 0,  (Fl_Callback*)cb_Xcas_help_Exercices, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Amusement"), 0,  (Fl_Callback*)cb_Xcas_help_Amusement, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("PARI-GP"), 0,  (Fl_Callback*)cb_Xcas_help_PARI, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Colors", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"default background", 0,  (Fl_Callback*)cb_Xcas_background_color_item, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"input text", 0,  (Fl_Callback*)cb_Xcas_input_text_color, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"input background", 0,  (Fl_Callback*)cb_Xcas_input_text_background_color, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"comment text", 0,  (Fl_Callback*)cb_Xcas_comment_color_item, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"comment background", 0,  (Fl_Callback*)cb_Xcas_comment_background_color_item, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"log text", 0,  (Fl_Callback*)cb_Xcas_log_color_item, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"log background", 0,  (Fl_Callback*)cb_Xcas_log_background_color_item, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"equation text", 0,  (Fl_Callback*)cb_Xcas_equation_color_item, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"equation background", 0,  (Fl_Callback*)cb_Xcas_equation_background_color_item, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"editor text", 0,  (Fl_Callback*)cb_Xcas_editor_color_item, 0, 16, FL_NORMAL_LABEL, 0, 14, 0},
+ {"editor background", 0,  (Fl_Callback*)cb_Xcas_editor_background_color_item, 0, 16, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
- {gettext("Internet"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Forum"), 0,  (Fl_Callback*)cb_Xcas_help_forum, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Site Lycee de G. Connan"), 0,  (Fl_Callback*)cb_Xcas_help_connan, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Ressources bac S"), 0,  (Fl_Callback*)cb_Xcas_help_bacs, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Ressources Agregation"), 0,  (Fl_Callback*)cb_Xcas_help_agreg, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Update help"), 0,  (Fl_Callback*)cb_Xcas_help_load, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Session font", 0,  (Fl_Callback*)cb_Xcas_change_current_fontsize, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"All fonts", 0,  (Fl_Callback*)cb_Xcas_change_fontsize, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"browser", 0,  (Fl_Callback*)cb_Xcas_browser, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Save configuration", 0,  (Fl_Callback*)cb_Save_config, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
- {gettext("Start with CAS"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Tutorial"), 0,  (Fl_Callback*)cb_Xcas_help_tutorial, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("solutions"), 0,  (Fl_Callback*)cb_Xcas_help_solution, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Help", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Index", 0,  (Fl_Callback*)cb_Xcas_help_index, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Find word in HTML help", 0xffc9,  (Fl_Callback*)cb_Xcas_help_find, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Interface", 0,  (Fl_Callback*)cb_Xcas_help_casinter, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Reference card, fiches", 0,  (Fl_Callback*)cb_Xcas_help_fiches, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Manuals", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"CAS reference", 0,  (Fl_Callback*)cb_Xcas_help_CAS, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Algorithmes (HTML)", 0,  (Fl_Callback*)cb_Xcas_help_algo, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Algorithmes (PDF)", 0,  (Fl_Callback*)cb_Xcas_help_algo_pdf, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Geometry", 0,  (Fl_Callback*)cb_Xcas_help_Geo, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Programmation", 0,  (Fl_Callback*)cb_Xcas_help_Prog, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Simulation", 0,  (Fl_Callback*)cb_Xcas_help_Tableur, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Turtle", 0,  (Fl_Callback*)cb_Xcas_help_Tortue, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Exercices", 0,  (Fl_Callback*)cb_Xcas_help_Exercices, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Amusement", 0,  (Fl_Callback*)cb_Xcas_help_Amusement, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"PARI-GP", 0,  (Fl_Callback*)cb_Xcas_help_PARI, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
- {gettext("Rebuild help cache"), 0,  (Fl_Callback*)cb_Xcas_help_make_index, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Internet", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Forum", 0,  (Fl_Callback*)cb_Xcas_help_forum, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Aide-memoire lycee", 0,  (Fl_Callback*)cb_Xcas_help_lycee_card, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Documents pedagogiques lycee", 0,  (Fl_Callback*)cb_Xcas_help_lycee, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Documents algorithmique", 0,  (Fl_Callback*)cb_Xcas_help_algo_lycee, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Site Lycee de G. Connan", 0,  (Fl_Callback*)cb_Xcas_help_connan, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Site Lycee de L. Briel", 0,  (Fl_Callback*)cb_Xcas_help_alb, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Calcul formel au lycee, par D. Chevallier", 0,  (Fl_Callback*)cb_Xcas_help_cheval, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Site de F. Han", 0,  (Fl_Callback*)cb_Xcas_help_han, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Ressources Capes", 0,  (Fl_Callback*)cb_Xcas_help_capes, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Ressources Agregation externe", 0,  (Fl_Callback*)cb_Xcas_help_agreg, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Ressources Agregation interne", 0,  (Fl_Callback*)cb_Xcas_help_agregint, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Update help", 0,  (Fl_Callback*)cb_Xcas_help_load, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
- {gettext("CAS"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("New entry"), 0x8006e,  (Fl_Callback*)cb_Xcas_Add_Entry, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("New comment"), 0x80063,  (Fl_Callback*)cb_Xcas_Add_Comment, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Equations"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("solve: Solve equation or system"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("fsolve: Solve equation numerically"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("proot: Roots of a polynomial"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("linsolve: Solve linear system"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("desolve: Solve differential equation"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Start with CAS", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Tutorial", 0,  (Fl_Callback*)cb_Xcas_help_tutorial, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"solutions", 0,  (Fl_Callback*)cb_Xcas_help_solution, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
- {gettext("Calculus"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("int: Integration (definite/indefinite)"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("diff: Derivative"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("limit: Limit"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("series: Taylor or asymptotic expansion"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("sum: Discrete summation"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("laplace: Laplace transform"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("ilaplace: invert Laplace transform"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Rebuild help cache", 0,  (Fl_Callback*)cb_Xcas_help_make_index, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"About", 0,  (Fl_Callback*)cb_Xcas_a_propos, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
- {gettext("Simplify"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("simplify: Simplify expression"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("normal: Simplify rational and algebraic expression"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("ratnormal: Simplify rational expressions"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("factor: Factorization"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("cfactor: Factorization over C"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("partfrac: Partial fraction decomposition"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("cpartfrac: Partial fraction decomposition over C"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("---"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("subst: Substitution of variables by expressions"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("reorder: Reorder expression wrt list of variables"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("---"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("lin: Linearization of exponentials"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("tlin: Trigonometric linearization"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("texpand: Expand transcendental expressions"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("lncollect: Collect logarithms"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("exp2pow: Convert exp(a*ln(b)) to b^a"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("exp2trig: Convert complex exponentials to trig"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("trig2exp: Convert trig to complex exponentials"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Toolbox", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"New entry", 0x8006e,  (Fl_Callback*)cb_Xcas_Add_Entry, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"New comment", 0x80063,  (Fl_Callback*)cb_Xcas_Add_Comment, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Equations", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"solve: Solve equation or system", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"fsolve: Solve equation numerically", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"proot: Roots of a polynomial", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"linsolve: Solve linear system", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"desolve: Solve differential equation", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"odesolve: Solve differential equation (numeric)", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"rsolve: Solve recurrence equation", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
- {gettext("Arithmetic"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("isprime: test if an integer is prime"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("ifactor: factorize an integer"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("iquo: quotient for integers"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("irem: remainder for integers"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("iabcuv: Solve a.u+b.v=c in Z"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("ichinrem: Chinese remainder for integers"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("---"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("gcd: gcd of integers or polynomials"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("lcm: lcm of integers or polynomials"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("powmod: fast powering modulo"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("---"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("quo: quotient (poly. synthetic division)"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("rem: remainder (poly. synthetic division)"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("abcuv: Solve a.u+b.v=c for polynomials"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("chinrem: Chinese remainder for polynomials"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Calculus", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"int: Integration (definite/indefinite)", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"diff: Derivative", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"limit: Limit", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"ptayl: Taylor polynomial", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"series: series expansion (with remainder)", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"sum: Discrete summation", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"laplace: Laplace transform", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"ilaplace: invert Laplace transform", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
- {gettext("Linear algebra"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("matrix: Create a matrix"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("tran: Transpose a matrix"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("ker: Kernel of a matrix"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("image: Image of a matrix"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("inv: Invert a matrix"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("det: Determinant of a matrix"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("charpoly: Characteristic polynomial"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("egv: Eigenvectors of a matrix"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("egvl: Eigenvalues of a matrix"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Simplify", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"simplify: Simplify expression", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"normal: Simplify rational and algebraic expression", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"ratnormal: Simplify rational expressions", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"factor: Factorization", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"cfactor: Factorization over C", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"partfrac: Partial fraction decomposition", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"cpartfrac: Partial fraction decomposition over C", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"---", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"subst: Substitution of variables by expressions", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"reorder: Reorder expression wrt list of variables", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"---", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"lin: Linearization of exponentials", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"tlin: Trigonometric linearization", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"texpand: Expand transcendental expressions", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"lncollect: Collect logarithms", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"exp2pow: Convert exp(a*ln(b)) to b^a", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"exp2trig: Convert complex exponentials to trig", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"trig2exp: Convert trig to complex exponentials", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {0,0,0,0,0,0,0,0,0},
+ {"Arithmetic", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"isprime: test if an integer is prime", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"ifactor: factorize an integer", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"iquo: quotient for integers", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"irem: remainder for integers", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"iabcuv: Solve a.u+b.v=c in Z", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"ichinrem: Chinese remainder for integers", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"---", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"gcd: gcd of integers or polynomials", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"lcm: lcm of integers or polynomials", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"powmod: fast powering modulo", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"---", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"quo: quotient (poly. synthetic division)", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"rem: remainder (poly. synthetic division)", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"abcuv: Solve a.u+b.v=c for polynomials", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"chinrem: Chinese remainder for polynomials", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"%: Z/pZ, p premier", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"GF: Corps fini non premier", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {0,0,0,0,0,0,0,0,0},
+ {"Linear algebra", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"matrix: Create a matrix", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"tran: Transpose a matrix", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"ker: Kernel of a matrix", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"image: Image of a matrix", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"inv: Invert a matrix", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"det: Determinant of a matrix", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"charpoly: Characteristic polynomial", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"egv: Eigenvectors of a matrix", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"egvl: Eigenvalues of a matrix", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {0,0,0,0,0,0,0,0,0},
+ {"Proba", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"binomial: Binomial distribution", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"normald: Normal density", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"rand: random number", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"ranm: random vector/matrix", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"randmarkov: random Markov matrix or chain", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"markov: transition matrix decomposition", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"cdf: cumulated distribution function", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"icdf: inverse cumulated distributed function", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"=== see also plots in Graph ====", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Continuous (densities)", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"betad: Beta density", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"cauchyd: Cauchy density", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"chisquared: Chi 2 density", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"exponentiald: Exponential density", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"fisherd: Fisher-Snedecor density", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"gammad: Gamma density", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"normald: Normal density", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"studentd: Student density", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"uniformd: Uniform density", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"weibulld: Weibull density", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {0,0,0,0,0,0,0,0,0},
+ {"Discrete distributions", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"binomial: Binomial distribution", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"negbinomial: Negative binomial distribution", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"geometric: Geometric distribution", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"poisson: poisson distribution", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {0,0,0,0,0,0,0,0,0},
+ {"Tests", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"chisquared_icdf: Chi 2 inverse", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"chisquaret: Chi 2 test", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"kolmogorovd: K-Smirnov density", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"kolmogorovt: K-Smirnov test", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"normald_icdf: Normal inverse", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"normalt: Z-Test", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"studentd_icdf: Student inverse", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"studentt: T-Test", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"wilcoxont: Test", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
  {0,0,0,0,0,0,0,0,0},
- {gettext("Spreadsheet"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("New spreadsheet"), 0x80074,  (Fl_Callback*)cb_Xcas_Add_Tableur, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
- {gettext("Graphic"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Attributs"), 0,  (Fl_Callback*)cb_Xcas_help_attributs, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Curves"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("plotfunc: Plot a 1-var function"), 0,  (Fl_Callback*)cb_Xcas_help_plot, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("plotparam: Parametric 2-d curve"), 0,  (Fl_Callback*)cb_Xcas_help_plotparam2d, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("plotpolar: Polar 2-d curve"), 0,  (Fl_Callback*)cb_Xcas_help_plotpolar, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("plotarea: Area under curve"), 0,  (Fl_Callback*)cb_Xcas_help_plotarea, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("plotimplicit: Implicit plot"), 0,  (Fl_Callback*)cb_Xcas_help_plotimplicit, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("plotcontour: Level curves"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("plotdensity: 2-d z view as color"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Expression", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"New expression", 0x80065,  (Fl_Callback*)cb_Xcas_Add_Expression, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
- {gettext("Surfaces"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("plotfunc: Plot a 2-var function"), 0,  (Fl_Callback*)cb_Xcas_help_plot3d, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("plotparam: Parametric 3-d surface"), 0,  (Fl_Callback*)cb_Xcas_help_plotparam3d, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {0,0,0,0,0,0,0,0,0},
- {gettext("Sequence"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("plotseq: Recurrent sequence plot"), 0,  (Fl_Callback*)cb_Xcas_help_plotseq, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("plotlist: plot a list of values"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {0,0,0,0,0,0,0,0,0},
- {gettext("Ode"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("plotfield: 2-d or 3-d field"), 0,  (Fl_Callback*)cb_Xcas_help_plotfield, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("plotode: Diff. equation plot"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("interactive_odeplot: Interactive diff. equation plot"), 0,  (Fl_Callback*)cb_Xcas_help_iplotode, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {0,0,0,0,0,0,0,0,0},
- {gettext("Stats"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("camembert: 1-d stats"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("histogram: 1-d stats"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("moustache: 1-d stats"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("scatterplot: 2-d stats"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("polygonscatterplot: 2-d stats"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("polygonscatterplot: 2-d stats"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Cmds", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Constants", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"i: sqrt(-1)", 0,  (Fl_Callback*)cb_Xcas_help_i, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"e: exp(1)", 0,  (Fl_Callback*)cb_Xcas_help_e, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
  {0,0,0,0,0,0,0,0,0},
- {gettext("Geo"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("New figure"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("graph, geo2d"), 0x80067,  (Fl_Callback*)cb_Xcas_Add_Figure, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("graph, geo3d"), 0x80068,  (Fl_Callback*)cb_Xcas_Add_Figure3d, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("geo2d exact"), 0,  (Fl_Callback*)cb_Xcas_Add_Figurex, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("geo3d exact"), 0,  (Fl_Callback*)cb_Xcas_Add_Figure3dx, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Prg", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"New program", 0x80070,  (Fl_Callback*)cb_Xcas_Add_Program, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"debug: debug a program", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {0,0,0,0,0,0,0,0,0},
+ {"Graphic", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Attributs", 0x8006b,  (Fl_Callback*)cb_Xcas_help_attributs, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Curves", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"plotfunc: Plot a 1-var function", 0,  (Fl_Callback*)cb_Xcas_help_plot, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"plotparam: Parametric 2-d curve", 0,  (Fl_Callback*)cb_Xcas_help_plotparam2d, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"plotpolar: Polar 2-d curve", 0,  (Fl_Callback*)cb_Xcas_help_plotpolar, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"plotarea: Area under curve", 0,  (Fl_Callback*)cb_Xcas_help_plotarea, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"plotimplicit: Implicit plot", 0,  (Fl_Callback*)cb_Xcas_help_plotimplicit, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"plotcontour: Level curves", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"plotdensity: 2-d z view as color", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {0,0,0,0,0,0,0,0,0},
+ {"Surfaces", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"plotfunc: Plot a 2-var function", 0,  (Fl_Callback*)cb_Xcas_help_plot3d, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"plotparam: Parametric 3-d surface", 0,  (Fl_Callback*)cb_Xcas_help_plotparam3d, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {0,0,0,0,0,0,0,0,0},
+ {"Sequence", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"plotseq: Recurrent sequence plot", 0,  (Fl_Callback*)cb_Xcas_help_plotseq, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"plotlist: plot a list of values", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {0,0,0,0,0,0,0,0,0},
+ {"Ode", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"plotfield: 2-d or 3-d field", 0,  (Fl_Callback*)cb_Xcas_help_plotfield, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"plotode: Diff. equation plot", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"interactive_odeplot: Interactive diff. equation plot", 0,  (Fl_Callback*)cb_Xcas_help_iplotode, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {0,0,0,0,0,0,0,0,0},
+ {"Proba Stats", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"camembert: 1-d stats", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"bar_plot: bar plot", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"histogram: 1-d stats", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"plot: plot distribution law", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"plotcdf: plot cumulated distribution function", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"moustache: 1-d stats", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"scatterplot: 2-d stats", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"polygonplot: 2-d stats", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"polygonscatterplot: 2-d stats", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"linear_regressionplot: 2-d stats", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
  {0,0,0,0,0,0,0,0,0},
- {gettext("Prg"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("New program"), 0x80070,  (Fl_Callback*)cb_Xcas_Add_Program, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("debug: debug a program"), 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Geo", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"New figure 2d", 0x80067,  (Fl_Callback*)cb_Xcas_Add_Figure, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"New figure 3d", 0x80068,  (Fl_Callback*)cb_Xcas_Add_Figure3d, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
- {gettext("Expression"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("New expression"), 0x80065,  (Fl_Callback*)cb_Xcas_Add_Expression, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Spreadsheet", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"New spreadsheet", 0x80074,  (Fl_Callback*)cb_Xcas_Add_Tableur, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
- {gettext("Cmds"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Phys", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
- {gettext("Phys"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Highschool", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
- {gettext("Highschool"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {0,0,0,0,0,0,0,0,0},
- {gettext("Tortue"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("New turtle"), 0x80064,  (Fl_Callback*)cb_Xcas_Add_Logo, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Turtle", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"New turtle", 0x80064,  (Fl_Callback*)cb_Xcas_Add_Logo, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
  {0,0,0,0,0,0,0,0,0}
 };
@@ -1987,8 +2232,8 @@ xcas::No_Focus_Button *Xcas_Souligne_key=(xcas::No_Focus_Button *)0;
 xcas::No_Focus_Button *Xcas_Majuscule_key=(xcas::No_Focus_Button *)0;
 
 static void cb_Xcas_Majuscule_key(xcas::No_Focus_Button* o, void* v) {
-  if (Xcas_Majuscule_key->label()==std::string("min")){
-  Xcas_Majuscule_key->label("Maj");
+  if (Xcas_Majuscule_key->label()==std::string(gettext("min"))){
+  Xcas_Majuscule_key->label(gettext("Maj"));
   Xcas_a_key->label("a");
   Xcas_b_key->label("b");
   Xcas_c_key->label("c");
@@ -2047,7 +2292,7 @@ if (Xcas_Greek_key->label()==std::string("A")){
 #endif
 }
 else {
-  Xcas_Majuscule_key->label("min");
+  Xcas_Majuscule_key->label(gettext("min"));
   Xcas_a_key->label("A");
   Xcas_b_key->label("B");
   Xcas_c_key->label("C");
@@ -2122,10 +2367,10 @@ if (Xcas_Greek_key->label()==std::string("α")){
 else {
   Xcas_Greek_key->label("α");
 }
-if (Xcas_Majuscule_key->label()==std::string("min"))
-  Xcas_Majuscule_key->label("Maj");
+if (Xcas_Majuscule_key->label()==std::string(gettext("min")))
+  Xcas_Majuscule_key->label(gettext("Maj"));
 else
-  Xcas_Majuscule_key->label("min");
+  Xcas_Majuscule_key->label(gettext("min"));
 cb_Xcas_Majuscule_key(0,0);
 #else // _HAVE_FL_UTF8_HDR_
 if (Xcas_Greek_key->label()==std::string("a")){
@@ -2238,7 +2483,7 @@ xcas::No_Focus_Button *Xcas_Cst_i=(xcas::No_Focus_Button *)0;
 
 static void cb_Xcas_Cst_i(xcas::No_Focus_Button*, void*) {
   const giac::context * contextptr=Xcas_get_context();
-Xcas_input_0arg(Xcas_Cst_i,giac::printi(contextptr).c_str());
+Xcas_input_0arg(Xcas_Cst_i,giac::printi(contextptr));
 }
 
 xcas::No_Focus_Button *Xcas_Cst_pi=(xcas::No_Focus_Button *)0;
@@ -2256,7 +2501,7 @@ static void cb_Xcas_Keyboard_infinity(xcas::No_Focus_Button*, void*) {
 xcas::No_Focus_Button *Xcas_Racine_carree=(xcas::No_Focus_Button *)0;
 
 static void cb_Xcas_Racine_carree(xcas::No_Focus_Button*, void*) {
-  xcas::in_Xcas_input_1arg(Fl::focus(),"sqrt",true);
+  xcas::in_Xcas_input_1arg(xcas::Xcas_input_focus,"sqrt",true);
 }
 
 Fl_Group *Rewrite_keyboard=(Fl_Group *)0;
@@ -2264,45 +2509,84 @@ Fl_Group *Rewrite_keyboard=(Fl_Group *)0;
 xcas::No_Focus_Button *Xcas_approx_key=(xcas::No_Focus_Button *)0;
 
 static void cb_Xcas_approx_key(xcas::No_Focus_Button*, void*) {
-  xcas::in_Xcas_input_1arg(Fl::focus(),"approx",true);
+  xcas::in_Xcas_input_1arg(xcas::Xcas_input_focus,"approx",true);
 }
 
 xcas::No_Focus_Button *Xcas_simplify_key=(xcas::No_Focus_Button *)0;
 
 static void cb_Xcas_simplify_key(xcas::No_Focus_Button*, void*) {
-  xcas::in_Xcas_input_1arg(Fl::focus(),"simplify",true);
+  xcas::in_Xcas_input_1arg(xcas::Xcas_input_focus,"simplify",true);
 }
 
 xcas::No_Focus_Button *Xcas_factor_key=(xcas::No_Focus_Button *)0;
 
 static void cb_Xcas_factor_key(xcas::No_Focus_Button*, void*) {
-  xcas::in_Xcas_input_1arg(Fl::focus(),"factor",true);
+  xcas::in_Xcas_input_1arg(xcas::Xcas_input_focus,"factor",true);
 }
 
 xcas::No_Focus_Button *Xcas_convert_key=(xcas::No_Focus_Button *)0;
 
 static void cb_Xcas_convert_key(xcas::No_Focus_Button*, void*) {
-  xcas::in_Xcas_input_1arg(Fl::focus(),"convert",false);
+  Xcas_input_0arg(Xcas_convert_key," => ");
 }
+
+Fl_Menu_Button *Xcas_Prg_Menubutton=(Fl_Menu_Button *)0;
+
+static void cb_Xcas_Prg_si(Fl_Menu_*, void*) {
+  Fl::e_text=(char *)" si alors sinon fsi; ";Fl::e_length=21; xcas::fl_handle(xcas::Xcas_input_focus);
+}
+
+static void cb_Xcas_Prg_pour(Fl_Menu_*, void*) {
+  Fl::e_text=(char *)" pour de jusque faire  fpour; ";Fl::e_length=30; xcas::fl_handle(xcas::Xcas_input_focus);
+}
+
+static void cb_Xcas_Prg_tantque(Fl_Menu_*, void*) {
+  Fl::e_text=(char *)" tantque faire ftantque; ";Fl::e_length=25; xcas::fl_handle(xcas::Xcas_input_focus);
+}
+
+static void cb_Xcas_Prg_repeter(Fl_Menu_*, void*) {
+  Fl::e_text=(char *)" repeter jusqua ; ";Fl::e_length=18; xcas::fl_handle(xcas::Xcas_input_focus);
+}
+
+static void cb_Xcas_Prg_fonction(Fl_Menu_*, void*) {
+  Fl::e_text=(char *)"f(x,y):= { local ;  }";
+Fl::e_length=21; xcas::fl_handle(xcas::Xcas_input_focus);
+}
+
+static void cb_Xcas_Prg_return(Fl_Menu_*, void*) {
+  Fl::e_text=(char *)"return ;";
+Fl::e_length=8; xcas::fl_handle(xcas::Xcas_input_focus);
+}
+
+unsigned char menu_Xcas_Prg_Menubutton_i18n_done = 0;
+Fl_Menu_Item menu_Xcas_Prg_Menubutton[] = {
+ {"si", 0,  (Fl_Callback*)cb_Xcas_Prg_si, 0, 0, FL_NORMAL_LABEL, 0, 10, 0},
+ {"pour", 0,  (Fl_Callback*)cb_Xcas_Prg_pour, 0, 0, FL_NORMAL_LABEL, 0, 10, 0},
+ {"tantque", 0,  (Fl_Callback*)cb_Xcas_Prg_tantque, 0, 0, FL_NORMAL_LABEL, 0, 10, 0},
+ {"repeter", 0,  (Fl_Callback*)cb_Xcas_Prg_repeter, 0, 0, FL_NORMAL_LABEL, 0, 10, 0},
+ {"fonction", 0,  (Fl_Callback*)cb_Xcas_Prg_fonction, 0, 0, FL_NORMAL_LABEL, 0, 10, 0},
+ {"return", 0,  (Fl_Callback*)cb_Xcas_Prg_return, 0, 0, FL_NORMAL_LABEL, 0, 10, 0},
+ {0,0,0,0,0,0,0,0,0}
+};
 
 Fl_Group *Xcas_calculus_group=(Fl_Group *)0;
 
 xcas::No_Focus_Button *Xcas_diff_key=(xcas::No_Focus_Button *)0;
 
 static void cb_Xcas_diff_key(xcas::No_Focus_Button*, void*) {
-  xcas::Xcas_input_arg(Xcas_diff_key,"diff");
+  if (calc_mode(Xcas_get_context())==38) xcas::Xcas_input_arg(Xcas_diff_key,"∂"); else xcas::Xcas_input_arg(Xcas_diff_key,"diff");
 }
 
 xcas::No_Focus_Button *Xcas_int_key=(xcas::No_Focus_Button *)0;
 
 static void cb_Xcas_int_key(xcas::No_Focus_Button*, void*) {
-  xcas::Xcas_input_arg(Xcas_int_key,"integrate");
+  if (calc_mode(Xcas_get_context())==38) xcas::Xcas_input_arg(Xcas_int_key,"∫"); else xcas::Xcas_input_arg(Xcas_int_key,"integrate");
 }
 
 xcas::No_Focus_Button *Xcas_sigma_key=(xcas::No_Focus_Button *)0;
 
 static void cb_Xcas_sigma_key(xcas::No_Focus_Button*, void*) {
-  xcas::Xcas_input_arg(Xcas_sigma_key,"sum");
+  if (calc_mode(Xcas_get_context())==38) xcas::Xcas_input_arg(Xcas_sigma_key,"Σ"); else xcas::Xcas_input_arg(Xcas_sigma_key,"sum");
 }
 
 xcas::No_Focus_Button *Xcas_limit_key=(xcas::No_Focus_Button *)0;
@@ -2367,6 +2651,8 @@ xcas::No_Focus_Button *Xcas_Inverse_button=(xcas::No_Focus_Button *)0;
 
 xcas::No_Focus_Button *Xcas_Neg_button=(xcas::No_Focus_Button *)0;
 
+xcas::No_Focus_Button *Xcas_Superieur=(xcas::No_Focus_Button *)0;
+
 Fl_Group *Numeric_numbers=(Fl_Group *)0;
 
 xcas::No_Focus_Button *Xcas_Un=(xcas::No_Focus_Button *)0;
@@ -2403,7 +2689,7 @@ static char petit_buffer[]="";
 Fl::e_length=0;
 Fl::e_text=petit_buffer;
 Fl::e_keysym=FL_Escape;
-xcas::fl_handle(Fl::focus());
+xcas::fl_handle(xcas::Xcas_input_focus);
 }
 
 xcas::No_Focus_Button *Xcas_Alpha=(xcas::No_Focus_Button *)0;
@@ -2461,7 +2747,7 @@ static void cb_Xcas_main_del_button(xcas::No_Focus_Button*, void*) {
       Fl::e_length=0;
       Fl::e_text=petit_buffer;
       Fl::e_keysym=FL_BackSpace;
-      xcas::fl_handle(Fl::focus());
+      xcas::fl_handle(xcas::Xcas_input_focus);
 }
 
 xcas::No_Focus_Button *Xcas_main_paste_button=(xcas::No_Focus_Button *)0;
@@ -2478,7 +2764,7 @@ static void cb_Xcas_main_enter_button(xcas::No_Focus_Button*, void*) {
       Fl::e_length=0;
       Fl::e_text=petit_buffer;
       Fl::e_keysym=FL_Enter;
-      xcas::fl_handle(Fl::focus());
+      xcas::fl_handle(xcas::Xcas_input_focus);
 }
 
 Fl_Group *Xcas_Bandeau_Keys=(Fl_Group *)0;
@@ -2596,7 +2882,7 @@ Xcas_update_mode();
 Xcas_level_output->value("University");
 }
 
-static void cb_Xcas_Prg_CAS_level(Fl_Menu_*, void*) {
+static void cb_Xcas_Prog_level(Fl_Menu_*, void*) {
   xcas_user_level=1;
 Xcas_update_mode();
 Xcas_level_output->value(gettext("CAS"));
@@ -2620,12 +2906,13 @@ Xcas_update_mode();
 Xcas_level_output->value("Tortue");
 }
 
+unsigned char menu_Xcas_Level_i18n_done = 0;
 Fl_Menu_Item menu_Xcas_Level[] = {
- {gettext("CAS"), 0,  (Fl_Callback*)cb_Xcas_CAS_level, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Program CAS"), 0,  (Fl_Callback*)cb_Xcas_Prg_CAS_level, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Tableur"), 0,  (Fl_Callback*)cb_Xcas_Tableur_level, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Geometry"), 0,  (Fl_Callback*)cb_Xcas_Geometry_level, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("Tortue"), 0,  (Fl_Callback*)cb_Xcas_Tortue_level, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"CAS", 0,  (Fl_Callback*)cb_Xcas_CAS_level, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Program CAS", 0,  (Fl_Callback*)cb_Xcas_Prog_level, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Spreadsheet", 0,  (Fl_Callback*)cb_Xcas_Tableur_level, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Geometry", 0,  (Fl_Callback*)cb_Xcas_Geometry_level, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Turtle", 0,  (Fl_Callback*)cb_Xcas_Tortue_level, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0}
 };
 
@@ -2637,11 +2924,12 @@ Fl_Input *Xcas_html_browser=(Fl_Input *)0;
 
 static void cb_Xcas_html_browser(Fl_Input*, void*) {
   const char * ch =Xcas_html_browser->value();
+                 xcas::use_external_browser=false;
+                unsetenv("BROWSER");
                  if (strlen(ch) && strcmp(ch,"builtin")){
                    setenv("BROWSER",ch,1);
                    xcas::use_external_browser=true;
-                  }
-                 else xcas::use_external_browser=false;
+                  };
 }
 
 Fl_Value_Input *Xcas_default_rows=(Fl_Value_Input *)0;
@@ -2660,6 +2948,13 @@ Fl_Return_Button *Xcas_general_setup_save=(Fl_Return_Button *)0;
 
 static void cb_Xcas_general_setup_save(Fl_Return_Button*, void*) {
   Xcas_General_Setup->hide();
+const char * ch =Xcas_html_browser->value();
+                 xcas::use_external_browser=false;
+                unsetenv("BROWSER");
+                 if (strlen(ch) && strcmp(ch,"builtin")){
+                   setenv("BROWSER",ch,1);
+                   xcas::use_external_browser=true;
+                  }
 Xcas_save_config(Xcas_get_context());
 }
 
@@ -2708,12 +3003,13 @@ xcas::printer_format=Fl_Printer::ENVELOPE;
 Xcas_Page_Format_Output->value("8");
 }
 
+unsigned char menu_Xcas_Page_format_i18n_done = 0;
 Fl_Menu_Item menu_Xcas_Page_format[] = {
- {gettext("A4"), 0,  (Fl_Callback*)cb_Xcas_Page_A4, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("A5"), 0,  (Fl_Callback*)cb_Xcas_Page_A5, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("A3"), 0,  (Fl_Callback*)cb_Xcas_Page_A3, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("LETTER"), 0,  (Fl_Callback*)cb_Xcas_Page_LETTER, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("ENVELOPE"), 0,  (Fl_Callback*)cb_Xcas_Page_ENVELOPE, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"A4", 0,  (Fl_Callback*)cb_Xcas_Page_A4, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"A5", 0,  (Fl_Callback*)cb_Xcas_Page_A5, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"A3", 0,  (Fl_Callback*)cb_Xcas_Page_A3, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"LETTER", 0,  (Fl_Callback*)cb_Xcas_Page_LETTER, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"ENVELOPE", 0,  (Fl_Callback*)cb_Xcas_Page_ENVELOPE, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0}
 };
 
@@ -2731,6 +3027,12 @@ static void cb_Xcas_ps_preview(Fl_Input*, void*) {
   setenv("GIAC_PREVIEW",Xcas_ps_preview->value(),1);
 }
 
+Fl_Input *Xcas_proxy=(Fl_Input *)0;
+
+static void cb_Xcas_proxy(Fl_Input*, void*) {
+  setenv("http_proxy",Xcas_proxy->value(),1);
+}
+
 Fl_Button *Xcas_All_Fonts=(Fl_Button *)0;
 
 static void cb_Xcas_All_Fonts(Fl_Button*, void*) {
@@ -2739,20 +3041,36 @@ static void cb_Xcas_All_Fonts(Fl_Button*, void*) {
 
 Fl_Check_Button *Xcas_automatic_completion_browser=(Fl_Check_Button *)0;
 
-Fl_Check_Button *Xcas_down_compatibility=(Fl_Check_Button *)0;
+static void cb_Xcas_automatic_completion_browser(Fl_Check_Button*, void*) {
+  xcas::do_helpon=Xcas_automatic_completion_browser->value();
+}
 
-static void cb_Xcas_down_compatibility(Fl_Check_Button*, void*) {
-  xcas::file_save_context=!Xcas_down_compatibility->value();
+Fl_Check_Button *Xcas_stepbystep=(Fl_Check_Button *)0;
+
+static void cb_Xcas_stepbystep(Fl_Check_Button*, void*) {
+  giac::step_infolevel(Xcas_get_context())=Xcas_stepbystep->value();
+}
+
+Fl_Check_Button *Xcas_tooltip_disabled=(Fl_Check_Button *)0;
+
+static void cb_Xcas_tooltip_disabled(Fl_Check_Button*, void*) {
+  Fl_Tooltip::enable(!Xcas_tooltip_disabled->value());
+}
+
+Fl_Check_Button *Xcas_disable_try_parse_test_i=(Fl_Check_Button *)0;
+
+static void cb_Xcas_disable_try_parse_test_i(Fl_Check_Button*, void*) {
+  giac::try_parse_i(0)=giac::try_parse_i(xcas::get_context(xcas::Xcas_input_focus))=!Xcas_disable_try_parse_test_i->value();
 }
 
 Fl_Double_Window *Xcas_Script_Window=(Fl_Double_Window *)0;
 
-Fl_Double_Window *Xcas_DispG_Window_=(Fl_Double_Window *)0;
+xcas::DispG_Window *Xcas_DispG_Window_=(xcas::DispG_Window *)0;
 
 Fl_Menu_Bar *Xcas_DispG_Menu=(Fl_Menu_Bar *)0;
 
 static void cb_preview(Fl_Menu_*, void*) {
-  xcas::widget_ps_print(Xcas_DispG_,"DispG",true,3,true);
+  xcas::widget_ps_print(Xcas_DispG_,"DispG",true,3,true,true,true);
 }
 
 static void cb_print(Fl_Menu_*, void*) {
@@ -2771,13 +3089,14 @@ static void cb_close(Fl_Menu_*, void*) {
   Xcas_DispG_Window_->hide();
 }
 
+unsigned char menu_Xcas_DispG_Menu_i18n_done = 0;
 Fl_Menu_Item menu_Xcas_DispG_Menu[] = {
- {gettext("Print"), 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("preview"), 0,  (Fl_Callback*)cb_preview, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("print"), 0,  (Fl_Callback*)cb_print, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("latex preview"), 0,  (Fl_Callback*)cb_latex, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("latex print"), 0,  (Fl_Callback*)cb_latex1, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {gettext("close"), 0,  (Fl_Callback*)cb_close, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Print", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"preview", 0,  (Fl_Callback*)cb_preview, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"print", 0,  (Fl_Callback*)cb_print, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"latex preview", 0,  (Fl_Callback*)cb_latex, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"latex print", 0,  (Fl_Callback*)cb_latex1, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"close", 0,  (Fl_Callback*)cb_close, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
  {0,0,0,0,0,0,0,0,0}
 };
@@ -2792,9 +3111,24 @@ Fl_Tile *Xcas_DispG_Tile=(Fl_Tile *)0;
 
 xcas::Graph2d *Xcas_DispG_=(xcas::Graph2d *)0;
 
+xcas::Equation *Xcas_PrintG_=(xcas::Equation *)0;
+
+Fl_Button *Xcas_DispG_ClrGraph=(Fl_Button *)0;
+
+static void cb_Xcas_DispG_ClrGraph(Fl_Button*, void*) {
+  Xcas_DispG_->clear(0); Xcas_PrintG_->set_data(giac::gen(giac::makevecteur(giac::string2gen("",false),giac::string2gen("Step by step console",false)),giac::_HIST__VECT));
+}
+
 Fl_Window* Xcas_run(int argc,char ** argv) {
-  { Xcas_Main_Window_ = new Fl_Window(775, 615, gettext("Xcas New Interface"));
+  { Xcas_Main_Window_ = new Fl_Window(775, 520, gettext("Xcas New Interface"));
     { Xcas_main_menu = new Fl_Menu_Bar(0, 0, 775, 25);
+      if (!menu_Xcas_main_menu_i18n_done) {
+        int i=0;
+        for ( ; i<327; i++)
+          if (menu_Xcas_main_menu[i].label())
+            menu_Xcas_main_menu[i].label(gettext(menu_Xcas_main_menu[i].label()));
+        menu_Xcas_main_menu_i18n_done = 1;
+      }
       Xcas_main_menu->menu(menu_Xcas_main_menu);
     } // Fl_Menu_Bar* Xcas_main_menu
     { Xcas_Main_Tab = new xcas::Xcas_Tabs(0, 25, 775, 360);
@@ -3287,12 +3621,12 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
           Xcas_Diese_key->align(Fl_Align(FL_ALIGN_CENTER));
           Xcas_Diese_key->when(FL_WHEN_RELEASE);
         } // xcas::No_Focus_Button* Xcas_Diese_key
-        { Xcas_Pi_key = new xcas::No_Focus_Button(230, 490, 25, 25, gettext("p"));
+        { Xcas_Pi_key = new xcas::No_Focus_Button(230, 490, 25, 25, gettext("\316\240"));
           Xcas_Pi_key->box(FL_UP_BOX);
           Xcas_Pi_key->color((Fl_Color)10);
           Xcas_Pi_key->selection_color(FL_BACKGROUND_COLOR);
           Xcas_Pi_key->labeltype(FL_NORMAL_LABEL);
-          Xcas_Pi_key->labelfont(12);
+          Xcas_Pi_key->labelfont(0);
           Xcas_Pi_key->labelsize(10);
           Xcas_Pi_key->labelcolor(FL_FOREGROUND_COLOR);
           Xcas_Pi_key->align(Fl_Align(FL_ALIGN_CENTER));
@@ -3398,6 +3732,7 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
         } // Fl_Group* Lettre_keyboard
         { Xcas_Delim_keyboard = new Fl_Group(50, 415, 140, 50);
           { Xcas_Double_quote = new xcas::No_Focus_Button(70, 415, 30, 25, gettext("\""));
+            Xcas_Double_quote->tooltip(gettext("String delimiter"));
             Xcas_Double_quote->box(FL_UP_BOX);
             Xcas_Double_quote->color(FL_BACKGROUND_COLOR);
             Xcas_Double_quote->selection_color(FL_BACKGROUND_COLOR);
@@ -3420,6 +3755,7 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
             Xcas_Parentheses->when(FL_WHEN_RELEASE);
           } // xcas::No_Focus_Button* Xcas_Parentheses
           { Xcas_Brackets = new xcas::No_Focus_Button(130, 415, 30, 25, gettext("{}"));
+            Xcas_Brackets->tooltip(gettext("Bloc delimiter (set delimiter in maple compatible mode)"));
             Xcas_Brackets->box(FL_UP_BOX);
             Xcas_Brackets->color(FL_BACKGROUND_COLOR);
             Xcas_Brackets->selection_color(FL_BACKGROUND_COLOR);
@@ -3431,6 +3767,7 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
             Xcas_Brackets->when(FL_WHEN_RELEASE);
           } // xcas::No_Focus_Button* Xcas_Brackets
           { Xcas_Crochets = new xcas::No_Focus_Button(100, 415, 30, 25, gettext("[]"));
+            Xcas_Crochets->tooltip(gettext("List, vector, matrix delimiter"));
             Xcas_Crochets->box(FL_UP_BOX);
             Xcas_Crochets->color(FL_BACKGROUND_COLOR);
             Xcas_Crochets->selection_color(FL_BACKGROUND_COLOR);
@@ -3442,6 +3779,7 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
             Xcas_Crochets->when(FL_WHEN_RELEASE);
           } // xcas::No_Focus_Button* Xcas_Crochets
           { Xcas_Quote = new xcas::No_Focus_Button(50, 415, 20, 25, gettext("\'"));
+            Xcas_Quote->tooltip(gettext("Quote"));
             Xcas_Quote->box(FL_UP_BOX);
             Xcas_Quote->color(FL_BACKGROUND_COLOR);
             Xcas_Quote->selection_color(FL_BACKGROUND_COLOR);
@@ -3475,6 +3813,7 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
             Xcas_Semi_button->when(FL_WHEN_RELEASE);
           } // xcas::No_Focus_Button* Xcas_Semi_button
           { Xcas_Sto = new xcas::No_Focus_Button(70, 440, 30, 25, gettext(":="));
+            Xcas_Sto->tooltip(gettext("Assign"));
             Xcas_Sto->box(FL_UP_BOX);
             Xcas_Sto->color(FL_BACKGROUND_COLOR);
             Xcas_Sto->selection_color(FL_BACKGROUND_COLOR);
@@ -3522,6 +3861,7 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
         } // Fl_Group* Xcas_Delim_keyboard
         { Cst_keyboard = new Fl_Group(190, 415, 60, 50);
           { Xcas_Cst_i = new xcas::No_Focus_Button(190, 440, 30, 25, gettext("i"));
+            Xcas_Cst_i->tooltip(gettext("Complex square root of -1"));
             Xcas_Cst_i->box(FL_UP_BOX);
             Xcas_Cst_i->shortcut(0x69);
             Xcas_Cst_i->color(FL_BACKGROUND_COLOR);
@@ -3535,11 +3875,12 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
             Xcas_Cst_i->when(FL_WHEN_RELEASE);
           } // xcas::No_Focus_Button* Xcas_Cst_i
           { Xcas_Cst_pi = new xcas::No_Focus_Button(220, 415, 30, 25, gettext("\317\200"));
+            Xcas_Cst_pi->tooltip(gettext("The pi number"));
             Xcas_Cst_pi->box(FL_UP_BOX);
             Xcas_Cst_pi->color(FL_BACKGROUND_COLOR);
             Xcas_Cst_pi->selection_color(FL_BACKGROUND_COLOR);
             Xcas_Cst_pi->labeltype(FL_NORMAL_LABEL);
-            Xcas_Cst_pi->labelfont(12);
+            Xcas_Cst_pi->labelfont(0);
             Xcas_Cst_pi->labelsize(10);
             Xcas_Cst_pi->labelcolor(FL_FOREGROUND_COLOR);
             Xcas_Cst_pi->callback((Fl_Callback*)cb_Xcas_Cst_pi);
@@ -3547,6 +3888,7 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
             Xcas_Cst_pi->when(FL_WHEN_RELEASE);
           } // xcas::No_Focus_Button* Xcas_Cst_pi
           { Xcas_Keyboard_infinity = new xcas::No_Focus_Button(190, 415, 30, 25, gettext("oo"));
+            Xcas_Keyboard_infinity->tooltip(gettext("Infinity (unsigned)"));
             Xcas_Keyboard_infinity->box(FL_UP_BOX);
             Xcas_Keyboard_infinity->color(FL_BACKGROUND_COLOR);
             Xcas_Keyboard_infinity->selection_color(FL_BACKGROUND_COLOR);
@@ -3559,6 +3901,7 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
             Xcas_Keyboard_infinity->when(FL_WHEN_RELEASE);
           } // xcas::No_Focus_Button* Xcas_Keyboard_infinity
           { Xcas_Racine_carree = new xcas::No_Focus_Button(220, 440, 30, 25, gettext("sqrt"));
+            Xcas_Racine_carree->tooltip(gettext("Square root"));
             Xcas_Racine_carree->box(FL_UP_BOX);
             Xcas_Racine_carree->color(FL_BACKGROUND_COLOR);
             Xcas_Racine_carree->selection_color(FL_BACKGROUND_COLOR);
@@ -3567,13 +3910,14 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
             Xcas_Racine_carree->labelsize(10);
             Xcas_Racine_carree->labelcolor(FL_FOREGROUND_COLOR);
             Xcas_Racine_carree->callback((Fl_Callback*)cb_Xcas_Racine_carree);
-            Xcas_Racine_carree->align(Fl_Align(FL_ALIGN_CENTER));
+            Xcas_Racine_carree->align(Fl_Align(FL_ALIGN_CLIP));
             Xcas_Racine_carree->when(FL_WHEN_RELEASE);
           } // xcas::No_Focus_Button* Xcas_Racine_carree
           Cst_keyboard->end();
         } // Fl_Group* Cst_keyboard
         { Rewrite_keyboard = new Fl_Group(0, 465, 60, 50);
-          { Xcas_approx_key = new xcas::No_Focus_Button(0, 465, 30, 25, gettext("~"));
+          { Xcas_approx_key = new xcas::No_Focus_Button(0, 465, 15, 25, gettext("~"));
+            Xcas_approx_key->tooltip(gettext("Evalf"));
             Xcas_approx_key->box(FL_UP_BOX);
             Xcas_approx_key->shortcut(0x80061);
             Xcas_approx_key->color(FL_BACKGROUND_COLOR);
@@ -3587,7 +3931,9 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
             Xcas_approx_key->when(FL_WHEN_RELEASE);
           } // xcas::No_Focus_Button* Xcas_approx_key
           { Xcas_simplify_key = new xcas::No_Focus_Button(0, 490, 30, 25, gettext("simplify"));
+            Xcas_simplify_key->tooltip(gettext("simplify: Simplify expression"));
             Xcas_simplify_key->box(FL_UP_BOX);
+            Xcas_simplify_key->shortcut(0xc0073);
             Xcas_simplify_key->color(FL_BACKGROUND_COLOR);
             Xcas_simplify_key->selection_color(FL_BACKGROUND_COLOR);
             Xcas_simplify_key->labeltype(FL_NORMAL_LABEL);
@@ -3599,6 +3945,7 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
             Xcas_simplify_key->when(FL_WHEN_RELEASE);
           } // xcas::No_Focus_Button* Xcas_simplify_key
           { Xcas_factor_key = new xcas::No_Focus_Button(30, 465, 30, 25, gettext("factor"));
+            Xcas_factor_key->tooltip(gettext("factor: Factorization"));
             Xcas_factor_key->box(FL_UP_BOX);
             Xcas_factor_key->shortcut(0x80066);
             Xcas_factor_key->color(FL_BACKGROUND_COLOR);
@@ -3611,7 +3958,8 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
             Xcas_factor_key->align(Fl_Align(68|FL_ALIGN_INSIDE));
             Xcas_factor_key->when(FL_WHEN_RELEASE);
           } // xcas::No_Focus_Button* Xcas_factor_key
-          { Xcas_convert_key = new xcas::No_Focus_Button(30, 490, 30, 25, gettext("convert"));
+          { Xcas_convert_key = new xcas::No_Focus_Button(15, 465, 15, 25, gettext("=>"));
+            Xcas_convert_key->tooltip(gettext("Sto/Convert to"));
             Xcas_convert_key->box(FL_UP_BOX);
             Xcas_convert_key->shortcut(0x80063);
             Xcas_convert_key->color(FL_BACKGROUND_COLOR);
@@ -3621,13 +3969,24 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
             Xcas_convert_key->labelsize(10);
             Xcas_convert_key->labelcolor(FL_FOREGROUND_COLOR);
             Xcas_convert_key->callback((Fl_Callback*)cb_Xcas_convert_key);
-            Xcas_convert_key->align(Fl_Align(68|FL_ALIGN_INSIDE));
+            Xcas_convert_key->align(Fl_Align(FL_ALIGN_CENTER));
             Xcas_convert_key->when(FL_WHEN_RELEASE);
           } // xcas::No_Focus_Button* Xcas_convert_key
+          { Xcas_Prg_Menubutton = new Fl_Menu_Button(30, 490, 30, 25, gettext("prg"));
+            Xcas_Prg_Menubutton->labelsize(10);
+            if (!menu_Xcas_Prg_Menubutton_i18n_done) {
+              int i=0;
+              for ( ; i<6; i++)
+                if (menu_Xcas_Prg_Menubutton[i].label())
+                  menu_Xcas_Prg_Menubutton[i].label(gettext(menu_Xcas_Prg_Menubutton[i].label()));
+              menu_Xcas_Prg_Menubutton_i18n_done = 1;
+            }
+            Xcas_Prg_Menubutton->menu(menu_Xcas_Prg_Menubutton);
+          } // Fl_Menu_Button* Xcas_Prg_Menubutton
           Rewrite_keyboard->end();
         } // Fl_Group* Rewrite_keyboard
         { Xcas_calculus_group = new Fl_Group(60, 465, 40, 50);
-          { Xcas_diff_key = new xcas::No_Focus_Button(60, 465, 20, 25, gettext("D"));
+          { Xcas_diff_key = new xcas::No_Focus_Button(60, 465, 20, 25, gettext("\342\210\202"));
             Xcas_diff_key->tooltip(gettext("diff"));
             Xcas_diff_key->box(FL_UP_BOX);
             Xcas_diff_key->shortcut(0x80064);
@@ -3641,7 +4000,7 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
             Xcas_diff_key->align(Fl_Align(FL_ALIGN_CENTER));
             Xcas_diff_key->when(FL_WHEN_RELEASE);
           } // xcas::No_Focus_Button* Xcas_diff_key
-          { Xcas_int_key = new xcas::No_Focus_Button(80, 465, 20, 25, gettext("I"));
+          { Xcas_int_key = new xcas::No_Focus_Button(80, 465, 20, 25, gettext("\342\210\253"));
             Xcas_int_key->tooltip(gettext("Integral"));
             Xcas_int_key->box(FL_UP_BOX);
             Xcas_int_key->shortcut(0x80069);
@@ -3655,27 +4014,27 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
             Xcas_int_key->align(Fl_Align(FL_ALIGN_CENTER));
             Xcas_int_key->when(FL_WHEN_RELEASE);
           } // xcas::No_Focus_Button* Xcas_int_key
-          { Xcas_sigma_key = new xcas::No_Focus_Button(80, 490, 20, 25, gettext("S"));
+          { Xcas_sigma_key = new xcas::No_Focus_Button(80, 490, 20, 25, gettext("\316\243"));
             Xcas_sigma_key->tooltip(gettext("Sum"));
             Xcas_sigma_key->box(FL_UP_BOX);
             Xcas_sigma_key->color(FL_BACKGROUND_COLOR);
             Xcas_sigma_key->selection_color(FL_BACKGROUND_COLOR);
             Xcas_sigma_key->labeltype(FL_NORMAL_LABEL);
-            Xcas_sigma_key->labelfont(12);
+            Xcas_sigma_key->labelfont(0);
             Xcas_sigma_key->labelsize(10);
             Xcas_sigma_key->labelcolor(FL_FOREGROUND_COLOR);
             Xcas_sigma_key->callback((Fl_Callback*)cb_Xcas_sigma_key);
             Xcas_sigma_key->align(Fl_Align(FL_ALIGN_CLIP));
             Xcas_sigma_key->when(FL_WHEN_RELEASE);
           } // xcas::No_Focus_Button* Xcas_sigma_key
-          { Xcas_limit_key = new xcas::No_Focus_Button(60, 490, 20, 25, gettext("L"));
+          { Xcas_limit_key = new xcas::No_Focus_Button(60, 490, 20, 25, gettext("lim"));
             Xcas_limit_key->tooltip(gettext("Limit"));
             Xcas_limit_key->box(FL_UP_BOX);
             Xcas_limit_key->shortcut(0x8006c);
             Xcas_limit_key->color(FL_BACKGROUND_COLOR);
             Xcas_limit_key->selection_color(FL_BACKGROUND_COLOR);
             Xcas_limit_key->labeltype(FL_NORMAL_LABEL);
-            Xcas_limit_key->labelfont(10);
+            Xcas_limit_key->labelfont(0);
             Xcas_limit_key->labelsize(10);
             Xcas_limit_key->labelcolor(FL_FOREGROUND_COLOR);
             Xcas_limit_key->callback((Fl_Callback*)cb_Xcas_limit_key);
@@ -3687,6 +4046,7 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
         { Transcendental = new Fl_Group(100, 465, 150, 50);
           { Trig_keyboard = new Fl_Group(100, 465, 150, 25);
             { Xcas_Sinus_button = new xcas::No_Focus_Button(115, 465, 35, 25, gettext("sin"));
+              Xcas_Sinus_button->tooltip(gettext("Sinus"));
               Xcas_Sinus_button->box(FL_UP_BOX);
               Xcas_Sinus_button->color(FL_BACKGROUND_COLOR);
               Xcas_Sinus_button->selection_color(FL_BACKGROUND_COLOR);
@@ -3694,7 +4054,7 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
               Xcas_Sinus_button->labelfont(0);
               Xcas_Sinus_button->labelsize(10);
               Xcas_Sinus_button->labelcolor(FL_FOREGROUND_COLOR);
-              Xcas_Sinus_button->align(Fl_Align(FL_ALIGN_CENTER));
+              Xcas_Sinus_button->align(Fl_Align(FL_ALIGN_CLIP));
               Xcas_Sinus_button->when(FL_WHEN_RELEASE);
             } // xcas::No_Focus_Button* Xcas_Sinus_button
             { Xcas_Cosinus_button = new xcas::No_Focus_Button(165, 465, 35, 25, gettext("cos"));
@@ -3705,10 +4065,11 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
               Xcas_Cosinus_button->labelfont(0);
               Xcas_Cosinus_button->labelsize(10);
               Xcas_Cosinus_button->labelcolor(FL_FOREGROUND_COLOR);
-              Xcas_Cosinus_button->align(Fl_Align(FL_ALIGN_CENTER));
+              Xcas_Cosinus_button->align(Fl_Align(FL_ALIGN_CLIP));
               Xcas_Cosinus_button->when(FL_WHEN_RELEASE);
             } // xcas::No_Focus_Button* Xcas_Cosinus_button
             { Xcas_Tangeant_button = new xcas::No_Focus_Button(215, 465, 35, 25, gettext("tan"));
+              Xcas_Tangeant_button->tooltip(gettext("Tangent"));
               Xcas_Tangeant_button->box(FL_UP_BOX);
               Xcas_Tangeant_button->color(FL_BACKGROUND_COLOR);
               Xcas_Tangeant_button->selection_color(FL_BACKGROUND_COLOR);
@@ -3716,10 +4077,11 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
               Xcas_Tangeant_button->labelfont(0);
               Xcas_Tangeant_button->labelsize(10);
               Xcas_Tangeant_button->labelcolor(FL_FOREGROUND_COLOR);
-              Xcas_Tangeant_button->align(Fl_Align(FL_ALIGN_CENTER));
+              Xcas_Tangeant_button->align(Fl_Align(FL_ALIGN_CLIP));
               Xcas_Tangeant_button->when(FL_WHEN_RELEASE);
             } // xcas::No_Focus_Button* Xcas_Tangeant_button
             { Xcas_Asinus_button = new xcas::No_Focus_Button(100, 465, 15, 25, gettext("a"));
+              Xcas_Asinus_button->tooltip(gettext("Arcsinus"));
               Xcas_Asinus_button->box(FL_UP_BOX);
               Xcas_Asinus_button->color((Fl_Color)29);
               Xcas_Asinus_button->selection_color(FL_BACKGROUND_COLOR);
@@ -3732,6 +4094,7 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
               Xcas_Asinus_button->when(FL_WHEN_RELEASE);
             } // xcas::No_Focus_Button* Xcas_Asinus_button
             { Xcas_Acosinus_button = new xcas::No_Focus_Button(150, 465, 15, 25, gettext("a"));
+              Xcas_Acosinus_button->tooltip(gettext("Arccosinus"));
               Xcas_Acosinus_button->box(FL_UP_BOX);
               Xcas_Acosinus_button->color((Fl_Color)29);
               Xcas_Acosinus_button->selection_color(FL_BACKGROUND_COLOR);
@@ -3744,6 +4107,7 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
               Xcas_Acosinus_button->when(FL_WHEN_RELEASE);
             } // xcas::No_Focus_Button* Xcas_Acosinus_button
             { Xcas_Atangeant_button = new xcas::No_Focus_Button(200, 465, 15, 25, gettext("a"));
+              Xcas_Atangeant_button->tooltip(gettext("Arctangent"));
               Xcas_Atangeant_button->box(FL_UP_BOX);
               Xcas_Atangeant_button->color((Fl_Color)29);
               Xcas_Atangeant_button->selection_color(FL_BACKGROUND_COLOR);
@@ -3759,6 +4123,7 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
           } // Fl_Group* Trig_keyboard
           { Exp_keyboard = new Fl_Group(100, 490, 150, 25);
             { Xcas_Exp_button = new xcas::No_Focus_Button(135, 490, 35, 25, gettext("exp"));
+              Xcas_Exp_button->tooltip(gettext("Exponential"));
               Xcas_Exp_button->box(FL_UP_BOX);
               Xcas_Exp_button->color(FL_BACKGROUND_COLOR);
               Xcas_Exp_button->selection_color(FL_BACKGROUND_COLOR);
@@ -3766,7 +4131,7 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
               Xcas_Exp_button->labelfont(0);
               Xcas_Exp_button->labelsize(10);
               Xcas_Exp_button->labelcolor(FL_FOREGROUND_COLOR);
-              Xcas_Exp_button->align(Fl_Align(FL_ALIGN_CENTER));
+              Xcas_Exp_button->align(Fl_Align(FL_ALIGN_CLIP));
               Xcas_Exp_button->when(FL_WHEN_RELEASE);
             } // xcas::No_Focus_Button* Xcas_Exp_button
             { Xcas_Dix_puissance = new xcas::No_Focus_Button(215, 490, 35, 25, gettext("10^"));
@@ -3781,6 +4146,7 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
               Xcas_Dix_puissance->when(FL_WHEN_RELEASE);
             } // xcas::No_Focus_Button* Xcas_Dix_puissance
             { Xcas_Ln10_button = new xcas::No_Focus_Button(170, 490, 45, 25, gettext("log10"));
+              Xcas_Ln10_button->tooltip(gettext("base 10 logarithm"));
               Xcas_Ln10_button->box(FL_UP_BOX);
               Xcas_Ln10_button->color(FL_BACKGROUND_COLOR);
               Xcas_Ln10_button->selection_color(FL_BACKGROUND_COLOR);
@@ -3788,10 +4154,11 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
               Xcas_Ln10_button->labelfont(0);
               Xcas_Ln10_button->labelsize(10);
               Xcas_Ln10_button->labelcolor(FL_FOREGROUND_COLOR);
-              Xcas_Ln10_button->align(Fl_Align(FL_ALIGN_CENTER));
+              Xcas_Ln10_button->align(Fl_Align(FL_ALIGN_CLIP));
               Xcas_Ln10_button->when(FL_WHEN_RELEASE);
             } // xcas::No_Focus_Button* Xcas_Ln10_button
             { Xcas_Ln_button = new xcas::No_Focus_Button(100, 490, 35, 25, gettext("ln"));
+              Xcas_Ln_button->tooltip(gettext("Natural logarithm"));
               Xcas_Ln_button->box(FL_UP_BOX);
               Xcas_Ln_button->color(FL_BACKGROUND_COLOR);
               Xcas_Ln_button->selection_color(FL_BACKGROUND_COLOR);
@@ -3799,7 +4166,7 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
               Xcas_Ln_button->labelfont(0);
               Xcas_Ln_button->labelsize(10);
               Xcas_Ln_button->labelcolor(FL_FOREGROUND_COLOR);
-              Xcas_Ln_button->align(Fl_Align(FL_ALIGN_CENTER));
+              Xcas_Ln_button->align(Fl_Align(FL_ALIGN_CLIP));
               Xcas_Ln_button->when(FL_WHEN_RELEASE);
             } // xcas::No_Focus_Button* Xcas_Ln_button
             Exp_keyboard->end();
@@ -3819,7 +4186,8 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
             Xcas_Plus->align(Fl_Align(FL_ALIGN_CENTER));
             Xcas_Plus->when(FL_WHEN_RELEASE);
           } // xcas::No_Focus_Button* Xcas_Plus
-          { Xcas_Moins = new xcas::No_Focus_Button(280, 440, 30, 25, gettext("-"));
+          { Xcas_Moins = new xcas::No_Focus_Button(290, 440, 20, 25, gettext("-"));
+            Xcas_Moins->tooltip(gettext("Subtract"));
             Xcas_Moins->box(FL_UP_BOX);
             Xcas_Moins->shortcut(0x2d);
             Xcas_Moins->color(FL_BACKGROUND_COLOR);
@@ -3868,6 +4236,7 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
             Xcas_Puissance->when(FL_WHEN_RELEASE);
           } // xcas::No_Focus_Button* Xcas_Puissance
           { Xcas_C_mod = new xcas::No_Focus_Button(250, 490, 30, 25, gettext("%"));
+            Xcas_C_mod->tooltip(gettext("Modulo"));
             Xcas_C_mod->box(FL_UP_BOX);
             Xcas_C_mod->color(FL_BACKGROUND_COLOR);
             Xcas_C_mod->selection_color(FL_BACKGROUND_COLOR);
@@ -3879,6 +4248,7 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
             Xcas_C_mod->when(FL_WHEN_RELEASE);
           } // xcas::No_Focus_Button* Xcas_C_mod
           { Xcas_Inverse_button = new xcas::No_Focus_Button(250, 415, 30, 25, gettext("inv"));
+            Xcas_Inverse_button->tooltip(gettext("Inverse"));
             Xcas_Inverse_button->box(FL_UP_BOX);
             Xcas_Inverse_button->color(FL_BACKGROUND_COLOR);
             Xcas_Inverse_button->selection_color(FL_BACKGROUND_COLOR);
@@ -3886,10 +4256,11 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
             Xcas_Inverse_button->labelfont(0);
             Xcas_Inverse_button->labelsize(10);
             Xcas_Inverse_button->labelcolor(FL_FOREGROUND_COLOR);
-            Xcas_Inverse_button->align(Fl_Align(FL_ALIGN_CENTER));
+            Xcas_Inverse_button->align(Fl_Align(FL_ALIGN_CLIP));
             Xcas_Inverse_button->when(FL_WHEN_RELEASE);
           } // xcas::No_Focus_Button* Xcas_Inverse_button
-          { Xcas_Neg_button = new xcas::No_Focus_Button(250, 440, 30, 25, gettext("neg"));
+          { Xcas_Neg_button = new xcas::No_Focus_Button(270, 440, 20, 25, gettext("neg"));
+            Xcas_Neg_button->tooltip(gettext("Opposite"));
             Xcas_Neg_button->box(FL_UP_BOX);
             Xcas_Neg_button->color(FL_BACKGROUND_COLOR);
             Xcas_Neg_button->selection_color(FL_BACKGROUND_COLOR);
@@ -3897,9 +4268,21 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
             Xcas_Neg_button->labelfont(0);
             Xcas_Neg_button->labelsize(10);
             Xcas_Neg_button->labelcolor(FL_FOREGROUND_COLOR);
-            Xcas_Neg_button->align(Fl_Align(FL_ALIGN_CENTER));
+            Xcas_Neg_button->align(Fl_Align(FL_ALIGN_CLIP));
             Xcas_Neg_button->when(FL_WHEN_RELEASE);
           } // xcas::No_Focus_Button* Xcas_Neg_button
+          { Xcas_Superieur = new xcas::No_Focus_Button(250, 440, 20, 25, gettext(">"));
+            Xcas_Superieur->box(FL_UP_BOX);
+            Xcas_Superieur->shortcut(0x2d);
+            Xcas_Superieur->color(FL_BACKGROUND_COLOR);
+            Xcas_Superieur->selection_color(FL_BACKGROUND_COLOR);
+            Xcas_Superieur->labeltype(FL_NORMAL_LABEL);
+            Xcas_Superieur->labelfont(0);
+            Xcas_Superieur->labelsize(14);
+            Xcas_Superieur->labelcolor(FL_FOREGROUND_COLOR);
+            Xcas_Superieur->align(Fl_Align(FL_ALIGN_CENTER));
+            Xcas_Superieur->when(FL_WHEN_RELEASE);
+          } // xcas::No_Focus_Button* Xcas_Superieur
           Operations_keyboard->end();
         } // Fl_Group* Operations_keyboard
         Xcas_Scientific_Keyboard->end();
@@ -4075,11 +4458,11 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
           Xcas_Alpha->labelsize(10);
           Xcas_Alpha->labelcolor((Fl_Color)4);
           Xcas_Alpha->callback((Fl_Callback*)cb_Xcas_Alpha);
-          Xcas_Alpha->align(Fl_Align(FL_ALIGN_CENTER));
+          Xcas_Alpha->align(Fl_Align(FL_ALIGN_CLIP));
           Xcas_Alpha->when(FL_WHEN_RELEASE);
         } // xcas::No_Focus_Button* Xcas_Alpha
         { Xcas_Cmds = new xcas::No_Focus_Button(420, 435, 35, 20, gettext("cmds"));
-          Xcas_Cmds->tooltip(gettext("Control"));
+          Xcas_Cmds->tooltip(gettext("Show commands bandeau"));
           Xcas_Cmds->box(FL_UP_BOX);
           Xcas_Cmds->shortcut(0xff1b);
           Xcas_Cmds->color((Fl_Color)17);
@@ -4089,11 +4472,11 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
           Xcas_Cmds->labelsize(10);
           Xcas_Cmds->labelcolor(FL_FOREGROUND_COLOR);
           Xcas_Cmds->callback((Fl_Callback*)cb_Xcas_Cmds);
-          Xcas_Cmds->align(Fl_Align(FL_ALIGN_CENTER));
+          Xcas_Cmds->align(Fl_Align(FL_ALIGN_CLIP));
           Xcas_Cmds->when(FL_WHEN_RELEASE);
         } // xcas::No_Focus_Button* Xcas_Cmds
         { Xcas_Msg = new xcas::No_Focus_Button(420, 455, 35, 20, gettext("msg"));
-          Xcas_Msg->tooltip(gettext("Control"));
+          Xcas_Msg->tooltip(gettext("Show messages"));
           Xcas_Msg->box(FL_UP_BOX);
           Xcas_Msg->shortcut(0xff1b);
           Xcas_Msg->color((Fl_Color)17);
@@ -4103,11 +4486,11 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
           Xcas_Msg->labelsize(10);
           Xcas_Msg->labelcolor(FL_FOREGROUND_COLOR);
           Xcas_Msg->callback((Fl_Callback*)cb_Xcas_Msg);
-          Xcas_Msg->align(Fl_Align(FL_ALIGN_CENTER));
+          Xcas_Msg->align(Fl_Align(FL_ALIGN_CLIP));
           Xcas_Msg->when(FL_WHEN_RELEASE);
         } // xcas::No_Focus_Button* Xcas_Msg
         { Xcas_b7 = new xcas::No_Focus_Button(385, 435, 35, 20, gettext("b7"));
-          Xcas_b7->tooltip(gettext("Alt"));
+          Xcas_b7->tooltip(gettext("Set bit 7 for next key entry"));
           Xcas_b7->box(FL_UP_BOX);
           Xcas_b7->shortcut(0xff1b);
           Xcas_b7->color(FL_BACKGROUND_COLOR);
@@ -4135,6 +4518,7 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
           Xcas_Ctrl->when(FL_WHEN_RELEASE);
         } // xcas::No_Focus_Button* Xcas_Ctrl
         { Xcas_close_keyboard = new xcas::No_Focus_Button(420, 415, 35, 20, gettext("X"));
+          Xcas_close_keyboard->tooltip(gettext("Close keyboard"));
           Xcas_close_keyboard->box(FL_UP_BOX);
           Xcas_close_keyboard->color((Fl_Color)17);
           Xcas_close_keyboard->selection_color(FL_BACKGROUND_COLOR);
@@ -4147,6 +4531,7 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
           Xcas_close_keyboard->when(FL_WHEN_RELEASE);
         } // xcas::No_Focus_Button* Xcas_close_keyboard
         { Xcas_main_del_button = new xcas::No_Focus_Button(420, 495, 35, 20, gettext("@<"));
+          Xcas_main_del_button->tooltip(gettext("Backspace"));
           Xcas_main_del_button->box(FL_UP_BOX);
           Xcas_main_del_button->shortcut(0x40076);
           Xcas_main_del_button->color(FL_BACKGROUND_COLOR);
@@ -4190,7 +4575,7 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
       Xcas_Keyboard_Group->end();
     } // Fl_Group* Xcas_Keyboard_Group
     { Xcas_Bandeau_Keys = new Fl_Group(0, 515, 455, 30);
-      { Xcas_Bandeau_Keys_Group = new Fl_Group(0, 515, 425, 30);
+      { Xcas_Bandeau_Keys_Group = new Fl_Group(0, 515, 420, 30);
         { Xcas_PREV_Key = new xcas::No_Focus_Button(40, 515, 25, 30, gettext("<<"));
           Xcas_PREV_Key->tooltip(gettext("Previous menu page"));
           Xcas_PREV_Key->box(FL_UP_BOX);
@@ -4297,7 +4682,7 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
           Xcas_NXT_Key->align(Fl_Align(FL_ALIGN_CLIP));
           Xcas_NXT_Key->when(FL_WHEN_RELEASE);
         } // xcas::No_Focus_Button* Xcas_NXT_Key
-        { Xcas_CST_Key = new xcas::No_Focus_Button(390, 515, 35, 30, gettext("cust"));
+        { Xcas_CST_Key = new xcas::No_Focus_Button(390, 515, 30, 30, gettext("cust"));
           Xcas_CST_Key->tooltip(gettext("Custom menu"));
           Xcas_CST_Key->box(FL_UP_BOX);
           Xcas_CST_Key->shortcut(0xffc8);
@@ -4341,7 +4726,7 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
         } // xcas::No_Focus_Button* Xcas_Home_button
         Xcas_Bandeau_Keys_Group->end();
       } // Fl_Group* Xcas_Bandeau_Keys_Group
-      { Xcas_close_bandeau = new xcas::No_Focus_Button(425, 515, 30, 30, gettext("X"));
+      { Xcas_close_bandeau = new xcas::No_Focus_Button(420, 515, 35, 30, gettext("X"));
         Xcas_close_bandeau->box(FL_UP_BOX);
         Xcas_close_bandeau->color((Fl_Color)17);
         Xcas_close_bandeau->selection_color(FL_BACKGROUND_COLOR);
@@ -4388,11 +4773,18 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
     } // Fl_Group* Xcas_Messages
     Xcas_Main_Window_->end();
   } // Fl_Window* Xcas_Main_Window_
-  { Xcas_General_Setup = new Fl_Double_Window(305, 315, gettext("Xcas General Setup"));
+  { Xcas_General_Setup = new Fl_Double_Window(305, 345, gettext("Xcas General Setup"));
     { Xcas_Level = new Fl_Menu_Button(170, 15, 130, 25, gettext("Level"));
       Xcas_Level->tooltip(gettext("Choose user level (from tortue to university)"));
       Xcas_Level->align(Fl_Align(FL_ALIGN_CLIP));
       Xcas_Level->when(3);
+      if (!menu_Xcas_Level_i18n_done) {
+        int i=0;
+        for ( ; i<5; i++)
+          if (menu_Xcas_Level[i].label())
+            menu_Xcas_Level[i].label(gettext(menu_Xcas_Level[i].label()));
+        menu_Xcas_Level_i18n_done = 1;
+      }
       Xcas_Level->menu(menu_Xcas_Level);
     } // Fl_Menu_Button* Xcas_Level
     { Xcas_level_output = new Fl_Output(170, 40, 130, 25, gettext("Size"));
@@ -4421,26 +4813,33 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
       Xcas_default_cols->tooltip(gettext("Number of columns for new->spreadsheet"));
       Xcas_default_cols->maximum(100);
       Xcas_default_cols->step(1);
-      Xcas_default_cols->value(6);
+      Xcas_default_cols->value(10);
       Xcas_default_cols->callback((Fl_Callback*)cb_Xcas_default_cols);
       Xcas_default_cols->align(Fl_Align(68));
     } // Fl_Value_Input* Xcas_default_cols
-    { Xcas_general_setup_save = new Fl_Return_Button(15, 285, 125, 25, gettext("Save"));
+    { Xcas_general_setup_save = new Fl_Return_Button(15, 315, 125, 25, gettext("Save"));
       Xcas_general_setup_save->tooltip(gettext("Close window and save as default configuration"));
       Xcas_general_setup_save->callback((Fl_Callback*)cb_Xcas_general_setup_save);
       Xcas_general_setup_save->align(Fl_Align(FL_ALIGN_CLIP));
     } // Fl_Return_Button* Xcas_general_setup_save
-    { Xcas_general_setup_close = new Fl_Button(175, 285, 125, 25, gettext("Close"));
+    { Xcas_general_setup_close = new Fl_Button(175, 315, 125, 25, gettext("Close"));
       Xcas_general_setup_close->shortcut(0xff1b);
       Xcas_general_setup_close->callback((Fl_Callback*)cb_Xcas_general_setup_close);
       Xcas_general_setup_close->align(Fl_Align(FL_ALIGN_CLIP));
     } // Fl_Button* Xcas_general_setup_close
-    { Print_config = new Fl_Group(5, 145, 170, 130);
+    { Print_config = new Fl_Group(5, 145, 295, 165);
       { Xcas_Page_format = new Fl_Menu_Button(10, 145, 165, 30, gettext("Print format"));
         Xcas_Page_format->tooltip(gettext("Printer page format"));
         Xcas_Page_format->textsize(10);
         Xcas_Page_format->align(Fl_Align(FL_ALIGN_CLIP));
         Xcas_Page_format->when(3);
+        if (!menu_Xcas_Page_format_i18n_done) {
+          int i=0;
+          for ( ; i<5; i++)
+            if (menu_Xcas_Page_format[i].label())
+              menu_Xcas_Page_format[i].label(gettext(menu_Xcas_Page_format[i].label()));
+          menu_Xcas_Page_format_i18n_done = 1;
+        }
         Xcas_Page_format->menu(menu_Xcas_Page_format);
       } // Fl_Menu_Button* Xcas_Page_format
       { Xcas_Page_Format_Output = new Fl_Output(10, 175, 165, 30, gettext("Format"));
@@ -4460,6 +4859,11 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
         Xcas_ps_preview->callback((Fl_Callback*)cb_Xcas_ps_preview);
         Xcas_ps_preview->align(Fl_Align(68));
       } // Fl_Input* Xcas_ps_preview
+      { Xcas_proxy = new Fl_Input(70, 280, 230, 30, gettext("Proxy"));
+        Xcas_proxy->tooltip(gettext("Proxy server for update, e.g. http://cache.domain:3128"));
+        Xcas_proxy->callback((Fl_Callback*)cb_Xcas_proxy);
+        Xcas_proxy->align(Fl_Align(68));
+      } // Fl_Input* Xcas_proxy
       Print_config->end();
     } // Fl_Group* Print_config
     { Xcas_All_Fonts = new Fl_Button(15, 15, 110, 25, gettext("Font"));
@@ -4468,14 +4872,27 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
     { Xcas_automatic_completion_browser = new Fl_Check_Button(180, 105, 125, 25, gettext("Auto index help"));
       Xcas_automatic_completion_browser->tooltip(gettext("Selecting a menu item displays short index help"));
       Xcas_automatic_completion_browser->down_box(FL_DOWN_BOX);
+      Xcas_automatic_completion_browser->callback((Fl_Callback*)cb_Xcas_automatic_completion_browser);
       Xcas_automatic_completion_browser->align(Fl_Align(68|FL_ALIGN_INSIDE));
     } // Fl_Check_Button* Xcas_automatic_completion_browser
-    { Xcas_down_compatibility = new Fl_Check_Button(180, 245, 125, 25, gettext("Xcas < 0.8.1 compatible"));
-      Xcas_down_compatibility->tooltip(gettext("If not checked, save context information, incompatible with Xcas < 0.8.1"));
-      Xcas_down_compatibility->down_box(FL_DOWN_BOX);
-      Xcas_down_compatibility->callback((Fl_Callback*)cb_Xcas_down_compatibility);
-      Xcas_down_compatibility->align(Fl_Align(68|FL_ALIGN_INSIDE));
-    } // Fl_Check_Button* Xcas_down_compatibility
+    { Xcas_stepbystep = new Fl_Check_Button(180, 245, 125, 25, gettext("Step by step"));
+      Xcas_stepbystep->tooltip(gettext("If not checked, save context information, incompatible with Xcas < 0.8.1"));
+      Xcas_stepbystep->down_box(FL_DOWN_BOX);
+      Xcas_stepbystep->callback((Fl_Callback*)cb_Xcas_stepbystep);
+      Xcas_stepbystep->align(Fl_Align(68|FL_ALIGN_INSIDE));
+    } // Fl_Check_Button* Xcas_stepbystep
+    { Xcas_tooltip_disabled = new Fl_Check_Button(180, 145, 125, 25, gettext("Disable tooltips"));
+      Xcas_tooltip_disabled->tooltip(gettext("Check box to disable tooltips"));
+      Xcas_tooltip_disabled->down_box(FL_DOWN_BOX);
+      Xcas_tooltip_disabled->callback((Fl_Callback*)cb_Xcas_tooltip_disabled);
+      Xcas_tooltip_disabled->align(Fl_Align(68|FL_ALIGN_INSIDE));
+    } // Fl_Check_Button* Xcas_tooltip_disabled
+    { Xcas_disable_try_parse_test_i = new Fl_Check_Button(15, 45, 110, 20, gettext("Disable test i"));
+      Xcas_disable_try_parse_test_i->tooltip(gettext("Check to disable replacement of i inside loop by a variable"));
+      Xcas_disable_try_parse_test_i->down_box(FL_DOWN_BOX);
+      Xcas_disable_try_parse_test_i->callback((Fl_Callback*)cb_Xcas_disable_try_parse_test_i);
+      Xcas_disable_try_parse_test_i->align(Fl_Align(68|FL_ALIGN_INSIDE));
+    } // Fl_Check_Button* Xcas_disable_try_parse_test_i
     Xcas_General_Setup->end();
     Xcas_General_Setup->resizable(Xcas_General_Setup);
   } // Fl_Double_Window* Xcas_General_Setup
@@ -4483,17 +4900,34 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
     Xcas_Script_Window->end();
     Xcas_Script_Window->resizable(Xcas_Script_Window);
   } // Fl_Double_Window* Xcas_Script_Window
-  { Xcas_DispG_Window_ = new Fl_Double_Window(540, 350, gettext("Xcas DispG Window"));
+  { Xcas_DispG_Window_ = new xcas::DispG_Window(540, 550, gettext("Xcas DispG Window"));
+    Xcas_DispG_Window_->box(FL_FLAT_BOX);
+    Xcas_DispG_Window_->color(FL_BACKGROUND_COLOR);
+    Xcas_DispG_Window_->selection_color(FL_BACKGROUND_COLOR);
+    Xcas_DispG_Window_->labeltype(FL_NO_LABEL);
+    Xcas_DispG_Window_->labelfont(0);
+    Xcas_DispG_Window_->labelsize(14);
+    Xcas_DispG_Window_->labelcolor(FL_FOREGROUND_COLOR);
+    Xcas_DispG_Window_->align(Fl_Align(FL_ALIGN_TOP));
+    Xcas_DispG_Window_->when(FL_WHEN_RELEASE);
     { Xcas_DispG_Menu = new Fl_Menu_Bar(0, 0, 95, 25);
       Xcas_DispG_Menu->align(Fl_Align(FL_ALIGN_CLIP));
+      if (!menu_Xcas_DispG_Menu_i18n_done) {
+        int i=0;
+        for ( ; i<6; i++)
+          if (menu_Xcas_DispG_Menu[i].label())
+            menu_Xcas_DispG_Menu[i].label(gettext(menu_Xcas_DispG_Menu[i].label()));
+        menu_Xcas_DispG_Menu_i18n_done = 1;
+      }
       Xcas_DispG_Menu->menu(menu_Xcas_DispG_Menu);
     } // Fl_Menu_Bar* Xcas_DispG_Menu
-    { Xcas_DispG_Cancel_ = new Fl_Button(95, 0, 445, 25, gettext("Click in graph or here to cancel"));
+    { Xcas_DispG_Cancel_ = new Fl_Button(220, 0, 365, 25, gettext("Click or Cancel"));
+      Xcas_DispG_Cancel_->tooltip(gettext("Click in graph or here to cancel"));
       Xcas_DispG_Cancel_->callback((Fl_Callback*)cb_Xcas_DispG_Cancel_);
       Xcas_DispG_Cancel_->align(Fl_Align(FL_ALIGN_CLIP));
     } // Fl_Button* Xcas_DispG_Cancel_
-    { Xcas_DispG_Tile = new Fl_Tile(0, 25, 545, 325);
-      { Xcas_DispG_ = new xcas::Graph2d(0, 25, 545, 325, gettext("label"));
+    { Xcas_DispG_Tile = new Fl_Tile(0, 25, 545, 550);
+      { Xcas_DispG_ = new xcas::Graph2d(0, 25, 545, 320, gettext("label"));
         Xcas_DispG_->box(FL_NO_BOX);
         Xcas_DispG_->color(FL_BACKGROUND_COLOR);
         Xcas_DispG_->selection_color(FL_BACKGROUND_COLOR);
@@ -4503,331 +4937,458 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
         Xcas_DispG_->labelcolor(FL_FOREGROUND_COLOR);
         Xcas_DispG_->align(Fl_Align(FL_ALIGN_CENTER));
         Xcas_DispG_->when(FL_WHEN_RELEASE);
-        Fl_Group::current()->resizable(Xcas_DispG_);
       } // xcas::Graph2d* Xcas_DispG_
+      { Xcas_PrintG_ = new xcas::Equation(0, 345, 545, 205, gettext("label"));
+        Xcas_PrintG_->box(FL_NO_BOX);
+        Xcas_PrintG_->color(FL_BACKGROUND_COLOR);
+        Xcas_PrintG_->selection_color(FL_BACKGROUND_COLOR);
+        Xcas_PrintG_->labeltype(FL_NO_LABEL);
+        Xcas_PrintG_->labelfont(0);
+        Xcas_PrintG_->labelsize(14);
+        Xcas_PrintG_->labelcolor(FL_FOREGROUND_COLOR);
+        Xcas_PrintG_->align(Fl_Align(FL_ALIGN_CENTER));
+        Xcas_PrintG_->when(FL_WHEN_RELEASE);
+        Fl_Group::current()->resizable(Xcas_PrintG_);
+      } // xcas::Equation* Xcas_PrintG_
       Xcas_DispG_Tile->end();
     } // Fl_Tile* Xcas_DispG_Tile
+    { Xcas_DispG_ClrGraph = new Fl_Button(95, 0, 125, 25, gettext("Clear"));
+      Xcas_DispG_ClrGraph->tooltip(gettext("Clear DispG graphic"));
+      Xcas_DispG_ClrGraph->callback((Fl_Callback*)cb_Xcas_DispG_ClrGraph);
+      Xcas_DispG_ClrGraph->align(Fl_Align(FL_ALIGN_CLIP));
+    } // Fl_Button* Xcas_DispG_ClrGraph
     Xcas_DispG_Window_->end();
     Xcas_DispG_Window_->resizable(Xcas_DispG_Window_);
-  } // Fl_Double_Window* Xcas_DispG_Window_
+  } // xcas::DispG_Window* Xcas_DispG_Window_
   xcas::Xcas_Main_Window=Xcas_Main_Window_;
-xcas::Xcas_DispG=Xcas_DispG_;
-xcas::Xcas_DispG_Window=Xcas_DispG_Window_;
-xcas::Xcas_DispG_Cancel=Xcas_DispG_Cancel_;
-xcas::Xcas_Cancel=0;
-xcas::Xcas_help_output=Xcas_parse_error_output;
-Xcas_Sinus_button->callback((Fl_Callback* )xcas::Xcas_input_1arg);
-Xcas_Cosinus_button->callback((Fl_Callback* )xcas::Xcas_input_1arg);
-Xcas_Tangeant_button->callback((Fl_Callback* )xcas::Xcas_input_1arg);
-Xcas_Exp_button->callback((Fl_Callback* )xcas::Xcas_input_1arg);
-Xcas_Ln_button->callback((Fl_Callback* )xcas::Xcas_input_1arg);
-Xcas_Dix_puissance->callback((Fl_Callback* )xcas::Xcas_input_1arg);
-Xcas_Ln10_button->callback((Fl_Callback* )xcas::Xcas_input_1arg);
-Xcas_Inverse_button->callback((Fl_Callback* )xcas::Xcas_input_1arg);
-Xcas_Neg_button->callback((Fl_Callback* )xcas::Xcas_input_1arg);
-Xcas_a_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_b_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_c_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_d_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_e_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_f_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_g_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_h_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_i_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_j_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_k_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_l_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_m_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_n_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_o_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_p_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_q_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_r_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_s_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_t_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_u_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_v_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_w_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_x_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_y_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_z_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Inferieur_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Superieur_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Backslash_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Parenthese_ouvrante_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Parenthese_fermante_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Espace_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Point_exclamation_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Crochet_fermant_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Crochet_ouvrant_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Accolade_ouvrant_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Accolade_fermant_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Deux_points_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Equal_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Guillemet_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Souligne_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Diese_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Alpha_virgule_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Alpha_point_virgule_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Alpha_quote_key->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Double_quote->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Parentheses->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Brackets->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Crochets->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Quote->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Virgule->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Semi_button->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Sto->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_RPN_space->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Keyboard_rp->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Variable_x->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Variable_y->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Variable_z->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Variable_t->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Un->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Deux->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Trois->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Quatre->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Cinq->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Six->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Sept->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Huit->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Neuf->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Zero->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Point->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_EEX->callback((Fl_Callback *)xcas::Xcas_input_char);
-Xcas_Plus->callback((Fl_Callback *)xcas::Xcas_binary_op);
-Xcas_Moins->callback((Fl_Callback *)xcas::Xcas_binary_op);
-Xcas_Fois->callback((Fl_Callback *)xcas::Xcas_binary_op);
-Xcas_Divise->callback((Fl_Callback *)xcas::Xcas_binary_op);
-Xcas_Puissance->callback((Fl_Callback *)xcas::Xcas_binary_op);
-Xcas_C_mod->callback((Fl_Callback *)xcas::Xcas_binary_op);
-Xcas_Keyboard_suchthat->callback((Fl_Callback *)xcas::Xcas_binary_op);
-Xcas_help_solve->callback(cb_Assistant_ItemName);
-Xcas_help_fsolve->callback(cb_Assistant_ItemName);
-Xcas_help_fsolve->callback(cb_Assistant_ItemName);
-Xcas_help_proot->callback(cb_Assistant_ItemName);
-Xcas_help_linsolve->callback(cb_Assistant_ItemName);
-Xcas_help_desolve->callback(cb_Assistant_ItemName);
-Xcas_help_int->callback(cb_Assistant_ItemName);
-Xcas_help_diff->callback(cb_Assistant_ItemName);
-Xcas_help_limit->callback(cb_Assistant_ItemName);
-Xcas_help_series->callback(cb_Assistant_ItemName);
-Xcas_help_sum->callback(cb_Assistant_ItemName);
-Xcas_help_laplace->callback(cb_Assistant_ItemName);
-Xcas_help_ilaplace->callback(cb_Assistant_ItemName);
-Xcas_help_simplify->callback(cb_Assistant_ItemName);
-Xcas_help_normal->callback(cb_Assistant_ItemName);
-Xcas_help_ratnormal->callback(cb_Assistant_ItemName);
-Xcas_help_factor->callback(cb_Assistant_ItemName);
-Xcas_help_cfactor->callback(cb_Assistant_ItemName);
-Xcas_help_partfrac->callback(cb_Assistant_ItemName);
-Xcas_help_cpartfrac->callback(cb_Assistant_ItemName);
-Xcas_help_subst->callback(cb_Assistant_ItemName);
-Xcas_help_reorder->callback(cb_Assistant_ItemName);
-Xcas_help_lin->callback(cb_Assistant_ItemName);
-Xcas_help_tlin->callback(cb_Assistant_ItemName);
-Xcas_help_texpand->callback(cb_Assistant_ItemName);
-Xcas_help_exp2trig->callback(cb_Assistant_ItemName);
-Xcas_help_trig2exp->callback(cb_Assistant_ItemName);
-Xcas_help_exp2pow->callback(cb_Assistant_ItemName);
-Xcas_help_lncollect->callback(cb_Assistant_ItemName);
-Xcas_help_isprime->callback(cb_Assistant_ItemName);
-Xcas_help_ifactor->callback(cb_Assistant_ItemName);
-Xcas_help_iquo->callback(cb_Assistant_ItemName);
-Xcas_help_irem->callback(cb_Assistant_ItemName);
-Xcas_help_iabcuv->callback(cb_Assistant_ItemName);
-Xcas_help_ichinrem->callback(cb_Assistant_ItemName);
-Xcas_help_gcd->callback(cb_Assistant_ItemName);
-Xcas_help_lcm->callback(cb_Assistant_ItemName);
-Xcas_help_powmod->callback(cb_Assistant_ItemName);
-Xcas_help_quo->callback(cb_Assistant_ItemName);
-Xcas_help_rem->callback(cb_Assistant_ItemName);
-Xcas_help_abcuv->callback(cb_Assistant_ItemName);
-Xcas_help_chinrem->callback(cb_Assistant_ItemName);
-Xcas_help_plotcontour->callback(cb_Assistant_ItemName);
-Xcas_help_plotode->callback(cb_Assistant_ItemName);
-Xcas_help_matrix->callback(cb_Assistant_ItemName);
-Xcas_help_tran->callback(cb_Assistant_ItemName);
-Xcas_help_ker->callback(cb_Assistant_ItemName);
-Xcas_help_image->callback(cb_Assistant_ItemName);
-Xcas_help_inverse->callback(cb_Assistant_ItemName);
-Xcas_help_det->callback(cb_Assistant_ItemName);
-Xcas_help_charpoly->callback(cb_Assistant_ItemName);
-Xcas_help_egv->callback(cb_Assistant_ItemName);
-Xcas_help_egvl->callback(cb_Assistant_ItemName);
-Xcas_help_debug->callback(cb_Assistant_ItemName);
-
-#ifdef IPAQ
-static unsigned char Xcas_racine_carree_bitmap[]={0,0xe0,0x20,0x20,0x10,0x11,0x0a,0x0c}; // {0xc0,0xe0,0xe0,0x60,0x30,0x31,0x1b,0x1e,0x0c};
-Fl_Bitmap * Xcas_Racine_carree_image=new Fl_Bitmap(Xcas_racine_carree_bitmap,8,8);
-Xcas_Racine_carree->image(Xcas_Racine_carree_image);
-#else
-#ifndef __APPLE__
-#ifndef _HAVE_FL_UTF8_HDR_
-Xcas_Keyboard_infinity->label("¥");
-Xcas_Keyboard_infinity->labelfont(FL_SYMBOL);
-#endif
-#endif
-#ifndef _HAVE_FL_UTF8_HDR_
-Xcas_Racine_carree->label("Ö");
-Xcas_Racine_carree->labelfont(FL_SYMBOL);
-Xcas_approx_key->label("»");
-Xcas_approx_key->labelfont(FL_SYMBOL);
-#endif
-#endif
+  xcas::Xcas_DispG=Xcas_DispG_;
+  giac::my_gprintf=xcas::xcas_gprintf;
+  Xcas_PrintG_->modifiable=false;
+  xcas::Xcas_PrintG=Xcas_PrintG_;
+  xcas::Xcas_DispG_Window=Xcas_DispG_Window_;
+  xcas::Xcas_DispG_Cancel=Xcas_DispG_Cancel_;
+  xcas::Xcas_Cancel=0;
+  xcas::Xcas_help_output=Xcas_parse_error_output;
+  Xcas_Sinus_button->callback((Fl_Callback* )xcas::Xcas_input_1arg);
+  Xcas_Cosinus_button->callback((Fl_Callback* )xcas::Xcas_input_1arg);
+  Xcas_Tangeant_button->callback((Fl_Callback* )xcas::Xcas_input_1arg);
+  Xcas_Exp_button->callback((Fl_Callback* )xcas::Xcas_input_1arg);
+  Xcas_Ln_button->callback((Fl_Callback* )xcas::Xcas_input_1arg);
+  Xcas_Dix_puissance->callback((Fl_Callback* )xcas::Xcas_input_1arg);
+  Xcas_Ln10_button->callback((Fl_Callback* )xcas::Xcas_input_1arg);
+  Xcas_Inverse_button->callback((Fl_Callback* )xcas::Xcas_input_1arg);
+  Xcas_Neg_button->callback((Fl_Callback* )xcas::Xcas_input_1arg);
+  Xcas_a_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_b_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_c_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_d_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_e_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_f_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_g_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_h_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_i_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_j_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_k_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_l_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_m_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_n_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_o_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_p_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_q_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_r_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_s_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_t_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_u_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_v_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_w_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_x_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_y_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_z_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Inferieur_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Superieur_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Backslash_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Parenthese_ouvrante_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Parenthese_fermante_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Espace_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Point_exclamation_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Crochet_fermant_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Crochet_ouvrant_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Accolade_ouvrant_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Accolade_fermant_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Deux_points_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Equal_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Guillemet_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Souligne_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Diese_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Pi_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Alpha_virgule_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Alpha_point_virgule_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Alpha_quote_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Double_quote->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Parentheses->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Brackets->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Crochets->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Quote->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Virgule->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Semi_button->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Sto->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_RPN_space->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Keyboard_rp->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Variable_x->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Variable_y->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Variable_z->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Variable_t->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Un->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Deux->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Trois->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Quatre->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Cinq->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Six->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Sept->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Huit->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Neuf->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Zero->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Point->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_EEX->callback((Fl_Callback *)xcas::Xcas_input_char);
+  Xcas_Plus->callback((Fl_Callback *)xcas::Xcas_binary_op);
+  Xcas_Moins->callback((Fl_Callback *)xcas::Xcas_binary_op);
+  Xcas_Fois->callback((Fl_Callback *)xcas::Xcas_binary_op);
+  Xcas_Divise->callback((Fl_Callback *)xcas::Xcas_binary_op);
+  Xcas_Puissance->callback((Fl_Callback *)xcas::Xcas_binary_op);
+  Xcas_C_mod->callback((Fl_Callback *)xcas::Xcas_binary_op);
+  Xcas_Keyboard_suchthat->callback((Fl_Callback *)xcas::Xcas_binary_op);
+  Xcas_help_solve->callback(cb_Assistant_ItemName);
+  Xcas_help_fsolve->callback(cb_Assistant_ItemName);
+  Xcas_help_fsolve->callback(cb_Assistant_ItemName);
+  Xcas_help_proot->callback(cb_Assistant_ItemName);
+  Xcas_help_linsolve->callback(cb_Assistant_ItemName);
+  Xcas_help_desolve->callback(cb_Assistant_ItemName);
+  Xcas_help_odesolve->callback(cb_Assistant_ItemName);
+  Xcas_help_rsolve->callback(cb_Assistant_ItemName);
+  Xcas_help_int->callback(cb_Assistant_ItemName);
+  Xcas_help_diff->callback(cb_Assistant_ItemName);
+  Xcas_help_limit->callback(cb_Assistant_ItemName);
+  Xcas_help_ptayl->callback(cb_Assistant_ItemName);
+  Xcas_help_series->callback(cb_Assistant_ItemName);
+  Xcas_help_sum->callback(cb_Assistant_ItemName);
+  Xcas_help_laplace->callback(cb_Assistant_ItemName);
+  Xcas_help_ilaplace->callback(cb_Assistant_ItemName);
+  Xcas_help_simplify->callback(cb_Insert_ItemName);
+  Xcas_help_normal->callback(cb_Insert_ItemName);
+  Xcas_help_ratnormal->callback(cb_Insert_ItemName);
+  Xcas_help_factor->callback(cb_Insert_ItemName);
+  Xcas_help_cfactor->callback(cb_Insert_ItemName);
+  Xcas_help_partfrac->callback(cb_Insert_ItemName);
+  Xcas_help_cpartfrac->callback(cb_Insert_ItemName);
+  Xcas_help_subst->callback(cb_Assistant_ItemName);
+  Xcas_help_reorder->callback(cb_Assistant_ItemName);
+  Xcas_help_lin->callback(cb_Insert_ItemName);
+  Xcas_help_tlin->callback(cb_Insert_ItemName);
+  Xcas_help_texpand->callback(cb_Insert_ItemName);
+  Xcas_help_exp2trig->callback(cb_Insert_ItemName);
+  Xcas_help_trig2exp->callback(cb_Insert_ItemName);
+  Xcas_help_exp2pow->callback(cb_Insert_ItemName);
+  Xcas_help_lncollect->callback(cb_Insert_ItemName);
+  Xcas_help_isprime->callback(cb_Assistant_ItemName);
+  Xcas_help_ifactor->callback(cb_Insert_ItemName);
+  Xcas_help_iquo->callback(cb_Assistant_ItemName);
+  Xcas_help_irem->callback(cb_Assistant_ItemName);
+  Xcas_help_iabcuv->callback(cb_Assistant_ItemName);
+  Xcas_help_ichinrem->callback(cb_Assistant_ItemName);
+  Xcas_help_gcd->callback(cb_Assistant_ItemName);
+  Xcas_help_lcm->callback(cb_Assistant_ItemName);
+  Xcas_help_powmod->callback(cb_Assistant_ItemName);
+  Xcas_help_quo->callback(cb_Assistant_ItemName);
+  Xcas_help_rem->callback(cb_Assistant_ItemName);
+  Xcas_help_abcuv->callback(cb_Assistant_ItemName);
+  Xcas_help_chinrem->callback(cb_Assistant_ItemName);
+  Xcas_help_pourcent->callback(cb_Assistant_ItemName);
+  Xcas_help_GF->callback(cb_Assistant_ItemName);
+  Xcas_help_plotcontour->callback(cb_Assistant_ItemName);
+  Xcas_help_plotdensity->callback(cb_Assistant_ItemName);
+  Xcas_help_plotode->callback(cb_Assistant_ItemName);
+  //Xcas_help_iplotode->callback(cb_Assistant_ItemName);
+  Xcas_help_plotlist->callback(cb_Assistant_ItemName);
+  Xcas_help_scatterplot->callback(cb_Assistant_ItemName);
+  Xcas_help_polygonscatterplot->callback(cb_Assistant_ItemName);
+  Xcas_help_linear_regression_plot->callback(cb_Assistant_ItemName);
+  Xcas_help_moustache->callback(cb_Assistant_ItemName);
+  Xcas_help_histogram->callback(cb_Assistant_ItemName);
+  Xcas_help_plotstat->callback(cb_Assistant_ItemName);
+  Xcas_help_plotcdf->callback(cb_Assistant_ItemName);
+  Xcas_help_baton->callback(cb_Assistant_ItemName);
+  Xcas_help_camembert->callback(cb_Assistant_ItemName);
+  Xcas_help_debug->callback(cb_Assistant_ItemName);
+  Xcas_help_matrix->callback(cb_Assistant_ItemName);
+  Xcas_help_tran->callback(cb_Assistant_ItemName);
+  Xcas_help_ker->callback(cb_Assistant_ItemName);
+  Xcas_help_image->callback(cb_Assistant_ItemName);
+  Xcas_help_inverse->callback(cb_Assistant_ItemName);
+  Xcas_help_det->callback(cb_Assistant_ItemName);
+  Xcas_help_charpoly->callback(cb_Assistant_ItemName);
+  Xcas_help_egv->callback(cb_Assistant_ItemName);
+  Xcas_help_egvl->callback(cb_Assistant_ItemName);
+  Xcas_help_rand->callback(cb_Assistant_ItemName);
+  Xcas_help_ranm->callback(cb_Assistant_ItemName);
+  Xcas_help_markov->callback(cb_Assistant_ItemName);
+  Xcas_help_randmarkov->callback(cb_Assistant_ItemName);
+  Xcas_help_cdf->callback(cb_Assistant_ItemName);
+  Xcas_help_icdf->callback(cb_Assistant_ItemName);
+  Xcas_help_binomial->callback(cb_Assistant_ItemName);
+  Xcas_help_binomial2->callback(cb_Assistant_ItemName);
+  Xcas_help_negbinomial->callback(cb_Assistant_ItemName);
+  Xcas_help_normald->callback(cb_Assistant_ItemName);
+  Xcas_help_normald_icdf2->callback(cb_Assistant_ItemName);
+  Xcas_help_normalt->callback(cb_Assistant_ItemName);
+  Xcas_help_studentd_icdf2->callback(cb_Assistant_ItemName);
+  Xcas_help_studentt->callback(cb_Assistant_ItemName);
+  Xcas_help_wilcoxont->callback(cb_Assistant_ItemName);
+  Xcas_help_normald2->callback(cb_Assistant_ItemName);
+  Xcas_help_poisson->callback(cb_Assistant_ItemName);
+  Xcas_help_student->callback(cb_Assistant_ItemName);
+  Xcas_help_fisher->callback(cb_Assistant_ItemName);
+  Xcas_help_geometric->callback(cb_Assistant_ItemName);
+  Xcas_help_exponential->callback(cb_Assistant_ItemName);
+  Xcas_help_uniform->callback(cb_Assistant_ItemName);
+  Xcas_help_chisquare->callback(cb_Assistant_ItemName);
+  Xcas_help_chisquare_icdf->callback(cb_Assistant_ItemName);
+  Xcas_help_chisquaret->callback(cb_Assistant_ItemName);
+  Xcas_help_kolmogorovd->callback(cb_Assistant_ItemName);
+  Xcas_help_kolmogorovt->callback(cb_Assistant_ItemName);
+  Xcas_help_cauchy->callback(cb_Assistant_ItemName);
+  Xcas_help_weibull->callback(cb_Assistant_ItemName);
+  Xcas_help_gammad->callback(cb_Assistant_ItemName);
+  Xcas_help_betad->callback(cb_Assistant_ItemName);
+  
+  Xcas_help_debug->callback(cb_Assistant_ItemName);
+  
+  #ifdef IPAQ
+  static unsigned char Xcas_racine_carree_bitmap[]={0,0xe0,0x20,0x20,0x10,0x11,0x0a,0x0c}; // {0xc0,0xe0,0xe0,0x60,0x30,0x31,0x1b,0x1e,0x0c};
+  Fl_Bitmap * Xcas_Racine_carree_image=new Fl_Bitmap(Xcas_racine_carree_bitmap,8,8);
+  Xcas_Racine_carree->image(Xcas_Racine_carree_image);
+  #else
+  #ifndef __APPLE__
+  #ifndef _HAVE_FL_UTF8_HDR_
+  Xcas_Keyboard_infinity->label("¥");
+  Xcas_Keyboard_infinity->labelfont(FL_SYMBOL);
+  #endif
+  #endif
+  #ifdef _HAVE_FL_UTF8_HDR_
+  Xcas_Greek_key->label("α");
+  Xcas_Greek_key->labelfont(FL_HELVETICA);
+  // Xcas_Neg_button->label("-");
+  Xcas_Neg_button->label("-");
+  // Xcas_Neg_button->label("−");
+  Xcas_Neg_button->callback((Fl_Callback* )xcas::Xcas_input_1arg);
+  Xcas_Superieur->callback((Fl_Callback* )xcas::Xcas_binary_op);
+  #else
+  Xcas_Racine_carree->label("Ö");
+  Xcas_Racine_carree->labelfont(FL_SYMBOL);
+  Xcas_approx_key->label("»");
+  Xcas_approx_key->labelfont(FL_SYMBOL);
+  #endif
+  #endif
   // First take control of signals
-signal(SIGINT,giac::ctrl_c_signal_handler);
-giac::child_id=1;
-giac::print_rewrite_prod_inv=true;
-doc_prefix=giac::read_env(giac::context0); // Set giac::language and modes from environment
-xcas::read_aide("aide_cas",giac::language(giac::context0));
-giac::set_language(giac::language(giac::context0),giac::context0);
-// Add spreadsheet menu
-Fl_Menu_Item * tmpitem = xcas::Tableur_menu;
-xcas::copy_menu(Xcas_main_menu,gettext("Spreadsheet")+std::string("/"),tmpitem);
-tmpitem=xcas::Figure_menu;
-xcas::copy_menu(Xcas_main_menu,gettext("Geo")+std::string("/"),tmpitem);
-tmpitem=xcas::Graph2d3d_menu+1;
-xcas::copy_menu(Xcas_main_menu,gettext("Graphic")+std::string("/"),tmpitem);
-tmpitem=xcas::Editeur_menu;
-xcas::copy_menu(Xcas_main_menu,gettext("Prg")+std::string("/"),tmpitem);
-xcas::add_user_menu(Xcas_main_menu,"xcasex",doc_prefix,cb_Insert_Example); // Load User menus
-xcas::add_user_menu(Xcas_main_menu,"xcasmenu",doc_prefix,cb_Insert_ItemName); // Load User menus
-xcas::menu2rpn_callback=cb_Insert_ItemName;
-// Add RPN-like menus, skip the first four items
-Fl_Menu_Item * menu_xcas_tmp= (Fl_Menu_Item *)Xcas_main_menu->menu();
-for (int i=0;i<6;i++){
- if (menu_xcas_tmp->text)
-  xcas::nextfl_menu(menu_xcas_tmp);
-}
-home_menu.clear();
-for (;menu_xcas_tmp->text;){
-  giac::gen tmp1=giac::string2gen(menu_xcas_tmp->text,false);
-  giac::gen tmp2=xcas::fl_menu2rpn_menu(menu_xcas_tmp);
-  if (tmp2.type!=giac::_VECT || !tmp2._VECTptr->empty())
-    home_menu.push_back(giac::makevecteur(tmp1,tmp2));
-  ++menu_xcas_tmp;
-}
-rpn_menu=home_menu;
-int ii=home_menu.size();
-/*
-int n=Xcas_Bandeau_Keys->find(Xcas_RPN1_button),c=Xcas_Bandeau_Keys->children();
-for (int i=0;i<ii && n+i<c;++i){
-  giac::gen tmp=home_menu[i];
-  if (tmp.type==giac::_VECT && tmp._VECTptr->size()==2 && tmp._VECTptr->back().type==giac::_VECT){
-    rpnn_menu[i]=*tmp._VECTptr->back()._VECTptr;
-    rpnn_menu_string[i]=giac::gen2string(tmp._VECTptr->front());
-    Xcas_Bandeau_Keys->child(n+i)->label(rpnn_menu_string[i].c_str());
+  signal(SIGINT,giac::ctrl_c_signal_handler);
+  giac::child_id=1;
+  giac::print_rewrite_prod_inv=true;
+  doc_prefix=giac::read_env(giac::context0); // Set giac::language and modes from environment
+  xcas::read_aide("aide_cas",giac::language(giac::context0));
+  giac::set_language(giac::language(giac::context0),giac::context0);
+  // Add spreadsheet menu
+  Fl_Menu_Item * tmpitem = xcas::Tableur_menu;
+  xcas::copy_menu(Xcas_main_menu,gettext("Spreadsheet")+std::string("/"),tmpitem);
+  tmpitem=xcas::Figure_menu;
+  xcas::copy_menu(Xcas_main_menu,gettext("Geo")+std::string("/"),tmpitem);
+  tmpitem=xcas::Graph2d3d_menu+1;
+  xcas::copy_menu(Xcas_main_menu,gettext("Graphic")+std::string("/"),tmpitem);
+  tmpitem=xcas::Editeur_menu;
+  xcas::copy_menu(Xcas_main_menu,gettext("Prg")+std::string("/"),tmpitem);
+  xcas::add_user_menu(Xcas_main_menu,"xcasex",doc_prefix,cb_Insert_Example); // Load User menus
+  xcas::add_user_menu(Xcas_main_menu,"xcasmenu",doc_prefix,cb_Insert_ItemName); // Load User menus
+  xcas::menu2rpn_callback=cb_Insert_ItemName;
+  // Add RPN-like menus, skip the first four items
+  Fl_Menu_Item * menu_xcas_tmp= (Fl_Menu_Item *)Xcas_main_menu->menu();
+  for (int i=0;i<6;i++){
+   if (menu_xcas_tmp->text)
+    xcas::nextfl_menu(menu_xcas_tmp);
   }
-}
-*/
-// try for localisation
-if (!getenv("LANG")){
-  if (std::string(Xcas_Main_Window_->label())=="Xcas Nouvelle Interface"){
-    giac::set_language(1,giac::context0);
-    giac::html_help_init("aide_cas",1);
+  home_menu.clear();
+  for (;menu_xcas_tmp->text;){
+    giac::gen tmp1=giac::string2gen(menu_xcas_tmp->text,false);
+    giac::gen tmp2=xcas::fl_menu2rpn_menu(menu_xcas_tmp);
+    if (tmp2.type!=giac::_VECT || !tmp2._VECTptr->empty())
+      home_menu.push_back(giac::makevecteur(tmp1,tmp2));
+    ++menu_xcas_tmp;
   }
-}
-// add here redefinition of interactive functions
-giac::__click.op=&xcas::Xcas_fltk_input;
-giac::__input.op=&xcas::Xcas_fltk_inputform;
-giac::__inputform.op=&xcas::Xcas_fltk_inputform;
-giac::__interactive.op=&xcas::Xcas_fltk_interactive;
-giac::__widget_size.op=&Xcas_widget_size;
-giac::__getKey.op=&xcas::Xcas_fltk_getKey;
-//__keyboard.op=&fltk_keyboard;
-giac::__current_sheet.op=&xcas::Xcas_fltk_current_sheet;
-giac::__Row.op=&xcas::Xcas_fltk_Row;
-giac::__Col.op=&xcas::Xcas_fltk_Col;
-giac::__xyztrange.op=&xcas::Xcas_xyztrange;
-giac::MAX_PRINTABLE_ZINT=3200;
-//fl_widget_delete_function=&fltk_fl_widget_delete_function;
-//fl_widget_archive_function=&fltk_fl_widget_archive_function;
-//fl_widget_unarchive_function=&fltk_fl_widget_unarchive_function;
-//fl_widget_texprint_function=&fltk_fl_widget_texprint_function;
-//fl_widget_updatepict_function=&fltk_fl_widget_updatepict_function;
-giac::protected_read_config(giac::context0); // read xcas.rc
-giac::secure_run=false;
-xcas::interrupt_button=true;
-xcas::Keyboard_Switch=Xcas_Keyboard_Switch;
-int nargs=0;
-int argstart=Fl::args(argc,argv,nargs);
-Xcas_Main_Window_->show(argc,argv);
-Fl_Group::current(Xcas_Script_Window);
-xcas::Editeur * t = new xcas::Editeur(0,0,Xcas_Script_Window->w(),Xcas_Script_Window->h());
-Xcas_Script_Window->add(t);
-Xcas_Script_Window->hide();
-Xcas_update_mode();
-//Xcas_parse_error_output->resize(Xcas_parse_error_output->x(),Xcas_parse_error_output->y(),Xcas_parse_error_output->w(),10*Xcas_parse_error_output->textsize());
-xcas::initialize_function=load_autorecover_data;
-xcas::alt_ctrl_cb=Xcas_alt_ctrl_cb;
-Fl::add_idle(xcas::Xcas_idle_function,0);
-xcas::idle_function=Xcas_update_mode;
-Xcas_Page_Format_Output->value("A4");
-if (getenv("GIAC_PREVIEW")) Xcas_ps_preview->value(getenv("GIAC_PREVIEW"));
-xcas::Xcas_update_mode_ptr=Xcas_update_mode;
-xcas::Xcas_save_config_ptr=Xcas_save_config;
-Fl_Tooltip::delay(0.2); // hoverdelay may be defined too
-// Now load files from commandline
-fl_font(FL_HELVETICA,Xcas_Main_Window_->labelsize());
-a_propos();
-show_rpn_menu(0);
-if (argc>argstart){
-  for (int i=argstart;i<argc;++i)
-    load_filename(argv[i],false);
-}
-else make_history();
-  bool running=true;
-  while (running){
-    while (Xcas_Main_Window_->visible() || Xcas_Main_Window_->shown() ) {
-      Fl::wait();
+  rpn_menu=home_menu;
+  int ii=home_menu.size();
+  /*
+  int n=Xcas_Bandeau_Keys->find(Xcas_RPN1_button),c=Xcas_Bandeau_Keys->children();
+  for (int i=0;i<ii && n+i<c;++i){
+    giac::gen tmp=home_menu[i];
+    if (tmp.type==giac::_VECT && tmp._VECTptr->size()==2 && tmp._VECTptr->back().type==giac::_VECT){
+      rpnn_menu[i]=*tmp._VECTptr->back()._VECTptr;
+      rpnn_menu_string[i]=giac::gen2string(tmp._VECTptr->front());
+      Xcas_Bandeau_Keys->child(n+i)->label(rpnn_menu_string[i].c_str());
     }
-    running=!Xcas_save_all(Xcas_Main_Tab);
-    if (running) Xcas_Main_Window_->show();
   }
+  */
+  // try for localisation
+  if (!getenv("LANG")){
+    if (std::string(Xcas_Main_Window_->label())=="Xcas Nouvelle Interface"){
+      giac::set_language(1,giac::context0);
+      giac::html_help_init("aide_cas",1);
+    }
+  }
+  // add here redefinition of interactive functions
+  giac::__click.op=&xcas::Xcas_fltk_input;
+  giac::__input.op=&xcas::Xcas_fltk_inputform;
+  giac::__inputform.op=&xcas::Xcas_fltk_inputform;
+  giac::__interactive.op=&xcas::Xcas_fltk_interactive;
+  giac::__widget_size.op=&Xcas_widget_size;
+  giac::__getKey.op=&xcas::Xcas_fltk_getKey;
+  //__keyboard.op=&fltk_keyboard;
+  giac::__current_sheet.op=&xcas::Xcas_fltk_current_sheet;
+  giac::__Row.op=&xcas::Xcas_fltk_Row;
+  giac::__Col.op=&xcas::Xcas_fltk_Col;
+  giac::__xyztrange.op=&xcas::Xcas_xyztrange;
+  giac::MAX_PRINTABLE_ZINT=3200;
+  //fl_widget_delete_function=&fltk_fl_widget_delete_function;
+  //fl_widget_archive_function=&fltk_fl_widget_archive_function;
+  //fl_widget_unarchive_function=&fltk_fl_widget_unarchive_function;
+  //fl_widget_texprint_function=&fltk_fl_widget_texprint_function;
+  //fl_widget_updatepict_function=&fltk_fl_widget_updatepict_function;
+  giac::protected_read_config(giac::context0); // read xcas.rc
+  xcas::read_recent_filenames(Xcas_main_menu); 
+  xcas::Xcas_load_filename=load_filename;
+  giac::secure_run=false;
+  xcas::interrupt_button=true;
+  xcas::Keyboard_Switch=Xcas_Keyboard_Switch;
+  int nargs=0;
+  int argstart=Fl::args(argc,argv,nargs);
+  Xcas_Main_Window_->show(argc,argv);
+  Fl_Group::current(Xcas_Script_Window);
+  xcas::Editeur * t = new xcas::Editeur(0,0,Xcas_Script_Window->w(),Xcas_Script_Window->h());
+  Xcas_Script_Window->add(t);
+  Xcas_Script_Window->hide();
+  Xcas_update_mode();
+  //Xcas_parse_error_output->resize(Xcas_parse_error_output->x(),Xcas_parse_error_output->y(),Xcas_parse_error_output->w(),10*Xcas_parse_error_output->textsize());
+  xcas::initialize_function=load_autorecover_data;
+  xcas::alt_ctrl_cb=Xcas_alt_ctrl_cb;
+  Fl::add_idle(xcas::Xcas_idle_function,0);
+  xcas::idle_function=Xcas_update_mode;
+  Xcas_Page_Format_Output->value("A4");
+  if (getenv("GIAC_PREVIEW")) Xcas_ps_preview->value(getenv("GIAC_PREVIEW"));
+  xcas::Xcas_update_mode_ptr=Xcas_update_mode;
+  xcas::Xcas_save_config_ptr=Xcas_save_config;
+  Fl_Tooltip::delay(0.2); // hoverdelay may be defined too
+  // Now load files from commandline
+  fl_font(FL_HELVETICA,Xcas_Main_Window_->labelsize());
+  a_propos();
+  show_rpn_menu(0);
+  if (argc>argstart){
+    bool link=false;
+    if (!strcmp(argv[argstart],"--online")){
+      link=true; ++argstart; 
+    }
+    for (int i=argstart;i<argc;++i){
+      load_filename(argv[i],false);
+      if (link){
+        std::string html5="http://www-fourier.ujf-grenoble.fr/~parisse/xcasfr.html#"+xcas::widget_html5(Xcas_current_session()); std::cout << html5 << std::endl; giac::system_browser_command(html5);
+      }
+    }
+    if (link){
+      return 0;
+    }
+  }
+  else make_history();
+    bool running=true;
+    while (running){
+      while (Xcas_Main_Window_->visible() || Xcas_Main_Window_->shown() ) {
+        Fl::wait();
+      }
+      running=!Xcas_save_all(Xcas_Main_Tab);
+      if (running) Xcas_Main_Window_->show();
+    }
+    return 0;
   return Xcas_DispG_Window_;
 }
 
 int main(int argc,char ** argv) {
+  if (argc==2 && strlen(argv[1])==0)
+    argc=1;
   if (getenv("XCAS_AUTOSAVE_FOLDER")){
-  xcas::autosave_folder=getenv("XCAS_AUTOSAVE_FOLDER");
-  if (!xcas::autosave_folder.empty() && xcas::autosave_folder[xcas::autosave_folder.size()-1]!='/')
-    xcas::autosave_folder += '/';
-}
-#if defined WIN32 || defined __APPLE__
-static std::string arg0;
-if (!getenv("XCAS_ROOT")){
-#ifdef __APPLE__
-  setenv("XCAS_ROOT","/usr/local/bin",1);
-#else
-  arg0=xcas::unix_path(argv[0]);
-  int s=arg0.size(),i;
-  for (i=s-1;i>0;--i){
-    if (arg0[i]=='/')
-      break;
+    xcas::autosave_folder=getenv("XCAS_AUTOSAVE_FOLDER");
+    if (!xcas::autosave_folder.empty() && xcas::autosave_folder[xcas::autosave_folder.size()-1]!='/')
+      xcas::autosave_folder += '/';
   }
-  arg0=arg0.substr(0,i);
-  if (i>0)
-    setenv("XCAS_ROOT",arg0.c_str(),1);
-#endif
-}
-#endif
-#ifdef HAVE_LIBGSL //
-   std::cerr << "GSL error handler off" << std::endl;
-    gsl_set_error_handler_off();
-#endif //
-xcas_argc=argc; xcas_argv=argv;
-#ifdef HAVE_LIBPTHREAD //
-Fl::lock(); 
-#ifdef __APPLE__
-chdir(giac::home_directory().c_str());
-//Fl::unlock();
-#endif
-#endif //
-Fl::gl_visual(FL_RGB | FL_DEPTH | FL_ACCUM | FL_ALPHA);
-xcas::fonts_available=Fl::set_fonts(0);
-fl_register_images();
-Xcas_run(argc,argv);
-giac::kill_gnuplot();
+  #if defined WIN32 || defined __APPLE__
+  static std::string arg0;
+  if (!getenv("XCAS_ROOT")){
+  #ifdef __APPLE__
+    setenv("XCAS_ROOT","/Applications/usr/bin/",1);
+  #else
+    arg0=xcas::unix_path(argv[0]);
+    int s=arg0.size(),i;
+    for (i=s-1;i>0;--i){
+      if (arg0[i]=='/')
+        break;
+    }
+    arg0=arg0.substr(0,i);
+    if (i>0)
+      setenv("XCAS_ROOT",arg0.c_str(),1);
+  #endif
+  }
+  #endif
+  #ifdef HAVE_LIBGSL //
+     std::cerr << "GSL error handler off" << std::endl;
+      gsl_set_error_handler_off();
+  #endif //
+  xcas_argc=argc; xcas_argv=argv;
+  #ifdef HAVE_LIBPTHREAD //
+  Fl::lock(); 
+  #ifdef __APPLE__
+  //chdir(giac::home_directory().c_str());
+  if (xcas::autosave_folder.empty())
+  xcas::autosave_folder=giac::home_directory();
+  //Fl::unlock();
+  #endif
+  #endif //
+  Fl::gl_visual(FL_RGB | FL_DEPTH | FL_ACCUM | FL_ALPHA);
+  xcas::fonts_available=Fl::set_fonts(0);
+  fl_register_images();
+  Xcas_run(argc,argv);
+  #ifdef WITH_GNUPLOT
+  giac::kill_gnuplot();
+  #endif
+  if (update_xcas){
+  #ifdef WIN32
+  // chdir(getenv("XCAS_ROOT"));
+  // system("./bash.exe update.sh &");
+  fl_message("%s",gettext("Please close this window and run update.bat in the Xcas installation directory"));
+  #else
+  #ifdef __APPLE__
+  system("cd ~ && rm -f ~/Desktop/xcas_osx6.dmg.gz && open http://www-fourier.ujf-grenoble.fr/~parisse/giac/xcas_osx6.dmg.gz &");
+  #else
+  if (giac::is_file_available("/usr/bin/xcas")){
+    if (giac::is_file_available("/usr/bin/apt-get"))
+      system("xterm -e 'sudo apt-get update ; sudo apt-get install giac'");
+    else
+  #ifdef __x86_64__ 
+      system("xterm -e 'rm -f giac64.rpm && wget http://www-fourier.ujf-grenoble.fr/~parisse/giac/giac64.rpm && sudo rpm -e giac && sudo rpm -U gia64c.rpm'");    
+  #else
+      system("xterm -e 'rm -f giac32.rpm && wget http://www-fourier.ujf-grenoble.fr/~parisse/giac/giac32.rpm && sudo rpm -e giac && sudo rpm -U giac32.rpm'");    
+  #endif
+  }
+  else {
+    if (giac::is_file_available("/usr/local/bin/xcas")){
+      system("cd /tmp && wget http://www-fourier.ujf-grenoble.fr/~parisse/giac/xcas.tgz && cd /usr/local && xterm -e 'sudo tar xvfz tmp/xcas.tgz' &");
+    }
+    else
+      fl_alert("%s","Update implemented only for debian/rpm packages");
+  }
+  #endif // __APPLE__
+  #endif // __WIN32__
+  }
 }

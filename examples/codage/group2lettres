@@ -1,17 +1,17 @@
 c2n2(m):={
-local s,ln,l,n;
+local s,ln_,l,n;
 s:=size(m);
 if (irem(s,2)==1){
 m:=append(m,"F");
 s:=s+1;
 }
-ln:=[];
+ln_:=[];
 l:=asc(m);
 for (k:=0;k<s;k:=k+2){
 n:=l[k]*26+l[k+1];
-ln:=append(ln,n);
+ln_:=append(ln_,n);
 }
-return(ln);
+return(ln_);
 };
 n2c2(l):={
 local s,n,m;

@@ -1,642 +1,646 @@
-// xcas version=0.8.3 fontsize=20 font=0 xcas_mode=0
-// fltk 7Fl_Tile 13 -355 970 250 20 0
+// xcas version=0.9.9 fontsize=20 font=0 currentlevel=-1
+// fltk 7Fl_Tile 16 -412 908 250 20 0
 [
-// fltk N4xcas23Comment_Multiline_InputE 13 -355 970 248 20 0
-La Terre autour du Soleil. Les paramËtres modifiables ‡ la souris sont£* E dÈsigne l'excentricitÈ de l'orbite (0.0167 pour la Terre)£* theta_hiver dÈsigne l'angle que fait la projection de l'axe de rotation de la Terre£au solstice d'hiver avec la direction Terre-Soleil lorsque la Terre est au pÈrihÈlie£(point le plus proche du Soleil, le 4 janvier actuellement)£* th dÈsigne le jour de l'annÈe entre 0 (1er janvier) et 365£* lat dÈsigne la latitude du lieu entre -90 (pole Sud) et 90 (pole Nord)£* t dÈsigne l'heure entre 0 et 24h£On peut aussi modifier directement dans les zones de commande en rouge l'obliquitÈ£(inclinaison de l'axe de rotation de la Terre par rapport ‡ la perpendiculaire au plan de l'orbite).£On peut modifier la taille de la representation graphique horizontalement (amener£la souris sur une sÈparation puis appuyer un bouton, dÈplacer et relacher le bouton)
+// fltk N4xcas23Comment_Multiline_InputE 16 -412 908 248 20 0
+La Terre autour du Soleil. Les param√®tres modifiables √† la souris sont£* E d√©signe l'excentricit√© de l'orbite (0.0167 pour la Terre)£* theta_hiver d√©signe l'angle que fait la projection de l'axe de rotation de la Terre£au solstice d'hiver avec la direction Terre-Soleil lorsque la Terre est au p√©rih√©lie£(point le plus proche du Soleil, le 4 janvier actuellement)£* th d√©signe le jour de l'ann√©e entre 0 (1er janvier) et 365£* lat d√©signe la latitude du lieu entre -90 (pole Sud) et 90 (pole Nord)£* t d√©signe l'heure entre 0 et 24h£On peut aussi modifier directement dans les zones de commande en rouge l'obliquit√©£(inclinaison de l'axe de rotation de la Terre par rapport √† la perpendiculaire au plan de l'orbite).£On peut modifier la taille de la representation graphique horizontalement (amener£la souris sur une s√©paration puis appuyer un bouton, d√©placer et relacher le bouton)
 ,
-// fltk N4xcas10Log_OutputE 13 -107 970 2 20 0
+// fltk N4xcas10Log_OutputE 16 -164 908 2 20 0
 
 ]
 ,
-// fltk 7Fl_Tile 13 -103 970 233 20 0
+// fltk 7Fl_Tile 16 -160 908 233 20 0
 [
-// fltk N4xcas23Comment_Multiline_InputE 13 -103 970 230 20 0
-Sont reprÈsentÈs:£* le Soleil en rouge, et l'axe Soleil-Terre en rouge,£* la Terre par une sphËre dont l'axe de rotation est en bleu, qui£dÈcrit une ellipse (en vert) dont le Soleil est un foyer£* le plan perpendiculaire ‡ l'axe Soleil-Terre en noir, l'avant est au jour£l'arriere est dans la nuit£* la projection en cyan de l'axe de rotation de la Terre sur le plan de l'orbite£(plan de l'ellipse en vert appelÈ plan de l'ecliptique)£* en violet un point ‡ la surface de la Terre ‡ la latitude lat, qui se dÈplace£au cours de la journÈe (faire varier tt), on peut ainsi voir la durÈe du jour£varier entre ÈtÈ et hiver ou selon la latitude ‡ une saison donnÈe
+// fltk N4xcas23Comment_Multiline_InputE 16 -160 908 230 20 0
+Sont repr√©sent√©s:£* le Soleil en rouge, et l'axe Soleil-Terre en rouge,£* la Terre par une sph√®re dont l'axe de rotation est en bleu, qui£d√©crit une ellipse (en vert) dont le Soleil est un foyer£* le plan perpendiculaire √† l'axe Soleil-Terre en noir, l'avant est au jour£l'arriere est dans la nuit£* la projection en cyan de l'axe de rotation de la Terre sur le plan de l'orbite£(plan de l'ellipse en vert appel√© plan de l'ecliptique)£* en violet un point √† la surface de la Terre √† la latitude lat, qui se d√©place£au cours de la journ√©e (faire varier tt), on peut ainsi voir la dur√©e du jour£varier entre √©t√© et hiver ou selon la latitude √† une saison donn√©e
 ,
-// fltk N4xcas10Log_OutputE 13 127 970 3 20 0
+// fltk N4xcas10Log_OutputE 16 70 908 3 20 0
 
 ]
 ,
-// fltk N4xcas6FigureE 13 132 970 553 20 0 landscape=0 history=0.29072 geo=0.55876  mouse_param=0.15052
-// fltk N4xcas12History_PackE 15 -2273 262 2958 20 0
+// fltk N4xcas6FigureE 16 75 908 553 20 0 landscape=0 history=0.26872 geo=0.55396  mouse_param=0.17731
+// fltk N4xcas12History_PackE 18 -845 224 3117 20 0
 [
-// fltk 7Fl_Tile 37 -2273 240 54 20 0
+// fltk 7Fl_Tile 46 -845 196 73 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 -2273 240 26 20 0
-title="Les saisons";
-,
-// fltk N4xcas10Log_OutputE 37 -2247 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 -845 196 45 20 0
+20 ,
+title="Les saisons";,
+// fltk N4xcas10Log_OutputE 46 -800 196 1 20 0
 
 ,
-// fltk N4xcas10Gen_OutputE 37 -2246 240 27 20 0
+// fltk N4xcas10Gen_OutputE 46 -799 196 27 20 0
 title="Les saisons"
 ]
 ,
-// fltk 7Fl_Tile 37 -2217 240 56 20 0
+// fltk 7Fl_Tile 46 -770 196 62 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 -2217 240 28 20 0
-a:=5.0;
-,
-// fltk N4xcas10Log_OutputE 37 -2189 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 -770 196 34 20 0
+7 ,
+a:=5.0;,
+// fltk N4xcas10Log_OutputE 46 -736 196 1 20 0
 
 ,
-// fltk N4xcas10Gen_OutputE 37 -2188 240 27 20 0
+// fltk N4xcas10Gen_OutputE 46 -735 196 27 20 0
 5.0
 ]
 ,
-// fltk 7Fl_Tile 37 -2159 240 54 20 0
+// fltk 7Fl_Tile 46 -706 196 95 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 -2159 240 27 20 0
-E := element(0..1,0.07,0.01)
-,
-// fltk N4xcas10Log_OutputE 37 -2132 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 -706 196 45 20 0
+28 ,
+E:=element(0 .. 1,0.07,0.01),
+// fltk N4xcas10Log_OutputE 46 -661 196 1 20 0
 
 ,
-// fltk N4xcas10Gen_OutputE 37 -2131 240 27 20 0
-parameter(E,0,1,0.07,0.01)
+// fltk 9Fl_Scroll 46 -660 196 49 20 0
+[
+// fltk N4xcas10Gen_OutputE 46 -660 283 27 20 0
+parameter([E,0,1,0.07,0.01])
+,
+// fltk 12Fl_Scrollbar 46 -627 196 16 20 0
+[]
+,
+// fltk 12Fl_Scrollbar 226 -660 16 33 20 0
+[]
+]
 ]
 ,
-// fltk 7Fl_Tile 37 -2103 240 78 20 0
+// fltk 7Fl_Tile 46 -609 196 95 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 -2103 240 28 20 0
-S:=point(a*E,0,0,display=rouge+point_width_4);
-,
-// fltk N4xcas10Log_OutputE 37 -2075 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 -609 196 45 20 0
+51 ,
+S:=point(a*E,0,0,'display'=(red+epaisseur_point_4)),
+// fltk N4xcas10Log_OutputE 46 -564 196 1 20 0
 
 ,
-// fltk 9Fl_Scroll 37 -2074 240 49 20 0
+// fltk 9Fl_Scroll 46 -563 196 49 20 0
 [
-// fltk N4xcas10Gen_OutputE 37 -2074 321 27 20 0
+// fltk N4xcas10Gen_OutputE 46 -563 283 27 20 0
 pnt(pnt[point[0.35,0,0],1572865,"S"])
 ,
-// fltk 12Fl_Scrollbar 37 390 240 16 20 0
+// fltk 12Fl_Scrollbar 46 -530 196 16 20 0
 []
 ,
-// fltk 12Fl_Scrollbar 277 357 16 33 20 0
+// fltk 12Fl_Scrollbar 226 -563 16 33 20 0
 []
 ]
 ]
 ,
-// fltk 7Fl_Tile 37 -2023 240 57 20 0
+// fltk 7Fl_Tile 46 -512 196 73 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 -2023 240 29 20 0
-S1:=point(-a*E,0,0):;
-,
-// fltk N4xcas10Log_OutputE 37 -1994 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 -512 196 45 20 0
+21 ,
+S1:=point(-a*E,0,0):;,
+// fltk N4xcas10Log_OutputE 46 -467 196 1 20 0
 
 ,
-// fltk N4xcas10Gen_OutputE 37 -1993 240 27 20 0
+// fltk N4xcas10Gen_OutputE 46 -466 196 27 20 0
 "Done"
 ]
 ,
-// fltk 7Fl_Tile 37 -1964 240 56 20 0
+// fltk 7Fl_Tile 46 -437 196 73 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 -1964 240 28 20 0
-O:=point(0,0,0):;
-,
-// fltk N4xcas10Log_OutputE 37 -1936 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 -437 196 45 20 0
+17 ,
+O:=point(0,0,0):;,
+// fltk N4xcas10Log_OutputE 46 -392 196 1 20 0
 
 ,
-// fltk N4xcas10Gen_OutputE 37 -1935 240 27 20 0
+// fltk N4xcas10Gen_OutputE 46 -391 196 27 20 0
 "Done"
 ]
 ,
-// fltk 7Fl_Tile 37 -1906 240 55 20 0
+// fltk 7Fl_Tile 46 -362 196 73 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 -1906 240 27 20 0
-b:=a*sqrt(1-E^2);
-,
-// fltk N4xcas10Log_OutputE 37 -1879 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 -362 196 45 20 0
+17 ,
+b:=a*sqrt(1-E^2);,
+// fltk N4xcas10Log_OutputE 46 -317 196 1 20 0
 
 ,
-// fltk N4xcas10Gen_OutputE 37 -1878 240 27 20 0
+// fltk N4xcas10Gen_OutputE 46 -316 196 27 20 0
 4.98773495687
 ]
 ,
-// fltk 7Fl_Tile 37 -1849 240 77 20 0
+// fltk 7Fl_Tile 46 -287 196 95 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 -1849 240 27 20 0
-ellipse(S,S1,point(0,a,0),color=vert);
-,
-// fltk N4xcas10Log_OutputE 37 -1822 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 -287 196 45 20 0
+39 ,
+ellipse(S,S1,point(0,a,0),color=green);,
+// fltk N4xcas10Log_OutputE 46 -242 196 1 20 0
 
 ,
-// fltk 9Fl_Scroll 37 -1821 240 49 20 0
+// fltk 9Fl_Scroll 46 -241 196 49 20 0
 [
-// fltk N4xcas10Gen_OutputE 37 -1821 321 27 20 0
-pnt(pnt[curve(group[pnt[point[-3.50856452128*cos(t)*1.42857142857,12.25*sin(t)*0.408163265306,0.0],t,0.0,6.28318530718,group[point[-5.0122350304,0.0,0.0],point[-4.98477748247,0.522642316338,0.0],point[-4.9027056693,1.03955845409,0.0],point[-4.76691878687,1.54508497187,0.0],point[-4.57890454466,2.03368321538,0.0],point[-4.34072286607,2.5,0.0],point[-4.0549833194,2.93892626146,0.0],point[-3.72481652692,3.34565303179,0.0],point[-3.35383986511,3.71572412739,0.0],point[-2.94611783189,4.04508497187,0.0],point[-2.5061175152,4.33012701892,0.0],point[-2.03865965057,4.56772728821,0.0],point[-1.5488658042,4.75528258148,0.0],point[-1.04210225995,4.89073800367,0.0],point[-0.523921225264,4.97260947684,0.0],point[-1.41984049037e-15,5.0,0.0],point[0.523921225264,4.97260947684,0.0],point[1.04210225995,4.89073800367,0.0],point[1.5488658042,4.75528258148,0.0],point[2.03865965057,4.56772728821,0.0],point[2.5061175152,4.33012701892,0.0],point[2.94611783189,4.04508497187,0.0],point[3.35383986511,3.71572412739,0.0],point[3.72481652692,3.34565303179,0.0],point[4.0549833194,2.93892626146,0.0],point[4.34072286607,2.5,0.0],point[4.57890454466,2.03368321538,0.0],point[4.76691878687,1.54508497187,0.0],point[4.9027056693,1.03955845409,0.0],point[4.98477748247,0.522642316338,0.0],point[5.0122350304,-3.82858892159e-15,0.0],point[4.98477748247,-0.522642316338,0.0],point[4.9027056693,-1.03955845409,0.0],point[4.76691878687,-1.54508497187,0.0],point[4.57890454466,-2.03368321538,0.0],point[4.34072286607,-2.5,0.0],point[4.0549833194,-2.93892626146,0.0],point[3.72481652692,-3.34565303179,0.0],point[3.35383986511,-3.71572412739,0.0],point[2.94611783189,-4.04508497187,0.0],point[2.5061175152,-4.33012701892,0.0],point[2.03865965057,-4.56772728821,0.0],point[1.5488658042,-4.75528258148,0.0],point[1.04210225995,-4.89073800367,0.0],point[0.523921225264,-4.97260947684,0.0],point[9.20702229762e-16,-5.0,0.0],point[-0.523921225264,-4.97260947684,0.0],point[-1.04210225995,-4.89073800367,0.0],point[-1.5488658042,-4.75528258148,0.0],point[-2.03865965057,-4.56772728821,0.0],point[-2.5061175152,-4.33012701892,0.0],point[-2.94611783189,-4.04508497187,0.0],point[-3.35383986511,-3.71572412739,0.0],point[-3.72481652692,-3.34565303179,0.0],point[-4.0549833194,-2.93892626146,0.0],point[-4.34072286607,-2.5,0.0],point[-4.57890454466,-2.03368321538,0.0],point[-4.76691878687,-1.54508497187,0.0],point[-4.9027056693,-1.03955845409,0.0],point[-4.98477748247,-0.522642316338,0.0],point[-5.0122350304,-2.34290668463e-14,0.0]]],undef]),2])
+// fltk N4xcas10Gen_OutputE 46 -241 283 27 20 0
+pnt(pnt[curve(group[pnt[[(-3.50856452128)*cos(t)*1.42857142857,12.25*sin(t)*0.408163265306,0.0],t,0.0,6.28318530718,group[point[-5.0122350304,0.0,0.0],point[-4.98477748247,0.522642316338,0.0],point[-4.9027056693,1.03955845409,0.0],point[-4.76691878687,1.54508497187,0.0],point[-4.57890454466,2.03368321538,0.0],point[-4.34072286607,2.5,0.0],point[-4.0549833194,2.93892626146,0.0],point[-3.72481652692,3.34565303179,0.0],point[-3.35383986511,3.71572412739,0.0],point[-2.94611783189,4.04508497187,0.0],point[-2.5061175152,4.33012701892,0.0],point[-2.03865965057,4.56772728821,0.0],point[-1.5488658042,4.75528258148,0.0],point[-1.04210225995,4.89073800367,0.0],point[-0.523921225265,4.97260947684,0.0],point[-3.11930029936e-13,5.0,0.0],point[0.523921225264,4.97260947684,0.0],point[1.04210225995,4.89073800367,0.0],point[1.5488658042,4.75528258148,0.0],point[2.03865965057,4.56772728821,0.0],point[2.5061175152,4.33012701892,0.0],point[2.94611783189,4.04508497187,0.0],point[3.35383986511,3.71572412739,0.0],point[3.72481652692,3.34565303179,0.0],point[4.0549833194,2.93892626146,0.0],point[4.34072286607,2.5,0.0],point[4.57890454466,2.03368321538,0.0],point[4.76691878687,1.54508497188,0.0],point[4.9027056693,1.03955845409,0.0],point[4.98477748247,0.522642316339,0.0],point[5.0122350304,6.22337196967e-13,0.0],point[4.98477748247,-0.522642316337,0.0],point[4.9027056693,-1.03955845409,0.0],point[4.76691878687,-1.54508497187,0.0],point[4.57890454466,-2.03368321538,0.0],point[4.34072286607,-2.5,0.0],point[4.0549833194,-2.93892626146,0.0],point[3.72481652692,-3.34565303179,0.0],point[3.35383986511,-3.71572412739,0.0],point[2.9461178319,-4.04508497187,0.0],point[2.5061175152,-4.33012701892,0.0],point[2.03865965057,-4.56772728821,0.0],point[1.5488658042,-4.75528258148,0.0],point[1.04210225995,-4.89073800367,0.0],point[0.523921225266,-4.97260947684,0.0],point[9.35790089808e-13,-5.0,0.0],point[-0.523921225263,-4.97260947684,0.0],point[-1.04210225995,-4.89073800367,0.0],point[-1.54886580419,-4.75528258148,0.0],point[-2.03865965057,-4.56772728821,0.0],point[-2.5061175152,-4.33012701892,0.0],point[-2.94611783189,-4.04508497187,0.0],point[-3.35383986511,-3.71572412739,0.0],point[-3.72481652692,-3.34565303179,0.0],point[-4.0549833194,-2.93892626146,0.0],point[-4.34072286607,-2.5,0.0],point[-4.57890454466,-2.03368321538,0.0],point[-4.76691878687,-1.54508497188,0.0],point[-4.9027056693,-1.03955845409,0.0],point[-4.98477748247,-0.52264231634,0.0],point[-5.0122350304,-1.24467439393e-12,0.0]]],undef]),56])
 ,
-// fltk 12Fl_Scrollbar 37 643 240 16 20 0
+// fltk 12Fl_Scrollbar 46 -208 267 16 20 0
 []
 ,
-// fltk 12Fl_Scrollbar 277 610 16 33 20 0
+// fltk 12Fl_Scrollbar 226 -241 16 33 20 0
 []
 ]
 ]
 ,
-// fltk 7Fl_Tile 37 -1770 240 114 20 0
+// fltk 7Fl_Tile 46 -190 196 95 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 -1770 240 64 20 0
-hiver_theta:=£element(0..2*pi,£evalf(-13/365*2*pi),0.1);
-,
-// fltk N4xcas10Log_OutputE 37 -1706 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 -190 196 45 20 0
+56 ,
+hiver_theta:= element(0..2*pi, evalf(-13/365*2*pi),0.1);,
+// fltk N4xcas10Log_OutputE 46 -145 196 1 20 0
 
 ,
-// fltk 9Fl_Scroll 37 -1705 240 49 20 0
+// fltk 9Fl_Scroll 46 -144 196 49 20 0
 [
-// fltk N4xcas10Gen_OutputE 37 -1705 321 27 20 0
-parameter(hiver_theta,0,2*pi,-0.223784682174,0.1)
+// fltk N4xcas10Gen_OutputE 46 -144 283 27 20 0
+parameter([hiver_theta,0,2*pi,-0.223784682174,0.1])
 ,
-// fltk 12Fl_Scrollbar 37 635 240 16 20 0
+// fltk 12Fl_Scrollbar 46 -111 267 16 20 0
 []
 ,
-// fltk 12Fl_Scrollbar 277 602 16 33 20 0
+// fltk 12Fl_Scrollbar 226 -144 16 33 20 0
 []
 ]
 ]
 ,
-// fltk 7Fl_Tile 37 -1654 240 80 20 0
+// fltk 7Fl_Tile 46 -93 196 95 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 -1654 240 30 20 0
-pr_axe_dir:=[cos(hiver_theta),sin(hiver_theta),0];
-,
-// fltk N4xcas10Log_OutputE 37 -1624 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 -93 196 45 20 0
+50 ,
+pr_axe_dir:=[cos(hiver_theta),sin(hiver_theta),0];,
+// fltk N4xcas10Log_OutputE 46 -48 196 1 20 0
 
 ,
-// fltk 9Fl_Scroll 37 -1623 240 49 20 0
+// fltk 9Fl_Scroll 46 -47 196 49 20 0
 [
-// fltk N4xcas10Gen_OutputE 37 -1623 321 27 20 0
+// fltk N4xcas10Gen_OutputE 46 -47 283 27 20 0
 [0.975064532257,-0.221921513004,0]
 ,
-// fltk 12Fl_Scrollbar 37 641 240 16 20 0
+// fltk 12Fl_Scrollbar 46 -14 267 16 20 0
 []
 ,
-// fltk 12Fl_Scrollbar 277 608 16 33 20 0
+// fltk 12Fl_Scrollbar 226 -47 16 33 20 0
 []
 ]
 ]
 ,
-// fltk 7Fl_Tile 37 -1572 240 99 20 0
+// fltk 7Fl_Tile 46 4 196 95 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 -1572 240 49 20 0
-obliquite_degre := £element(-90..90,21,1)
-,
-// fltk N4xcas10Log_OutputE 37 -1523 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 4 196 45 20 0
+46 ,
+obliquite_degre:=element((-90) .. 90,21.0,1.0),
+// fltk N4xcas10Log_OutputE 46 49 196 1 20 0
 
 ,
-// fltk 9Fl_Scroll 37 -1522 240 49 20 0
+// fltk 9Fl_Scroll 46 50 196 49 20 0
 [
-// fltk N4xcas10Gen_OutputE 37 -1522 321 27 20 0
-parameter(obliquite_degre,-90,90,21,1)
+// fltk N4xcas10Gen_OutputE 46 50 283 27 20 0
+parameter([obliquite_degre,-90,90,31.0,1.0])
 ,
-// fltk 12Fl_Scrollbar 37 647 240 16 20 0
+// fltk 12Fl_Scrollbar 46 83 267 16 20 0
 []
 ,
-// fltk 12Fl_Scrollbar 277 614 16 33 20 0
+// fltk 12Fl_Scrollbar 226 50 16 33 20 0
 []
 ]
 ]
 ,
-// fltk 7Fl_Tile 37 -1471 240 57 20 0
+// fltk 7Fl_Tile 46 101 196 73 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 -1471 240 29 20 0
-obliquite:=evalf(obliquite_degre/360*2*pi);
-,
-// fltk N4xcas10Log_OutputE 37 -1442 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 101 196 45 20 0
+42 ,
+obliquite:=evalf(obliquite_degre/360*2*pi),
+// fltk N4xcas10Log_OutputE 46 146 196 1 20 0
 
 ,
-// fltk N4xcas10Gen_OutputE 37 -1441 240 27 20 0
+// fltk N4xcas10Gen_OutputE 46 147 196 27 20 0
 0.366519142919
 ]
 ,
-// fltk 7Fl_Tile 37 -1412 240 137 20 0
+// fltk 7Fl_Tile 46 176 196 95 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 -1412 240 87 20 0
-axe_dir:=£[sin(obliquite)*cos(hiver_theta),£sin(hiver_theta),£cos(obliquite)*cos(hiver_theta)];
-,
-// fltk N4xcas10Log_OutputE 37 -1325 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 176 196 45 20 0
+95 ,
+axe_dir:= [sin(obliquite)*cos(hiver_theta), sin(hiver_theta), cos(obliquite)*cos(hiver_theta)];,
+// fltk N4xcas10Log_OutputE 46 221 196 1 20 0
 
 ,
-// fltk 9Fl_Scroll 37 -1324 240 49 20 0
+// fltk 9Fl_Scroll 46 222 196 49 20 0
 [
-// fltk N4xcas10Gen_OutputE 37 -1324 321 27 20 0
+// fltk N4xcas10Gen_OutputE 46 222 564 27 20 0
 [0.349431877099,-0.221921513004,0.910301161887]
 ,
-// fltk 12Fl_Scrollbar 37 663 240 16 20 0
+// fltk 12Fl_Scrollbar 46 255 196 16 20 0
 []
 ,
-// fltk 12Fl_Scrollbar 277 630 16 33 20 0
+// fltk 12Fl_Scrollbar 226 222 16 33 20 0
 []
 ]
 ]
 ,
-// fltk 7Fl_Tile 37 -1273 240 80 20 0
+// fltk 7Fl_Tile 46 273 196 95 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 -1273 240 30 20 0
-J:=element((-20) .. 365,134.75)
-,
-// fltk N4xcas10Log_OutputE 37 -1243 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 273 196 45 20 0
+36 ,
+J:=element((-20) .. 365,173.25,3.85),
+// fltk N4xcas10Log_OutputE 46 318 196 1 20 0
 
 ,
-// fltk 9Fl_Scroll 37 -1242 240 49 20 0
+// fltk 9Fl_Scroll 46 319 196 49 20 0
 [
-// fltk N4xcas10Gen_OutputE 37 -1242 279 27 20 0
-parameter(J,-20,365,134.75,3.85)
+// fltk N4xcas10Gen_OutputE 46 319 358 27 20 0
+parameter([J,-20,365,173.25,3.85])
 ,
-// fltk 12Fl_Scrollbar 37 -1193 224 20 20 0
+// fltk 12Fl_Scrollbar 46 352 196 16 20 0
 []
 ,
-// fltk 12Fl_Scrollbar 261 -1220 16 33 20 0
-[]
-]
-]
-,
-// fltk 7Fl_Tile 37 -1191 240 58 20 0
-[
-// fltk N4xcas19Multiline_Input_tabE 37 -1191 240 30 20 0
-theta:=evalf(J*2*pi/365);
-,
-// fltk N4xcas10Log_OutputE 37 -1161 240 1 20 0
-
-,
-// fltk N4xcas10Gen_OutputE 37 -1160 240 27 20 0
-2.31961430176
-]
-,
-// fltk 7Fl_Tile 37 -1131 240 57 20 0
-[
-// fltk N4xcas19Multiline_Input_tabE 37 -1131 240 29 20 0
-V:=theta+E*sin(theta);
-,
-// fltk N4xcas10Log_OutputE 37 -1102 240 1 20 0
-
-,
-// fltk N4xcas10Gen_OutputE 37 -1101 240 27 20 0
-2.37088888677
-]
-,
-// fltk 7Fl_Tile 37 -1072 240 76 20 0
-[
-// fltk N4xcas19Multiline_Input_tabE 37 -1072 240 26 20 0
-T:=point(a*cos(V),b*sin(V),0);
-,
-// fltk N4xcas10Log_OutputE 37 -1046 240 1 20 0
-
-,
-// fltk 9Fl_Scroll 37 -1045 240 49 20 0
-[
-// fltk N4xcas10Gen_OutputE 37 -1045 450 27 20 0
-pnt(pnt[point[-3.58710287492,3.47465721607,0],0,"T"])
-,
-// fltk 12Fl_Scrollbar 37 -996 224 20 20 0
-[]
-,
-// fltk 12Fl_Scrollbar 261 -1023 16 33 20 0
+// fltk 12Fl_Scrollbar 226 319 16 33 20 0
 []
 ]
 ]
 ,
-// fltk 7Fl_Tile 37 -994 240 55 20 0
+// fltk 7Fl_Tile 46 370 196 73 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 -994 240 27 20 0
-R:=3.0;
-,
-// fltk N4xcas10Log_OutputE 37 -967 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 370 196 45 20 0
+24 ,
+theta:=evalf(J*2*pi/365),
+// fltk N4xcas10Log_OutputE 46 415 196 1 20 0
 
 ,
-// fltk N4xcas10Gen_OutputE 37 -966 240 27 20 0
+// fltk N4xcas10Gen_OutputE 46 416 196 27 20 0
+2.98236124512
+]
+,
+// fltk 7Fl_Tile 46 445 196 73 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 46 445 196 45 20 0
+22 ,
+V:=theta+E*sin(theta);,
+// fltk N4xcas10Log_OutputE 46 490 196 1 20 0
+
+,
+// fltk N4xcas10Gen_OutputE 46 491 196 27 20 0
+2.99346040208
+]
+,
+// fltk 7Fl_Tile 46 520 196 95 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 46 520 196 45 20 0
+30 ,
+T:=point(a*cos(V),b*sin(V),0);,
+// fltk N4xcas10Log_OutputE 46 565 196 1 20 0
+
+,
+// fltk 9Fl_Scroll 46 566 196 49 20 0
+[
+// fltk N4xcas10Gen_OutputE 46 566 700 27 20 0
+pnt(pnt[point[-4.94524232982,0.736145274857,0],536870968,"T"])
+,
+// fltk 12Fl_Scrollbar 46 599 196 16 20 0
+[]
+,
+// fltk 12Fl_Scrollbar 226 566 16 33 20 0
+[]
+]
+]
+,
+// fltk 7Fl_Tile 46 617 196 62 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 46 617 196 34 20 0
+7 ,
+R:=3.0;,
+// fltk N4xcas10Log_OutputE 46 651 196 1 20 0
+
+,
+// fltk N4xcas10Gen_OutputE 46 652 196 27 20 0
 3.0
 ]
 ,
-// fltk 7Fl_Tile 37 -937 240 78 20 0
+// fltk 7Fl_Tile 46 681 196 95 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 -937 240 28 20 0
-axe1:=[-cos(obliquite),0,sin(obliquite)]
-,
-// fltk N4xcas10Log_OutputE 37 -909 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 681 196 45 20 0
+41 ,
+axe1:=[-cos(obliquite),0,sin(obliquite)];,
+// fltk N4xcas10Log_OutputE 46 726 196 1 20 0
 
 ,
-// fltk 9Fl_Scroll 37 -908 240 49 20 0
+// fltk 9Fl_Scroll 46 727 196 49 20 0
 [
-// fltk N4xcas10Gen_OutputE 37 -908 310 27 20 0
+// fltk N4xcas10Gen_OutputE 46 727 402 27 20 0
 [-0.933580426497,0,0.358367949545]
 ,
-// fltk 12Fl_Scrollbar 37 -859 224 20 20 0
+// fltk 12Fl_Scrollbar 46 756 180 20 20 0
 []
 ,
-// fltk 12Fl_Scrollbar 261 -886 16 33 20 0
+// fltk 12Fl_Scrollbar 226 727 16 33 20 0
 []
 ]
 ]
 ,
-// fltk 7Fl_Tile 37 -857 240 77 20 0
+// fltk 7Fl_Tile 46 778 196 95 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 -857 240 27 20 0
-axe2:=cross(axe_dir,axe1)
-,
-// fltk N4xcas10Log_OutputE 37 -830 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 778 196 45 20 0
+26 ,
+axe2:=cross(axe_dir,axe1);,
+// fltk N4xcas10Log_OutputE 46 823 196 1 20 0
 
 ,
-// fltk 9Fl_Scroll 37 -829 240 49 20 0
+// fltk 9Fl_Scroll 46 824 196 49 20 0
 [
-// fltk N4xcas10Gen_OutputE 37 -829 457 27 20 0
+// fltk N4xcas10Gen_OutputE 46 824 591 27 20 0
 [-0.0795295575753,-0.975064532257,-0.207181580759]
 ,
-// fltk 12Fl_Scrollbar 37 -780 224 20 20 0
+// fltk 12Fl_Scrollbar 46 857 196 16 20 0
 []
 ,
-// fltk 12Fl_Scrollbar 261 -807 16 33 20 0
+// fltk 12Fl_Scrollbar 226 824 16 33 20 0
 []
 ]
 ]
 ,
-// fltk 7Fl_Tile 37 -778 240 97 20 0
+// fltk 7Fl_Tile 46 875 196 95 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 -778 240 47 20 0
-assume(lat:=£[57.6,-90.0,90.0,1])
-,
-// fltk N4xcas10Log_OutputE 37 -731 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 875 196 45 20 0
+34 ,
+assume(lat:= [57.6,-90.0,90.0,1]);,
+// fltk N4xcas10Log_OutputE 46 920 196 1 20 0
 
 ,
-// fltk 9Fl_Scroll 37 -730 240 49 20 0
+// fltk 9Fl_Scroll 46 921 196 49 20 0
 [
-// fltk N4xcas10Gen_OutputE 37 -730 280 27 20 0
-parameter(lat,-90.0,90.0,57.6,1.0)
+// fltk N4xcas10Gen_OutputE 46 921 364 27 20 0
+parameter([lat,-90.0,90.0,57.6,1.0])
 ,
-// fltk 12Fl_Scrollbar 37 -681 224 20 20 0
+// fltk 12Fl_Scrollbar 46 954 196 16 20 0
 []
 ,
-// fltk 12Fl_Scrollbar 261 -708 16 33 20 0
+// fltk 12Fl_Scrollbar 226 921 16 33 20 0
 []
 ]
 ]
 ,
-// fltk 7Fl_Tile 37 -679 240 57 20 0
+// fltk 7Fl_Tile 46 972 196 73 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 -679 240 29 20 0
-latitude:=evalf(lat*2*pi/360);
-,
-// fltk N4xcas10Log_OutputE 37 -650 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 972 196 45 20 0
+30 ,
+latitude:=evalf(lat*2*pi/360);,
+// fltk N4xcas10Log_OutputE 46 1017 196 1 20 0
 
 ,
-// fltk N4xcas10Gen_OutputE 37 -649 240 27 20 0
+// fltk N4xcas10Gen_OutputE 46 1018 196 27 20 0
 1.00530964915
 ]
 ,
-// fltk 7Fl_Tile 37 -620 240 77 20 0
+// fltk 7Fl_Tile 46 1047 196 95 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 -620 240 27 20 0
-terre1:=[-axe_dir[1],axe_dir[0],0];
-,
-// fltk N4xcas10Log_OutputE 37 -593 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 1047 196 45 20 0
+35 ,
+terre1:=[-axe_dir[1],axe_dir[0],0];,
+// fltk N4xcas10Log_OutputE 46 1092 196 1 20 0
 
 ,
-// fltk 9Fl_Scroll 37 -592 240 49 20 0
+// fltk 9Fl_Scroll 46 1093 196 49 20 0
 [
-// fltk N4xcas10Gen_OutputE 37 -592 304 27 20 0
+// fltk N4xcas10Gen_OutputE 46 1093 395 27 20 0
 [0.221921513004,0.349431877099,0]
 ,
-// fltk 12Fl_Scrollbar 37 -543 224 20 20 0
+// fltk 12Fl_Scrollbar 46 1122 180 20 20 0
 []
 ,
-// fltk 12Fl_Scrollbar 261 -570 16 33 20 0
+// fltk 12Fl_Scrollbar 226 1093 16 33 20 0
 []
 ]
 ]
 ,
-// fltk 7Fl_Tile 37 -541 240 79 20 0
+// fltk 7Fl_Tile 46 1144 196 95 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 -541 240 29 20 0
-terre1:=terre1/sqrt(terre1*terre1);
-,
-// fltk N4xcas10Log_OutputE 37 -512 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 1144 196 45 20 0
+35 ,
+terre1:=terre1/sqrt(terre1*terre1);,
+// fltk N4xcas10Log_OutputE 46 1189 196 1 20 0
 
 ,
-// fltk 9Fl_Scroll 37 -511 240 49 20 0
+// fltk 9Fl_Scroll 46 1190 196 49 20 0
 [
-// fltk N4xcas10Gen_OutputE 37 -511 309 27 20 0
+// fltk N4xcas10Gen_OutputE 46 1190 401 27 20 0
 [0.536111441575,0.84414721596,0.0]
 ,
-// fltk 12Fl_Scrollbar 37 -462 224 20 20 0
+// fltk 12Fl_Scrollbar 46 1223 196 16 20 0
 []
 ,
-// fltk 12Fl_Scrollbar 261 -489 16 33 20 0
+// fltk 12Fl_Scrollbar 226 1190 16 33 20 0
 []
 ]
 ]
 ,
-// fltk 7Fl_Tile 37 -460 240 77 20 0
+// fltk 7Fl_Tile 46 1241 196 95 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 -460 240 27 20 0
-v0:=sin(latitude)*axe_dir+cos(latitude)*terre1;
-,
-// fltk N4xcas10Log_OutputE 37 -433 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 1241 196 45 20 0
+47 ,
+v0:=sin(latitude)*axe_dir+cos(latitude)*terre1;,
+// fltk N4xcas10Log_OutputE 46 1286 196 1 20 0
 
 ,
-// fltk 9Fl_Scroll 37 -432 240 49 20 0
+// fltk 9Fl_Scroll 46 1287 196 49 20 0
 [
-// fltk N4xcas10Gen_OutputE 37 -432 429 27 20 0
+// fltk N4xcas10Gen_OutputE 46 1287 557 27 20 0
 [0.582297967386,0.264942166519,0.768592691598]
 ,
-// fltk 12Fl_Scrollbar 37 -383 224 20 20 0
+// fltk 12Fl_Scrollbar 46 1320 196 16 20 0
 []
 ,
-// fltk 12Fl_Scrollbar 261 -410 16 33 20 0
+// fltk 12Fl_Scrollbar 226 1287 16 33 20 0
 []
 ]
 ]
 ,
-// fltk 7Fl_Tile 37 -381 240 77 20 0
+// fltk 7Fl_Tile 46 1338 196 95 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 -381 240 27 20 0
-vpi:=sin(latitude)*axe_dir-cos(latitude)*terre1;
-,
-// fltk N4xcas10Log_OutputE 37 -354 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 1338 196 45 20 0
+48 ,
+vpi:=sin(latitude)*axe_dir-cos(latitude)*terre1;,
+// fltk N4xcas10Log_OutputE 46 1383 196 1 20 0
 
 ,
-// fltk 9Fl_Scroll 37 -353 240 49 20 0
+// fltk 9Fl_Scroll 46 1384 196 49 20 0
 [
-// fltk N4xcas10Gen_OutputE 37 -353 455 27 20 0
-[0.00777221640486,-0.639691227917,0.768592691598]
+// fltk N4xcas10Gen_OutputE 46 1384 590 27 20 0
+[0.00777221640477,-0.639691227917,0.768592691598]
 ,
-// fltk 12Fl_Scrollbar 37 -304 224 20 20 0
+// fltk 12Fl_Scrollbar 46 1417 196 16 20 0
 []
 ,
-// fltk 12Fl_Scrollbar 261 -331 16 33 20 0
+// fltk 12Fl_Scrollbar 226 1384 16 33 20 0
 []
 ]
 ]
 ,
-// fltk 7Fl_Tile 37 -302 240 79 20 0
+// fltk 7Fl_Tile 46 1435 196 95 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 -302 240 29 20 0
-vpi2:=sin(latitude)*axe_dir+cos(latitude)*cross(axe_dir,terre1);
-,
-// fltk N4xcas10Log_OutputE 37 -273 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 1435 196 45 20 0
+64 ,
+vpi2:=sin(latitude)*axe_dir+cos(latitude)*cross(axe_dir,terre1);,
+// fltk N4xcas10Log_OutputE 46 1480 196 1 20 0
 
 ,
-// fltk 9Fl_Scroll 37 -272 240 49 20 0
+// fltk 9Fl_Scroll 46 1481 196 49 20 0
 [
-// fltk N4xcas10Gen_OutputE 37 -272 445 27 20 0
-[-0.116709323123,0.0741211986271,0.990396376109]
+// fltk N4xcas10Gen_OutputE 46 1481 577 27 20 0
+[-0.116709323123,0.0741211986272,0.990396376109]
 ,
-// fltk 12Fl_Scrollbar 37 -223 224 20 20 0
+// fltk 12Fl_Scrollbar 46 1510 180 20 20 0
 []
 ,
-// fltk 12Fl_Scrollbar 261 -250 16 33 20 0
+// fltk 12Fl_Scrollbar 226 1481 16 33 20 0
 []
 ]
 ]
 ,
-// fltk 7Fl_Tile 37 -221 240 78 20 0
+// fltk 7Fl_Tile 46 1532 196 95 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 -221 240 28 20 0
-segment(T-2*R*axe_dir,T+2*R*axe_dir,display=bleu+line_width_3);
-,
-// fltk N4xcas10Log_OutputE 37 -193 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 1532 196 45 20 0
+63 ,
+segment(T-2*R*axe_dir,T+2*R*axe_dir,display=blue+line_width_3);,
+// fltk N4xcas10Log_OutputE 46 1577 196 1 20 0
 
 ,
-// fltk 9Fl_Scroll 37 -192 240 49 20 0
+// fltk 9Fl_Scroll 46 1578 196 49 20 0
 [
-// fltk N4xcas10Gen_OutputE 37 -192 1091 27 20 0
-pnt(pnt[group[point[-5.68369413752,4.8061862941,-5.46180697132],point[-1.49051161233,2.14312813805,5.46180697132]],131076])
+// fltk N4xcas10Gen_OutputE 46 1578 1442 27 20 0
+pnt(pnt[group[point[-7.04183359242,2.06767435288,-5.46180697132],point[-2.84865106722,-0.595383803168,5.46180697132]],131076])
 ,
-// fltk 12Fl_Scrollbar 37 -143 224 20 20 0
+// fltk 12Fl_Scrollbar 46 1611 196 16 20 0
 []
 ,
-// fltk 12Fl_Scrollbar 261 -170 16 33 20 0
+// fltk 12Fl_Scrollbar 226 1578 16 33 20 0
 []
 ]
 ]
 ,
-// fltk 7Fl_Tile 37 -141 240 77 20 0
+// fltk 7Fl_Tile 46 1629 196 95 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 -141 240 27 20 0
-segment(T-1.5*R*pr_axe_dir,T+1.5*R*pr_axe_dir,display=bleu+line_width_2+dashdot_line);
-,
-// fltk N4xcas10Log_OutputE 37 -114 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 1629 196 45 20 0
+86 ,
+segment(T-1.5*R*pr_axe_dir,T+1.5*R*pr_axe_dir,display=blue+line_width_2+dashdot_line);,
+// fltk N4xcas10Log_OutputE 46 1674 196 1 20 0
 
 ,
-// fltk 9Fl_Scroll 37 -113 240 49 20 0
+// fltk 9Fl_Scroll 46 1675 196 49 20 0
 [
-// fltk N4xcas10Gen_OutputE 37 -113 919 27 20 0
-pnt(pnt[group[point[-7.97489327008,4.47330402459,0.0],point[0.800687520236,2.47601040755,0.0]],12648452])
+// fltk N4xcas10Gen_OutputE 46 1675 1214 27 20 0
+pnt(pnt[group[point[-9.33303272498,1.73479208338,0.0],point[-0.557451934662,-0.262501533662,0.0]],12648452])
 ,
-// fltk 12Fl_Scrollbar 37 -64 224 20 20 0
+// fltk 12Fl_Scrollbar 46 1708 196 16 20 0
 []
 ,
-// fltk 12Fl_Scrollbar 261 -91 16 33 20 0
+// fltk 12Fl_Scrollbar 226 1675 16 33 20 0
 []
 ]
 ]
 ,
-// fltk 7Fl_Tile 37 -62 240 80 20 0
+// fltk 7Fl_Tile 46 1726 196 95 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 -62 240 30 20 0
-ST:=segment(S,T,display=rouge+line_width_3);
-,
-// fltk N4xcas10Log_OutputE 37 -32 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 1726 196 45 20 0
+42 ,
+ST:=segment(S,T,display=red+line_width_3);,
+// fltk N4xcas10Log_OutputE 46 1771 196 1 20 0
 
 ,
-// fltk 9Fl_Scroll 37 -31 240 49 20 0
+// fltk 9Fl_Scroll 46 1772 196 49 20 0
 [
-// fltk N4xcas10Gen_OutputE 37 -31 694 27 20 0
-pnt(pnt[group[point[0.35,0,0],point[-3.58710287492,3.47465721607,0]],131073,"ST"])
+// fltk N4xcas10Gen_OutputE 46 1772 888 27 20 0
+pnt(pnt[group[point[0.35,0,0],point[-4.94524232982,0.736145274857,0]],131073,ST])
 ,
-// fltk 12Fl_Scrollbar 37 18 224 20 20 0
+// fltk 12Fl_Scrollbar 46 1805 196 16 20 0
 []
 ,
-// fltk 12Fl_Scrollbar 261 -9 16 33 20 0
+// fltk 12Fl_Scrollbar 226 1772 16 33 20 0
 []
 ]
 ]
 ,
-// fltk 7Fl_Tile 37 20 240 117 20 0
+// fltk 7Fl_Tile 46 1823 196 73 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 20 240 67 20 0
-par:=circle(T+R*1.05*v0,£T+R*1.05*vpi,£T+R*1.05*vpi2,display=line_width_3+bleu+hidden_name);
-,
-// fltk N4xcas10Log_OutputE 37 87 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 1823 196 45 20 0
+92 ,
+par:=circle(T+R*1.05*v0, T+R*1.05*vpi, T+R*1.05*vpi2,display=line_width_3+blue+hidden_name);,
+// fltk N4xcas10Log_OutputE 46 1868 196 1 20 0
 
 ,
-// fltk 9Fl_Scroll 37 88 240 49 20 0
-[
-// fltk N4xcas10Gen_OutputE 37 88 29206 27 20 0
-pnt(pnt[curve(group[pnt[[-2.65774233545-0.904878057796*cos(t)-1.29699490731*sin(t),2.88442744437-1.42479759624*cos(t)+0.823711547378*sin(t),2.42106697853+0.69868160621*sin(t)],t,0.0,6.28318530718,group[point[-3.56262039325,1.45962984813,2.42106697853],point[-3.69323626109,1.55353634067,2.49409909314],point[-3.8125070408,1.66202435464,2.56633105262],point[-3.91912597675,1.78390527267,2.63697146851],point[-4.01192492956,1.91784374191,2.70524638962],point[-4.08988717448,2.06237230447,2.77040778164],point[-4.15215854086,2.21590747516,2.83174172271],point[-4.19805677056,2.37676709054,2.88857622535],point[-4.22707899298,2.54318873898,2.94028859885],point[-4.23890723458,2.71334907009,2.98631227162],point[-4.23341190266,2.88538377167,3.02614299867],point[-4.21065320523,3.05740799553,3.05934438623],point[-4.17088049134,3.22753700827,3.08555267294],point[-4.11452951918,3.39390684083,3.10448071533],point[-4.04221768178,3.5546947105,3.1159211338],point[-3.95473724276,3.70813899175,3.11974858474],point[-3.85304665612,3.85255851691,3.1159211338],point[-3.73826006522,3.98637099544,3.10448071533],point[-3.61163509595,4.10811034983,3.08555267294],point[-3.47455907799,4.21644277824,3.05934438623],point[-3.32853384486,4.31018136791,3.02614299867],point[-3.17515927959,4.38829909923,2.98631227162],point[-3.01611578599,4.449940098,2.94028859885],point[-2.85314587788,4.49442901253,2.88857622535],point[-2.68803508767,4.52127841296,2.83174172271],point[-2.52259240373,4.53019413165,2.77040778164],point[-2.35863045072,4.52107848612,2.70524638962],point[-2.19794563011,4.49403134928,2.63697146851],point[-2.04229843842,4.44934905522,2.56633105262],point[-1.89339417886,4.38752115252,2.49409909314],point[-1.75286427765,4.30922504061,2.42106697853],point[-1.62224840981,4.21531854807,2.34803486392],point[-1.5029776301,4.1068305341,2.27580290444],point[-1.39635869416,3.98494961607,2.20516248856],point[-1.30355974135,3.85101114683,2.13688756745],point[-1.22559749642,3.70648258427,2.07172617543],point[-1.16332613004,3.55294741358,2.01039223436],point[-1.11742790034,3.3920877982,1.95355773172],point[-1.08840567792,3.22566614976,1.90184535822],point[-1.07657743633,3.05550581865,1.85582168545],point[-1.08207276824,2.88347111707,1.8159909584],point[-1.10483146567,2.71144689321,1.78278957084],point[-1.14460417956,2.54131788047,1.75658128413],point[-1.20095515172,2.37494804791,1.73765324174],point[-1.27326698913,2.21416017824,1.72621282327],point[-1.36074742814,2.06071589699,1.72238537232],point[-1.46243801478,1.91629637183,1.72621282327],point[-1.57722460568,1.7824838933,1.73765324174],point[-1.70384957495,1.66074453891,1.75658128413],point[-1.84092559291,1.5524121105,1.78278957084],point[-1.98695082604,1.45867352083,1.8159909584],point[-2.14032539132,1.38055578951,1.85582168545],point[-2.29936888491,1.31891479074,1.90184535822],point[-2.46233879302,1.27442587621,1.95355773172],point[-2.62744958323,1.24757647578,2.01039223436],point[-2.79289226717,1.23866075709,2.07172617543],point[-2.95685422019,1.24777640262,2.13688756745],point[-3.11753904079,1.27482353946,2.20516248856],point[-3.27318623248,1.31950583352,2.27580290444],point[-3.42209049204,1.38133373622,2.34803486392],point[-3.56262039325,1.45962984813,2.42106697853]]],undef]),-2147352572,"par"])
-,
-// fltk 12Fl_Scrollbar 37 137 224 20 20 0
-[]
-,
-// fltk 12Fl_Scrollbar 261 110 16 33 20 0
-[]
-]
+// fltk N4xcas10Gen_OutputE 46 1869 196 27 20 0
+pnt(pnt[curve(group[pnt[[-4.01588179035-0.904878057796*cos(` t`)-1.29699490731*sin(` t`),0.145915503155-1.42479759624*cos(` t`)+0.823711547377*sin(` t`),2.42106697853+0.69868160621*sin(` t`)],` t`,0.0,6.28318530718,group[point[-4.92075984814,-1.27888209308,2.42106697853],point[-5.05137571599,-1.18497560055,2.49409909314],point[-5.1706464957,-1.07648758657,2.56633105262],point[-5.27726543164,-0.954606668545,2.63697146851],point[-5.37006438445,-0.820668199304,2.70524638962],point[-5.44802662938,-0.676139636748,2.77040778164],point[-5.51029799576,-0.522604466054,2.83174172271],point[-5.55619622546,-0.36174485068,2.88857622535],point[-5.58521844788,-0.195323202234,2.94028859884],point[-5.59704668947,-0.0251628711235,2.98631227161],point[-5.59155135755,0.146871830456,3.02614299867],point[-5.56879266013,0.318896054314,3.05934438623],point[-5.52901994624,0.489025067054,3.08555267294],point[-5.47266897408,0.655394899612,3.10448071532],point[-5.40035713667,0.816182769287,3.1159211338],point[-5.31287669766,0.969627050532,3.11974858474],point[-5.21118611102,1.11404657569,3.1159211338],point[-5.09639952012,1.24785905423,3.10448071532],point[-4.96977455085,1.36959840862,3.08555267294],point[-4.83269853288,1.47793083703,3.05934438623],point[-4.68667329976,1.57166942669,3.02614299867],point[-4.53329873448,1.64978715802,2.98631227161],point[-4.37425524089,1.71142815678,2.94028859884],point[-4.21128533278,1.75591707131,2.88857622535],point[-4.04617454257,1.78276647175,2.83174172271],point[-3.88073185862,1.79168219044,2.77040778164],point[-3.71676990561,1.7825665449,2.70524638962],point[-3.55608508501,1.75551940806,2.63697146851],point[-3.40043789332,1.71083711401,2.56633105262],point[-3.25153363376,1.6490092113,2.49409909314],point[-3.11100373255,1.57071309939,2.42106697853],point[-2.98038786471,1.47680660686,2.34803486392],point[-2.861117085,1.36831859288,2.27580290444],point[-2.75449814905,1.24643767486,2.20516248856],point[-2.66169919624,1.11249920561,2.13688756745],point[-2.58373695132,0.967970643059,2.07172617543],point[-2.52146558494,0.814435472364,2.01039223436],point[-2.47556735524,0.65357585699,1.95355773172],point[-2.44654513282,0.487154208544,1.90184535822],point[-2.43471689122,0.316993877434,1.85582168545],point[-2.44021222314,0.144959175854,1.8159909584],point[-2.46297092057,-0.0270650480034,1.78278957084],point[-2.50274363446,-0.197194060744,1.75658128413],point[-2.55909460662,-0.363563893302,1.73765324174],point[-2.63140644402,-0.524351762977,1.72621282327],point[-2.71888688304,-0.677796044222,1.72238537232],point[-2.82057746967,-0.822215569381,1.72621282327],point[-2.93536406058,-0.956028047915,1.73765324174],point[-3.06198902985,-1.07776740231,1.75658128413],point[-3.19906504781,-1.18609983071,1.78278957084],point[-3.34509028094,-1.27983842038,1.8159909584],point[-3.49846484621,-1.35795615171,1.85582168545],point[-3.65750833981,-1.41959715047,1.90184535822],point[-3.82047824792,-1.464086065,1.95355773172],point[-3.98558903813,-1.49093546544,2.01039223436],point[-4.15103172207,-1.49985118413,2.07172617543],point[-4.31499367508,-1.49073553859,2.13688756744],point[-4.47567849569,-1.46368840175,2.20516248856],point[-4.63132568738,-1.4190061077,2.27580290444],point[-4.78022994694,-1.35717820499,2.34803486392],point[-4.92075984814,-1.27888209308,2.42106697853]]],undef]),-2147352572,"par"])
 ]
 ,
-// fltk 7Fl_Tile 37 139 240 175 20 0
+// fltk 7Fl_Tile 46 1898 196 119 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 139 240 147 20 0
-animation(seq(£display(£element(par,£((16-tt)/24-J/365)*2*pi),£magenta+point_width_7£),£tt,1,24));
-,
-// fltk N4xcas10Log_OutputE 37 286 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 1898 196 91 20 0
+116 ,
+animation(seq( 
+      display( 
+          element(par, ((16-tt)/24-J/365)*2*pi), magenta+point_width_7 ), tt,1,24));,
+// fltk N4xcas10Log_OutputE 46 1989 196 1 20 0
 
 ,
-// fltk N4xcas10Gen_OutputE 37 287 240 27 20 0
+// fltk N4xcas10Gen_OutputE 46 1990 196 27 20 0
 Done
 ]
 ,
-// fltk 7Fl_Tile 37 316 240 217 20 0
+// fltk 7Fl_Tile 46 2019 196 119 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 316 240 189 20 0
-animation(seq(£sphere(T,R,axe_dir,£cos(Phi)*axe1+sin(Phi)*axe2,£32,32,£display=blanc+rempli,£gl_material=[gl_texture,"terre.jpg"]£//,gl_material=[gl_front_and_back,gl_emission,[1,1,1,1]]£),£Phi,0,6.28,6.28/24))
-,
-// fltk N4xcas10Log_OutputE 37 505 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 2019 196 91 20 0
+229 ,
+animation(seq( sphere(T,R,axe_dir, cos(Phi)*axe1+sin(Phi)*axe2, 32,32, display=white+filled, gl_material=[gl_texture,"terre.jpg"] 
+        //,gl_material=[gl_front_and_back,gl_emission,[1,1,1,1]] 
+        ), Phi,0,6.28,6.28/24));,
+// fltk N4xcas10Log_OutputE 46 2110 196 1 20 0
 
 ,
-// fltk N4xcas10Gen_OutputE 37 506 240 27 20 0
+// fltk N4xcas10Gen_OutputE 46 2111 196 27 20 0
 Done
 ]
 ,
-// fltk 7Fl_Tile 37 535 240 115 20 0
+// fltk 7Fl_Tile 46 2140 196 95 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 535 240 65 20 0
-P:=display(£orthogonal(T,ST),£65+rempli);
-,
-// fltk N4xcas10Log_OutputE 37 600 240 1 20 0
+// fltk N4xcas16Xcas_Text_EditorE 46 2140 196 45 20 0
+41 ,
+P:=display( orthogonal(T,ST), 65+filled);,
+// fltk N4xcas10Log_OutputE 46 2185 196 1 20 0
 
 ,
-// fltk 9Fl_Scroll 37 601 240 49 20 0
+// fltk 9Fl_Scroll 46 2186 196 49 20 0
 [
-// fltk N4xcas10Gen_OutputE 37 601 937 27 20 0
-pnt(pnt[hyperplan([[-3.93710287492,3.47465721607,0],point[-3.58710287492,3.47465721607,0]]),1073741889,"P"])
+// fltk N4xcas10Gen_OutputE 46 2186 1238 27 20 0
+pnt(pnt[hyperplan([[-5.29524232982,0.736145274857,0],point[-4.94524232982,0.736145274857,0]]),1073741889,"P"])
 ,
-// fltk 12Fl_Scrollbar 37 630 240 20 20 0
+// fltk 12Fl_Scrollbar 46 2215 180 20 20 0
 []
 ,
-// fltk 12Fl_Scrollbar 277 601 16 29 20 0
+// fltk 12Fl_Scrollbar 226 2186 16 33 20 0
 []
 ]
 ]
 ,
-// fltk 7Fl_Tile 37 652 240 31 20 0
+// fltk 7Fl_Tile 46 2237 196 33 20 0
 [
-// fltk N4xcas19Multiline_Input_tabE 37 652 240 30 20 0
-
+// fltk N4xcas16Xcas_Text_EditorE 46 2237 196 32 20 0
+0 ,
 ,
-// fltk N4xcas10Log_OutputE 37 682 240 1 20 0
+// fltk N4xcas10Log_OutputE 46 2269 196 1 20 0
 
 ]
 ]
-// fltk N4xcas5Geo3dE 295 158 542 527 20 0
--7.3528,7.3528,-7.3528,7.3528,[title="Les saisons",5.0,parameter(E,0,1,0.07,0.01),pnt(pnt[point[0.35,0,0],1572865,"S"]),"Done","Done",4.98773495687,pnt(pnt[curve(group[pnt[point[(-3.50856452128)*cos(t)*1.42857142857,12.25*sin(t)*0.408163265306,0.0],t,0.0,6.28318530718,group[point[-5.0122350304,0.0,0.0],point[-4.98477748247,0.522642316338,0.0],point[-4.9027056693,1.03955845409,0.0],point[-4.76691878687,1.54508497187,0.0],point[-4.57890454466,2.03368321538,0.0],point[-4.34072286607,2.5,0.0],point[-4.0549833194,2.93892626146,0.0],point[-3.72481652692,3.34565303179,0.0],point[-3.35383986511,3.71572412739,0.0],point[-2.94611783189,4.04508497187,0.0],point[-2.5061175152,4.33012701892,0.0],point[-2.03865965057,4.56772728821,0.0],point[-1.5488658042,4.75528258148,0.0],point[-1.04210225995,4.89073800367,0.0],point[-0.523921225264,4.97260947684,0.0],point[-1.41984049037e-15,5.0,0.0],point[0.523921225264,4.97260947684,0.0],point[1.04210225995,4.89073800367,0.0],point[1.5488658042,4.75528258148,0.0],point[2.03865965057,4.56772728821,0.0],point[2.5061175152,4.33012701892,0.0],point[2.94611783189,4.04508497187,0.0],point[3.35383986511,3.71572412739,0.0],point[3.72481652692,3.34565303179,0.0],point[4.0549833194,2.93892626146,0.0],point[4.34072286607,2.5,0.0],point[4.57890454466,2.03368321538,0.0],point[4.76691878687,1.54508497187,0.0],point[4.9027056693,1.03955845409,0.0],point[4.98477748247,0.522642316338,0.0],point[5.0122350304,-3.82858892159e-15,0.0],point[4.98477748247,-0.522642316338,0.0],point[4.9027056693,-1.03955845409,0.0],point[4.76691878687,-1.54508497187,0.0],point[4.57890454466,-2.03368321538,0.0],point[4.34072286607,-2.5,0.0],point[4.0549833194,-2.93892626146,0.0],point[3.72481652692,-3.34565303179,0.0],point[3.35383986511,-3.71572412739,0.0],point[2.94611783189,-4.04508497187,0.0],point[2.5061175152,-4.33012701892,0.0],point[2.03865965057,-4.56772728821,0.0],point[1.5488658042,-4.75528258148,0.0],point[1.04210225995,-4.89073800367,0.0],point[0.523921225264,-4.97260947684,0.0],point[9.20702229762e-16,-5.0,0.0],point[-0.523921225264,-4.97260947684,0.0],point[-1.04210225995,-4.89073800367,0.0],point[-1.5488658042,-4.75528258148,0.0],point[-2.03865965057,-4.56772728821,0.0],point[-2.5061175152,-4.33012701892,0.0],point[-2.94611783189,-4.04508497187,0.0],point[-3.35383986511,-3.71572412739,0.0],point[-3.72481652692,-3.34565303179,0.0],point[-4.0549833194,-2.93892626146,0.0],point[-4.34072286607,-2.5,0.0],point[-4.57890454466,-2.03368321538,0.0],point[-4.76691878687,-1.54508497187,0.0],point[-4.9027056693,-1.03955845409,0.0],point[-4.98477748247,-0.522642316338,0.0],point[-5.0122350304,-2.34290668463e-14,0.0]]],undef]),2]),parameter(hiver_theta,0,2*pi,-0.223784682174,0.1),[0.975064532257,-0.221921513004,0],parameter(obliquite_degre,-90,90,21,1),0.366519142919,[0.349431877099,-0.221921513004,0.910301161887],parameter(J,-20,365,210.0,3.85),2.31961430176,2.37088888677,pnt(pnt[point[-3.58710287492,3.47465721607,0],0,"T"]),3.0,[-0.933580426497,0,0.358367949545],[-0.0795295575753,-0.975064532257,-0.207181580759],parameter(lat,-90.0,90.0,57.6,1.0),1.00530964915,[0.221921513004,0.349431877099,0],[0.536111441575,0.84414721596,0.0],[0.582297967386,0.264942166519,0.768592691598],[0.00777221640486,-0.639691227917,0.768592691598],[-0.116709323123,0.0741211986271,0.990396376109],pnt(pnt[group[point[-5.68369413752,4.8061862941,-5.46180697132],point[-1.49051161233,2.14312813805,5.46180697132]],131076]),pnt(pnt[group[point[-7.97489327008,4.47330402459,0.0],point[0.800687520236,2.47601040755,0.0]],12648452]),pnt(pnt[group[point[0.35,0,0],point[-3.58710287492,3.47465721607,0]],131073,"ST"]),pnt(pnt[curve(group[pnt[[-2.65774233545-0.904878057796*cos(t)-1.29699490731*sin(t),2.88442744437-1.42479759624*cos(t)+0.823711547378*sin(t),2.42106697853+0.69868160621*sin(t)],t,0.0,6.28318530718,group[point[-3.56262039325,1.45962984813,2.42106697853],point[-3.69323626109,1.55353634067,2.49409909314],point[-3.8125070408,1.66202435464,2.56633105262],point[-3.91912597675,1.78390527267,2.63697146851],point[-4.01192492956,1.91784374191,2.70524638962],point[-4.08988717448,2.06237230447,2.77040778164],point[-4.15215854086,2.21590747516,2.83174172271],point[-4.19805677056,2.37676709054,2.88857622535],point[-4.22707899298,2.54318873898,2.94028859885],point[-4.23890723458,2.71334907009,2.98631227162],point[-4.23341190266,2.88538377167,3.02614299867],point[-4.21065320523,3.05740799553,3.05934438623],point[-4.17088049134,3.22753700827,3.08555267294],point[-4.11452951918,3.39390684083,3.10448071533],point[-4.04221768178,3.5546947105,3.1159211338],point[-3.95473724276,3.70813899175,3.11974858474],point[-3.85304665612,3.85255851691,3.1159211338],point[-3.73826006522,3.98637099544,3.10448071533],point[-3.61163509595,4.10811034983,3.08555267294],point[-3.47455907799,4.21644277824,3.05934438623],point[-3.32853384486,4.31018136791,3.02614299867],point[-3.17515927959,4.38829909923,2.98631227162],point[-3.01611578599,4.449940098,2.94028859885],point[-2.85314587788,4.49442901253,2.88857622535],point[-2.68803508767,4.52127841296,2.83174172271],point[-2.52259240373,4.53019413165,2.77040778164],point[-2.35863045072,4.52107848612,2.70524638962],point[-2.19794563011,4.49403134928,2.63697146851],point[-2.04229843842,4.44934905522,2.56633105262],point[-1.89339417886,4.38752115252,2.49409909314],point[-1.75286427765,4.30922504061,2.42106697853],point[-1.62224840981,4.21531854807,2.34803486392],point[-1.5029776301,4.1068305341,2.27580290444],point[-1.39635869416,3.98494961607,2.20516248856],point[-1.30355974135,3.85101114683,2.13688756745],point[-1.22559749642,3.70648258427,2.07172617543],point[-1.16332613004,3.55294741358,2.01039223436],point[-1.11742790034,3.3920877982,1.95355773172],point[-1.08840567792,3.22566614976,1.90184535822],point[-1.07657743633,3.05550581865,1.85582168545],point[-1.08207276824,2.88347111707,1.8159909584],point[-1.10483146567,2.71144689321,1.78278957084],point[-1.14460417956,2.54131788047,1.75658128413],point[-1.20095515172,2.37494804791,1.73765324174],point[-1.27326698913,2.21416017824,1.72621282327],point[-1.36074742814,2.06071589699,1.72238537232],point[-1.46243801478,1.91629637183,1.72621282327],point[-1.57722460568,1.7824838933,1.73765324174],point[-1.70384957495,1.66074453891,1.75658128413],point[-1.84092559291,1.5524121105,1.78278957084],point[-1.98695082604,1.45867352083,1.8159909584],point[-2.14032539132,1.38055578951,1.85582168545],point[-2.29936888491,1.31891479074,1.90184535822],point[-2.46233879302,1.27442587621,1.95355773172],point[-2.62744958323,1.24757647578,2.01039223436],point[-2.79289226717,1.23866075709,2.07172617543],point[-2.95685422019,1.24777640262,2.13688756745],point[-3.11753904079,1.27482353946,2.20516248856],point[-3.27318623248,1.31950583352,2.27580290444],point[-3.42209049204,1.38133373622,2.34803486392],point[-3.56262039325,1.45962984813,2.42106697853]]],undef]),-2147352572,"par"]),animation(pnt(pnt[point[-3.92077635016,3.75969568654,3.11928118038],3145733]),pnt(pnt[point[-4.12405926432,3.36915046057,3.10210350576],3145733]),pnt(pnt[point[-4.22741510297,2.94557216209,3.03851431727],3145733]),pnt(pnt[point[-4.22380033653,2.51782695214,2.93284711303],3145733]),pnt(pnt[point[-4.11346130535,2.1150649599,2.79230293838],3145733]),pnt(pnt[point[-3.90391743206,1.76473374954,2.62645964656],3145733]),pnt(pnt[point[-3.60944878534,1.49070781411,2.44661918384],3145733]),pnt(pnt[point[-3.25012291682,1.31166156825,2.26503738056],3145733]),pnt(pnt[point[-2.85042729065,1.23979671773,2.09408873653],3145733]),pnt(pnt[point[-2.4376005032,1.28001073334,1.94542311934],3145733]),pnt(pnt[point[-2.03977601781,1.42956309639,1.82917184511],3145733]),pnt(pnt[point[-1.68406491574,1.67826206048,1.75325724607],3145733]),pnt(pnt[point[-1.39470832074,2.0091592022,1.72285277669],3145733]),pnt(pnt[point[-1.19142540659,2.39970442817,1.74003045131],3145733]),pnt(pnt[point[-1.08806956793,2.82328272665,1.8036196398],3145733]),pnt(pnt[point[-1.09168433437,3.2510279366,1.90928684404],3145733]),pnt(pnt[point[-1.20202336555,3.65378992884,2.04983101869],3145733]),pnt(pnt[point[-1.41156723884,4.0041211392,2.21567431051],3145733]),pnt(pnt[point[-1.70603588556,4.27814707463,2.39551477323],3145733]),pnt(pnt[point[-2.06536175408,4.45719332049,2.57709657651],3145733]),pnt(pnt[point[-2.46505738026,4.52905817101,2.74804522054],3145733]),pnt(pnt[point[-2.8778841677,4.4888441554,2.89671083773],3145733]),pnt(pnt[point[-3.27570865309,4.33929179235,3.01296211196],3145733]),pnt(pnt[point[-3.63141975516,4.09059282826,3.088876711],3145733])),animation(pnt(pnt[hypersphere(point[-3.58710287492,3.47465721607,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[-0.933580426497,0.0,0.358367949545],32,32),couleur(1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]),""]),pnt(pnt[hypersphere(point[-3.58710287492,3.47465721607,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[-0.9223750745,-0.252240266857,0.292573186943],32,32),couleur(1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]),""]),pnt(pnt[hypersphere(point[-3.58710287492,3.47465721607,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[-0.848374738342,-0.48730810137,0.206860140392],32,32),couleur(1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]),""]),pnt(pnt[hypersphere(point[-3.58710287492,3.47465721607,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[-0.716617335965,-0.689200164602,0.107064125212],32,32),couleur(1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]),""]),pnt(pnt[hypersphere(point[-3.58710287492,3.47465721607,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[-0.53607286691,-0.844171712942,-2.07795240211e-05],32,32),couleur(1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]),""]),pnt(pnt[hypersphere(point[-3.58710287492,3.47465721607,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[-0.319032737774,-0.941672335615,-0.107104269597],32,32),couleur(1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]),""]),pnt(pnt[hypersphere(point[-3.58710287492,3.47465721607,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[-0.0802729673892,-0.975064223095,-0.206896137098],32,32),couleur(1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]),""]),pnt(pnt[hypersphere(point[-3.58710287492,3.47465721607,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[0.163951759558,-0.942074066939,-0.292602585326],32,32),couleur(1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]),""]),pnt(pnt[hypersphere(point[-3.58710287492,3.47465721607,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[0.397014705978,-0.844947825857,-0.358388748174],32,32),couleur(1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]),""]),pnt(pnt[hypersphere(point[-3.58710287492,3.47465721607,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[0.60304902504,-0.690297821602,-0.39977592585],32,32),couleur(1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]),""]),pnt(pnt[hypersphere(point[-3.58710287492,3.47465721607,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[0.768027969751,-0.488652574337,-0.413946493251],32,32),couleur(1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]),""]),pnt(pnt[hypersphere(point[-3.58710287492,3.47465721607,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[0.880719829166,-0.253740024524,-0.399935722922],32,32),couleur(1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]),""]),pnt(pnt[hypersphere(point[-3.58710287492,3.47465721607,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[0.933452579481,-0.00155293937106,-0.358697463386],32,32),couleur(1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]),""]),pnt(pnt[hypersphere(point[-3.58710287492,3.47465721607,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[0.922636192831,0.250739869371,-0.293039201451],32,32),couleur(1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]),""]),pnt(pnt[hypersphere(point[-3.58710287492,3.47465721607,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[0.849007045171,0.485962392324,-0.207430929458],32,32),couleur(1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]),""]),pnt(pnt[hypersphere(point[-3.58710287492,3.47465721607,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[0.717577784058,0.688100759415,-0.107700829708],32,32),couleur(1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]),""]),pnt(pnt[hypersphere(point[-3.58710287492,3.47465721607,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[0.537296069284,0.843393458747,-0.000638493774759],32,32),couleur(1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]),""]),pnt(pnt[hypersphere(point[-3.58710287492,3.47465721607,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[0.320435419224,0.941268215697,0.1064673106],32,32),couleur(1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]),""]),pnt(pnt[hypersphere(point[-3.58710287492,3.47465721607,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[0.0817596338337,0.975061749801,0.206324856356],32,32),couleur(1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]),""]),pnt(pnt[hypersphere(point[-3.58710287492,3.47465721607,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[-0.162482319868,0.94247340865,0.292135875439],32,32),couleur(1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]),""]),pnt(pnt[hypersphere(point[-3.58710287492,3.47465721607,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[-0.395662532003,0.845721795523,0.358058382594],32,32),couleur(1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]),""]),pnt(pnt[hypersphere(point[-3.58710287492,3.47465721607,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[-0.601906172327,0.691393727631,0.399604395755],32,32),couleur(1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]),""]),pnt(pnt[hypersphere(point[-3.58710287492,3.47465721607,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[-0.767172243328,0.489995807814,0.413945476351],32,32),couleur(1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]),""]),pnt(pnt[hypersphere(point[-3.58710287492,3.47465721607,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[-0.880209486599,0.255239138568,0.400105288448],32,32),couleur(1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]),""]),pnt(pnt[hypersphere(point[-3.58710287492,3.47465721607,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[-0.93332236472,0.00310587480302,0.359026067374],32,32),couleur(1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]),""])),pnt(pnt[hyperplan([[-3.93710287492,3.47465721607,0],point[-3.58710287492,3.47465721607,0]]),1073741889,"P"])],-7.3528,7.3528,0.70105,-0.62259,-0.2807,-0.20522,0.5,0.5,0,0,1,2.5,0.2,1,9,[[0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,-1,0,0,180,1,0,0,1],[0,0,1,0,1,1,1,1,0,0,0,0,0,0,0,1,0,0,-1,0,0,180,1,0,0,0],[0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,-1,0,0,180,1,0,0,0],[0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,-1,0,0,180,1,0,0,0],[0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,-1,0,0,180,1,0,0,0],[0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,-1,0,0,180,1,0,0,0],[0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,-1,0,0,180,1,0,0,0],[0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,-1,0,0,180,1,0,0,0]],32,32,256,0,100,0,0,1,0.1
+// fltk N4xcas5Geo3dE 260 101 503 527 20 0
+-7.3528,7.3528,-7.3528,7.3528,[title="Les saisons",5.0,parameter([E,0,1,0.07,0.01]),pnt(pnt[point[0.35,0,0],1572865,"S"]),"Done","Done",4.98773495687,pnt(pnt[curve(group[pnt[[(-3.50856452128)*cos(t)*1.42857142857,12.25*sin(t)*0.408163265306,0.0],t,0.0,6.28318530718,group[point[-5.0122350304,0.0,0.0],point[-4.98477748247,0.522642316338,0.0],point[-4.9027056693,1.03955845409,0.0],point[-4.76691878687,1.54508497187,0.0],point[-4.57890454466,2.03368321538,0.0],point[-4.34072286607,2.5,0.0],point[-4.0549833194,2.93892626146,0.0],point[-3.72481652692,3.34565303179,0.0],point[-3.35383986511,3.71572412739,0.0],point[-2.94611783189,4.04508497187,0.0],point[-2.5061175152,4.33012701892,0.0],point[-2.03865965057,4.56772728821,0.0],point[-1.5488658042,4.75528258148,0.0],point[-1.04210225995,4.89073800367,0.0],point[-0.523921225265,4.97260947684,0.0],point[-3.11930029936e-13,5.0,0.0],point[0.523921225264,4.97260947684,0.0],point[1.04210225995,4.89073800367,0.0],point[1.5488658042,4.75528258148,0.0],point[2.03865965057,4.56772728821,0.0],point[2.5061175152,4.33012701892,0.0],point[2.94611783189,4.04508497187,0.0],point[3.35383986511,3.71572412739,0.0],point[3.72481652692,3.34565303179,0.0],point[4.0549833194,2.93892626146,0.0],point[4.34072286607,2.5,0.0],point[4.57890454466,2.03368321538,0.0],point[4.76691878687,1.54508497188,0.0],point[4.9027056693,1.03955845409,0.0],point[4.98477748247,0.522642316339,0.0],point[5.0122350304,6.22337196967e-13,0.0],point[4.98477748247,-0.522642316337,0.0],point[4.9027056693,-1.03955845409,0.0],point[4.76691878687,-1.54508497187,0.0],point[4.57890454466,-2.03368321538,0.0],point[4.34072286607,-2.5,0.0],point[4.0549833194,-2.93892626146,0.0],point[3.72481652692,-3.34565303179,0.0],point[3.35383986511,-3.71572412739,0.0],point[2.9461178319,-4.04508497187,0.0],point[2.5061175152,-4.33012701892,0.0],point[2.03865965057,-4.56772728821,0.0],point[1.5488658042,-4.75528258148,0.0],point[1.04210225995,-4.89073800367,0.0],point[0.523921225266,-4.97260947684,0.0],point[9.35790089808e-13,-5.0,0.0],point[-0.523921225263,-4.97260947684,0.0],point[-1.04210225995,-4.89073800367,0.0],point[-1.54886580419,-4.75528258148,0.0],point[-2.03865965057,-4.56772728821,0.0],point[-2.5061175152,-4.33012701892,0.0],point[-2.94611783189,-4.04508497187,0.0],point[-3.35383986511,-3.71572412739,0.0],point[-3.72481652692,-3.34565303179,0.0],point[-4.0549833194,-2.93892626146,0.0],point[-4.34072286607,-2.5,0.0],point[-4.57890454466,-2.03368321538,0.0],point[-4.76691878687,-1.54508497188,0.0],point[-4.9027056693,-1.03955845409,0.0],point[-4.98477748247,-0.52264231634,0.0],point[-5.0122350304,-1.24467439393e-12,0.0]]],undef]),56]),parameter([hiver_theta,0,2*pi,-0.223784682174,0.1]),[0.975064532257,-0.221921513004,0],parameter([obliquite_degre,-90,90,21.0,1.0]),0.366519142919,[0.349431877099,-0.221921513004,0.910301161887],parameter([J,-20,365,173.25,3.85]),2.98236124512,2.99346040208,pnt(pnt[point[-4.94524232982,0.736145274857,0],536870968,"T"]),3.0,[-0.933580426497,0,0.358367949545],[-0.0795295575753,-0.975064532257,-0.207181580759],parameter([lat,-90.0,90.0,57.6,1.0]),1.00530964915,[0.221921513004,0.349431877099,0],[0.536111441575,0.84414721596,0.0],[0.582297967386,0.264942166519,0.768592691598],[0.00777221640477,-0.639691227917,0.768592691598],[-0.116709323123,0.0741211986272,0.990396376109],pnt(pnt[group[point[-7.04183359242,2.06767435288,-5.46180697132],point[-2.84865106722,-0.595383803168,5.46180697132]],131076]),pnt(pnt[group[point[-9.33303272498,1.73479208338,0.0],point[-0.557451934662,-0.262501533662,0.0]],12648452]),pnt(pnt[group[point[0.35,0,0],point[-4.94524232982,0.736145274857,0]],131073,ST]),pnt(pnt[curve(group[pnt[[-4.01588179035-0.904878057796*cos(` t`)-1.29699490731*sin(` t`),0.145915503155-1.42479759624*cos(` t`)+0.823711547377*sin(` t`),2.42106697853+0.69868160621*sin(` t`)],` t`,0.0,6.28318530718,group[point[-4.92075984814,-1.27888209308,2.42106697853],point[-5.05137571599,-1.18497560055,2.49409909314],point[-5.1706464957,-1.07648758657,2.56633105262],point[-5.27726543164,-0.954606668545,2.63697146851],point[-5.37006438445,-0.820668199304,2.70524638962],point[-5.44802662938,-0.676139636748,2.77040778164],point[-5.51029799576,-0.522604466054,2.83174172271],point[-5.55619622546,-0.36174485068,2.88857622535],point[-5.58521844788,-0.195323202234,2.94028859884],point[-5.59704668947,-0.0251628711235,2.98631227161],point[-5.59155135755,0.146871830456,3.02614299867],point[-5.56879266013,0.318896054314,3.05934438623],point[-5.52901994624,0.489025067054,3.08555267294],point[-5.47266897408,0.655394899612,3.10448071532],point[-5.40035713667,0.816182769287,3.1159211338],point[-5.31287669766,0.969627050532,3.11974858474],point[-5.21118611102,1.11404657569,3.1159211338],point[-5.09639952012,1.24785905423,3.10448071532],point[-4.96977455085,1.36959840862,3.08555267294],point[-4.83269853288,1.47793083703,3.05934438623],point[-4.68667329976,1.57166942669,3.02614299867],point[-4.53329873448,1.64978715802,2.98631227161],point[-4.37425524089,1.71142815678,2.94028859884],point[-4.21128533278,1.75591707131,2.88857622535],point[-4.04617454257,1.78276647175,2.83174172271],point[-3.88073185862,1.79168219044,2.77040778164],point[-3.71676990561,1.7825665449,2.70524638962],point[-3.55608508501,1.75551940806,2.63697146851],point[-3.40043789332,1.71083711401,2.56633105262],point[-3.25153363376,1.6490092113,2.49409909314],point[-3.11100373255,1.57071309939,2.42106697853],point[-2.98038786471,1.47680660686,2.34803486392],point[-2.861117085,1.36831859288,2.27580290444],point[-2.75449814905,1.24643767486,2.20516248856],point[-2.66169919624,1.11249920561,2.13688756745],point[-2.58373695132,0.967970643059,2.07172617543],point[-2.52146558494,0.814435472364,2.01039223436],point[-2.47556735524,0.65357585699,1.95355773172],point[-2.44654513282,0.487154208544,1.90184535822],point[-2.43471689122,0.316993877434,1.85582168545],point[-2.44021222314,0.144959175854,1.8159909584],point[-2.46297092057,-0.0270650480034,1.78278957084],point[-2.50274363446,-0.197194060744,1.75658128413],point[-2.55909460662,-0.363563893302,1.73765324174],point[-2.63140644402,-0.524351762977,1.72621282327],point[-2.71888688304,-0.677796044222,1.72238537232],point[-2.82057746967,-0.822215569381,1.72621282327],point[-2.93536406058,-0.956028047915,1.73765324174],point[-3.06198902985,-1.07776740231,1.75658128413],point[-3.19906504781,-1.18609983071,1.78278957084],point[-3.34509028094,-1.27983842038,1.8159909584],point[-3.49846484621,-1.35795615171,1.85582168545],point[-3.65750833981,-1.41959715047,1.90184535822],point[-3.82047824792,-1.464086065,1.95355773172],point[-3.98558903813,-1.49093546544,2.01039223436],point[-4.15103172207,-1.49985118413,2.07172617543],point[-4.31499367508,-1.49073553859,2.13688756744],point[-4.47567849569,-1.46368840175,2.20516248856],point[-4.63132568738,-1.4190061077,2.27580290444],point[-4.78022994694,-1.35717820499,2.34803486392],point[-4.92075984814,-1.27888209308,2.42106697853]]],undef]),-2147352572,"par"]),animation([pnt(pnt[point[-5.59710821213,-0.021640341497,2.98719464232],3145733]),pnt(pnt[point[-5.53626948786,-0.439673515421,2.86192890738],3145733]),pnt(pnt[point[-5.37181885456,-0.817799765461,2.70661916054],3145733]),pnt(pnt[point[-5.11496335113,-1.13025041256,2.5318495044],3145733]),pnt(pnt[point[-4.78320725565,-1.35573246147,2.34953020219],3145733]),pnt(pnt[point[-4.39915919778,-1.47887968317,2.17208601308],3145733]),pnt(pnt[point[-3.98899141798,-1.49129979803,2.01160946529],3145733]),pnt(pnt[point[-3.58065617263,-1.39214639574,1.87903677038],3145733]),pnt(pnt[point[-3.20198083387,-1.18817661681,1.7834025384],3145733]),pnt(pnt[point[-2.87877150027,-0.893290664597,1.73122408423],3145733]),pnt(pnt[point[-2.63305435377,-0.527584529418,1.72605728329],3145733]),pnt(pnt[point[-2.48157461184,-0.115980480031,1.76825424452],3145733]),pnt(pnt[point[-2.43465536857,0.313471347807,1.85493931474],3145733]),pnt(pnt[point[-2.49549409284,0.731504521731,1.98020504969],3145733]),pnt(pnt[point[-2.65994472613,1.10963077177,2.13551479653],3145733]),pnt(pnt[point[-2.91680022956,1.42208141887,2.31028445267],3145733]),pnt(pnt[point[-3.24855632504,1.64756346778,2.49260375487],3145733]),pnt(pnt[point[-3.63260438292,1.77071068948,2.67004794399],3145733]),pnt(pnt[point[-4.04277216271,1.78313080434,2.83052449177],3145733]),pnt(pnt[point[-4.45110740807,1.68397740206,2.96309718669],3145733]),pnt(pnt[point[-4.82978274682,1.48000762312,3.05873141866],3145733]),pnt(pnt[point[-5.15299208043,1.18512167091,3.11090987284],3145733]),pnt(pnt[point[-5.39870922693,0.819415535729,3.11607667378],3145733]),pnt(pnt[point[-5.55018896885,0.407811486341,3.07387971255],3145733])]),animation([pnt(pnt[hypersphere(point[-4.94524232982,0.736145274857,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[-0.933580426497,0.0,0.358367949545],32,32),couleur([1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]]),""]),pnt(pnt[hypersphere(point[-4.94524232982,0.736145274857,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[-0.9223750745,-0.252240266857,0.292573186942],32,32),couleur([1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]]),""]),pnt(pnt[hypersphere(point[-4.94524232982,0.736145274857,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[-0.848374738342,-0.48730810137,0.206860140392],32,32),couleur([1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]]),""]),pnt(pnt[hypersphere(point[-4.94524232982,0.736145274857,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[-0.716617335965,-0.689200164602,0.107064125212],32,32),couleur([1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]]),""]),pnt(pnt[hypersphere(point[-4.94524232982,0.736145274857,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[-0.53607286691,-0.844171712942,-2.07795240001e-05],32,32),couleur([1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]]),""]),pnt(pnt[hypersphere(point[-4.94524232982,0.736145274857,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[-0.319032737774,-0.941672335615,-0.107104269597],32,32),couleur([1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]]),""]),pnt(pnt[hypersphere(point[-4.94524232982,0.736145274857,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[-0.0802729673893,-0.975064223095,-0.206896137098],32,32),couleur([1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]]),""]),pnt(pnt[hypersphere(point[-4.94524232982,0.736145274857,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[0.163951759557,-0.942074066939,-0.292602585326],32,32),couleur([1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]]),""]),pnt(pnt[hypersphere(point[-4.94524232982,0.736145274857,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[0.397014705978,-0.844947825857,-0.358388748173],32,32),couleur([1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]]),""]),pnt(pnt[hypersphere(point[-4.94524232982,0.736145274857,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[0.60304902504,-0.690297821602,-0.39977592585],32,32),couleur([1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]]),""]),pnt(pnt[hypersphere(point[-4.94524232982,0.736145274857,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[0.768027969751,-0.488652574337,-0.413946493251],32,32),couleur([1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]]),""]),pnt(pnt[hypersphere(point[-4.94524232982,0.736145274857,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[0.880719829166,-0.253740024524,-0.399935722922],32,32),couleur([1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]]),""]),pnt(pnt[hypersphere(point[-4.94524232982,0.736145274857,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[0.933452579481,-0.00155293937119,-0.358697463386],32,32),couleur([1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]]),""]),pnt(pnt[hypersphere(point[-4.94524232982,0.736145274857,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[0.922636192831,0.25073986937,-0.293039201451],32,32),couleur([1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]]),""]),pnt(pnt[hypersphere(point[-4.94524232982,0.736145274857,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[0.849007045172,0.485962392324,-0.207430929458],32,32),couleur([1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]]),""]),pnt(pnt[hypersphere(point[-4.94524232982,0.736145274857,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[0.717577784058,0.688100759415,-0.107700829708],32,32),couleur([1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]]),""]),pnt(pnt[hypersphere(point[-4.94524232982,0.736145274857,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[0.537296069284,0.843393458747,-0.000638493774822],32,32),couleur([1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]]),""]),pnt(pnt[hypersphere(point[-4.94524232982,0.736145274857,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[0.320435419224,0.941268215696,0.106467310599],32,32),couleur([1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]]),""]),pnt(pnt[hypersphere(point[-4.94524232982,0.736145274857,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[0.0817596338341,0.975061749801,0.206324856356],32,32),couleur([1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]]),""]),pnt(pnt[hypersphere(point[-4.94524232982,0.736145274857,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[-0.162482319868,0.94247340865,0.292135875439],32,32),couleur([1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]]),""]),pnt(pnt[hypersphere(point[-4.94524232982,0.736145274857,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[-0.395662532002,0.845721795524,0.358058382594],32,32),couleur([1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]]),""]),pnt(pnt[hypersphere(point[-4.94524232982,0.736145274857,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[-0.601906172326,0.691393727632,0.399604395755],32,32),couleur([1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]]),""]),pnt(pnt[hypersphere(point[-4.94524232982,0.736145274857,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[-0.767172243327,0.489995807815,0.413945476351],32,32),couleur([1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]]),""]),pnt(pnt[hypersphere(point[-4.94524232982,0.736145274857,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[-0.880209486598,0.255239138569,0.400105288449],32,32),couleur([1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]]),""]),pnt(pnt[hypersphere(point[-4.94524232982,0.736145274857,0],3.0,[0.349431877099,-0.221921513004,0.910301161887],[-0.93332236472,0.00310587480416,0.359026067375],32,32),couleur([1073741831,"",[gl_material,[gl_texture,"terre.jpg"]]]),""])]),pnt(pnt[hyperplan([[-5.29524232982,0.736145274857,0],point[-4.94524232982,0.736145274857,0]]),1073741889,"P"])],-7.3528,7.3528,0.59032,-0.53563,-0.44282,-0.41053,0.5,0.5,0,0,1,2.5,0.2,1,9,[[0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,-1,0,0,180,1,0,0,1],[0,0,1,0,1,1,1,1,0,0,0,0,0,0,0,1,0,0,-1,0,0,180,1,0,0,0],[0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,-1,0,0,180,1,0,0,0],[0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,-1,0,0,180,1,0,0,0],[0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,-1,0,0,180,1,0,0,0],[0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,-1,0,0,180,1,0,0,0],[0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,-1,0,0,180,1,0,0,0],[0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,-1,0,0,180,1,0,0,0]],32,32,256,0,100,0,0,1,0.1,88,61,216
 
-// context 4705 giac archive
+// context 4743 giac archive
 7 0 32 8 0 0 'cas_setup' 7 0 11 0 0 0
 0 0 0
 0 0 0
 0 1 0
 0 0 0
-7 0 2 1 ªΩ◊Ÿﬂ|€=
-1 ó‘FFıg<
+7 0 2 1 Ω◊Ÿﬂ|€=
+1 ‘FFıg<
 0 12 0
 7 0 4 0 1 0
 0 50 0
@@ -645,291 +649,287 @@ pnt(pnt[hyperplan([[-3.93710287492,3.47465721607,0],point[-3.58710287492,3.47465
 0 0 0
 0 0 0
 0 0 0
-8 0 0 'xyztrange' 7 0 16 1       $¿
-1       $@
-1       $¿
-1       $@
-1       $¿
-1       $@
-1       $¿
-1       $@
-1       $¿
-1       $@
-1 ffffffˆø
-1 öôôôôôÒ?
+8 0 0 'xyztrange' 7 0 16 1      $¿
+1      $@
+1      $¿
+1      $@
+1      $¿
+1      $@
+1      $¿
+1      $@
+1      $¿
+1      $@
+1 fffffˆø
+1 ôôôôôÒ?
 0 1 0
-1         
-1       ?
-0 1 0
-7 0 0 7 0 0 8 0 15 7 0 2 1 ÏQ∏ÖÎ±?
-6 1 E 8 0 15 7 0 2 1      ÿ`@
+1        
+1      ?
+0 3 0
+7 0 0 7 0 0 8 0 15 7 0 2 1 Q∏ÖÎ±?
+6 1 E 8 0 15 7 0 2 1     ®e@
 6 1 J 8 0 15 7 0 2 8 -1 12 7 8 3 7 20 3 0 0 0
 0 0 0
 0 0 0
+0 536870968 0
+6 1 O 6 1 O 8 0 15 7 0 2 8 -1 12 7 8 3 8 0 0 'hyperplan' 7 0 2 7 0 3 1 ‡[T.¿
+1 µâÄéÁ?
 0 0 0
-12 1 |O 6 1 O 8 0 15 7 0 2 8 -1 12 7 8 3 8 0 0 'hyperplan' 7 0 2 7 0 3 1 r5∆ /¿
-1 ∏Ã@
-0 0 0
-7 20 3 1 •h˘˝b≤¿
-1 ∏Ã@
+7 20 3 1 zıöÌ«¿
+1 µâÄéÁ?
 0 0 0
 0 1073741889 0
-12 1 |P 6 1 P 8 0 15 7 0 2 1       @
-6 1 R 8 0 15 7 0 2 8 -1 12 7 8 3 7 20 3 1 gfffff÷?
+12 1 |P 6 1 P 8 0 15 7 0 2 1      @
+6 1 R 8 0 15 7 0 2 8 -1 12 7 8 3 7 20 3 1 effff÷?
 0 0 0
 0 0 0
 0 1572865 0
-12 1 |S 6 1 S 8 0 15 7 0 2 8 -1 12 7 8 3 7 20 3 1 gfffff÷ø
+6 1 S 6 1 S 8 0 15 7 0 2 8 -1 12 7 8 3 7 20 3 1 effff÷ø
 0 0 0
 0 0 0
+0 536870968 0
+6 2 S1 6 2 S1 8 0 15 7 0 2 8 -1 12 7 8 3 7 5 2 7 20 3 1 effff÷?
 0 0 0
-12 2 |S1 6 2 S1 8 0 15 7 0 2 8 -1 12 7 8 3 7 5 2 7 20 3 1 gfffff÷?
 0 0 0
-0 0 0
-7 20 3 1 •h˘˝b≤¿
-1 ∏Ã@
+7 20 3 1 zıöÌ«¿
+1 µâÄéÁ?
 0 0 0
 0 131073 0
-12 2 |ST 6 2 ST 8 0 15 7 0 2 8 -1 12 7 8 3 7 20 3 1 •h˘˝b≤¿
-1 ∏Ã@
+6 2 ST 6 2 ST 8 0 15 7 0 2 8 -1 12 7 8 3 7 20 3 1 zıöÌ«¿
+1 µâÄéÁ?
 0 0 0
+0 536870968 0
+12 1 |T 6 1 T 8 0 15 7 0 2 1 W^õÚ@
+6 1 V 8 0 15 7 0 2 1      @
+6 1 a 8 0 15 7 0 2 7 0 3 1 ∏ˇ‰ﬂÌø
 0 0 0
-12 1 |T 6 1 T 8 0 15 7 0 2 1 :πóî˜@
-6 1 V 8 0 15 7 0 2 1       @
-6 1 a 8 0 15 7 0 2 7 0 3 1 ∏ˇ‰ﬂÌø
-0 0 0
-1 <”ŒÄÔ÷?
-6 4 axe1 8 0 15 7 0 2 7 0 3 1 ÇÍŸê\¥ø
-1 ±à∫3Ôø
-1 ÛÿÌÑ ø
-6 4 axe2 8 0 15 7 0 2 7 0 3 1 ™ïÖ]÷?
-1 É‹PîÏgÃø
-1 ˙Ê/!Ì?
-6 7 axe_dir 8 0 15 7 0 2 1 Ö„ pÛ@
-6 1 b 8 0 15 7 0 2 1 {¯£˘˘§Ãø
+1 —ŒÄÔ÷?
+6 4 axe1 8 0 15 7 0 2 7 0 3 1 ÁŸê\¥ø
+1 ±à∫3Ôø
+1 ÒÿÌÑ ø
+6 4 axe2 8 0 15 7 0 2 7 0 3 1 ìÖ]÷?
+1 €PîÏgÃø
+1 ˙Ê/!Ì?
+6 7 axe_dir 8 0 15 7 0 2 1 Ñ„ pÛ@
+6 1 b 8 0 15 7 0 2 1 ˜£˘˘§Ãø
 6 11 hiver_theta 8 0 15 7 0 2 7 13 2 0 1 1
-1 ÕÃÃÃÃÃL@
-6 3 lat 8 0 15 7 0 2 1 'íø?
-6 8 latitude 8 0 15 7 0 2 1 [nµu◊?
-6 9 obliquite 8 0 15 7 0 2 0 21 0
-6 15 obliquite_degre 8 0 15 7 0 2 8 -1 12 7 8 3 8 0 0 curve 7 5 2 7 8 5 7 0 3 8 0 1 7 0 3 1 ø£ﬂiC¿
-8 0 4 7 0 2 1 	:#‘¬ÙÏø
-8 0 17 6 1 t 8 0 4 7 0 2 1 éz_ª}¿Ùø
-8 0 16 6 1 t 8 0 1 7 0 3 1 *≤N@
-8 0 4 7 0 2 1 Õtê¯Àˆø
-8 0 17 6 1 t 8 0 4 7 0 2 1 Ú]™Qÿ[Í?
-8 0 16 6 1 t 8 0 1 7 0 2 1 (’1]X^@
-8 0 4 7 0 2 1 ï§áô[Ê?
-8 0 16 6 1 t 6 1 t 1         
-1 -DT˚!@
-7 5 61 7 20 3 1 ArË?Ä¿
-1 Ûﬂ”§Z˜?
-1 (’1]X^@
-7 20 3 1 ÎcÓsøã¿
-1 ˛ÏH€¯?
-1 √O∞9ÍÛ@
-7 20 3 1 £ ±Ä¿
-1 iÖŸ¶ó˙?
-1 1Ÿ-ìÿá@
-7 20 3 1 ç7X∏^Z¿
-1 tTA‡ä¸?
-1 ,„MÑ@
-7 20 3 1  y6¿
-1 pÑeÎ|Ø˛?
-1 ri8X§@
-7 20 3 1 ‘Ô*b\¿
-1 (·˛Ω @
-1 ∫…éÀ)@
-7 20 3 1 Õ-”rœõ¿
-1 A<∆≤-∫@
-1 ª$N4hß@
-7 20 3 1 ù>·dœ ¿
-1 Ãw‡vû@
-1 -⁄Õ@
-7 20 3 1 ‡ÿAeáË¿
-1 µ”kVsX@
-1 6ºf∂Ö@
-7 20 3 1 !§Ù¿
-1 ƒeu[¥@
-1 ø◊1∞˜„@
-7 20 3 1 [†°áÔ¿
-1 §„=D@
-1 Jj‚uä5@
-7 20 3 1 ∏Myµ◊¿
-1 ÷ó∫Ríu@
-1 ZR∞åây@
-7 20 3 1 }aßK˚Æ¿
-1 ,*IÏ˛—	@
-1 @¿b=6Ø@
-7 20 3 1 ú0Ì9Gu¿
-1  18°∏&@
-1 2;¸˘’@
-7 20 3 1 Ê(™;+¿
-1 ®˙∆«p@
-1 π4hÌ@
-7 20 3 1 aèGM£¿
-1 lüî∆D™@
-1 Mæ˘æ>ı@
-7 20 3 1  
-”¿
-1 ‘R 3
-“@
-1 π4hÌ@
-7 20 3 1 ˙m†‰ÙÁ¿
-1 f ˘y‰@
-1 2;¸˘’@
-7 20 3 1 góÒ†‰¿
-1 Úè√z¥n@
-1 @¿b=6Ø@
-7 20 3 1 J…?°ÂÀ¿
-1 ã˝˜,£›@
-1 ZR∞åây@
-7 20 3 1 6r:Z÷†
+1 ÃÃÃÃÃL@
+6 3 lat 8 0 15 7 0 2 1 &íø?
+6 8 latitude 8 0 15 7 0 2 1 mµu◊?
+6 9 obliquite 8 0 15 7 0 2 1      5@
+6 15 obliquite_degre 8 0 15 7 0 2 8 -1 12 7 8 3 8 0 0 curve 7 5 2 7 8 5 7 0 3 8 0 1 7 0 3 1 òËPC¿
+8 0 4 7 0 2 1 8#‘¬ÙÏø
+8 0 17 6 4 ` t` 8 0 4 7 0 2 1 y_ª}¿Ùø
+8 0 16 6 4 ` t` 8 0 1 7 0 3 1 Ëı[≠¬?
+8 0 4 7 0 2 1 tê¯Àˆø
+8 0 17 6 4 ` t` 8 0 4 7 0 2 1 [™Qÿ[Í?
+8 0 16 6 4 ` t` 8 0 1 7 0 2 1 “1]X^@
+8 0 4 7 0 2 1 ¢áô[Ê?
+8 0 16 6 4 ` t` 6 4 ` t` 1        
+1 -DT˚!@
+7 5 61 7 20 3 1 ˇl´€Æ¿
+1 ü”MvÙø
+1 “1]X^@
+7 20 3 1 ˆÔ’õ4¿
+1 äÆ˘®ıÚø
+1 L∞9ÍÛ@
+7 20 3 1 ÕxÙΩÆ¿
+1 (.K9Òø
+1 ’-ìÿá@
+7 20 3 1 ‡$xÎ¿
+1 <æH#åÓø
+1 ﬂMÑ@
+7 20 3 1 ér(Úz¿
+1 úÙÈBÍø
+1 e8X§@
+7 20 3 1 µ#~« ¿
+1 ükóÔ¢Âø
+1 ∆éÀ)@
+7 20 3 1 ÚÀéã
+¿
+1 5N -π‡ø
+1  N4hß@
+7 20 3 1 ⁄Äã9¿
+1 é ﬂ”&◊ø
+1 ⁄Õ@
+7 20 3 1 û:ÅCW¿
+1 `ﬂ∆Y …ø
+1 ∏f∂Ö@
+7 20 3 1 Ê5`c¿
+1  2≤Kƒôø
+1 ”1∞˜„@
+7 20 3 1 eö£ø]¿
+1 òA6≤Ã¬?
+1 f‚uä5@
+7 20 3 1 »EïqF¿
+1 nˇ h‘?
+1 N∞åây@
+7 20 3 1 &†g∑¿
+1 ˚zÀ/Lﬂ?
+1 ºb=6Ø@
+7 20 3 1 ıÂU‰¿
+1 öyπ˛¯‰?
+1 ;¸˘’@
+7 20 3 1 Ó¢8˜ô¿
+1 ¿¥S+Í?
+1 µ4hÌ@
+7 20 3 1 v¿øb@¿
+1 TÎN/Ô?
+1 ∫˘æ>ı@
+7 20 3 1 ” ,Aÿ¿
+1 çÄ"”Ò?
+1 µ4hÌ@
+7 20 3 1 ¸Hé∂b¿
+1 ´>;˜Û?
+1 ;¸˘’@
+7 20 3 1 ëqî·¿
+1 ™Z‡Èı?
+1 ºb=6Ø@
+7 20 3 1 ™òÏÆT¿
+1 `,Œö•˜?
+1 N∞åây@
+7 20 3 1 ˇI'ø¿
+1 N<◊é%˘?
+1 f‚uä5@
+7 20 3 1 i>"¿
+1 ¢8áe˙?
+1 ‘1∞˜„@
+7 20 3 1 ƒ<¿
+1 e≠}b˚?
+1 ∏f∂Ö@
+7 20 3 1 ≠©.[ÿ¿
+1 hº<¸?
+1 ⁄Õ@
+7 20 3 1 ˜aH/¿
+1 Í»"6Ü¸?
+1 !N4hß@
+7 20 3 1 ±
+%Ω¿
+1 ˆÀÒ∫™¸?
+1 ∆éÀ)@
+7 20 3 1 Ò:‹Òª¿
+1 ®TdÖ¸?
+1 f8X§@
+7 20 3 1 "Øº‹r¿
+1 Ã—Ñõ¸?
+1 ‡MÑ@
+7 20 3 1 ?»4¿
+1 ◊ºñ_˚?
+1 ÷-ìÿá@
+7 20 3 1 ∏÷$
 ¿
-1 ˘;/†=@
-1 Kj‚uä5@
-7 20 3 1 FGãËπf	¿
-1 $qGûç@
-1 ¿◊1∞˜„@
-7 20 3 1 U.P!¿
-1 Ã>ÿΩÃ@
-1 6ºf∂Ö@
-7 20 3 1 jÕa%>”¿
-1 Üˇ[ôK˙@
-1 -⁄Õ@
-7 20 3 1 Ña@äÅ¿
-1 0  @
-1 ª$N4hß@
-7 20 3 1 %ÌD.¿
-1 „ﬂ5Î@
-1 ∫…éÀ)@
-7 20 3 1 CdI§yﬁ¿
-1 BBôï@
-1 ri8X§@
-7 20 3 1 }îΩÑdï¿
-1 GX°Z„˘@
-1 ,„MÑ@
-7 20 3 1 dâMê†V ¿
-1 ™¢("Ã@
-1 1Ÿ-ìÿá@
-7 20 3 1 ÓU ±WK˛ø
-1 ¢NRX“å@
-1 ¬O∞9ÍÛ@
-7 20 3 1 v™≠iª¸ø
-1 *2}•<@
-1 '’1]X^@
-7 20 3 1 "«°ø∫Ù˘ø
-1 /∆(w|‹@
-1 ãZ≥Ä∆»@
-7 20 3 1 Øk~E2¯ø
-1 ≠≠»˚dm@
-1 —5'ÿ4@
-7 20 3 1 ‹Œ6|Wˆø
-1 ⁄’©C-·@
-1 "«;,§@
-7 20 3 1 Èfóua€Ùø
-1 £M°ÓﬁŒ@
-1 ‹@KÇX@
-7 20 3 1 ©œ“úÛø
-1 ≥.UW‡¶@
-1 ì‡M,Âí @
-7 20 3 1 ∆◊1‹˚úÚø
-1 ô”ç±ol@
-1 ìÖÜH @
-7 20 3 1 Ñî˘¸‡Òø
-1 òsÌ˛"@
-1 BJâ¿≈Aˇ?
-7 20 3 1 z+wjÒø
-1 $<Ë*Œ	@
-1 0‹˘eım˛?
-7 20 3 1 ‡
-
-C©9Òø
-1 ™ﬁ≠q@
-1 •cr±˝?
-7 20 3 1 ê¯à+PÒø
-1 8,NY@
-1 
-ÄâL˝?
-7 20 3 1 ÄJ¬c≠Òø
-1 xô±@
-1 ÍØf[NÜ¸?
-7 20 3 1 	·xLPÚø
-1 ±Â
-xûT@
-1  ‘˙Ù¸?
-7 20 3 1 åÃ…ø7Ûø
-1 øﬁ√‰ˇ@
-1 =.Q|mÕ˚?
-7 20 3 1 dÎ’4M_Ùø
-1 7çúô∂@
-1 ñ‚]Vëû˚?
-7 20 3 1 Ã_ü≈ıø
-1 tpøùX| @
-1 ÿ”ˆ„é˚?
-7 20 3 1 æV^g%f˜ø
-1 zgb&©˛?
-1 ñ‚]Vëû˚?
-7 20 3 1 ≥=ﬁO<˘ø
-1 Ûﬁµ‘Ö¸?
-1 <.Q|mÕ˚?
-7 20 3 1 )`õ≈˜B˚ø
-1 ¸ﬂô›hí˙?
-1  ‘˙Ù¸?
-7 20 3 1 e¸˛dnt˝ø
-1 ó)»Æ÷¯?
-1 ÍØf[NÜ¸?
-7 20 3 1 à™	Ûå ˇø
-1 ≤;∏∫V˜?
-1 	ÄâL˝?
-7 20 3 1 2 4Îb¿
-1 6Á„™¡ˆ?
-1 •cr±˝?
-7 20 3 1 aÚêÉe¿
-1 í$GeFı?
-1 /‹˘eım˛?
-7 20 3 1 z]Æﬁ≤¿
-1 ©!8cdÙ?
-1 @Jâ¿≈Aˇ?
-7 20 3 1 Â~I¿
-1 ü+¿ˆÛ?
-1 ëÖÜH @
-7 20 3 1 T"¶Ê◊W¿
-1 Wì(Òç—Û?
-1 ë‡M,Âí @
-7 20 3 1 .„u/£ß¿
-1 µ‚üc‰ˆÛ?
-1 Ÿ@KÇX@
-7 20 3 1 Û≤O∏¿
-1 †æ"^≠eÙ?
-1 «;,§@
-7 20 3 1 æqC|/
+1 ¶ï{Wb˙?
+1 M∞9ÍÛ@
+7 20 3 1 b»ÏU„¿
+1 ô§!˘?
+1 “1]X^@
+7 20 3 1 q¬ó’◊¿
+1 ÖÔˆˇ†˜?
+1 W≥Ä∆»@
+7 20 3 1 √∞Zë„¿
+1 %o	¢‰ı?
+1 Œ5'ÿ4@
+7 20 3 1 ùXS6	¿
+1 †°hÒÛ?
+1 ƒ;,§@
+7 20 3 1 @ΩÚ(K¿
+1 è˜ÀÃÒ?
+1 >KÇX@
+7 20 3 1 ˆZG~´¿
+1 ôÌëù˘Ó?
+1 ﬁM,Âí @
+7 20 3 1 y
+&ˆ+¿
+1 )–˙⁄Í?
+1 ÉÜH @
+7 20 3 1 XÓAˆÕ¿
+1 ?gÍÍ‰?
+1 Fâ¿≈Aˇ?
+7 20 3 1 #-AÜí¿
+1 òsÿà-ﬂ?
+1 ◊˘eım˛?
+7 20 3 1 ìvŸLz¿
+1 '∞†I‘?
+1 °cr±˝?
+7 20 3 1 ìm¸çÖ¿
+1 D∆≥é¬?
+1 {âL˝?
+7 20 3 1 Õ*¥¿
+1 @(†∂õø
+1 ´f[NÜ¸?
+7 20 3 1 btû¿
+1 Ó¨ß=…ø
+1 –˙Ù¸?
+7 20 3 1 r÷óy¿
+1 DÔ}°D◊ø
+1 *Q|mÕ˚?
+7 20 3 1 É\“¿
+1 À2Y}«‡ø
+1 ﬁ]Vëû˚?
+7 20 3 1 q!ƒG¿¿
+1 WiTÅ∞Âø
+1 ””ˆ„é˚?
+7 20 3 1 µ†Îäê¿
+1 (òóOÍø
+1 ›]Vëû˚?
+7 20 3 1 e'†{¿
+1 a˚!»óÓø
+1 )Q|mÕ˚?
+7 20 3 1 ;øÙ~¿
+1 ¨â>Òø
+1 Œ˙Ù¸?
+7 20 3 1 qjØó	¿
+1 dÎ–C˙Úø
+1 ™f[NÜ¸?
+7 20 3 1 av±æ¬
 ¿
-1 vw&≤ı?
-1 —5'ÿ4@
-7 20 3 1 x⁄˙p`¿
-1 +Â^gÒˆ?
-1 ÜZ≥Ä∆»@
-7 20 3 1 3rË?Ä¿
-1 Ûﬂ”§Z˜?
-1 !’1]X^@
+1 T˚Ÿ7zÙø
+1 {âL˝?
+7 20 3 1 à%#€¸¿
+1 ßœ:0∫ıø
+1 ûcr±˝?
+7 20 3 1 |ÇªìB¿
+1 klÄ´∂ˆø
+1 ÷˘eım˛?
+7 20 3 1 OÊVê¿
+1 n{ÇÂl˜ø
+1 Dâ¿≈Aˇ?
+7 20 3 1 npÅ|‚¿
+1 Òá%ﬂ⁄˜ø
+1 ÅÜH @
+7 20 3 1 ’K®ö¿
+1 ¸äÙcˇ˜ø
+1 ›M,Âí @
+7 20 3 1 ∂≥≥çB¿
+1 ÆÇ⁄˜ø
+1 =KÇX@
+7 20 3 1 üyCÁ¿
+1 “êáDk˜ø
+1 ƒ;,§@
+7 20 3 1 £±=zÜ¿
+1 ñø?¥ˆø
+1 Õ5'ÿ4@
+7 20 3 1 “eôÙ¿
+1 ≠T~ ∑ıø
+1 V≥Ä∆»@
+7 20 3 1 ˛l´€Æ¿
+1 ü”MvÙø
+1 —1]X^@
 6 5 undef 0 -2147352572 0
-12 3 |par 6 3 par 8 0 15 7 0 2 7 0 3 1 ±à∫3Ô?
-1 É‹PîÏgÃø
+12 3 |par 6 3 par 8 0 15 7 0 2 7 0 3 1 ±à∫3Ô?
+1 €PîÏgÃø
 0 0 0
-6 10 pr_axe_dir 8 0 15 7 0 2 7 0 3 1 ,pí.”'·?
-1  ±AÎ?
-1         
-6 6 terre1 8 0 15 7 0 2 1 4&kÒëé@
-6 5 theta 8 0 15 7 0 2 7 0 3 1 
-rŒX/¢‚?
-1 iÛ!˝œÙ–?
-1 RxK≥OòË?
-6 2 v0 8 0 15 7 0 2 7 0 3 1  ≠kt¬’?
-1 Ã&ÓºYx‰ø
-1 RxK≥OòË?
-6 3 vpi 8 0 15 7 0 2 7 0 3 1 ‘ÅÛÖ©‡Ωø
-1 $6\õ˘≤?
-1 ÖÈÆΩS±Ô?
+6 10 pr_axe_dir 8 0 15 7 0 2 7 0 3 1 qí.”'·?
+1  ±AÎ?
+1        
+6 6 terre1 8 0 15 7 0 2 1 0e6‡€@
+6 5 theta 8 0 15 7 0 2 7 0 3 1 qŒX/¢‚?
+1 ˜!˝œÙ–?
+1 vK≥OòË?
+6 2 v0 8 0 15 7 0 2 7 0 3 1 @jt¬’?
+1 'ÓºYx‰ø
+1 vK≥OòË?
+6 3 vpi 8 0 15 7 0 2 7 0 3 1 îÛÖ©‡Ωø
+1 B\õ˘≤?
+1 ÁÆΩS±Ô?
 6 4 vpi2 8 0 0 'xcas_mode' 0 0 0
 

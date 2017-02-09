@@ -257,6 +257,12 @@ and $\uparrow$
 
 We know list the other special keys in the expression editor:
 \begin{itemize}
+\item \verb|"|: 
+Outside edition mode (no visible cursor), 
+edit the selection like in a commandline, this is especially
+useful if you want to edit a function name.
+In edition mode, switch from considering the edit as a string
+or as a normal edit. 
 \item \verb|,|: if a sequence is selected, add a 0 to the end of the
 sequence and select it. If the selection is not a sequence, creates
 a sequence of size 2 with first element the selection, init the second
@@ -285,7 +291,8 @@ on the \verb|Msg| button to make it visible or not)
 \item Ctrl-P: apply partfrac on selection
 \item Ctrl-I (or Tab key) completion key (position in index at the function
 whose name begins the same)
-\item Ctrl-S: integral
+\item Ctrl-R: integral
+\item Ctrl-S: simplify
 \item Ctrl-L: limit
 \item Ctrl-D: derivative
 \item Ctrl-Z: undo

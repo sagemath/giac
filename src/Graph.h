@@ -1,10 +1,20 @@
 // -*- mode:C++ ; compile-command: "g++ -I.. -g -c Graph.cc" -*-
 #ifndef _GRAPH_H
 #define _GRAPH_H
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#ifndef IN_GIAC
 #include <giac/giac.h>
+#else
+#include "giac.h"
+#endif
 #include <fstream>
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
+#else
+#define clock_t int
+#define clock() 0
 #endif
 #ifdef HAVE_LIBFLTK
 #include <FL/Fl_Menu.H>
@@ -15,11 +25,12 @@
 #include <FL/Fl_Text_Editor.H>
 #include <FL/Fl_Value_Slider.H>
 #include <FL/Fl_Counter.H>
+#include <FL/Fl_Check_Button.H>
 #endif
 #ifdef HAVE_LC_MESSAGES
 #include <locale.h>
 #endif
-#include <giac/libintl.h>
+#include <giacintl.h>
 #include "Xcas1.h"
 #include "Input.h"
 #include "Editeur.h"
@@ -30,8 +41,16 @@ namespace xcas {
 #endif // ndef NO_NAMESPACE_XCAS
 
 #ifdef HAVE_LIBFLTK
-  extern Fl_Menu_Item Graph2d3d_menu[];
-  extern Fl_Menu_Item Figure_menu[];
+
+  // Locales initialization, should be done before history.o is loaded
+
+  std::string & xcas_locale();
+  class objet_bidon{
+  public:
+    objet_bidon();
+  };
+  // extern objet_bidon * mon_objet_bidon_ptr;
+
   // k is reduced modulo 126
   void arc_en_ciel(int k,int & r,int & g,int & b);
   void xcas_color(int color,bool dim3=false);
@@ -39,6 +58,8 @@ namespace xcas {
   int plotparam_dialog(Fl_Widget * spread_ptr,std::string & arg,int modeplot);
   std::string printstring(const giac::gen & g,const giac::context * contextptr);
   void round3(double & x,double xmin,double xmax);
+
+  extern bool do_helpon;// true if Xcas_automatic_completion_browser enabled
 
   enum extended_colors {
     dark_blue_color=0x0f,
@@ -75,6 +96,8 @@ namespace xcas {
   void check_fl_line(int i0,int j0,int i1,int j1,int imin,int jmin,int di,int dj,int delta_i,int delta_j);
 
   class Graph2d3d;
+  extern Fl_Menu_Item Graph2d3d_menu[];
+  extern Fl_Menu_Item Figure_menu[];
   extern std::vector<Graph2d3d *> animations; // list of pointer to graph widgets
 
   class Mouse_Position:public Fl_Widget {
@@ -86,14 +109,17 @@ namespace xcas {
 
   struct window_xyz { 
     double xmin,xmax,ymin,ymax,zmin,zmax; 
+    window_xyz():xmin(-5),xmax(5),ymin(-5),ymax(5),zmin(-5),zmax(5) {};
     window_xyz(double x,double X,double y,double Y,double z,double Z):xmin(x),xmax(X),ymin(y),ymax(Y),zmin(z),zmax(Z) {};
   };
 
+  giac::gen add_attributs(const giac::gen & g,int couleur_,const giac::context *) ;
   int change_line_type(int & res,bool show_approx,bool & approx,const std::string & title,bool dim3,bool & formel,bool & untranslate,bool del,int fontsize);
 
   class Graph2d3d:public Fl_Widget {
+  public:
+    int push_i,push_j,current_i,current_j,cursor_point_type; // position of mouse push/drag
   protected:
-    int push_i,push_j,current_i,current_j; // position of mouse push/drag
     double push_depth,current_depth;
     bool pushed; // true when mode==0 and push has occured
     bool in_area; // true if the mouse is in the area, updated by handle
@@ -110,7 +136,9 @@ namespace xcas {
     unsigned display_mode ; 
     // bit0=1 plot_instructions, bit1=1 animations_instruction
     // bit2=1 glFrustum/glOrtho, bit3=1 GL_LIGHTING, bit4=1 GL_FLAT, 
-    // bit5=GL_BLEND, bit6=trace, bit7=1 frame move disabled
+    // bit5=GL_BLEND, bit6=trace, bit7=1 move frame disabled
+    // bit8=1 framebox, bit9=1 triedre
+    // bit10=1 logplot 2d x, bit11=1 logplot 2d y, bit12=1 reserved for logplot 3d z
     double window_xmin,window_xmax,window_ymin,window_ymax,window_zmin,window_zmax;
     std::vector<window_xyz> history;
     int history_pos;
@@ -163,7 +191,7 @@ namespace xcas {
     virtual void zoomy(double d,bool round=false);
     virtual void zoomz(double d,bool round=false);
     virtual void orthonormalize();
-    virtual void autoscale();
+    virtual void autoscale(bool fullview=false);
     virtual void find_ylegende();
     virtual void up(double d);
     virtual void down(double d);
@@ -178,6 +206,7 @@ namespace xcas {
     virtual void config_light(unsigned i);
     virtual void reset_light(unsigned i);
     virtual void set_axes(int b);
+    void glequal(bool equal); 
     void copy(const Graph2d3d & gr);
     void add_mouse_param_group(int x,int y,int w,int h);
     virtual void do_handle(const giac::gen & g);
@@ -192,10 +221,11 @@ namespace xcas {
     void autoname_plus_plus();
     virtual FL_EXPORT int handle(int);
     virtual int in_handle(int);
+    int handle_mouse(int);
+    int handle_keyboard(int);
     int geo_handle(int event);
     virtual const char * latex(const char * filename);
-    giac::gen add_attributs(const giac::gen & g,int couleur_) const ;
-    giac::gen geometry_round(double x,double y,double z,double eps,giac::gen & original,int & pos) ;
+    giac::gen geometry_round(double x,double y,double z,double eps,giac::gen & original,int & pos,bool selectfirstlevel=false,bool setscroller=false) ;
     virtual void geometry_round(double x,double y,double z,double eps,giac::gen & tmp,const giac::context *) ;
     giac::vecteur selection2vecteur(const std::vector<int> & v);
     void set_mode(const giac::gen & f_tmp,const giac::gen & f_final,int m);
@@ -209,6 +239,7 @@ namespace xcas {
     giac::vecteur animate(int nframes);
     std::string current_config();
     // return a sequence of graphic objects, ready for animation
+    void adjust_cursor_point_type();
   };
 
   class Graph2d:public Graph2d3d {
@@ -223,13 +254,15 @@ namespace xcas {
     virtual int in_handle(int);
     virtual void orthonormalize();
     void find_xy(double i,double j,double & x,double & y) const ;
-    void findij(const giac::gen & e0,double x_scale,double y_scale,double & i0,double & j0,const giac::context * contextptr) const ;
+    bool findij(const giac::gen & e0,double x_scale,double y_scale,double & i0,double & j0,const giac::context * contextptr) const ;
     Graph2d(int x,int y,int w,int h,const char * l=0,History_Pack * hp_=0);
     virtual const char * latex(const char * filename);
     virtual void find_xyz(double i,double j,double depth,double & x,double & y,double & z);
     virtual void geometry_round(double x,double y,double z,double eps,giac::gen & tmp,const giac::context *) ;
     int mouse_rescale();
   };
+
+  Graph2d3d * find_graph2d3d(Fl_Widget * wid);
 
   // find how to move position for legende drawing
   void find_dxdy(const std::string & legendes,int labelpos,int labelsize,int & dx,int & dy);
@@ -280,13 +313,16 @@ namespace xcas {
     Line_Type * lt;
     Fl_Group * barre;
     xcas::HScroll * s;
+    Fl_Check_Button * checkdisp;
+    Fl_Window * win;
     int disposition;
     Figure(int X,int Y,int W,int H,int L,bool dim3=false);
     void save_figure_as(const std::string & s);
     std::string latex_save_figure();
     void rename(const std::string & s);
     virtual void resize(int X,int Y,int W,int H,double dhp=0.25,double dgeo=0.5,double dmp=0.25);    
-    // virtual int handle(int event);
+    virtual int handle(int event);
+    virtual void draw();
   };
 
   std::string figure_insert(Figure * f);
@@ -297,13 +333,13 @@ namespace xcas {
   public:
     int pos;
     std::string paramname;
-    Gen_Value_Slider(int x,int y,int w,int h,int _pos,double m,double M,double mystep,const std::string & pname,const char * l=0);
+    Gen_Value_Slider(int x,int y,int w,int h,int _pos,double m,double M,double mystep,const std::string & pname);
     // adjust history level to the slider value, and eval history pack
     // if eval_hp is true
     void adjust(bool );
     virtual int handle(int event);
   };
-
+  
   Gen_Value_Slider * parameter2slider(const giac::gen & e,const giac::context *);
 
   class Turtle:public Fl_Widget {
@@ -315,11 +351,13 @@ namespace xcas {
     int legende_size;
     int turtlex,turtley; // Turtle translate
     double turtlezoom; // Zoom factor for turtle screen
-    int maillage; // 0 (none), 1 (square), 2 (triangle)
+    int maillage; // 0 (none), 1 (square), 2 (triangle), bit3 used for printing
     bool redraw_cap_only;
+    int push_x,push_y;
     Turtle(int x,int y,int w,int h,const char * l=0): Fl_Widget(x,y,w,h,l),turtleptr(0),legende_size(giac::LEGENDE_SIZE),turtlex(0),turtley(0),turtlezoom(1),maillage(1),redraw_cap_only(false) {};    
     std::string latex_save_figure();
     const char * latex(const char * filename_) const ;
+    ~Turtle();
   };
 
   class Editeur; 
@@ -335,11 +373,12 @@ namespace xcas {
     Logo(int X,int Y,int W,int H,int L);
     virtual void resize(int X,int Y,int W,int H);
     virtual void draw();
+    virtual int handle(int);
   };
 
 
   std::ostream & fltk_fl_widget_archive_function(std::ostream & os,void * ptr);
-  giac::gen fltk_fl_widget_unarchive_function(std::istream & os,const giac::vecteur & l);
+  giac::gen fltk_fl_widget_unarchive_function(std::istream & os);
   std::string fltk_fl_widget_texprint_function(void * ptr);
   giac::gen fltk_fl_widget_updatepict_function(const giac::gen &g);
 

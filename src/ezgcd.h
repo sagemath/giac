@@ -1,6 +1,6 @@
 /* -*- mode:C++ ; compile-command: "g++ -I.. -g -c ezgcd.cc" -*- */
 /*  Multivariate GCD for large data not covered by the heuristic GCD algo
- *  Copyright (C) 2000 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
+ *  Copyright (C) 2000,2014 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -13,8 +13,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef _GIAC_EZGCD_H_
@@ -39,6 +38,27 @@ namespace giac {
 
   bool find_good_eval(const polynome & F,const polynome & G,polynome & Fb,polynome & Gb,vecteur & b,bool debuglog=false,const gen & mod=zero);
   polynome peval_1(const polynome & p,const vecteur &v,const gen & mod);
+  // Replace the last coordinates of p with b instead of the first
+  gen peval_back(const polynome & p,const vecteur & b);
+  polynome unmodularize(const std::vector<int> & a);
+
+  // reduce_divrem does a mixed division: euclidean w.r.t. the first var
+  // and ascending power of X-v for the other vars
+  // FIXME: this implementation does not work currently, except if other
+  // depends only on the first var
+  bool reduce_divrem(const polynome & a,const polynome & other,const vecteur & v,int n,polynome & quo,polynome & rem) ;
+
+  // find the "remainder of p mod (X-v)^degree"
+  // dim(p) = size(v)+1 (reduction for all variables of p except the main var)
+  polynome reduce_poly(const polynome & p,const vecteur & v,int degree);
+
+  bool try_sparse_factor(const polynome & pcur,const factorization & v0,int mult,factorization & f);
+  bool try_sparse_factor_bi(polynome & pcur,int mult,factorization & f);
+
+  bool try_hensel_lift_factor(const polynome & pcur,const polynome & F0,const factorization & v0,int mult,factorization & f);
+
+  // find u,v,d s.t. u*p+v*q=d by Hensel lift
+  bool try_hensel_egcd(const polynome & p,const polynome & q,polynome &u,polynome &v,polynome & d);
 
   // max_gcddeg is used when ezgcd was not successfull to find
   // the gcd even with 2 evaluations leading to the same gcd degree
@@ -47,21 +67,17 @@ namespace giac {
   // is_primitive is true if F_orig and G_orig is primitive
   bool ezgcd(const polynome & F_orig,const polynome & G_orig,polynome & GCD,bool is_sqff=false,bool is_primitive=false,int max_gcddeg=0,double maxop=-1);
 
-  extern const std::string _ezgcd_s;
   gen _ezgcd(const gen & args,GIAC_CONTEXT);
-  extern unary_function_ptr at_ezgcd;  
+  extern const unary_function_ptr * const  at_ezgcd;  
 
-  extern const std::string _modgcd_s;
   gen _modgcd(const gen & args,GIAC_CONTEXT);
-  extern unary_function_ptr at_modgcd;  
+  extern const unary_function_ptr * const  at_modgcd;  
 
-  extern const std::string _heugcd_s;
   gen _heugcd(const gen & args,GIAC_CONTEXT);
-  extern unary_function_ptr at_heugcd;  
+  extern const unary_function_ptr * const  at_heugcd;  
 
-  extern const std::string _psrgcd_s;
   gen _psrgcd(const gen & args,GIAC_CONTEXT);
-  extern unary_function_ptr at_psrgcd;  
+  extern const unary_function_ptr * const  at_psrgcd;  
 
 #ifndef NO_NAMESPACE_GIAC
 } // namespace giac

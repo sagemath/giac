@@ -1,6 +1,6 @@
 // -*- mode:C++ ; compile-command: "g++ -I.. -g -c identificateur.cc" -*-
 /*
- *  Copyright (C) 2000 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
+ *  Copyright (C) 2000,2014 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -13,8 +13,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #ifndef _GIAC_IDENTIFICATEUR_H
 #define _GIAC_IDENTIFICATEUR_H
@@ -22,6 +21,7 @@
 #include <string>
 #include <iostream>
 #include "global.h"
+#include "gen.h"
 
 #ifndef NO_NAMESPACE_GIAC
 namespace giac {
@@ -31,61 +31,144 @@ namespace giac {
 
   const int MAXLENSIZE = 1000000; // max size of a line in files
 
-  class gen;
-
-  class identificateur {
-  public:
-    int * ref_count;
-    gen * value;
-    std::string * name;
-    vecteur * localvalue;
-    // value / localvalue might be an assumption if it's a vecteur 
-    // of subtype _ASSUME__VECT
-    // The first gen of an assumption vecteur is the type (_FRAC for rational)
-    // If the type is _REAL, the vecteur has 2 other elements
-    // * an interval or a _SET_VECT of intervals 
-    //   where interval=vecteur of length 2 of subtype _LINE__VECT
-    // * a list of excluded particular values
-    // If the type is _DOUBLE_ the variable will be evalf-ed but not eval-ed
-    // This is useful in geometry to make figures and get exact results
-    // If the type is _INT_ it 
-    bool * quoted;
-    identificateur();
-    explicit identificateur(const std::string & s);
-    explicit identificateur(const char * s);
-    identificateur(const std::string & s,const gen & e);
-    identificateur(const identificateur & s);
-    ~identificateur();
-    identificateur & operator =(const identificateur & s);
-    gen eval(int level,const gen & orig,const context * context_ptr) ;
-    bool in_eval(int level,const gen & orig,gen & evaled,const context * context_ptr) ;
-    std::string print(const context * context_ptr) const ;
-    void dbgprint() const { std::cout << this->print(context0); }
-    void unassign() ;
-    void push(int protection,const gen & e);
-  };
-
   // make g identificateurs evaluated as global in null context
   gen global_eval(const gen & g,int level);
   gen global_evalf(const gen & g,int level);
+  gen globalize(const gen & g);
   // return the local value of i, if globalize is true, replace idnt with
   // global idnt in returned value
   gen do_local_eval(const identificateur & i,int level,bool globalize);
 
   std::ostream & operator << (std::ostream & os,const identificateur & s);
-  
-  extern std::string string_euler_gamma;
+
+#ifdef DOUBLEVAL // #ifdef GIAC_GENERIC_CONSTANTS_ID
+  extern const char string_euler_gamma[];
   extern identificateur _IDNT_euler_gamma;
   extern gen cst_euler_gamma;
-  extern std::string string_pi;
-  extern identificateur _IDNT_pi;
+  extern const char string_pi[];
+  identificateur & _IDNT_pi();
+  extern alias_ref_identificateur ref_pi;
   extern gen cst_pi;
-  extern std::string string_infinity;
+  extern const char string_infinity[];
   identificateur & _IDNT_infinity();
+  extern alias_ref_identificateur ref_infinity;
   extern gen unsigned_inf;
-  extern std::string string_undef;
+  extern alias_gen & alias_unsigned_inf;
+  extern const char string_undef[];
   identificateur & _IDNT_undef();
   extern gen undef;
+#else  
+  extern const char string_euler_gamma[];
+  extern const gen & cst_euler_gamma;
+
+  extern const char string_pi[];
+  const identificateur & _IDNT_pi();
+  extern const alias_ref_identificateur ref_pi;
+  extern const alias_gen alias_cst_pi;
+  extern const gen & cst_pi;
+
+  extern const char string_infinity[];
+  const identificateur & _IDNT_infinity();
+  extern const alias_gen alias_unsigned_inf;
+  extern const gen & unsigned_inf;
+
+  extern const char string_undef[];
+  const identificateur & _IDNT_undef();
+  extern const alias_ref_identificateur ref_infinity;
+  extern const alias_gen alias_undef;
+  extern const gen & undef;
+#endif
+
+#if defined GIAC_HAS_STO_38 || defined NSPIRE || defined NSPIRE_NEWLIB
+  extern const identificateur & a__IDNT;
+  extern const alias_gen alias_a38;
+#define a__IDNT_e (*(gen const *)&alias_a38)
+  extern const identificateur & b__IDNT;
+  extern const alias_gen alias_b38;
+#define b__IDNT_e (*(gen const *)&alias_b38)
+  extern const identificateur & c__IDNT;
+  extern const alias_gen alias_c38;
+#define c__IDNT_e (*(gen const *)&alias_c38)
+  extern const identificateur & d__IDNT;
+  extern const alias_gen alias_d38;
+#define d__IDNT_e (*(gen const *)&alias_d38)
+  extern const identificateur & e__IDNT;
+  extern const alias_gen alias_e38;
+#define e__IDNT_e (*(gen const *)&alias_e38)
+  extern const identificateur & f__IDNT;
+  extern const alias_gen alias_f38;
+#define f__IDNT_e (*(gen const *)&alias_f38)
+  extern const identificateur & g__IDNT;
+  extern const alias_gen alias_g38;
+#define g__IDNT_e (*(gen const *)&alias_g38)
+  extern const identificateur & h__IDNT;
+  extern const alias_gen alias_h38;
+#define h__IDNT_e (*(gen const *)&alias_h38)
+  extern const identificateur & i__IDNT;
+  extern const alias_gen alias_i38;
+#define i__IDNT_e (*(gen const *)&alias_i38)
+  extern const identificateur & I__IDNT;
+  extern const alias_gen alias_j38;
+#define j__IDNT_e (*(gen const *)&alias_j38)
+  extern const identificateur & k__IDNT;
+  extern const alias_gen alias_k38;
+#define k__IDNT_e (*(gen const *)&alias_k38)
+  extern const identificateur & l__IDNT;
+  extern const alias_gen alias_l38;
+#define l__IDNT_e (*(gen const *)&alias_l38)
+  extern const identificateur & m__IDNT;
+  extern const alias_gen alias_m38;
+#define m__IDNT_e (*(gen const *)&alias_m38)
+  extern const identificateur & n__IDNT;
+  extern const alias_gen alias_n38;
+#define n__IDNT_e (*(gen const *)&alias_n38)
+  extern const identificateur & o__IDNT;
+  extern const alias_gen alias_o38;
+#define o__IDNT_e (*(gen const *)&alias_o38)
+  extern const identificateur & p__IDNT;
+  extern const alias_gen alias_p38;
+#define p__IDNT_e (*(gen const *)&alias_p38)
+  extern const identificateur & q__IDNT;
+  extern const alias_gen alias_q38;
+#define q__IDNT_e (*(gen const *)&alias_q38)
+  extern const identificateur & r__IDNT;
+  extern const alias_gen alias_r38;
+#define r__IDNT_e (*(gen const *)&alias_r38)
+  extern const identificateur & s__IDNT;
+  extern const alias_gen alias_s38;
+#define s__IDNT_e (*(gen const *)&alias_s38)
+  extern const identificateur & t__IDNT;
+  extern const alias_gen alias_t38;
+#define t__IDNT_e (*(gen const *)&alias_t38)
+  extern const identificateur & u__IDNT;
+  extern const alias_gen alias_u38;
+#define u__IDNT_e (*(gen const *)&alias_u38)
+  extern const identificateur & v__IDNT;
+  extern const alias_gen alias_v38;
+#define v__IDNT_e (*(gen const *)&alias_v38)
+  extern const identificateur & w__IDNT;
+  extern const alias_gen alias_w38;
+#define w__IDNT_e (*(gen const *)&alias_w38)
+  extern const identificateur & x__IDNT;
+  extern const alias_gen alias_x38;
+#define x__IDNT_e (*(gen const *)&alias_x38)
+  extern const identificateur & y__IDNT;
+  extern const alias_gen alias_y38;
+#define y__IDNT_e (*(gen const *)&alias_y38)
+  extern const identificateur & z__IDNT;
+  extern const alias_gen alias_z38;
+#define z__IDNT_e (*(gen const *)&alias_z38)
+  extern const identificateur & theta__IDNT;
+  extern const gen & theta__IDNT_e;
+  extern const identificateur & _IDNT_id_at;
+  extern const identificateur & CST__IDNT;
+  extern const identificateur & laplace_var;
+
+  extern const gen & CST__IDNT_e;
+  // extern gen & vx_var; 
+  // commented otherwise can not make assign/assumptions on vx_var
+  // if must uncomment, check extern gen vx_var declaration after endif
+#else
   extern identificateur a__IDNT;
   extern gen a__IDNT_e;
   extern identificateur b__IDNT;
@@ -105,8 +188,6 @@ namespace giac {
   extern identificateur i__IDNT;
   extern gen i__IDNT_e;
   extern identificateur I__IDNT;
-  extern gen I__IDNT_e;
-  extern identificateur j__IDNT;
   extern gen j__IDNT_e;
   extern identificateur k__IDNT;
   extern gen k__IDNT_e;
@@ -136,19 +217,22 @@ namespace giac {
   extern gen w__IDNT_e;
   extern identificateur x__IDNT;
   extern gen x__IDNT_e;
-  extern gen vx_var;
   extern identificateur y__IDNT;
   extern gen y__IDNT_e;
   extern identificateur z__IDNT;
   extern gen z__IDNT_e;
-  extern vecteur list_one_letter__IDNT;
+  extern identificateur laplace_var;
+  extern identificateur theta__IDNT;
+  extern gen theta__IDNT_e;
+  extern identificateur _IDNT_id_at;
   extern identificateur CST__IDNT;
   extern gen CST__IDNT_e;
-  extern identificateur _IDNT_break;
-  extern identificateur _IDNT_continue;
-
+#endif
+  extern gen vx_var;
+  extern const gen * const tab_one_letter_idnt[];
   // small utility to remove #...
   int removecomments(const char * ss,char * ss2);
+
 
 #ifndef NO_NAMESPACE_GIAC
 }

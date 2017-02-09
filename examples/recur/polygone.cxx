@@ -1,4 +1,4 @@
-hexagone(x,y):={
+Hexagone(x,y):={
 local a,b,c;
 a:=x;
 b:=y;
@@ -15,7 +15,7 @@ local a,b,c;
 a:=x;
 b:=y;
 DispG();
-if (n==0) {hexagone(a,b);return 0;}
+if (n==0) {Hexagone(a,b);return 0;}
 c:=a+(b-a)*2/3*exp(evalf(i*pi/3))
 // dessin de l'hexagone central
 hexagones(c,c+(b-a)/3, n-1);

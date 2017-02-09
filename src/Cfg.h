@@ -1,7 +1,14 @@
 // -*- mode:C++ ; compile-command: "g++ -I.. -g -c Cfg.cc" -*-
 #ifndef _CFG_H
 #define _CFG_H
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#ifndef IN_GIAC
 #include <giac/first.h>
+#else
+#include "first.h"
+#endif
 #ifdef HAVE_LIBFLTK
 #include <FL/Fl_Widget.H>
 #include <FL/Fl_Pack.H>

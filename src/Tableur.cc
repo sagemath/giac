@@ -1,7 +1,14 @@
-// -*- compile-command: "g++-3.4 -I. -I.. -g -c Tableur.cc -Wall" -*-
+// -*- compile-command: "g++ -DHAVE_CONFIG_H -I. -I.. -g -c Tableur.cc -Wall" -*-
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#ifndef IN_GIAC
 #include <giac/first.h>
+#else
+#include "first.h"
+#endif
 /*
- *  Copyright (C) 2002 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
+ *  Copyright (C) 2002,2014 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -14,24 +21,36 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_LIBFLTK
 #include "Tableur.h"
 #include "Xcas1.h"
 #include "Print.h"
+#ifndef IN_GIAC
 #include <giac/vecteur.h>
+#else
+#include "vecteur.h"
+#endif
+#ifndef IN_GIAC
 #include <giac/identificateur.h>
 #include <giac/usual.h>
 #include <giac/prog.h>
 #include <giac/misc.h>
+#else
+#include "identificateur.h"
+#include "usual.h"
+#include "prog.h"
+#include "misc.h"
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 #include <FL/Fl_Text_Editor.H>
 #include <FL/Fl_Value_Input.H>
 #include <FL/Fl_Return_Button.H>
-#include <FL/Fl_File_Chooser.H>
 #include <FL/Fl_Check_Button.H>
 #include <sys/stat.h>
 #include <cerrno>
@@ -42,10 +61,12 @@ using namespace giac;
 namespace xcas {
 #endif // ndef NO_NAMESPACE_XCAS
 
+  objet_bidon mon_objet_bidon_tableur;
+
 #ifdef IPAQ
   int Flv_Table_Gen::def_rows=10,Flv_Table_Gen::def_cols=4;
 #else
-  int Flv_Table_Gen::def_rows=33,Flv_Table_Gen::def_cols=10;
+  int Flv_Table_Gen::def_rows=40,Flv_Table_Gen::def_cols=10;
 #endif
 
   vecteur fillsheet(bool is_spreadsheet){
@@ -80,11 +101,11 @@ namespace xcas {
     if (!ptr)
       ptr=do_find_table_brother(Fl::focus());
     if (!ptr)
-      fl_alert(gettext("No spreadsheet found. Please click in or add one"));
+      fl_alert("%s",gettext("No spreadsheet found. Please click in or add one"));
     return ptr;
   }
 
-  static void cb_Tableur_Recompute(Fl_Menu_* m , void*) {
+   void cb_Tableur_Recompute(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (spread_ptr){
       spread_ptr->spread_eval_interrupt();
@@ -111,6 +132,7 @@ namespace xcas {
 #else
       int dx=20*labelsize(), dy=14*labelsize();
 #endif
+      Fl_Group::current(0);
       w=new Fl_Window(dx,dy);
       varname=new Fl_Input(dx/2,2,dx/2-4,dy/nlignes-4,gettext("Variable"));
       varname->tooltip(gettext("Save the spreadsheet as a matrix in this variable"));
@@ -124,11 +146,11 @@ namespace xcas {
       ncol->step(1);
       evaltype = new Fl_Check_Button(2,2+2*dy/nlignes,dx/4-2,dy/nlignes-4,gettext("Eval"));
       evaltype->tooltip(gettext("Reeval spreadsheet automatically"));
-      evaltype->callback((Fl_Callback *) cb_Tableur_Recompute);
+      // evaltype->callback((Fl_Callback *) cb_Tableur_Recompute);
       moveright = new Fl_Check_Button(2+dx/2,2+2*dy/nlignes,dx/4-2,dy/nlignes-4,gettext("Move right"));
       moveright->tooltip(gettext("Move right or down after Enter"));
       mat2cell = new Fl_Check_Button(2,2+3*dy/nlignes,dx/4-2,dy/nlignes-4,gettext("Distribute"));
-      mat2cell->tooltip(gettext("Matrix input is ditributed or kept inside a cell"));
+      mat2cell->tooltip(gettext("Matrix input is distributed or kept inside a cell"));
       issheet = new Fl_Check_Button(2+dx/2,2+3*dy/nlignes,dx/4-2,dy/nlignes-4,gettext("Spreadsheet"));
       issheet->tooltip(gettext("Matrix or spreadsheet"));
       horiz = new Fl_Check_Button(2,2+4*dy/nlignes,dx/4-2,dy/nlignes-4,gettext("Landscape"));
@@ -166,8 +188,9 @@ namespace xcas {
     int r=-1;
     w->set_modal();
     w->show();
+    autosave_disabled=true;
     w->hotspot(w);
-    Fl::focus(w);
+    Fl::focus(varname);
     for (;;) {
       Fl_Widget *o = Fl::readqueue();
       if (!o) Fl::wait();
@@ -177,21 +200,30 @@ namespace xcas {
 	if (o == w) { r=1; break; }
       }
     }
+    autosave_disabled=false;
     w->hide();
     if (!r){
       max_history=max(int(max_hist->value()),2);
       if ( nrow->value()>=1 && ncol->value()>=1 && (nrow->value()!=rows() || ncol->value()!= cols()) ){
 	changed();
 	resizesheet(int(nrow->value()),int(ncol->value()));
+	if ((7+nrow->value())*(labelsize()+1)<h()){
+	  increase_size(this,(7+nrow->value())*(labelsize()+1)-h());
+	}
       }
       is_spreadsheet=issheet->value();
       matrix_fill_cells=mat2cell->value();
       move_right=moveright->value();
-      spreadsheet_recompute=evaltype->value();
       is_spreadsheet=issheet->value();
       init=gen(input_init->value(),contextptr);
       if (init.type==_SYMB)
 	protecteval(init,eval_level(contextptr),contextptr);
+      if (!spreadsheet_recompute && evaltype->value()){
+	spreadsheet_recompute=evaltype->value();
+	spread_eval_interrupt();
+      }
+      else
+	spreadsheet_recompute=evaltype->value();
       gen tmp(varname->value(),contextptr);
       if (tmp.type==_IDNT && !is_undef(tmp)){
 	name=tmp;
@@ -199,7 +231,7 @@ namespace xcas {
 	  delete filename;
 	filename = new string(tmp.print(contextptr)+".tab");
 	if (filename){
-	  prefix_filename="Save "+ * filename;
+	  prefix_filename="Save "+ remove_path(* filename);
 	  if (Tableur_Group * gr=dynamic_cast<Tableur_Group *>(parent())){
 	    gr->fname->label(prefix_filename.c_str());
 	    gr->fname->show();
@@ -215,6 +247,7 @@ namespace xcas {
       }
       update_status();
     }
+    if (gr) Fl::focus(gr->table);
   }
 
   void Flv_Table_Gen::spread_erase(int nrows,int ncols){
@@ -380,7 +413,7 @@ namespace xcas {
     if (R0<0 || R0>=r)
       R0=R;
     if (R0<R)
-      swap<int>(R0,R);
+      giac::swapint(R0,R);
     for (;R<=R0;++R){
       vecteur & v=*m[R]._VECTptr;
       gen g=v[C];
@@ -400,7 +433,7 @@ namespace xcas {
     if (C0<0 || C0>=c)
       C0=C;
     if (C0<C)
-      swap<int>(C0,C);
+      giac::swapint(C0,C);
     for (;C<=C0;++C){
       gen g=m[R][C];
       for (int i=R+1;i<r;++i){
@@ -420,9 +453,9 @@ namespace xcas {
       return;
     gen g=m[r][c];
     if (r<R)
-      swap<int>(r,R);
+      giac::swapint(r,R);
     if (c<C)
-      swap<int>(c,C);
+      giac::swapint(c,C);
     R=max(R,0); C=max(C,0); r=min(r,rows()-1); c=min(c,cols()-1);
     for (int i=R;i<=r;++i){
       vecteur & v=*m[i]._VECTptr;
@@ -496,6 +529,8 @@ namespace xcas {
       if (tmp.type==_VECT && tmp._VECTptr->size()==3)
 	tmp=tmp._VECTptr->front();
       input->value(tmp.print(contextptr).c_str());
+      input->position(0,input->value().size());
+      // input->position(0,strlen(input->value()));
     }
   }
 
@@ -532,12 +567,17 @@ namespace xcas {
 
 
   int Flv_Table_Gen::handle(int event){
+    if (event==FL_MOUSEWHEEL){
+      if (!Fl::event_inside(this))
+	return 0;
+    }
     contextptr = get_context(this);
     static string s;
     if (Fl::event_button()== FL_RIGHT_MOUSE)
       return 0;
     last_event=event;
     if (event==FL_KEYBOARD){ 
+      Xcas_input_focus=this;
       // int mode=Fl::event_state(FL_CTRL);
       if (Fl::event_key()==FL_Escape){
 	editing=false;
@@ -555,7 +595,7 @@ namespace xcas {
       case FL_Control_R: case FL_Control_L: case FL_Alt_L: case FL_Alt_R:
 	return 0;
       }
-      char ch=Fl::event_text()[0];
+      char ch=Fl::event_text()?Fl::event_text()[0]:0;
       if (ch==3){
 	if (selected.empty() && row()>=0 && row()<rows() && col()>=0 && col()<cols())
 	  selected_1=vecteur(1,vecteur(1,m[row()][col()]));
@@ -584,6 +624,10 @@ namespace xcas {
 	return 0;
     }
     int res=Flv_Table::handle(event);
+    if (!editing){
+      edit_row=row();
+      edit_col=col();
+    }
     bool shift=Fl::event_state(FL_SHIFT);
     if (event==FL_FOCUS){
       Fl::focus(this);
@@ -616,10 +660,12 @@ namespace xcas {
       return 1;
     }
     if ( event==FL_UNFOCUS || event==FL_HIDE || event==FL_SHOW ){
+      /*
       if (event==FL_UNFOCUS){
 	selected.clear();
 	selected_1.clear();
       }
+      */
       return res;
     }
     if (res){
@@ -768,7 +814,7 @@ namespace xcas {
 	  }
 	  pthread_mutex_unlock(mutexptr(contextptr));
 	  Fl::add_idle(xcas::Xcas_idle_function,0);
-	  fl_message(gettext("computation aborted"));
+	  fl_message("%s",gettext("computation aborted"));
 	  io_graph(old_io_graph,contextptr);
 	  return ;
 	}
@@ -905,6 +951,7 @@ namespace xcas {
   }
 
   Flv_Table_Gen::~Flv_Table_Gen(){ 
+    if (Xcas_input_focus==this) Xcas_input_focus=0;
     contextptr=get_context(this);
     if (evaled_table(contextptr)==this) 
       evaled_table(contextptr)=0; 
@@ -918,20 +965,20 @@ namespace xcas {
     }
   }
 
-  Flv_Table_Gen::Flv_Table_Gen( int X, int Y, int W, int H ,const matrice & mym, const char *l) : Flv_Table(X,Y,W,H,l),max_history(4),cur_history(0),matrix_fill_cells(true),move_right(false),matrix_symmetry(0),spreadsheet_recompute(true),contextptr(0),editing(false),computing(false),filename(0),max_printsize(1024),push_row(0),push_col(0) {
+  Flv_Table_Gen::Flv_Table_Gen( int X, int Y, int W, int H ,const matrice & mym, const char *l) : Flv_Table(X,Y,W,H,l),max_history(4),cur_history(0),matrix_fill_cells(true),move_right(false),matrix_symmetry(0),spreadsheet_recompute(true),push_row(0),push_col(0),contextptr(0),editing(false),computing(false),filename(0),max_printsize(1024) {
     if (!ckmatrix(mym))
       settypeerr();
     set_matrix(mym,false);
     changed_=false;
-    graph3d=0; graph2d=0; graph=0; _goto=input=0;
-    name=0; init=0; 
+    graph3d=0; graph2d=0; graph=0; _goto=0; input=0;
+    name=0; init=0;
     finish_flv_table_gen();
   }
   
-  Flv_Table_Gen::Flv_Table_Gen( int X, int Y, int W, int H ,const gen &g, const char *l) :   Flv_Table(X,Y,W,H,l),matrix_fill_cells(true),move_right(false),matrix_symmetry(0),spreadsheet_recompute(true),contextptr(0),editing(false),computing(false),filename(0),max_printsize(1024),push_row(0),push_col(0) {
+  Flv_Table_Gen::Flv_Table_Gen( int X, int Y, int W, int H ,const gen &g, const char *l) :   Flv_Table(X,Y,W,H,l),matrix_fill_cells(true),move_right(false),matrix_symmetry(0),spreadsheet_recompute(true),push_row(0),push_col(0),contextptr(0),editing(false),computing(false),filename(0),max_printsize(1024) {
     set_matrix(g,false);
     changed_=false;
-    graph2d=0; graph3d=0; graph=0; _goto=input=0;
+    graph2d=0; graph3d=0; graph=0; _goto=0; input=0;
     name=0; init=0;
     finish_flv_table_gen();
   }
@@ -969,14 +1016,14 @@ namespace xcas {
       if (!iscell(f._VECTptr->front(),c1,r1,contextptr) || !iscell(f._VECTptr->back(),c2,r2,contextptr))
 	return "";
       if (r1>r2)
-	std::swap<int>(r1,r2);
+	giac::swapint(r1,r2);
       if (c1>c2)
-	std::swap<int>(c1,c2);
+	giac::swapint(c1,c2);
       // search for an empty cell
       for (int j=c2+1;j<maxc;++j){
 	for (int i=0;i<maxr;++i){
 	  gen tmp=ptr->m[i][j][0];
-	  if (is_zero(tmp)|| (tmp.type==_STRNG && tmp._STRNGptr->empty())){
+	  if (is_zero(tmp,contextptr)|| (tmp.type==_STRNG && tmp._STRNGptr->empty())){
 	    int pr1=printcell_current_row(contextptr),pc1=printcell_current_col(contextptr);
 	    printcell_current_row(contextptr)=printcell_current_col(contextptr)=0;
 	    string s=printcell(makevecteur(vecteur(1,i),vecteur(1,j)),contextptr);
@@ -993,8 +1040,9 @@ namespace xcas {
   void cb_Spread_goto(Fl_Widget* widg, void*) {
     // Find a spreadsheet in the brothers of widget (parent's children)
     Flv_Table_Gen * spread_ptr=find_table_brother(widg);
-    if (!spread_ptr) return;
     const giac::context * contextptr = get_context(spread_ptr);
+    if (!spread_ptr)
+      return;
     Fl::focus(spread_ptr);
     Fl_Input * widget=dynamic_cast<Fl_Input *>(widg);
     gen g=undef;
@@ -1038,7 +1086,7 @@ namespace xcas {
     for (int i=1;i<count-1;++i){
       if (data[i]=='[' || data[i]==']')
 	ans=false;
-      ++nb[unsigned(data[i])];
+      ++nb[(unsigned char) data[i]];
       if (data[i-1]>='0' && data[i-1]<='9' && data[i+1]>='0' && data[i+1]<='9'){
 	if (data[i]=='.')
 	  ++pointdecsep;
@@ -1153,9 +1201,9 @@ namespace xcas {
              dofill=1;
            spread_ptr->is_spreadsheet=true;
            // FIXME update_sheet_label();
-           spread_ptr->row(0);
            R=-1;
            g=protecteval(g,eval_level(contextptr),contextptr);
+           spread_ptr->row(0);
          }
          else {
            if (!spread_ptr->is_spreadsheet || spread_ptr->matrix_fill_cells)
@@ -1169,7 +1217,7 @@ namespace xcas {
         spread_ptr->paste(m);
         spread_ptr->redraw();
         Fl::focus(spread_ptr);
-        spread_ptr->row(min(R+m.size(),spread_ptr->rows()));
+        spread_ptr->row(giacmin(R+m.size(),spread_ptr->rows()));
         if (dofill){
           spread_ptr->copy_down();
           if (dofill==2){
@@ -1212,24 +1260,23 @@ namespace xcas {
   }
 
 
-  static void cb_Tableur_Eval_Sheet(Fl_Widget * m , void*) {
+   void cb_Tableur_Eval_Sheet(Fl_Widget * m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
-    if (!tg) return;
-    tg->spread_eval_interrupt();
+    if (tg)
+      tg->spread_eval_interrupt();
   }
 
-  void cb_Tableur_Init(Fl_Widget * m , void*param) {
-    Flv_Table_Gen * spread_ptr=find_table_brother(m);
-    const giac::context * contextptr =get_context(spread_ptr);
-    if (spread_ptr){
-      protecteval(spread_ptr->init,eval_level(contextptr),contextptr);
-      cb_Tableur_Eval_Sheet(m,param);
-    }
-  }
+   void cb_Tableur_Init(Fl_Widget * m , void*param) {
+     Flv_Table_Gen * spread_ptr=find_table_brother(m);
+     const giac::context * contextptr =get_context(spread_ptr);
+     if (spread_ptr){
+       protecteval(spread_ptr->init,eval_level(contextptr),contextptr);
+       cb_Tableur_Eval_Sheet(m,param);
+     }
+   }
 
-  static void cb_Tableur_Value(Fl_Widget * m , void*) {
+   void cb_Tableur_Value(Fl_Widget * m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
-    if (!spread_ptr) return;
     const giac::context * contextptr =get_context(spread_ptr);
     if (spread_ptr){
       int R=spread_ptr->row(),C=spread_ptr->col();
@@ -1246,20 +1293,20 @@ namespace xcas {
   }
 
   /*
-  static void cb_Tableur_LaTeX_Preview(Fl_Menu_* m , void*) {
+   void cb_Tableur_LaTeX_Preview(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
   }
 
-  static void cb_Tableur_LaTeX_Print(Fl_Menu_* m , void*) {
+   void cb_Tableur_LaTeX_Print(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
   }
   */
 
-  static void cb_Tableur_Save(Fl_Widget* m , void*);
+   void cb_Tableur_Save(Fl_Widget* m , void*);
 
   bool get_filename(string & tmp,const string & extension){
     for (;;){
-      char * newfile = fl_file_chooser(gettext("Save sheet"), ("*."+extension).c_str(), "");
+      char * newfile = file_chooser(gettext("Save sheet"), ("*."+extension).c_str(), "");
       if ( (!newfile) || (!*newfile))
 	return false;
       tmp=newfile;
@@ -1269,28 +1316,43 @@ namespace xcas {
       tmp=remove_extension(tmp.c_str())+"."+extension;
       if (access(tmp.c_str(),R_OK))
 	return true;
-      int i=fl_ask((tmp+gettext(": file exists. Overwrite?")).c_str());
+      int i=fl_ask("%s",(tmp+gettext(": file exists. Overwrite?")).c_str());
       if (i==1)
 	return true;
     }
     return false;
   }
 
-  static void cb_Tableur_Graph2d(Fl_Widget* m , void*) {
+   void cb_Tableur_Graph2d(Fl_Widget* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (tg && tg->graph2d)
       tg->graph2d->window()->show();
   }
 
-  static void cb_Tableur_Graph3d(Fl_Widget* m , void*) {
+   void cb_Tableur_Graph3d(Fl_Widget* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
-    if (tg && tg->graph2d)
-      tg->graph3d->window()->show();
+    if (tg){
+      if (tg->win3){
+	delete tg->graph3d;
+	delete tg->win3;
+      }
+      Fl_Group::current(0);
+      tg->win3=new Fl_Window(tg->x()+10,tg->y()+10,2*tg->w()/3,2*tg->h()/3);
+#ifdef HAVE_LIBFLTK_GL
+      tg->graph3d = new Graph3d(0,0,tg->win3->w(),tg->win3->h(),"",0);
+      tg->graph3d->ylegende=1.5;
+      tg->win3->end();
+      tg->win3->resizable(tg->win3);
+      tg->win3->show();
+      tg->update_spread_graph();
+#endif
+    }
   }
 
-  static void cb_Tableur_Save_as(Fl_Widget* m , void*) {
+   void cb_Tableur_Save_as(Fl_Widget* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
-    if (!tg) return;
+    if (!tg)
+      return;
     string tmp;
     if (!get_filename(tmp,"tab"))
       return ;
@@ -1303,7 +1365,7 @@ namespace xcas {
 	tg->name=tmp;
 	tg->update_name();
       }
-      tg->prefix_filename="Save "+*tg->filename;
+      tg->prefix_filename="Save "+remove_path(*tg->filename);
       if (Tableur_Group * gr=dynamic_cast<Tableur_Group *>(tg->parent())){
 	gr->fname->label(tg->prefix_filename.c_str());
 	gr->fname->show();
@@ -1313,7 +1375,7 @@ namespace xcas {
   }
 
 
-  static void cb_Tableur_Save_mathml(Fl_Menu_* m , void*) {
+   void cb_Tableur_Save_mathml(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     const giac::context * contextptr = get_context(tg);
@@ -1322,7 +1384,7 @@ namespace xcas {
       return ;
     ofstream of(tmp.c_str());
     if (!of){
-      fl_message("Write error");
+      fl_message("%s","Write error");
       return;
     }
     of << mathml_preamble << endl;
@@ -1331,7 +1393,7 @@ namespace xcas {
     of << mathml_end << endl;
   }
 
-  static void cb_Tableur_Save_CSV(Fl_Menu_* m , void*) {
+   void cb_Tableur_Save_CSV(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     string tmp;
@@ -1339,7 +1401,7 @@ namespace xcas {
       return ;
     ofstream of(tmp.c_str());
     if (!of){
-      fl_message("Write error");
+      fl_message("%s","Write error");
       return;
     }
     matrice M(extractmatricefromsheet(tg->m));
@@ -1358,7 +1420,7 @@ namespace xcas {
   }
 
 
-  static void cb_Tableur_Save(Fl_Widget * m , void*) {
+   void cb_Tableur_Save(Fl_Widget * m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     if (!tg->filename)
@@ -1366,7 +1428,7 @@ namespace xcas {
     if (tg->filename){
       ofstream of(tg->filename->c_str());
       if (!of){
-	fl_message("Write error");
+	fl_message("%s","Write error");
 	return;
       }
       if (tg->is_spreadsheet)
@@ -1374,12 +1436,12 @@ namespace xcas {
       else
 	of << gen(extractmatricefromsheet(tg->m)) << endl;
       of.close();
-      tg->changed_=false;
+      tg->changed_ = false;
     }
     tg->update_status();
   }
 
-  static void cb_Tableur_Save_var(Fl_Widget* m , void*) {
+   void cb_Tableur_Save_var(Fl_Widget* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     const giac::context * contextptr = get_context(tg);
@@ -1395,7 +1457,7 @@ namespace xcas {
       if (varname){
 	gen g(varname,contextptr);
 	if (g.type!=_IDNT){
-	  fl_message((g.print(contextptr)+gettext("is not a variable name")).c_str());
+	  fl_message("%s",(g.print(contextptr)+gettext("is not a variable name")).c_str());
 	  cb_Tableur_Save_var(m,0);
 	}
 	protecteval(symb_sto(mat,g),eval_level(contextptr),contextptr);
@@ -1419,12 +1481,12 @@ namespace xcas {
   }
 
   std::string tableur_insert(Flv_Table_Gen * tg){
-    char * newfile = fl_file_chooser(gettext("Insert sheet"), "*.tab", "");
+    char * newfile = load_file_chooser(gettext("Insert sheet"), "*.tab", "",0,false);
     if (!newfile || file_not_available(newfile))
       return "";
     ifstream inf(newfile);
     const giac::context * contextptr = get_context(tg);
-    gen value(read1arg_from_stream(inf,list_one_letter__IDNT,contextptr));
+    gen value(read1arg_from_stream(inf,contextptr));
     if (!ckmatrix(value,true))
       return "";
     spread_ck(*value._VECTptr); // in place modifications of value
@@ -1432,17 +1494,17 @@ namespace xcas {
     return remove_path(remove_extension(newfile));
   }
 
-  static void cb_Tableur_Insert(Fl_Menu_* m , void*) {
+   void cb_Tableur_Insert(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     tableur_insert(tg);
   }
 
-  static void cb_Tableur_Insert_CSV(Fl_Menu_* m , void*) {
+   void cb_Tableur_Insert_CSV(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     const giac::context * contextptr = get_context(tg);
-    char * newfile = fl_file_chooser(gettext("Insert CSV sheet"), "*.csv", "");
+    char * newfile = load_file_chooser(gettext("Insert CSV sheet"), "*.csv", "",0,false);
     if (!newfile || file_not_available(newfile))
       return;
     char sep=';',nl='\n',decsep=',';
@@ -1458,6 +1520,7 @@ namespace xcas {
 #else
       int dx=300, dy=120;
 #endif
+      Fl_Group::current(0);
       w=new Fl_Window(dx,dy);
       separator=new Fl_Input(dx/4,2,dx/4-2,dy/4-4,gettext("Separator"));
       separator->tooltip(gettext("One character used to separate fields, like ; Use ^I for tab"));
@@ -1486,8 +1549,9 @@ namespace xcas {
     int r=-1;
     w->set_modal();
     w->show();
+    autosave_disabled=true;
     w->hotspot(w);
-    Fl::focus(w);
+    Fl::focus(separator);
     for (;;) {
       Fl_Widget *o = Fl::readqueue();
       if (!o) Fl::wait();
@@ -1497,6 +1561,7 @@ namespace xcas {
 	if (o == w) { r=1; break; }
       }
     }
+    autosave_disabled=false;
     w->hide();
     if (!r){
       ifstream i(newfile);
@@ -1529,43 +1594,43 @@ namespace xcas {
     }
   }
 
-  static void cb_Tableur_Preview(Fl_Menu_* m , void*) {
+   void cb_Tableur_Preview(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     widget_ps_print(tg,tg->filename?*tg->filename:"table",false);
   }
 
-  static void cb_Tableur_Print(Fl_Menu_* m , void*) {
+   void cb_Tableur_Print(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     widget_print(tg);
   }
 
-  static void cb_Tableur_Copy_Cell(Fl_Menu_* m , void*) {
+   void cb_Tableur_Copy_Cell(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     tg->copy();
   }
 
-  static void cb_Tableur_Copy_Right(Fl_Menu_* m , void*) {
+   void cb_Tableur_Copy_Right(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     spread_ptr->copy_right();
   }
 
-  static void cb_Tableur_Copy_Down(Fl_Menu_* m , void*) {
+   void cb_Tableur_Copy_Down(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     spread_ptr->copy_down();
   }
 
-  static void cb_Tableur_DelRow(Fl_Menu_* m , void*) {
+   void cb_Tableur_DelRow(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     tg->spread_erase(1,0); 
   }
 
-  static void cb_Tableur_Del(Fl_Menu_* m , void*) {
+   void cb_Tableur_Del(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     bool tmp=spread_ptr->is_spreadsheet;
@@ -1574,49 +1639,49 @@ namespace xcas {
     spread_ptr->is_spreadsheet=tmp;
   }
 
-  static void cb_Tableur_DelRows(Fl_Menu_* m , void*) {
+   void cb_Tableur_DelRows(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     tg->erase_row_col(0); 
   }
 
-  static void cb_Tableur_DelCol(Fl_Menu_* m , void*) {
+   void cb_Tableur_DelCol(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     tg->spread_erase(0,1);
   }
 
-  static void cb_Tableur_DelCols(Fl_Menu_* m , void*) {
+   void cb_Tableur_DelCols(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     tg->erase_row_col(1); 
   }
 
-  static void cb_Tableur_InsRow(Fl_Menu_* m , void*) {
+   void cb_Tableur_InsRow(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     tg->spread_insert(1,0); 
   }
 
-  static void cb_Tableur_InsCol(Fl_Menu_* m , void*) {
+   void cb_Tableur_InsCol(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     tg->spread_insert(0,1); 
   }
 
-  static void cb_Tableur_InsCol_End(Fl_Menu_* m , void*) {
+   void cb_Tableur_InsCol_End(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     tg->addcolatend(); 
   }
 
-  static void cb_Tableur_InsRow_End(Fl_Menu_* m , void*) {
+   void cb_Tableur_InsRow_End(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     tg->addrowatend(); 
   }
 
-  static void cb_Tableur_MoveRight(Fl_Menu_* m , void*) {
+   void cb_Tableur_MoveRight(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     spread_ptr->move_on_enter(FLV_MOVE_ON_ENTER_COL_ROW); 
@@ -1624,7 +1689,7 @@ namespace xcas {
     spread_ptr->update_status();
   }
 
-  static void cb_Tableur_MoveDown(Fl_Menu_* m , void*) {
+   void cb_Tableur_MoveDown(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     spread_ptr->move_on_enter(FLV_MOVE_ON_ENTER_ROW_COL); 
@@ -1632,25 +1697,25 @@ namespace xcas {
     spread_ptr->update_status();
   }
 
-  static void cb_Tableur_FillSelection(Fl_Menu_* m , void*) {
+   void cb_Tableur_FillSelection(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     spread_ptr->copy_first_in_selection();
   }
 
-  static void cb_Tableur_Col_Larger(Fl_Menu_* m , void*) {
+   void cb_Tableur_Col_Larger(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     spread_ptr->col_width(spread_ptr->col_width(spread_ptr->col())+5,spread_ptr->col());
   }
 
-  static void cb_Tableur_Col_Smaller(Fl_Menu_* m , void*) {
+   void cb_Tableur_Col_Smaller(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     spread_ptr->col_width(spread_ptr->col_width(spread_ptr->col())-5,spread_ptr->col());
   }
 
-  static void cb_Tableur_Fill0(Fl_Menu_* m , void*) {
+   void cb_Tableur_Fill0(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     bool tmp=spread_ptr->is_spreadsheet;
@@ -1662,6 +1727,7 @@ namespace xcas {
   }
 
   void tableur_insert_replace(Flv_Table_Gen * spread_ptr,const string & s){
+    if (!spread_ptr) return;
     if (!spread_ptr->editing){
       spread_ptr->edit_row=spread_ptr->row();
       spread_ptr->edit_col=spread_ptr->col();
@@ -1696,27 +1762,71 @@ namespace xcas {
     return false;
   }
 
-  // type 1= plotfunc 3d, 0 plotfunc 2d, 
+  int xcas_integration_method=0;
+  Fl_Output * Xcas_Methodes_Output=0;
+  void cb_Xcas_Methodes_builtin(Fl_Menu_* m , void*) {
+    xcas_integration_method=0;
+    if (Xcas_Methodes_Output)
+      Xcas_Methodes_Output->value(gettext("builtin integration"));
+  }
+
+  void cb_Xcas_Methodes_right_rectangle(Fl_Menu_* m , void*) {
+    xcas_integration_method=1;
+    if (Xcas_Methodes_Output)
+      Xcas_Methodes_Output->value(gettext("right rectangle"));
+  }
+
+  void cb_Xcas_Methodes_left_rectangle(Fl_Menu_* m , void*) {
+    xcas_integration_method=2;
+    if (Xcas_Methodes_Output)
+      Xcas_Methodes_Output->value(gettext("left rectangle"));
+  }
+
+  void cb_Xcas_Methodes_middle_point(Fl_Menu_* m , void*) {
+    xcas_integration_method=3;
+    if (Xcas_Methodes_Output)
+      Xcas_Methodes_Output->value(gettext("middle point"));
+  }
+
+  void cb_Xcas_Methodes_trapezoid(Fl_Menu_* m , void*) {
+    xcas_integration_method=4;
+    if (Xcas_Methodes_Output)
+      Xcas_Methodes_Output->value(gettext("trapezoid"));
+  }
+
+  Fl_Menu_Item Xcas_Menu_Methodes[] = {
+    {gettext("builtin integration"), 0,  (Fl_Callback*)cb_Xcas_Methodes_builtin, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+    {gettext("right_rectangle"), 0,  (Fl_Callback*)cb_Xcas_Methodes_right_rectangle, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+    {gettext("left_rectangle"), 0,  (Fl_Callback*)cb_Xcas_Methodes_left_rectangle, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+    {gettext("middle_point"), 0,  (Fl_Callback*)cb_Xcas_Methodes_middle_point, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+    {gettext("trapezoid"), 0,  (Fl_Callback*)cb_Xcas_Methodes_trapezoid, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+    {0,0,0,0,0,0,0,0,0}
+  };
+
+  // type 1= plotfunc 3d, 0 plotfunc 2d, 2 plotarea
   bool tablefunc_dialog(Fl_Widget * spread_ptr,std::string & arg,bool plot,int type,const string & title){
     static Fl_Window * w = 0;
     static Fl_Input *fcn=0, *fcn3d=0,* varname=0, * varnamey=0,*target=0; 
     static Fl_Value_Input * xmin=0,*xstep=0,*xmax=0;
     static Fl_Value_Input * ymin=0,*ystep=0,*ymax=0;
-    static Line_Type *ltres=0;
     static Fl_Return_Button * button0 = 0 ;
+    static Fl_Menu_Button * methode=0;
     static Fl_Button * button1 =0;
+    static Line_Type * ltres=0;
     if (!w){
 #ifdef IPAQ
       int dx=240,dy=300;
 #else
-      int dx=(spread_ptr?15*spread_ptr->labelsize():240), 
+      int dx=(spread_ptr?20*spread_ptr->labelsize():400), 
 	dy=spread_ptr?8*spread_ptr->labelsize():300;
 #endif
       int lignes=5;
+      Fl_Group::current(0);
       w=new Fl_Window(dx,dy);
       ltres = new Line_Type(2,2,dx/15,dy/lignes-4,_MAGENTA+_FILL_POLYGON);
       ltres->show_pnt(true);
       ltres->show_poly(true);
+      ltres->tooltip(gettext("Plot style (select a point type or width for dotted plot)"));
       fcn=new Fl_Input(dx/2,2,dx/2-4,dy/lignes-4,gettext("Expression"));
       fcn->value("x^2");
       fcn->tooltip(gettext("Expression of the function (e.g sin(x))"));
@@ -1732,23 +1842,33 @@ namespace xcas {
       xmin = new Fl_Value_Input(dx/6,2+2*dy/lignes,dx/6-2,dy/lignes-4,gettext("xmin"));
       xmin->value(-4);
       xmin->step(0.5);
+      xmin->tooltip(gettext("Minimal value for 1st independant variable"));
       xstep = new Fl_Value_Input(3*dx/6,2+2*dy/lignes,dx/6-2,dy/lignes-4,gettext("xstep"));
-      xstep->value(0.25);
+      xstep->value(0.1);
       xstep->step(0.01);
+      xstep->tooltip(gettext("Discretization step for 1st independant variable"));
       xmax = new Fl_Value_Input(5*dx/6,2+2*dy/lignes,dx/6-2,dy/lignes-4,gettext("xmax"));
       xmax->value(4);
       xmax->step(0.5);
+      xmax->tooltip(gettext("Maximal value for 1st independant variable"));
       target = new Fl_Input(dx/6,2+3*dy/lignes,dx/6-2,dy/lignes-4,gettext("Target"));
       target->tooltip(gettext("Name of the first of two columns that will be overwritten by the tablefunc"));
       ymin = new Fl_Value_Input(dx/6,2+3*dy/lignes,dx/6-2,dy/lignes-4,gettext("ymin"));
       ymin->value(-4);
       ymin->step(0.5);
+      ymin->tooltip(gettext("Minimal value for 2nd independant variable"));
       ystep = new Fl_Value_Input(3*dx/6,2+3*dy/lignes,dx/6-2,dy/lignes-4,gettext("ystep"));
-      ystep->value(0.25);
+      ystep->value(0.1);
       ystep->step(0.01);
+      ystep->tooltip(gettext("Discretization step for 2nd independant variable"));
       ymax = new Fl_Value_Input(5*dx/6,2+3*dy/lignes,dx/6-2,dy/lignes-4,gettext("ymax"));
       ymax->value(4);
       ymax->step(0.5);
+      ymin->tooltip(gettext("Maximal value for 2nd independant variable"));
+      methode = new Fl_Menu_Button(0,2+3*dy/lignes,dx/3-2,dy/lignes-4,gettext("Choose"));
+      methode->menu(Xcas_Menu_Methodes);
+      Xcas_Methodes_Output = new Fl_Output(4*dx/6,2+3*dy/lignes,dx/3-2,dy/lignes-4,gettext("int. method"));
+      Xcas_Methodes_Output->value(gettext("builtin integration"));
       button0 = new Fl_Return_Button(2,2+4*dy/lignes,dx/2-4,dy/lignes-4);
       button0->shortcut(0xff0d);
       button0->label(gettext("OK"));
@@ -1769,6 +1889,14 @@ namespace xcas {
     else {
       target->show();
     }
+    if (type==2){
+      methode->show();
+      Xcas_Methodes_Output->show();
+    }
+    else {
+      methode->hide();
+      Xcas_Methodes_Output->hide();
+    }
     if (type==1){
       ymax->show();
       ymin->show();
@@ -1788,8 +1916,9 @@ namespace xcas {
     int r=-1;
     w->set_modal();
     w->show();
+    autosave_disabled=true;
     w->hotspot(w);
-    Fl::focus(w);
+    Fl::focus(varname);
     for (;;) {
       Fl_Widget *o = Fl::readqueue();
       if (!o) Fl::wait();
@@ -1805,20 +1934,21 @@ namespace xcas {
 	if (o == w) { r=1; break; }
       }
     }
+    autosave_disabled=false;
     w->hide();
     if (!r){
       if (tbl){
 	int r;
 	if (!alphaposcell(target->value(),r)){
-	  fl_alert("Invalid column");
+	  fl_alert("%s","Invalid column");
 	  return false;
 	}
 	tbl->col(r);
       }
-      arg=(type?fcn3d:fcn)->value();
+      arg=(type==1?fcn3d:fcn)->value();
       gen cell;
       if (has_cell(arg,cell,context0)){
-	fl_alert(("Expression contains a cell name "+cell.print()).c_str());
+	fl_alert("%s",("Expression contains a cell name "+cell.print()).c_str());
 	return false;
       }
       arg += string(",");
@@ -1826,8 +1956,29 @@ namespace xcas {
 	if (type==1){
 	  arg += "["+string(varname->value())+"="+print_DOUBLE_(xmin->value())+".."+print_DOUBLE_(xmax->value()) + string(",")+varnamey->value()+string("=")+print_DOUBLE_(ymin->value())+".."+print_DOUBLE_(ymax->value())+"],xstep="+print_DOUBLE_(xstep->value())+",ystep="+print_DOUBLE_(ystep->value())+",display="+print_color(ltres->line_type());
 	}
-	else
-	  arg += string(varname->value())+"="+print_DOUBLE_(xmin->value())+".."+print_DOUBLE_(xmax->value())+",xstep="+print_DOUBLE_(xstep->value())+",display="+print_color(ltres->line_type());
+	else {
+	  arg += string(varname->value())+"="+print_DOUBLE_(xmin->value())+".."+print_DOUBLE_(xmax->value());
+	  if (type==2 && xcas_integration_method){
+	    arg += ","+print_INT_(int((xmax->value()-xmin->value())/xstep->value()));
+	    switch (xcas_integration_method){
+	    case 1:
+	      arg += ",right_rectangle";
+	      break;
+	    case 2:
+	      arg += ",left_rectangle";
+	      break;
+	    case 3:
+	      arg += ",middle_point";
+	      break;
+	    case 4:
+	      arg += ",trapezoid";
+	      break;
+	    }
+	  }
+	  else
+	    arg += ",xstep="+print_DOUBLE_(xstep->value());
+	  arg += ",display="+print_color(ltres->line_type());
+	}
       }
       else 
 	arg += string(varname->value())+","+print_DOUBLE_(xmin->value())+","+print_DOUBLE_(xstep->value())+","+print_DOUBLE_(xmax->value())+",display="+print_color(ltres->line_type());
@@ -1836,12 +1987,13 @@ namespace xcas {
     return false;
   }
 
-  static void cb_Tableur_Tablefunc(Fl_Menu_* m , void*) {
+   void cb_Tableur_Tablefunc(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     string arg;
     if (spread_ptr && tablefunc_dialog(spread_ptr,arg,false,0,gettext("Table of value of a function"))){
       arg="tablefunc("+arg+")";
+      spread_ptr->input->value("");
       tableur_insert_replace(spread_ptr,arg);
       Tableur_Group * gr = dynamic_cast<Tableur_Group *>(spread_ptr->parent());
       if (gr && !(gr->disposition & 2) && !spread_ptr->graph2d->window()->visible() ){
@@ -1868,6 +2020,7 @@ namespace xcas {
       int dx=(spread_ptr?15*spread_ptr->labelsize():240), 
 	dy=spread_ptr?8*spread_ptr->labelsize():300;
 #endif
+      Fl_Group::current(0);
       w=new Fl_Window(dx,dy);
       target=new Fl_Input(dx/2,2,dx/2-2,dy/lignes-4,gettext("Target cell range"));
       target->tooltip(gettext("Target cell range will be filled by random numbers, e.g. A1:A8"));
@@ -1884,7 +2037,7 @@ namespace xcas {
       once_button=new Fl_Check_Button(dx/2+4, 2+2*dy/lignes,dx/4,dy/lignes-4,gettext("static"));
       once_button->tooltip(gettext("Immediate static value or formula reevaled each time"));
       once_button->down_box(FL_DOWN_BOX);
-      once_button->value(false);
+      once_button->value(true);
       button0 = new Fl_Return_Button(2,2+(lignes-1)*dy/lignes,dx/2-4,dy/lignes-4);
       button0->shortcut(0xff0d);
       button0->label(gettext("OK"));
@@ -1902,8 +2055,9 @@ namespace xcas {
     int r=-1;
     w->set_modal();
     w->show();
+    autosave_disabled=true;
     w->hotspot(w);
-    Fl::focus(w);
+    Fl::focus(target);
     for (;;) {
       Fl_Widget *o = Fl::readqueue();
       if (!o) Fl::wait();
@@ -1913,6 +2067,7 @@ namespace xcas {
 	if (o == w) { r=1; break; }
       }
     }
+    autosave_disabled=false;
     w->hide();
     if (r==1)
       return false;
@@ -1940,6 +2095,7 @@ namespace xcas {
       int dx=(spread_ptr?15*spread_ptr->labelsize():240), 
 	dy=spread_ptr?8*spread_ptr->labelsize():300;
 #endif
+      Fl_Group::current(0);
       w=new Fl_Window(dx,dy);
       fcn=new Fl_Input(dx/2,2,dx/2-4,dy/lignes-4,gettext("Expression"));
       fcn->value("(x+2)/(x+1)");
@@ -1992,8 +2148,9 @@ namespace xcas {
     int r=-1;
     w->set_modal();
     w->show();
+    autosave_disabled=true;
     w->hotspot(w);
-    Fl::focus(w);
+    Fl::focus(fcn);
     for (;;) {
       Fl_Widget *o = Fl::readqueue();
       if (!o) Fl::wait();
@@ -2003,20 +2160,29 @@ namespace xcas {
 	if (o == w) { r=1; break; }
       }
     }
+    autosave_disabled=false;
     w->hide();
     if (!r){
       if (tbl){
 	int r;
 	if (!alphaposcell(target->value(),r)){
-	  fl_alert("Invalid column");
+	  fl_alert("%s","Invalid column");
 	  return false;
 	}
 	tbl->col(r);
 	tbl->row(1);
+	if (Tableur_Group * par=dynamic_cast<Tableur_Group *> (tbl->parent())){
+	  par->disposition=3;
+	  par->resize2();
+	}
       }
       gen cell;
       if (has_cell(fcn->value(),cell,context0)){
-	fl_alert(("Expression contains a cell name "+cell.print()).c_str());
+	fl_alert("%s",(gettext("Expression contains a cell name ")+cell.print()).c_str());
+	return false;
+      }
+      if (gen(u0->value(),context0).type==_VECT){
+	fl_alert("%s",(string(gettext("Invalid list initial value "))+u0->value()).c_str());
 	return false;
       }
       if (Figure * fig = dynamic_cast<Figure *>(spread_ptr)){
@@ -2036,7 +2202,7 @@ namespace xcas {
     return false;
   }
 
-  static void cb_Tableur_ranm(Fl_Menu_* m , void*) {
+   void cb_Tableur_ranm(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     const giac::context * contextptr = get_context(spread_ptr);
@@ -2079,11 +2245,11 @@ namespace xcas {
       if (!iscell(f._VECTptr->front(),c1,r1,contextptr) || !iscell(f._VECTptr->back(),c2,r2,contextptr))
 	return;
       if (r1>r2)
-	std::swap<int>(r1,r2);
+	giac::swapint(r1,r2);
       r2=min(r2+1,spread_ptr->rows());
       r1=max(r1,0);
       if (c1>c2)
-	std::swap<int>(c1,c2);
+	giac::swapint(c1,c2);
       c2=min(c2+1,spread_ptr->cols());
       c1=max(c1,0);
       gen formula(formulas,contextptr);
@@ -2098,12 +2264,13 @@ namespace xcas {
     }
   }
 
-  static void cb_Tableur_Tableseq(Fl_Menu_* m , void*) {
+   void cb_Tableur_Tableseq(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     string arg,u0param;
     if (spread_ptr && tableseq_dialog(spread_ptr,arg,false,gettext("Table of value of a recurrent sequence"),u0param)){
       arg="tableseq("+arg+")";
+      spread_ptr->input->value("");
       tableur_insert_replace(spread_ptr,arg);
       Tableur_Group * gr = dynamic_cast<Tableur_Group *>(spread_ptr->parent());
       if (gr && !(gr->disposition & 2) && !spread_ptr->graph2d->window()->visible()){
@@ -2132,6 +2299,7 @@ namespace xcas {
     if (dx<200)
       dx=200;
     if (!w){
+      Fl_Group::current(0);
       w=new Fl_Window(dx,dy);
       int lignes=4;
       help = new Fl_Output(dx/2,2,0,0,"");
@@ -2203,8 +2371,9 @@ namespace xcas {
     for (;;){
       w->set_modal();
       w->show();
+      autosave_disabled=true;
       w->hotspot(w);
-      Fl::focus(w);
+      Fl::focus(i1);
       for (;;) {
 	Fl_Widget *o = Fl::readqueue();
 	if (!o) Fl::wait();
@@ -2215,6 +2384,7 @@ namespace xcas {
 	  if (o == w) { r=1; break; }
 	}
       }
+      autosave_disabled=false;
       w->hide();
       if (r)
 	break;
@@ -2243,7 +2413,7 @@ namespace xcas {
 	}
       }
       catch (std::runtime_error & e){
-	fl_message((gettext("Syntax error")+string(e.what())).c_str());
+	fl_message("%s",(gettext("Syntax error")+string(e.what())).c_str());
 	continue;
       }
       break;
@@ -2282,7 +2452,7 @@ namespace xcas {
 	if (absolu || mselect.front()._VECTptr->size()!=vc.size() || (inside?absolu2:name.type!=_IDNT) ){
 	  tmp=extractmatricefromsheet(mselect);
 	  if (transpose)
-	    tmp=_tran(tmp);
+	    tmp=_tran(tmp,contextptr);
 	}
 	else {
 	  if (inside){
@@ -2307,7 +2477,8 @@ namespace xcas {
 	  tmp.change_subtype(_SPREAD__SYMB);
 	  row(R);
 	  col(C);
-	  input->set_g(tmp);
+	  input->value(tmp.print(contextptr).c_str());
+	  // input->set_g(tmp);
 	  input->do_callback();
 	}
 	else {
@@ -2322,14 +2493,14 @@ namespace xcas {
     }
   }
 
-  static void cb_Tableur_SetRows(Fl_Menu_* m , void*) {
+   void cb_Tableur_SetRows(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
-    const char * ch=fl_input("New row number",print_INT_(tg->rows()).c_str());
+    const char * ch=fl_input(gettext("New row number"),print_INT_(tg->rows()).c_str());
     if (ch){
       int i=atoi(ch);
       if (i<tg->rows()){
-	int j=fl_ask(gettext("Really delete rows?"));
+	int j=fl_ask("%s",gettext("Really delete rows?"));
 	if (!j)
 	  return;
       }
@@ -2338,14 +2509,14 @@ namespace xcas {
     }
   }
 
-  static void cb_Tableur_SetCols(Fl_Menu_* m , void*) {
+   void cb_Tableur_SetCols(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
-    const char * ch=fl_input("New col number",print_INT_(tg->cols()).c_str());
+    const char * ch=fl_input(gettext("New col number"),print_INT_(tg->cols()).c_str());
     if (ch){
       int i=atoi(ch);
       if (i<tg->cols()){
-	int j=fl_ask(gettext("Really delete columns?"));
+	int j=fl_ask("%s",gettext("Really delete columns?"));
 	if (!j)
 	  return;
       }
@@ -2355,14 +2526,14 @@ namespace xcas {
     }
   }
 
-  static void cb_Tableur_Histogram(Fl_Menu_* m , void*) {
+   void cb_Tableur_Histogram(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     const giac::context * contextptr = get_context(tg);
     tg->set_graphic(gen("histogram",contextptr),gettext("Histogram 1 or 2 columns: data or data/eff"));
   }
 
-  static void cb_Tableur_Classes(Fl_Menu_* m , void*) {
+   void cb_Tableur_Classes(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     const giac::context * contextptr = get_context(tg);
@@ -2394,95 +2565,95 @@ namespace xcas {
     }
   }
 
-  static void cb_Tableur_Boxwhisker(Fl_Menu_* m , void*) {
+   void cb_Tableur_Boxwhisker(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     const giac::context * contextptr = get_context(tg);
     tg->set_graphic(gen("boxwhisker",contextptr),gettext("One boxwhisker per column"));
   }
 
-  static void cb_Tableur_plotlist(Fl_Menu_* m , void*) {
+   void cb_Tableur_plotlist(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     const giac::context * contextptr = get_context(tg);
     tg->set_graphic(gen("plotlist",contextptr),gettext("Plotlist: One column (y) or two columns (x,y)"));
   }
 
-  static void cb_Tableur_camembert(Fl_Menu_* m , void*) {
+   void cb_Tableur_camembert(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     const giac::context * contextptr = get_context(tg);
     tg->set_graphic(gen("camembert",contextptr),gettext("Camembert: column 1: legends, column 2: data"));
   }
 
-  static void cb_Tableur_batons(Fl_Menu_* m , void*) {
+   void cb_Tableur_batons(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     const giac::context * contextptr = get_context(tg);
-    tg->set_graphic(gen("diagramme_batons",contextptr),gettext("Batons: column 1: legends, column 2: data"));
+    tg->set_graphic(gen("bar_plot",contextptr),gettext("Bar_plot: column 1: legends, column 2: data"));
   }
 
-  static void cb_Tableur_Scatterplot(Fl_Menu_* m , void*) {
+   void cb_Tableur_Scatterplot(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     const giac::context * contextptr = get_context(tg);
     tg->set_graphic(gen("scatterplot",contextptr),gettext("Column 1: x, one scatterplot per remaining column"));
   }
 
-  static void cb_Tableur_Polygonplot(Fl_Menu_* m , void*) {
+   void cb_Tableur_Polygonplot(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     const giac::context * contextptr = get_context(tg);
     tg->set_graphic(gen("polygonplot",contextptr),gettext("Column 1: x, one polygonplot per remaining column"));
   }
 
-  static void cb_Tableur_Polygonscatterplot(Fl_Menu_* m , void*) {
+   void cb_Tableur_Polygonscatterplot(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     const giac::context * contextptr = get_context(tg);
     tg->set_graphic(gen("polygonscatterplot",contextptr),gettext("Column 1: x, one polygon line per remaining column"));
   }
 
-  static void cb_Tableur_linear_regression_plot(Fl_Menu_* m , void*) {
+   void cb_Tableur_linear_regression_plot(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     const giac::context * contextptr = get_context(tg);
     tg->set_graphic(gen("linear_regression_plot",contextptr),gettext("Linear regression: column 1: x, column 2: y"));
   }
 
-  static void cb_Tableur_power_regression_plot(Fl_Menu_* m , void*) {
+   void cb_Tableur_power_regression_plot(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     const giac::context * contextptr = get_context(tg);
     tg->set_graphic(gen("power_regression_plot",contextptr),gettext("Power regression: Column 1: x, column 2: y"));
   }
 
-  static void cb_Tableur_logarithmic_regression_plot(Fl_Menu_* m , void*) {
+   void cb_Tableur_logarithmic_regression_plot(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     const giac::context * contextptr = get_context(tg);
     tg->set_graphic(gen("logarithmic_regression_plot",contextptr),gettext("Log regression: Column 1: x, column 2: y"));
   }
 
-  static void cb_Tableur_exponential_regression_plot(Fl_Menu_* m , void*) {
+   void cb_Tableur_exponential_regression_plot(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     const giac::context * contextptr = get_context(tg);
     tg->set_graphic(gen("exponential_regression_plot",contextptr),gettext("Exp regression: Column 1: x, column 2: y"));
   }
 
-  static void cb_Tableur_polynomial_regression_plot(Fl_Menu_* m , void*) {
+   void cb_Tableur_polynomial_regression_plot(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     const giac::context * contextptr = get_context(tg);
     tg->set_graphic(gen("polynomial_regression_plot",contextptr),gettext("Polynomial regression degree d: Column 1: x, column 2: y"));
   }
 
-  static void cb_Tableur_logistic_regression_plot(Fl_Menu_* m , void*) {
+   void cb_Tableur_logistic_regression_plot(Fl_Menu_* m , void*) {
     Flv_Table_Gen * tg=find_table_brother(m);
     if (!tg) return;
     const giac::context * contextptr = get_context(tg);
-    tg->set_graphic(gen("logistic_regression_plot",contextptr),gettext("Logistic regressionfor y', with y(x=1)=y1"));
+    tg->set_graphic(gen("logistic_regression_plot",contextptr),gettext("Logistic regression for y', with y(x=1)=y1"));
   }
 
   int find_sort_row(int c2,bool isrow,GIAC_CONTEXT){
@@ -2496,7 +2667,7 @@ namespace xcas {
       question += gettext("row");
     else
       question += gettext("column");
-    const char * chptr=fl_input(question.c_str(),print_INT_(c).c_str());
+    const char * chptr=fl_input("%s",print_INT_(c).c_str(),question.c_str());
     if (!chptr)
       return -1;
     string colonne(chptr);
@@ -2522,7 +2693,7 @@ namespace xcas {
     const giac::context * contextptr = get_context(spread_ptr);
     current_spread_ptr=spread_ptr;
     if (spread_ptr->is_spreadsheet){
-      int i=fl_ask(gettext("Sorting is not compatible with some cell references. Sort anyway"),gettext("Yes"),gettext("No"));
+      int i=fl_ask("%s",gettext("Sorting is not compatible with some cell references. Sort anyway"),gettext("Yes"),gettext("No"));
       if (i!=1) return ;
     }
     int r1,r2,c1,c2;
@@ -2552,7 +2723,7 @@ namespace xcas {
 	  question += gettext("row");
 	else
 	  question += gettext("column");
-	const char * chptr=fl_input(question.c_str(),tmp.c_str());
+	const char * chptr=fl_input("%s",tmp.c_str(),question.c_str());
 	if (!chptr){
 	  return;
 	}
@@ -2572,9 +2743,9 @@ namespace xcas {
     if (r1==r2)
       return;
     if (r1>r2)
-      std::swap<int>(r1,r2);
+      giac::swapint(r1,r2);
     if (c1>c2)
-      std::swap<int>(c1,c2);
+      giac::swapint(c1,c2);
     // keep only rows r1->r2 and cols c1->c2
     m=mtran(matrice(m.begin()+r1,m.begin()+r2+1));
     m=mtran(matrice(m.begin()+c1,m.begin()+c2+1));
@@ -2596,7 +2767,7 @@ namespace xcas {
     spread_ptr->paste(m);
   }
 
-  static void cb_Tableur_Sort_Dec_Col(Fl_Menu_* m , void*) {
+   void cb_Tableur_Sort_Dec_Col(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     sheetsort(spread_ptr,false,false);
@@ -2604,7 +2775,7 @@ namespace xcas {
     spread_ptr->redraw();
   }
 
-  static void cb_Tableur_Sort_Inc_Col(Fl_Menu_* m , void*) {
+   void cb_Tableur_Sort_Inc_Col(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     sheetsort(spread_ptr,false,true);
@@ -2612,7 +2783,7 @@ namespace xcas {
     spread_ptr->redraw();
   }
 
-  static void cb_Tableur_Sort_Dec_Row(Fl_Menu_* m , void*) {
+   void cb_Tableur_Sort_Dec_Row(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     sheetsort(spread_ptr,true,false);
@@ -2620,7 +2791,7 @@ namespace xcas {
     spread_ptr->redraw();
   }
 
-  static void cb_Tableur_Sort_Inc_Row(Fl_Menu_* m , void*) {
+   void cb_Tableur_Sort_Inc_Row(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     sheetsort(spread_ptr,true,true);
@@ -2628,66 +2799,66 @@ namespace xcas {
     spread_ptr->redraw();
   }
 
-  static void cb_Tableur_Auto_Recompute(Fl_Menu_* m , void*) {
+   void cb_Tableur_Auto_Recompute(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     spread_ptr->spreadsheet_recompute=1;
     spread_ptr->update_status();
   }
 
-  static void cb_Tableur_No_Recompute(Fl_Menu_* m , void*) {
+   void cb_Tableur_No_Recompute(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     spread_ptr->spreadsheet_recompute=0;
     spread_ptr->update_status();
   }
 
-  static void cb_Tableur_Matrix_Fill(Fl_Menu_* m , void*) {
+   void cb_Tableur_Matrix_Fill(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     spread_ptr->matrix_fill_cells=1;
     spread_ptr->update_status();
   }
 
-  static void cb_Tableur_No_Matrix_Fill(Fl_Menu_* m , void*) {
+   void cb_Tableur_No_Matrix_Fill(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     spread_ptr->matrix_fill_cells=0;
     spread_ptr->update_status();
   }
 
-  static void cb_Tableur_Variable_Name(Fl_Menu_* m , void*) {
+   void cb_Tableur_Variable_Name(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     spread_ptr->config();
   }
 
-  static void cb_Tableur_Spreadsheet_Mode(Fl_Menu_* m , void*) {
+   void cb_Tableur_Spreadsheet_Mode(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     spread_ptr->is_spreadsheet=1;
     spread_ptr->update_status();
   }
 
-  static void cb_Tableur_Matrix_Mode(Fl_Menu_* m , void*) {
+   void cb_Tableur_Matrix_Mode(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     spread_ptr->is_spreadsheet=0;
     spread_ptr->update_status();
   }
 
-  static void cb_Tableur_Normal_Matrix(Fl_Menu_* m , void*) {
+   void cb_Tableur_Normal_Matrix(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     spread_ptr->matrix_symmetry=0;
     spread_ptr->update_status();
   }
 
-  static void cb_Tableur_Symmetric_Matrix(Fl_Menu_* m , void*) {
+   void cb_Tableur_Symmetric_Matrix(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     if (spread_ptr->rows()!=spread_ptr->cols()){
-      fl_message(gettext("Make rows==cols first!"));
+      fl_message("%s",gettext("Make rows==cols first!"));
       return;
     }
     spread_ptr->is_spreadsheet=0;
@@ -2695,11 +2866,11 @@ namespace xcas {
     spread_ptr->update_status();
   }
 
-  static void cb_Tableur_AntiSymmetric_Matrix(Fl_Menu_* m , void*) {
+   void cb_Tableur_AntiSymmetric_Matrix(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     if (spread_ptr->rows()!=spread_ptr->cols()){
-      fl_message(gettext("Make rows==cols first!"));
+      fl_message("%s",gettext("Make rows==cols first!"));
       return;
     }
     spread_ptr->is_spreadsheet=0;
@@ -2707,11 +2878,11 @@ namespace xcas {
     spread_ptr->update_status();
   }
 
-  static void cb_Tableur_Hermitian_Matrix(Fl_Menu_* m , void*) {
+   void cb_Tableur_Hermitian_Matrix(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     if (spread_ptr->rows()!=spread_ptr->cols()){
-      fl_message(gettext("Make rows==cols first!"));
+      fl_message("%s",gettext("Make rows==cols first!"));
       return;
     }
     spread_ptr->is_spreadsheet=0;
@@ -2719,11 +2890,11 @@ namespace xcas {
     spread_ptr->update_status();
   }
 
-  static void cb_Tableur_AntiHermitian_Matrix(Fl_Menu_* m , void*) {
+   void cb_Tableur_AntiHermitian_Matrix(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     if (spread_ptr->rows()!=spread_ptr->cols()){
-      fl_message(gettext("Make rows==cols first!"));
+      fl_message("%s",gettext("Make rows==cols first!"));
       return;
     }
     spread_ptr->is_spreadsheet=0;
@@ -2731,7 +2902,7 @@ namespace xcas {
     spread_ptr->update_status();
   }
 
-  static void cb_Tableur_Hide_Graph(Fl_Menu_* m , void*) {
+   void cb_Tableur_Hide_Graph(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     Tableur_Group * tg=dynamic_cast<Tableur_Group *>(spread_ptr->parent());
@@ -2744,7 +2915,7 @@ namespace xcas {
     }
   }
 
-  static void cb_Tableur_Portrait(Fl_Menu_* m , void*) {
+   void cb_Tableur_Portrait(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     Tableur_Group * tg=dynamic_cast<Tableur_Group *>(spread_ptr->parent());
@@ -2755,7 +2926,7 @@ namespace xcas {
     }
   }
 
-  static void cb_Tableur_Landscape(Fl_Menu_* m , void*) {
+   void cb_Tableur_Landscape(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     Tableur_Group * tg=dynamic_cast<Tableur_Group *>(spread_ptr->parent());
@@ -2766,7 +2937,7 @@ namespace xcas {
     }
   }
 
-  static void cb_Tableur_Autoscale(Fl_Menu_* m , void*) {
+   void cb_Tableur_Autoscale(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     Tableur_Group * tg=dynamic_cast<Tableur_Group *>(spread_ptr->parent());
@@ -2778,23 +2949,21 @@ namespace xcas {
     }
   }
 
-  static void cb_Tableur_Cfg_Window(Fl_Menu_* m , void*) {
+   void cb_Tableur_Cfg_Window(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
     if (!spread_ptr) return;
     if (spread_ptr)
       spread_ptr->config();
   }
 
-  static void cb_Tableur_Undo(Fl_Menu_* m , void*) {
+   void cb_Tableur_Undo(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
-    if (!spread_ptr) return;
     if (spread_ptr)
       spread_ptr->restore(-1);
   }
 
-  static void cb_Tableur_Redo(Fl_Menu_* m , void*) {
+   void cb_Tableur_Redo(Fl_Menu_* m , void*) {
     Flv_Table_Gen * spread_ptr=find_table_brother(m);
-    if (!spread_ptr) return;
     if (spread_ptr)
       spread_ptr->restore(1);
   }
@@ -2809,15 +2978,15 @@ namespace xcas {
     {gettext("Insert"), 0,  (Fl_Callback*)cb_Tableur_Insert, 0, 0, 0, 0, 14, 56},
     {gettext("Insert CSV"), 0,  (Fl_Callback*)cb_Tableur_Insert_CSV, 0, 0, 0, 0, 14, 56},
     {gettext("Sheet configuration"), 0,  (Fl_Callback*)cb_Tableur_Variable_Name, 0, 0, 0, 0, 14, 56},
-    {gettext("Print/Export"), 0,  0, 0, 64, 0, 0, 14, 56},
+    {gettext("Print Export"), 0,  0, 0, 64, 0, 0, 14, 56},
     //    {gettext("latex preview"), 0,  (Fl_Callback*)cb_Tableur_LaTeX_Preview, 0, 0, 0, 0, 14, 56},
     //    {gettext("latex printer"), 0,  (Fl_Callback*)cb_Tableur_LaTeX_Print, 0, 0, 0, 0, 14, 56},
-    {gettext("EPS/PNG and preview"), 0,  (Fl_Callback*)cb_Tableur_Preview, 0, 0, 0, 0, 14, 56},
+    {gettext("EPS PNG and preview"), 0,  (Fl_Callback*)cb_Tableur_Preview, 0, 0, 0, 0, 14, 56},
     {gettext("to printer"), 0,  (Fl_Callback*)cb_Tableur_Print, 0, 0, 0, 0, 14, 56},
     {0},
     {0},
     {gettext("Edit"), 0,  0, 0, 64, 0, 0, 14, 56},
-    {gettext("Eval sheet"), 0xffc5,  (Fl_Callback *) cb_Tableur_Eval_Sheet, 0, 0, 0, 0, 14, 56},
+    {gettext("Eval sheet"), 0xffc6,  (Fl_Callback *) cb_Tableur_Eval_Sheet, 0, 0, 0, 0, 14, 56},
     {gettext("Copy Cell"), 0,  (Fl_Callback *) cb_Tableur_Copy_Cell, 0, 0, 0, 0, 14, 56},
     {gettext("Paste"), 0,  (Fl_Callback *) cb_Paste, 0, 0, 0, 0, 14, 56},
     {gettext("Undo"), 0x4007a,  (Fl_Callback *) cb_Tableur_Undo, 0, 0, 0, 0, 14, 56},
@@ -2881,7 +3050,7 @@ namespace xcas {
     {gettext("Random values"), 0,  (Fl_Callback *) cb_Tableur_ranm, 0, 0, 0, 0, 14, 56},
     {gettext("Sequences"), 0,  0, 0, 64, 0, 0, 14, 56},
     {gettext("Recurrent sequence"), 0,  (Fl_Callback *) cb_Tableur_Tableseq, 0, 0, 0, 0, 14, 56},
-    {gettext("batons"), 0,  (Fl_Callback *) cb_Tableur_batons, 0, 0, 0, 0, 14, 56},
+    {gettext("Bar plot"), 0,  (Fl_Callback *) cb_Tableur_batons, 0, 0, 0, 0, 14, 56},
     {gettext("plotlist"), 0,  (Fl_Callback *) cb_Tableur_plotlist, 0, 0, 0, 0, 14, 56},
     {gettext("Polygonscatterplot"), 0,  (Fl_Callback *) cb_Tableur_Polygonscatterplot, 0, 0, 0, 0, 14, 56},
     {gettext("Scatterplot"), 0,  (Fl_Callback *) cb_Tableur_Scatterplot, 0, 0, 0, 0, 14, 56},
@@ -2889,7 +3058,7 @@ namespace xcas {
     {0},
     {gettext("1-d stats"), 0,  0, 0, 64, 0, 0, 14, 56},
     {gettext("camembert"), 0,  (Fl_Callback *) cb_Tableur_camembert, 0, 0, 0, 0, 14, 56},
-    {gettext("batons"), 0,  (Fl_Callback *) cb_Tableur_batons, 0, 0, 0, 0, 14, 56},
+    {gettext("Bar plot"), 0,  (Fl_Callback *) cb_Tableur_batons, 0, 0, 0, 0, 14, 56},
     {gettext("plotlist"), 0,  (Fl_Callback *) cb_Tableur_plotlist, 0, 0, 0, 0, 14, 56},
     {gettext("Boxwhisker"), 0,  (Fl_Callback *) cb_Tableur_Boxwhisker, 0, 0, 0, 0, 14, 56},
     {gettext("Classes (data or data,eff)"), 0,  (Fl_Callback *) cb_Tableur_Classes, 0, 0, 0, 0, 14, 56},
@@ -3002,12 +3171,14 @@ namespace xcas {
 #ifdef IPAQ
     global_style.width(40);
 #else // IPAQ
-    global_style.width(100);
+    global_style.width(10+10*labelsize());
 #endif // IPAQ
     global_style.height(labelsize()+4);
     row_style[-1].align(FL_ALIGN_CLIP);
     col_style[-1].align(FL_ALIGN_CLIP);
     update_status();
+    Fl::focus(this);
+    // Fl::focus(input);
   }  
 
   void Flv_Table_Gen::draw_cell( int Offset, int &X, int &Y, int &W, int &H, int R, int C ){
@@ -3131,16 +3302,18 @@ namespace xcas {
     if (graph){
       sheet2pnt(m,graph->plot_instructions);
       graph2d->plot_instructions=graph->plot_instructions;
-      graph3d->plot_instructions=graph->plot_instructions;
+      if (graph3d){
+	graph3d->plot_instructions=graph->plot_instructions;
+	graph3d->redraw();
+      }
       graph->redraw();
       graph2d->redraw();
-      graph3d->redraw();
     }
   }
 
   void Flv_Table_Gen::spread_eval_interrupt(){
     if (computing || is_context_busy(contextptr)){
-      fl_message(gettext("CAS is busy"));
+      fl_message("%s",gettext("CAS is busy"));
       return;
     }
     bool save_interrupt_button=interrupt_button;
@@ -3176,15 +3349,15 @@ namespace xcas {
       if (!iscell(f._VECTptr->front(),c1,r1,contextptr) || !iscell(f._VECTptr->back(),c2,r2,contextptr))
 	return 0;
       if (r1>r2)
-	std::swap<int>(r1,r2);
-      r2=min(r2+1,m.size());
-      r1=max(r1,0);
+	giac::swapint(r1,r2);
+      r2=giacmin(r2+1,m.size());
+      r1=giacmax(r1,0);
       mselect=vecteur(m.begin()+r1,m.begin()+r2);
       mselect=mtran(mselect);
       if (c1>c2)
-	std::swap<int>(c1,c2);
-      c2=min(c2+1,m.size());
-      c1=max(c1,0);
+	giac::swapint(c1,c2);
+      c2=giacmin(c2+1,m.size());
+      c1=giacmax(c1,0);
       mselect=vecteur(mselect.begin()+c1,mselect.begin()+c2);
       mselect=mtran(mselect);
       if (sptr){
@@ -3214,15 +3387,15 @@ namespace xcas {
       int c;
       if (!iscell(w[0],c,r1,contextptr))
 	return 0;
-      r1=max(min(r1,m.size()),0);
+      r1=giacmax(giacmin(r1,m.size()),0);
       if (w[1].type==_INT_)
 	r2=w[1].val-(xcas_mode(contextptr)!=0);
       else {
 	if (!iscell(w[1],c,r2,contextptr))
 	  return 0;
       }
-      r2=max(min(r2+1,m.size()),0);
-      if (r2<r1) swap<int>(r1,r2);
+      r2=giacmax(giacmin(r2+1,m.size()),0);
+      if (r2<r1) giac::swapint(r1,r2);
     }
     // full columns selection
     matrice mt(mtran(m));
@@ -3245,8 +3418,8 @@ namespace xcas {
 	  return 0;
 	if (!iscell(w[1],cb,rb,contextptr))
 	  return 0;
-	if (ca>cb) swap<int>(ca,cb);
-	if (ra>rb) swap<int>(ra,rb);
+	if (ca>cb) giac::swapint(ca,cb);
+	if (ra>rb) giac::swapint(ra,rb);
 	if (ra!=r1 || rb+1!=r2)
 	  return 0;
 	for (int c=ca;c<=cb;++c){
@@ -3257,7 +3430,7 @@ namespace xcas {
       if (h.type!=_IDNT)
 	continue;
       absolu=true;
-      string & ss=*h._IDNTptr->name;
+      const string & ss=h._IDNTptr->name();
       int sss=ss.size();
       if (sss<1)
 	return 0;
@@ -3292,7 +3465,7 @@ namespace xcas {
 
   Tableur_Group::Tableur_Group(int X,int Y,int W,int H,int L,int disp):Fl_Tile(X,Y,W,H),disposition(disp),dtable(0),dgraph(0),dparam(0){
     labelsize(L);
-    int l=L+6;
+    int l=L+6,inputh=L+18;
     borderbox = new Fl_Box(X,Y,w()-labelsize(),h()-labelsize());
     resizable(borderbox);
     end();
@@ -3302,11 +3475,15 @@ namespace xcas {
     table=new Flv_Table_Gen(X,Y,W,H,m,"Spreadsheet");
     Fl_Group::current(this);
     if (!table->graph){
-      table->graph = new Graph2d(X,Y+l,W,H-l,"");
+      table->graph = new Graph2d(X,Y+l,W,H-inputh,"");
       table->graph->ylegende=1.5;
     }
     if (!table->input){
-      table->input = new Multiline_Input_tab(X,Y,W,l);
+      Fl_Text_Buffer * ptr=new Fl_Text_Buffer;
+      table->input = new Xcas_Text_Editor(X,Y,W,inputh,ptr);
+      table->input->scrollbar_width(12);
+      table->input->buffer()->add_modify_callback(style_update, table->input);
+      // table->input = new Multiline_Input_tab(X,Y,W,l);
       table->input->tableur=table;
       table->input->textsize(labelsize());
       table->input->callback(cb_Sheet_Input);
@@ -3314,7 +3491,7 @@ namespace xcas {
       table->input->when(FL_WHEN_ENTER_KEY);
     }
     if (!table->_goto && table->input){
-      table->_goto = new Multiline_Input_tab(X,Y,W,l);
+      table->_goto = new Multiline_Input_tab(X,Y,W,inputh);
       table->_goto->callback(cb_Spread_goto);
       table->_goto->textsize(labelsize());
       table->_goto->tooltip(gettext("Selection area"));
@@ -3378,14 +3555,7 @@ namespace xcas {
     table->win2->end();
     table->win2->resizable(table->win2);
     table->win2->hide();
-    table->win3=new Fl_Window(X,Y,2*W/3,2*H/3);
-    if (!table->graph3d){
-      table->graph3d = new Graph3d(X,Y,2*W/3,2*H/3,"",0);
-      table->graph3d->ylegende=1.5;
-    }
-    table->win3->end();
-    table->win3->resizable(table->win3);
-    table->win3->hide();
+    table->win3=0;
     resize2();
     // handle(FL_FOCUS);
   }
@@ -3420,19 +3590,19 @@ namespace xcas {
     dparam/=total;
     int X=x(),Y=y(),W=w(),H=h();
     int L=labelsize();
-    int l=L+6;
+    int l=L+6,inputh=L+18;
     menubar->resize(X,Y,W/3,l);
     reevalsave->resize(X+W/3,Y,2*W/3,l);
     if (disposition/2){
       if (disposition %2){ // table || graph 
 	int itable=int(W*dtable+.5);
 	int igraph=int(W*dgraph+.5);
-	table->_goto->resize(X,Y+l,itable/3,l);
-	table->input->resize(X+itable/3,Y+l,itable-itable/3,l);
+	table->_goto->resize(X,Y+l,itable/3,inputh);
+	table->input->resize(X+itable/3,Y+l,itable-itable/3,inputh);
 	int itg=itable+igraph;
-	table->resize(X,Y+2*l,itable,H-2*l);
+	table->resize(X,Y+l+inputh,itable,H-l-inputh);
 	if (table->mb)
-	  table->mb->resize(X,Y+2*l,itable,H-2*l);
+	  table->mb->resize(X,Y+l+inputh,itable,H-l-inputh);
 	table->graph->resize(X+itable,Y+l,igraph,H-l);
 	/*
 	table->graph->mouse_param_group->resize(X+itg,Y+l,W-itg,H-l);
@@ -3445,14 +3615,14 @@ namespace xcas {
 	table->graph->resize_mouse_param_group(W-itg);
       }
       else { // graph below
-	table->_goto->resize(X,Y+l,W/4,l);
-	table->input->resize(X+W/4,Y+l,3*W/4,l);
+	table->_goto->resize(X,Y+l,W/4,inputh);
+	table->input->resize(X+W/4,Y+l,3*W/4,inputh);
 	int itable=int(H*dtable+.5);
 	int igraph=int(W*dgraph/(dgraph+dparam)+.5);
-	table->resize(X,Y+2*l,W,itable);
+	table->resize(X,Y+l+inputh,W,itable);
 	if (table->mb)
-	  table->mb->resize(X,Y+2*l,W,itable);
-	table->graph->resize(X,Y+2*l+itable,igraph,H-itable-2*l);
+	  table->mb->resize(X,Y+l+inputh,W,itable);
+	table->graph->resize(X,Y+l+inputh+itable,igraph,H-itable-l-inputh);
 	/*
 	int hh=H-itable-2*l;
 	if (hh>8*labelsize())
@@ -3470,11 +3640,11 @@ namespace xcas {
       table->graph->mouse_param_group->show();
     }
     else {
-      table->resize(X,Y+2*l,W,H-2*l);
+      table->resize(X,Y+l+inputh,W,H-l-inputh);
       if (table->mb)
-	table->mb->resize(X,Y+2*l,W,H-2*l);
-      table->_goto->resize(X,Y+l,W/4,l);
-      table->input->resize(X+W/4,Y+l,3*W/4,l);
+	table->mb->resize(X,Y+l+inputh,W,H-(l+inputh));
+      table->_goto->resize(X,Y+l,W/4,inputh);
+      table->input->resize(X+W/4,Y+l,3*W/4,inputh);
       table->graph->resize(X,Y+H,5*W/6,0);
       table->graph->mouse_param_group->resize(X+5*W/6,Y+H,W/6,0);
       table->graph->hide();
@@ -3508,7 +3678,7 @@ namespace xcas {
       if (iscell_range(g,tptr->m,tptr->selected,tptr) ){
 	return extractmatricefromsheet(tptr->selected);
       }
-      return gen(extractmatricefromsheet(tptr->m),_MATRIX__VECT)[g];
+      return  gen(extractmatricefromsheet(tptr->m),_MATRIX__VECT)[g];
     }
     return 0;
   }  
@@ -3524,4 +3694,4 @@ namespace xcas {
 } // namespace xcas
 #endif // ndef NO_NAMESPACE_XCAS
 
-#endif
+#endif // HAVE_LIBFLTK

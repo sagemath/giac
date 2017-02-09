@@ -13,8 +13,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #ifndef _GIAC_MATHML_H
 #define _GIAC_MATHML_H
@@ -26,19 +25,28 @@
 namespace giac { 
 #endif // ndef NO_NAMESPACE_GIAC */
 
-  
-  extern std::string mathml_preamble;
-  extern std::string mathml_end;
-  class gen;
+#ifndef GIAC_HAS_STO_38
+  extern const char mathml_preamble[];
+  extern const char mathml_end[];
+  class gen;  
+  extern const unary_function_ptr * const  at_mathml;
+  gen _mathml(const gen & g,GIAC_CONTEXT);
+  gen _svg(const gen & g,GIAC_CONTEXT);
+  gen _spread2mathml(const gen & g,GIAC_CONTEXT);
   std::string spread2mathml(const matrice & m,int formule,GIAC_CONTEXT);
-  
+  std::string matrix2mathml(const matrice & m,GIAC_CONTEXT);
   std::string gen2mathml(const gen & e,GIAC_CONTEXT);
   std::string gen2mathml(const gen & e, std::string &svg,GIAC_CONTEXT);
   std::string gen2svg(const gen &e,GIAC_CONTEXT);
-  std::string svg_preamble(double width_cm, double height_cm);
+  std::string gen2svg(const gen &e,double xmin,double xmax,double ymin,double ymax,GIAC_CONTEXT);
+  std::string svg_preamble(double width_cm, double height_cm,bool xml=true);
+  std::string svg_preamble(double svg_width_cm, double svg_height_cm,double xmin,double xmax,double ymin,double ymax,bool ortho,bool xml);
   std::string svg_grid();
-  extern std::string svg_end;
-  extern std::string svg_legend; // variable globale
+  std::string svg_grid(double xmin,double xmax,double ymin,double ymax);
+  extern const char svg_end[];
+  std::string ingen2mathml(const gen & g,bool html5,GIAC_CONTEXT);
+
+#endif // RTOS_THREADX
 
 #ifndef NO_NAMESPACE_GIAC 
 } 

@@ -5,9 +5,10 @@ using namespace std;
 using namespace giac;
 
 int main(){
-  cout << "Tapez une fonction a integrer et une variable ";
+  context ct;
+  cout << "Enter two polynomials ";
   gen a,b;
   cin >> a >> b;
-  cout << "La primitive est " << integrate(a,b,0) << endl;
+  cout << "PGCD is " << _gcd(makesequence(a,b),&ct) << endl;
   return 0;
 }

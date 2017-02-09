@@ -10,7 +10,14 @@
 //	The complex styles will be used in the complex table.  Should be basically
 //	the same as Flv_Style with x,y positional data.
 //	======================================================================
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#ifndef IN_GIAC
 #include <giac/first.h>
+#else
+#include "first.h"
+#endif
 #ifdef HAVE_LIBFLTK
 
 #include "Flv_CStyle.H"

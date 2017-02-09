@@ -1,7 +1,14 @@
 // -*- mode:C++ ; compile-command: "g++ -I.. -g -c History.cc" -*-
 #ifndef _HISTORY_H
 #define _HISTORY_H
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#ifndef IN_GIAC
 #include <giac/first.h>
+#else
+#include "first.h"
+#endif
 #ifdef HAVE_LIBFLTK
 #include <FL/Fl_Pack.H>
 #include <FL/Fl_Button.H>
@@ -14,13 +21,26 @@
 #include <FL/Fl_Tabs.H>
 #endif
 #include <string>
+#ifndef IN_GIAC
 #include <giac/giac.h>
+#else
+#include "giac.h"
+#endif
+
+#ifdef HAVE_LIBFLTK
+char *file_chooser(const char *message,const char *pat,const char *fname,int relative=0);
+char *load_file_chooser(const char *message,const char *pat,const char *fname,int relative,bool save);
+#endif
 
 #ifndef NO_NAMESPACE_XCAS
 namespace xcas {
 #endif // ndef NO_NAMESPACE_XCAS
 
 #ifdef HAVE_LIBFLTK
+  void add_recent_filename(const std::string & s,bool writerecent);
+  void read_recent_filenames(Fl_Menu_ * menu); // read xcas_recent and init recent_filenames_menu
+  extern void (*Xcas_load_filename)(const char * filename,bool modified); // set in hist.fl
+
 #define FL_VERT_PALE 167
 #define FL_ROUGE_PALE 211
 
@@ -60,8 +80,12 @@ namespace xcas {
     ~widgetbuf();
   };
   
-
-  class owstream: public std::ostream{
+#ifdef WITH_MYOSTREAM
+  class owstream: public giac::my_ostream
+#else
+  class owstream: public my_ostream
+#endif
+  {
   public:
     Fl_Output * output;
     giac::context * contextptr;
@@ -184,7 +208,9 @@ namespace xcas {
     void update(int n=0); // if eval_below is true, recompute pack
     void next(int hp_pos=0); //  eval next child if eval_below is true
     int set_sel_begin(const Fl_Widget * w);
+    int focus(const Fl_Widget * w) const; // find focus position
     bool focus(int pos,bool dofocus=false); // set focus on input no pos
+    void set_scroller(Fl_Group * gr); // make gr visible by scrolling history pack
   };
 
   // Exported so that we can use it inside Geometry Edit menu
@@ -218,6 +244,7 @@ namespace xcas {
   void History_cb_New_Figure3dx(Fl_Widget* m , void*) ;
   void History_cb_New_Logo(Fl_Widget* m , void*) ;
   void History_cb_New_Equation(Fl_Widget* m , void*) ;
+  void History_cb_New_Xcas_Text_Editor(Fl_Widget* m , void*) ;
   void History_cb_New_Program(Fl_Widget* m , void*) ;
   void History_cb_New_HF(Fl_Widget* m , void*) ;
   void History_cb_Run_Worksheet(Fl_Widget* m , void*) ;
@@ -234,7 +261,7 @@ namespace xcas {
   // if w is an Fl_Input or Equation, put it's value in g
   int parse(Fl_Widget * w,giac::gen & g);
   bool set_gen_value(Fl_Widget * w,const giac::gen & g);
-  bool set_value(Fl_Widget * w,const std::string & s);
+  bool set_value(Fl_Widget * w,const std::string & s,bool exec);
 
   // Get surrounding History_Pack if it exists
   History_Pack * get_history_pack(const Fl_Widget * w);
@@ -312,10 +339,19 @@ namespace xcas {
     // resize all its childrens to the same size
   };
 
+  class DispG_Window:public Fl_Window {
+  public:
+    DispG_Window(int x,int y,int w,int h,const char * l=0):Fl_Window(x,y,w,h,l){}
+    DispG_Window(int x,int y,const char * l=0):Fl_Window(x,y,l){}
+    virtual int handle(int);
+    virtual FL_EXPORT void draw();
+  };
+
   // new_question widget creator
   Fl_Widget * new_question_multiline_input(int W,int H);
   Fl_Widget * new_question_equation(int W,int H);
   Fl_Widget * new_comment_input(int W,int H);
+  Fl_Widget * new_question_editor(int W,int H);
 
   Fl_Widget * new_program(int W,int H,const History_Pack * pack);
   Fl_Widget * new_text_input(int W,int H);

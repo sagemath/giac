@@ -1,6 +1,6 @@
 /* -*- mode:C++  -*-  */
 /*
- *  Copyright (C) 2000 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
+ *  Copyright (C) 2000,2014 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -13,204 +13,23 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #ifndef _GIAC_POLY_H_
 #define _GIAC_POLY_H_
 #include "first.h"
 #include <fstream>
-#include <vector>
+#include "vector.h"
 #include <string>
 #include "fraction.h"
 #include "index.h"
 #include "monomial.h"
+#include "threaded.h"
 #include <algorithm>
 
 #ifndef NO_NAMESPACE_GIAC
 namespace giac {
 #endif // ndef NO_NAMESPACE_GIAC
-
-
-  // note that U may be of type vector of int or an int
-  // + is used to multiply monomials and - to divide
-  // / should return the quotient of the main variable exponent
-  // > should return true if a monomial has main degree >
-  // vars is the list of monomials x,y,z,etc. as translated in U type
-  template<class T,class U>
-  int hashdivrem(const std::vector< T_unsigned<T,U> > & a,const std::vector< T_unsigned<T,U> > & b,std::vector< T_unsigned<T,U> > & q,std::vector< T_unsigned<T,U> > & r,const std::vector<U> & vars,int reduce,double qmax,bool allowrational=true){
-    // cerr << "hashdivrem dim " << vars.size() << " clock " << clock() << endl;
-    q.clear();
-    if (a.empty()){
-      r.clear();
-      return 1;
-    }
-    if (b.empty()){
-      r=a;
-      return 1;
-    }
-    U mainv=vars.front();
-    unsigned mainvar=0;
-    for (; (mainv >>= 1) ;++mainvar)
-      ;
-    int bdeg=b.front().u >> mainvar;
-    int adeg=a.front().u >> mainvar,rdeg;
-    if (adeg<bdeg){
-      r=a;
-      return 1;
-    }
-    U rstop=U(bdeg) << mainvar;
-    typename std::vector< T_unsigned<T,U> >::iterator it,itend,it1,it1end;
-    typename std::vector< T_unsigned<T,U> >::const_iterator it2,it2end,itbbeg=b.begin(),itbend=b.end(),cit,citend;
-    T binv=b.front().g;
-    if (reduce)
-      binv=invmod(binv,reduce);
-    if (b.size()==1){
-      for (cit=a.begin(),citend=a.end();cit!=citend;++cit){
-	if (rstop>cit->u)
-	  break;
-	if (cit->u<b.front().u)
-	  return 0;
-	T qn=reduce?smod(cit->g*binv,reduce):cit->g/binv;
-	if (qmax && qn>qmax)
-	  return -1;
-	if (!reduce && !allowrational && !is_zero(cit->g % binv))
-	  return 0;
-	q.push_back(T_unsigned<T,U>(qn,cit->u-b.front().u));
-      }
-      for (;cit!=citend;++cit)
-	r.push_back(*cit);
-      // cerr << "hashdivrem end dim " << vars.size() << " clock " << clock() << endl;
-      return 1;
-    }
-#ifdef HASH_MAP_NAMESPACE
-    typedef HASH_MAP_NAMESPACE::hash_map< U,T,hash_function_unsigned_object> hash_prod ;
-    std::vector< hash_prod > produit(adeg+1);
-#else
-    typedef std::map<U,T> hash_prod;
-    std::vector< hash_prod > produit(adeg+1); 
-#endif    
-    typename hash_prod::iterator prod_it,prod_itend;
-    hash_prod * hashptr;
-    // find maincoeff of b
-    std::vector< T_unsigned<T,U> > lcoeffb;
-    for (cit=b.begin(),citend=b.end();cit!=citend;++cit){
-      register U u=cit->u;
-      if (rstop>u)
-	break;
-      lcoeffb.push_back(T_unsigned<T,U>(cit->g,u-rstop));
-    }
-    // copy a to remainder
-    for (cit=a.begin(),citend=a.end();cit!=citend;++cit){ 
-      register U u=cit->u; 
-      produit[u >> mainvar][u]=cit->g; 
-    }
-    for (rdeg=adeg;rdeg>=bdeg;--rdeg){
-      if (produit[rdeg].empty())
-	continue;
-      // find degree of remainder and main coeff
-      std::vector< T_unsigned<T,U> > maincoeff,quo,tmp;
-      U ushift=U(rdeg) << mainvar;
-      for (prod_it=produit[rdeg].begin(),prod_itend=produit[rdeg].end();prod_it!=prod_itend;++prod_it){
-	if (!is_zero(prod_it->second))
-	  maincoeff.push_back(T_unsigned<T,U>(prod_it->second,prod_it->first-ushift));
-      }
-      if (maincoeff.empty()) 
-	continue;
-      sort(maincoeff.begin(),maincoeff.end());
-      ushift=U(rdeg-bdeg) << mainvar;
-      // divide maincoeff by lcoeff(b)
-      // this is done by recursion except when univariate
-      if (vars.size()==1){
-	if (lcoeffb.size()!=1 || maincoeff.size()!=1)
-	  return 0;
-	T res;
-	if (reduce)
-	  res=smod(maincoeff.front().g*binv,reduce);
-	else {
-	  res=maincoeff.front().g/binv;
-	  if (qmax && res>qmax)
-	    return -1;
-	  if (!allowrational && !is_zero(maincoeff.front().g%binv) )
-	    return 0;
-	}
-	quo.push_back(T_unsigned<T,U>(res,maincoeff.front().u+ushift));
-	q.push_back(quo.back());
-      }
-      else {
-	int recdivres=hashdivrem(maincoeff,lcoeffb,quo,tmp,std::vector<U>(vars.begin()+1,vars.end()),reduce,qmax,allowrational);
-	if (recdivres!=1)
-	  return recdivres;
-	if (!tmp.empty())
-	  return 0;
-	for (it1=quo.begin(),it1end=quo.end();it1!=it1end;++it1){
-	  it1->u += ushift;
-	  q.push_back(*it1);
-	}
-      }
-      // remainder -= quo*b
-      for (cit=itbbeg;cit!=itbend;++cit){
-	T g,g1=-cit->g;
-	U u,u1=cit->u;
-	// int deg1=u1/mainvar;
-	if (reduce){
-	  for (it2=quo.begin(),it2end=quo.end();it2!=it2end;++it2){
-	    u=u1+it2->u;
-	    register int deg = u >> mainvar; // deg=deg1+it2->u/mainvar;
-	    if (deg<rdeg){
-	      hashptr = &produit[deg];
-	      prod_it=hashptr->find(u);
-	      if (prod_it==hashptr->end())
-		(*hashptr)[u]=(g1*it2->g)%reduce; 
-	      // type_operator_reduce(g1,it2->g,(*hashptr)[u],reduce); 
-	      else {
-		prod_it->second += g1*it2->g;
-		prod_it->second %= reduce;
-		// type_operator_plus_times_reduce(g1,it2->g,prod_it->second,reduce); 
-		if (prod_it->second==0) hashptr->erase(prod_it);
-	      }
-	    }
-	  }
-	}
-	else {
-	  for (it2=quo.begin(),it2end=quo.end();it2!=it2end;++it2){
-	    u=u1+it2->u;
-	    register int deg=u >> mainvar;
-	    if (deg<rdeg){
-	      hashptr = &produit[deg];
-	      prod_it=hashptr->find(u);
-	      if (prod_it==hashptr->end()){
-		type_operator_times(g1,it2->g,(*hashptr)[u]); 
-	      }
-	      else {
-		type_operator_plus_times(g1,it2->g,prod_it->second);	      
-		if (is_zero(prod_it->second)) hashptr->erase(prod_it);
-	      }
-	    }
-	  }
-	}
-      }
-      // end rem -= quo*b
-    }
-    // copy remainder to r and sort
-    unsigned rsize=0;
-    for (int i=0;i<bdeg;++i)
-      rsize += produit[i].size();
-    r.reserve(rsize);
-    T_unsigned<T,U> gu;
-    for (int i=bdeg-1;i>=0;--i){
-      for (prod_it=produit[i].begin(),prod_itend=produit[i].end();prod_it!=prod_itend;++prod_it){
-	if (!is_zero(gu.g=prod_it->second)){
-	  gu.u=prod_it->first;
-	  r.push_back(gu);
-	}
-      }    
-    }
-    // IMPROVE: might do partial sort 
-    sort(r.begin(),r.end());
-    return 1;
-  }
-
 
   // the tensor class to represent polynomial
   template <class T> class tensor{
@@ -220,60 +39,72 @@ namespace giac {
     std::vector< monomial<T> > coord; // sorted list of monomials
     // T zero;
     // functional object sorting function for monomial ordering
-    std::pointer_to_binary_function< const index_t &, const index_t &, bool> is_strictly_greater;
-    std::pointer_to_binary_function < const monomial<T> &, const monomial<T> &, bool> m_is_greater ;
+    bool (* is_strictly_greater)( const index_m &, const index_m &);
+    std::pointer_to_binary_function < const monomial<T> &, const monomial<T> &, bool> m_is_strictly_greater ;
     // constructors
-    tensor(const tensor<T> & t) : dim(t.dim), coord(t.coord), is_strictly_greater(t.is_strictly_greater), m_is_greater(t.m_is_greater) { }
-    tensor(const tensor<T> & t, const std::vector< monomial<T> > & v) : dim(t.dim), coord(v), is_strictly_greater(t.is_strictly_greater), m_is_greater(t.m_is_greater) { }
+    tensor(const tensor<T> & t) : dim(t.dim), coord(t.coord), is_strictly_greater(t.is_strictly_greater), m_is_strictly_greater(t.m_is_strictly_greater) { }
+    tensor(const tensor<T> & t, const std::vector< monomial<T> > & v) : dim(t.dim), coord(v), is_strictly_greater(t.is_strictly_greater), m_is_strictly_greater(t.m_is_strictly_greater) { }
     // warning: this constructor prohibits construction of tensor from a value
     // of type T if this value is an int, except by using tensor<T>(T(int))
-    tensor() : dim(0), is_strictly_greater(lex_is_strictly_greater<int>), m_is_greater(std::ptr_fun(m_lex_is_greater<T>)) { }
-    explicit tensor(int d) : dim(d), is_strictly_greater(lex_is_strictly_greater<int>), m_is_greater(std::ptr_fun(m_lex_is_greater<T>)) { }
-    explicit tensor(int d,const tensor<T> & t) : dim(d),is_strictly_greater(t.is_strictly_greater), m_is_greater(t.m_is_greater)  { }
-    tensor(const monomial<T> & v) : dim(v.index.iptr->size()), is_strictly_greater(lex_is_strictly_greater<int>), m_is_greater(std::ptr_fun(m_lex_is_greater<T>)) { 
+    tensor() : dim(0), is_strictly_greater(i_lex_is_strictly_greater), m_is_strictly_greater(std::ptr_fun<const monomial<T> &, const monomial<T> &, bool>(m_lex_is_strictly_greater<T>)) { }
+    explicit tensor(int d) : dim(d), is_strictly_greater(i_lex_is_strictly_greater), m_is_strictly_greater(std::ptr_fun<const monomial<T> &, const monomial<T> &, bool>(m_lex_is_strictly_greater<T>)) { }
+    explicit tensor(int d,const tensor<T> & t) : dim(d),is_strictly_greater(t.is_strictly_greater), m_is_strictly_greater(t.m_is_strictly_greater)  { }
+    tensor(const monomial<T> & v) : dim(int(v.index.size())), is_strictly_greater(i_lex_is_strictly_greater), m_is_strictly_greater(std::ptr_fun<const monomial<T> &, const monomial<T> &, bool>(m_lex_is_strictly_greater<T>)) { 
       coord.push_back(v);
     }
-    tensor(const T & v, int d) : dim(d), is_strictly_greater(lex_is_strictly_greater<int>), m_is_greater(std::ptr_fun(m_lex_is_greater<T>)) {
+    tensor(const T & v, int d) : dim(d), is_strictly_greater(i_lex_is_strictly_greater), m_is_strictly_greater(std::ptr_fun<const monomial<T> &, const monomial<T> &, bool>(m_lex_is_strictly_greater<T>)) {
       if (!is_zero(v))
 	coord.push_back(monomial<T>(v,0,d));
     }
-    tensor(int d,const std::vector< monomial<T> > & c) : dim(d), coord(c), is_strictly_greater(lex_is_strictly_greater<int>),m_is_greater(std::ptr_fun(m_lex_is_greater<T>)) { }
+    tensor(int d,const std::vector< monomial<T> > & c) : dim(d), coord(c), is_strictly_greater(i_lex_is_strictly_greater),m_is_strictly_greater(std::ptr_fun<const monomial<T> &, const monomial<T> &, bool>(m_lex_is_strictly_greater<T>)) { }
     ~tensor() { coord.clear(); }
     // member functions
     // ordering monomials in the tensor
-    void tsort(){ sort(coord.begin(),coord.end(),m_is_greater); }
+    void tsort(){ 
+#if 1 // def NSPIRE
+      sort_helper<T> M(m_is_strictly_greater);
+      sort(coord.begin(),coord.end(),M); 
+#else
+      sort(coord.begin(),coord.end(),m_is_strictly_greater); 
+#endif
+    }
     int lexsorted_degree() const{ 
       if (!dim)
 	return 0;
       if (coord.empty())
 	return 0;
       else
-	return coord.front().index.iptr->front(); 
+	return coord.front().index.front(); 
     }
     int degree(int n) const ;
     int valuation(int n) const ;
     index_t degree() const ;
-    int sum_degree() const ;
+    int total_degree() const ;
+    int partial_degree(int nvars) const ; // total degree wrt to vars 0..nvars-1
     void reverse() ; // reverse variable ordering
     void append(const tensor<T> &);
+    void Tcoeffs(std::vector< tensor<T> > & v) const;
     std::vector< tensor<T> > Tcoeffs() const;
+    tensor<T> coeff(int deg) const;
     tensor<T> multiplydegrees(int d) const ;
     tensor<T> dividedegrees(int d) const ;
-    void reorder(const index_t & permutation) ;
+    tensor<T> dividealldegrees(int d) const ;
+    void reorder(const std::vector<int> & permutation) ;
     // shift and multiply, shift and divide, shift only
     tensor<T> shift (const index_m & ishift,const T & fois) const ;
     tensor<T> shift (const T & fois,const index_m & ishift) const ;
     tensor<T> shift (const index_m & ishift) const ;
-    void divided_by_x();
     // tensor<T> operator + (const T & other) const ;
     void TAdd(const tensor<T> &other,tensor<T> & result) const;
     // tensor<T> operator - (const tensor<T> & other) const ;
     void TSub(const tensor<T> &other,tensor<T> & result) const;
     // tensor<T> operator * (const tensor<T> & other) const ;
     // tensor<T> operator * (const T & fact) const ;
+    tensor<T> & operator *= (const T & fact) ;
     // tensor<T> operator - () const ;
     // tensor<T> operator / (const tensor<T> & other) const ;
     // tensor<T> operator / (const T & fact) const ;
+    tensor<T> & operator /= (const T & fact) ;
     // tensor<T> operator % (const tensor<T> & other) const ;
     bool TDivRem (const tensor<T> & other, tensor<T> & quo, tensor<T> & rem, bool allowrational = true ) const ; // this=quo*other+rem
     bool TDivRemHash(const tensor<T> & b,tensor<T> & quo,tensor<T> & r,bool allowrational=false,int exactquo=0,double qmax=0.0) const ; // same as TDivRem but allowrationnal=false *and* poly with 1 main variable
@@ -330,17 +161,41 @@ namespace giac {
         s +=  '+' ;
       }
     };
-    void dbgprint() const { std::cout << print() << std::endl; }
+    const char * dbgprint() const { 
+      static std::string s;
+      s=print();
+#if 0 // ndef NSPIRE
+      COUT << s << std::endl; 
+#endif
+      return s.c_str();
+    }
     void high_order_degree_truncate(int n){
       // suppress terms of order >= n
       typename std::vector< monomial<T> >::iterator it=coord.begin(),itend=coord.end();
       for (;it!=itend;++it){
-	if (it->index.iptr->front()<n)
+	if (it->index.front()<n)
 	  break;
       }
       if (it!=coord.begin() && it!=itend)
 	coord.erase(coord.begin(),it);
     }
+    tensor<T> total_degree_truncate(int n) const {
+      tensor<T> res(dim);
+      // suppress terms of total degree > n
+      typename std::vector< monomial<T> >::const_iterator it=coord.begin(),itend=coord.end();
+      for (;it!=itend;++it){
+	if (sum_degree(it->index)<=n)
+	  res.coord.push_back(*it);
+      }
+      return res;
+    }
+  };
+  template <class T> class Tref_tensor{
+  public:
+    ref_count_t ref_count;
+    tensor<T> t;
+    Tref_tensor<T>(const tensor<T> & P): ref_count(1),t(P) {}
+    Tref_tensor<T>(int dim): ref_count(1),t(dim) {}
   };
 
   // convert p to monomial represented by unsigned integers
@@ -348,20 +203,42 @@ namespace giac {
   // (... (a1*deg2+a2)*deg3 +...)*degn+an
   template<class T,class U>
   void convert(const tensor<T> & p,const index_t & deg,std::vector< T_unsigned<T,U> >  & v){
-    typename std::vector< monomial<T> >::const_iterator it=p.coord.begin(),itend=p.coord.end();
+    typename std::vector< monomial<T> >::const_iterator it=p.coord.begin(),itend=p.coord.end(),itstop;
     v.clear();
     v.reserve(itend-it);
     T_unsigned<T,U> gu;
     U u;
-    index_t::const_iterator itit,ditbeg=deg.begin(),ditend=deg.end(),dit;
+    int nterms;
+    index_t::const_iterator itit,itcur,idxcur,idxend,ditbeg=deg.begin(),ditend=deg.end(),dit;
     for (;it!=itend;++it){
       u=0;
-      itit=it->index.iptr->begin();
+      itcur=itit=it->index.begin();
       for (dit=ditbeg;dit!=ditend;++itit,++dit)
 	u=u*unsigned(*dit)+unsigned(*itit);
       gu.u=u;
       gu.g=it->value;
       v.push_back(gu);
+      // dense poly check 
+      --itit;
+      nterms=*itit;
+      if (nterms<2 || nterms>=itend-it)
+	continue;
+      itstop=it+nterms;
+      if (itstop->index.back())
+	continue;
+      for (idxcur=itstop->index.begin(),idxend=itstop->index.end()-1;idxcur!=idxend;++idxcur,++itcur){
+	if (*idxcur!=*itcur)
+	  break;
+      }
+      if (idxcur!=idxend)
+	continue;
+      // this part is dense
+      for (;it!=itstop;){
+	++it;
+	gu.g=it->value;
+	--gu.u;
+	v.push_back(gu);
+      }
     }
   }
 
@@ -390,26 +267,18 @@ namespace giac {
     return p.dim==q.dim && p.coord.size()==q.coord.size() && p.coord==q.coord;
   }
 
-  template <class T> bool tensor_is_greater(const tensor<T> & p,const tensor<T> & q){
+  template <class T> bool tensor_is_strictly_greater(const tensor<T> & p,const tensor<T> & q){
     if (q.coord.empty())
       return true;
     if (p.coord.empty())
       return false;
-    return p.m_is_greater(p.coord.front(),q.coord.front());
-  }
-
-  template <class T> bool operator >= (const tensor<T> & p,const tensor<T> & q){
-    return tensor_is_greater(p,q);
-  }
-
-  template <class T> bool operator <= (const tensor<T> & p,const tensor<T> & q){
-    return tensor_is_greater(q,p);
+    return p.m_is_strictly_greater(p.coord.front(),q.coord.front());
   }
 
   template <class T>
   void tensor<T>::insert_monomial(const monomial<T> & c){
     coord.push_back(c);
-    sort(coord.begin(),coord.end(),m_is_greater);
+    this->tsort(); // sort(coord.begin(),coord.end(),m_is_strictly_greater);
   }
 
   template <class T>
@@ -418,7 +287,7 @@ namespace giac {
     typename std::vector< monomial<T> >::const_iterator it_end=this->coord.end();
     int res=0;
     for (;it!=it_end;++it){
-      int temp=(* it->index.iptr)[n];
+      int temp=(it->index)[n];
       if (res<temp)
 	res=temp;
     }
@@ -426,12 +295,29 @@ namespace giac {
   }
 
   template <class T>
-  int tensor<T>::sum_degree() const {
+  int tensor<T>::total_degree() const {
     typename std::vector< monomial<T> >::const_iterator it=this->coord.begin();
     typename std::vector< monomial<T> >::const_iterator it_end=this->coord.end();
     int res=0;
     for (;it!=it_end;++it){
-      int temp=total_degree(it->index);
+      int temp=sum_degree(it->index);
+      if (res<temp)
+	res=temp;
+    }
+    return res;
+  }
+
+  template <class T>
+  int tensor<T>::partial_degree(int vars) const {
+    typename std::vector< monomial<T> >::const_iterator it=this->coord.begin();
+    typename std::vector< monomial<T> >::const_iterator it_end=this->coord.end();
+    int res=0;
+    for (;it!=it_end;++it){
+      int temp=0;
+      index_t::const_iterator jt=it->index.begin(),jtend=jt+vars;
+      for (;jt!=jtend;++jt){
+	temp += *jt;
+      }
       if (res<temp)
 	res=temp;
     }
@@ -444,9 +330,9 @@ namespace giac {
     typename std::vector< monomial<T> >::const_iterator it_end=this->coord.end();
     if (it==it_end)
       return 0;
-    int res=(* it->index.iptr)[n];
+    int res=(it->index)[n];
     for (;it!=it_end;++it){
-      int temp=(* it->index.iptr)[n];
+      int temp=(it->index)[n];
       if (res>temp)
 	res=temp;
     }
@@ -455,15 +341,46 @@ namespace giac {
 
   template <class T>
   index_t tensor<T>::degree() const {
-    typename std::vector< monomial<T> >::const_iterator it=this->coord.begin();
+    typename std::vector< monomial<T> >::const_iterator it=this->coord.begin(),it2;
     typename std::vector< monomial<T> >::const_iterator it_end=this->coord.end();
     index_t res(dim);
-    index_t::iterator itresbeg=res.begin(),itresend=res.end(),ittemp,itres;
-    for (;it!=it_end;++it){
-      ittemp=it->index.iptr->begin();
-      for (itres=itresbeg;itres!=itresend;++itres,++ittemp){
-	if (*itres<*ittemp)
-	  *itres=*ittemp;
+    if (!dim) return res;
+    index_t::iterator itresbeg=res.begin(),itresend=res.end(),itres;
+    index_t::const_iterator ittemp,ittemp2,ittempend;
+    if (// false &&
+	is_strictly_greater==i_lex_is_strictly_greater){
+      for (;it!=it_end;++it){
+	ittemp=it->index.begin();
+	for (itres=itresbeg;itres!=itresend;++itres,++ittemp){
+	  if (*itres<*ittemp)
+	    *itres=*ittemp;
+	}
+	// check if the polynomial is dense -> skip ?
+	--ittemp; // point to xn power
+	if (*ittemp<3 || *ittemp>=it_end-it)
+	  continue;
+	it2=it+(*ittemp); // if dense, point to the last monomial with same x1..xn-1 
+	if (it2->index.back()) // last power in xn must be 0
+	  continue;
+	ittemp=it->index.begin();
+	ittemp2=it2->index.begin();
+	ittempend=ittemp+dim-1; // check all other powers
+	for (;ittemp!=ittempend;++ittemp2,++ittemp){
+	  if (*ittemp!=*ittemp2)
+	    break;
+	}
+	if (ittemp!=ittempend)
+	  continue;
+	it=it2;
+      }
+    }
+    else {
+      for (;it!=it_end;++it){
+	ittemp=it->index.begin();
+	for (itres=itresbeg;itres!=itresend;++itres,++ittemp){
+	  if (*itres<*ittemp)
+	    *itres=*ittemp;
+	}
       }
     }
     return res;
@@ -478,7 +395,7 @@ namespace giac {
       this->coord=p.coord;
       return;
     }
-    if (is_strictly_greater(*this->coord.back().index.iptr , *p.coord.front().index.iptr)){
+    if (is_strictly_greater(this->coord.back().index , p.coord.front().index)){
       this->coord.reserve(this->coord.size()+p.coord.size());
       typename std::vector< monomial<T> >::const_iterator it=p.coord.begin();
       typename std::vector< monomial<T> >::const_iterator it_end=p.coord.end();
@@ -486,7 +403,7 @@ namespace giac {
 	this->coord.push_back(*it);
     }
     else
-      *this=*this+p;
+      TAdd(p,*this); // *this=*this+p;
   }
 
   template <class T>
@@ -494,7 +411,7 @@ namespace giac {
     tensor<T> res(dim);
     typename std::vector< monomial<T> >::const_iterator it=coord.begin(),it_end=coord.end();
     for (;it!=it_end;++it){
-      index_t i=*it->index.iptr;
+      index_t i=it->index.iref();
       i.front() *= d;
       res.coord.push_back(monomial<T>(it->value,i));
     }
@@ -506,8 +423,20 @@ namespace giac {
     tensor<T> res(dim);
     typename std::vector< monomial<T> >::const_iterator it=coord.begin(),it_end=coord.end();
     for (;it!=it_end;++it){
-      index_t i=*it->index.iptr;
+      index_t i=it->index.iref();
       i.front() /= d;
+      res.coord.push_back(monomial<T>(it->value,i));
+    }
+    return res;
+  }
+
+  template <class T>
+  tensor<T> tensor<T>::dividealldegrees(int d) const {
+    tensor<T> res(dim);
+    typename std::vector< monomial<T> >::const_iterator it=coord.begin(),it_end=coord.end();
+    for (;it!=it_end;++it){
+      index_t i=it->index.iref();
+      i = i/d;
       res.coord.push_back(monomial<T>(it->value,i));
     }
     return res;
@@ -515,7 +444,7 @@ namespace giac {
 
   template <class T> 
   int tensor<T>::position(const index_m & v) const {
-    int smax=coord.size()-1;
+    int smax=int(coord.size())-1;
     int smin=0;
     int s;
     for (;smin<smax;){
@@ -523,7 +452,7 @@ namespace giac {
       index_m vs=coord[s].index;
       if (v==vs)
 	break;
-      if (is_strictly_greater(*v.iptr,*vs.iptr)) // if v > v[s] must start above smin+1
+      if (is_strictly_greater(v,vs)) // if v > v[s] must start above smin+1
 	smax=s-1; // same
       else 
 	smin=s+1; // keeps smin <=smax
@@ -553,7 +482,7 @@ namespace giac {
 
   template<class T>  
   const T & tensor<T>::operator () ( const index_m & v) const{
-    static T myzero(0);
+    static T const myzero(0);
     int p=position(v);
     if (p==-1) {
       return myzero;
@@ -571,7 +500,12 @@ namespace giac {
 
   template <class T>
   void lexsort(std::vector < monomial<T> > & v){
-    sort(v.begin(),v.end(),std::ptr_fun(m_lex_is_greater<T>));
+#if 1 // def NSPIRE
+    sort_helper<T> M(std::ptr_fun<const monomial<T> &, const monomial<T> &, bool>(m_lex_is_strictly_greater<T>));
+    sort(v.begin(),v.end(),M);
+#else
+    sort(v.begin(),v.end(),std::ptr_fun<const monomial<T> &, const monomial<T> &, bool>(m_lex_is_strictly_greater<T>));
+#endif
   }
 
 
@@ -582,7 +516,7 @@ namespace giac {
     int res=0;
     typename std::vector< monomial<T> >::const_iterator it=coord.begin(),itend=coord.end();
     for (;it!=itend;++it){
-      res=mygcd((*it->index.iptr)[k],res);
+      res=mygcd((it->index)[k],res);
       if (res==1)
 	break;
     }
@@ -593,10 +527,10 @@ namespace giac {
   index_t tensor<T>::gcddeg() const {
     typename std::vector< monomial<T> >::const_iterator it=coord.begin(),itend=coord.end();
     assert(itend!=it);
-    index_t res(*it->index.iptr);
+    index_t res(it->index.iref());
     index_t zero(res.size());
     for (;it!=itend;++it){
-      res=index_gcd(*it->index.iptr,res);
+      res=index_gcd(it->index.iref(),res);
       if (res==zero)
 	break;
     }
@@ -623,16 +557,16 @@ namespace giac {
     typename std::vector< monomial<T> >::const_iterator it = horner_coord.begin();
     index_m pui=it->index;
     for (;it!=horner_coord.end();++it){
-    if (pui.iptr->front()==it->index.iptr->front()) { 
+    if (pui.front()==it->index.front()) { 
     // same external power, add
     add_rem.coord.push_back(it->trunc1());
     add_quo.coord.push_back(*it);
     }
     else {      // different power do an Horner *
-    rem=(rem+add_rem)*pow(x0,pui.iptr->front()-it->index.iptr->front());
+    rem=(rem+add_rem)*pow(x0,pui.front()-it->index.front());
     add_rem.coord.clear();
     add_rem.coord.push_back(it->trunc1());
-    for (;pui.front()> it->index.iptr->front();){
+    for (;pui.front()> it->index.front();){
     pui[0]--;
     add_quo.divided_by_x();
     add_quo=add_quo*x0;
@@ -642,7 +576,7 @@ namespace giac {
     pui=it->index;
     }
     }
-    rem=(rem+add_rem)*pow(x,pui.iptr->front());
+    rem=(rem+add_rem)*pow(x,pui.front());
     for (;pui.front();){
     pui[0]--;
     add_quo.divided_by_x();
@@ -672,20 +606,29 @@ namespace giac {
     typename std::vector< monomial<T> >::const_iterator it = horner_coord.begin();
     index_m pui=(*it).index;
     for (;it!=horner_coord.end();++it){
-      if (pui.iptr->front()==it->index.iptr->front()) { 
+      if (pui.front()==it->index.front()) { 
 	// same external power, add
 	add_rem.coord.push_back(it->trunc1());
       }
       else {      // different power do an Horner *
-	rem=(add_rem+rem)*pow(x0,pui.iptr->front()-it->index.iptr->front());
+#ifndef NSPIRE // GIAC_VECTOR
+	rem.TAdd(add_rem,rem); rem *= pow(x0,pui.front()-it->index.front()); 
+#else
+	rem =(add_rem+rem)*pow(x0,pui.front()-it->index.front());
+#endif
 	add_rem.coord.clear();
 	add_rem.coord.push_back(it->trunc1());
 	pui=it->index;
       }
     }
-    rem=(add_rem+rem);
-    if (pui.iptr->front())
-      rem = rem*pow(x0,pui.iptr->front());
+    rem.TAdd(add_rem,rem); // rem=(add_rem+rem);
+    if (pui.front()){
+#ifndef NSPIRE // GIAC_VECTOR
+      rem *= pow(x0,pui.front());
+#else
+      rem = rem*pow(x0,pui.front());
+#endif
+    }
     rem.tsort();
     return rem;
   }
@@ -772,27 +715,13 @@ namespace giac {
     }
 
     template <class T>
-    tensor<T> tensor<T>::operator * (const T & fact ) const {  
-    // Tensor constant multiplication
-    if (fact==T(1))
-    return *this;
-    std::vector< monomial<T> > new_coord;
-    if (fact==zero)
-    return tensor<T>(*this,new_coord);
-    typename std::vector< monomial<T> >::const_iterator a = coord.begin();
-    typename std::vector< monomial<T> >::const_iterator a_end = coord.end();
-    Mul(a,a_end,fact,new_coord);
-    return tensor<T>(*this,new_coord);
-    }
-
-    template <class T>
     tensor<T> tensor<T>::operator * (const tensor<T> & other) const {  
     // Multiplication
     typename std::vector< monomial<T> >::const_iterator ita = coord.begin();
     typename std::vector< monomial<T> >::const_iterator ita_end = coord.end();
     typename std::vector< monomial<T> >::const_iterator itb = other.coord.begin();
     typename std::vector< monomial<T> >::const_iterator itb_end = other.coord.end();
-    //  std::cout << coord.size() << " " << (int) ita_end - (int) ita << " " << sizeof(monomial<T>) << std::endl ;
+    //  COUT << coord.size() << " " << (int) ita_end - (int) ita << " " << sizeof(monomial<T>) << std::endl ;
     // first some trivial cases
     if (ita==ita_end)
     return(*this);
@@ -812,7 +741,7 @@ namespace giac {
     return(this->shift(other.coord.front().index,other.coord.front().value));
     std::vector< monomial<T> > new_coord;
     new_coord.reserve(c1+c2); // assumes dense poly (would be c1+c2-1)
-    Mul(ita,ita_end,itb,itb_end,new_coord,m_is_greater);
+    Mul(ita,ita_end,itb,itb_end,new_coord,m_is_strictly_greater);
     return tensor<T>(*this,new_coord);
     }
 
@@ -820,16 +749,18 @@ namespace giac {
 
   template <class T>
   tensor<T> Tpow(const tensor<T> & x,int n){
+#ifndef NO_STDEXCEPT
     if (n<0)
       setsizeerr("poly.h/Tpow n<0");
-    if (x.coord.size()==1)
-      return tensor<T>(monomial<T>(pow(x.coord.front().value,n),x.coord.front().index*n));
+#endif
     if (!n)
       return tensor<T>(T(1),x.dim);
     if (n==1)
       return x;
     if (n==2)
       return x*x;
+    if (x.coord.size()==1)
+      return tensor<T>(monomial<T>(pow(x.coord.front().value,n),x.coord.front().index*n));
     tensor<T> res(x);
     for (int j=1;j<n;j++)
       res=res*x;
@@ -860,32 +791,82 @@ namespace giac {
     return(quo);
     }
 
-    template <class T>
-    tensor<T> tensor<T>::operator / (const T & fact ) const {  
-    if (fact==T(1))
+  template <class T>
+  tensor<T> tensor<T>::operator % (const tensor<T> & other) const {  
+    tensor<T> rem(*this),quo(*this);
+    assert( (*this).TDivRem(other,quo,rem) );
+    return(rem);
+  }
+  
+  */
+
+  /*
+  template <class T>
+  tensor<T> tensor<T>::operator * (const T & fact ) const {  
+    // Tensor constant multiplication
+    if (is_one(fact))
+      return *this;
+    std::vector< monomial<T> > new_coord;
+    if (is_zero(fact))
+      return tensor<T>(*this,new_coord);
+    typename std::vector< monomial<T> >::const_iterator a = coord.begin();
+    typename std::vector< monomial<T> >::const_iterator a_end = coord.end();
+    Mul(a,a_end,fact,new_coord);
+    return tensor<T>(*this,new_coord);
+  }
+
+  inline template <class T>
+  tensor<T> operator * (const T & fact ,const tensor<T> & p){
+    return p*fact;
+  }
+  */
+
+  template <class T>
+  tensor<T> & tensor<T>::operator *= (const T & fact ) {  
+    // Tensor constant multiplication
+    if (is_one(fact))
+      return *this;
+    if (is_zero(fact)){
+      coord.clear();
+      return *this;
+    }
+    typename std::vector< monomial<T> >::const_iterator a = coord.begin();
+    typename std::vector< monomial<T> >::const_iterator a_end = coord.end();
+    Mul<T>(a,a_end,fact,coord);
     return *this;
+  }
+
+  /*
+  template <class T>
+  tensor<T> tensor<T>::operator / (const T & fact ) const {  
+    if (is_one(fact))
+      return *this;
     std::vector< monomial<T> > new_coord;
     typename std::vector< monomial<T> >::const_iterator a = coord.begin();
     typename std::vector< monomial<T> >::const_iterator a_end = coord.end();
     Div(a,a_end,fact,new_coord);
     return tensor<T>(*this,new_coord);
-    }
-
-    template <class T>
-    tensor<T> tensor<T>::operator % (const tensor<T> & other) const {  
-    tensor<T> rem(*this),quo(*this);
-    assert( (*this).TDivRem(other,quo,rem) );
-    return(rem);
-    }
+  }
   */
+
+  template <class T>
+  tensor<T> & tensor<T>::operator /= (const T & fact ) {  
+    if (is_one(fact))
+      return *this;
+    typename std::vector< monomial<T> >::const_iterator a = coord.begin();
+    typename std::vector< monomial<T> >::const_iterator a_end = coord.end();
+    Div<T>(a,a_end,fact,coord);
+    return *this;
+  }
 
   template<class T>
   tensor<T> Tnextcoeff(typename std::vector< monomial<T> >::const_iterator & it,const typename std::vector< monomial<T> >::const_iterator & itend){
-    assert(it!=itend);
-    int n=it->index.iptr->front();
-    int d=it->index.iptr->size();
+    if (it==itend)
+      return tensor<T>(0);
+    int n=it->index.front();
+    int d=int(it->index.size());
     tensor<T> res(d-1);
-    for (;(it!=itend) && (it->index.iptr->front()==n);++it)
+    for (;(it!=itend) && (it->index.front()==n);++it)
       res.coord.push_back(it->trunc1());
     return res;
   }
@@ -895,14 +876,14 @@ namespace giac {
     assert(itbeg!=itend);
     typename std::vector< monomial<T> >::const_iterator it=itend;
     --it;
-    int n=it->index.iptr->front();
-    int d=it->index.iptr->size();
+    int n=it->index.front();
+    int d=int(it->index.size());
     tensor<T> res(d-1);
     for (;;){
       if (it==itbeg)
 	break;
       --it;
-      if (it->index.iptr->front()!=n){
+      if (it->index.front()!=n){
 	++it;
 	break;
       }
@@ -956,14 +937,14 @@ namespace giac {
 	return r.coord.empty();
       return true;
     }
-    int bdeg=it->index.iptr->front(),bval=(itend-1)->index.iptr->front(),rdeg;
-    tensor<T> b0(Tnextcoeff<T>(it,b.coord.end())),bn(b0.dim);
-    tensor<T> q(b0.dim),qn(b0.dim);
+    int bdeg=it->index.front(),rdeg=r.lexsorted_degree(),qdeg=rdeg-bdeg; // int bval=(itend-1)->index.front();
+    tensor<T> b0(Tnextcoeff<T>(it,b.coord.end()));
+    tensor<T> q(b0.dim);
     if (it==b.coord.end()){ // bn==b0, b=b0*main var to a power
       it=r.coord.begin();
       itend=r.coord.end();
       while ( it!=itend){
-	rdeg=it->index.iptr->front();
+	rdeg=it->index.front();
 	if (rdeg<bdeg)
 	  break;
 	tensor<T> a0(Tnextcoeff<T>(it,itend)),tmp(a0.dim);
@@ -977,20 +958,50 @@ namespace giac {
 	return it==itend;
       return true;
     }
-    // if (exactquo) bn=Tlastcoeff<T>(it,itend);
-    for ( int count=0;(rdeg=r.lexsorted_degree()) >=bdeg;){
+    tensor<T> q1,b1(b0.dim); // subprincipal coeff
+    if (it->index.front()==bdeg-1)
+      b1=Tnextcoeff<T>(it,b.coord.end()); 
+    // here it might be improved by checking that lastcoeff divides
+#if 1
+    if (exactquo){
+      tensor<T> bn=Tlastcoeff<T>(b.coord.begin(),b.coord.end());
+      tensor<T> an(Tlastcoeff<T>(a.coord.begin(),a.coord.end())),qn;
+      if (!an.Texactquotient(bn,qn,allowrational))
+	return false;
+    }
+#endif
+    for ( ;(rdeg=r.lexsorted_degree()) >=bdeg;){
       it=r.coord.begin();
       itend=r.coord.end();
-      tensor<T> a0(Tnextcoeff<T>(it,itend)),an(a0.dim);
+      // compute 2 terms of the quotient in one iteration,
+      // this will save one long substraction
+      tensor<T> a0(Tnextcoeff<T>(it,itend)),a1(a0.dim);
       if (exactquo && it==itend)
 	return false;
       if (!a0.Texactquotient(b0,q,allowrational))
 	return false;
-      q=q.untrunc1(rdeg-bdeg);
+      qdeg=rdeg-bdeg;
+      if (qdeg){
+	if (it!=itend && it->index.front()==rdeg-1)
+	  a1=Tnextcoeff<T>(it,itend);
+#if defined GIAC_VECTOR || defined NSPIRE // fix for * on arm compiler
+	tensor<T> tmp(q.dim);
+	tmp.coord=q.coord*b1.coord;
+	a1.TSub(tmp,a1);
+#else
+	a1.TSub(q*b1,a1); // a1=a1-q*b1; 
+#endif
+	q=q.untrunc1(qdeg);
+	if (!a1.Texactquotient(b0,q1,allowrational))
+	  return false;
+	q.TAdd(q1.untrunc1(qdeg-1),q); // q=q+q1.untrunc1(qdeg-1);
+      }
+      else
+	q=q.untrunc1(qdeg);	
       /*
       if (exactquo){
 	tensor<T> an(Tlastcoeff<T>(it,itend));
-	int rval=(itend-1)->index.iptr->front();
+	int rval=(itend-1)->index.front();
 	if (rval-bval<rdeg-bdeg){
 	  if (rval<bval+count) // we must gain one valuation per loop
 	    return false;
@@ -1001,8 +1012,14 @@ namespace giac {
 	}
       }
       */
-      quo=quo+q;
-      r=r-q*b;
+      quo.TAdd(q,quo); // quo=quo+q;
+#if defined GIAC_VECTOR || defined NSPIRE
+      tensor<T> tmp(q.dim);
+      tmp.coord=q.coord*b.coord;
+      r.TSub(tmp,r); // r=r-q*b;       
+#else
+      r.TSub(q*b,r); // r=r-q*b; 
+#endif
       if (r.coord.empty())
 	return true;
     }
@@ -1023,9 +1040,9 @@ namespace giac {
     if ( b.dim<=1 || bs==1 || a.coord.empty() ){
       return a.TDivRem(b,quo,r,allowrational) && (exactquo?r.coord.empty():true) ;
     }
-    int bdeg=b.coord.front().index.iptr->front(),rdeg=lexsorted_degree(),ddeg=rdeg-bdeg;
+    int bdeg=b.coord.front().index.front(),rdeg=lexsorted_degree(),ddeg=rdeg-bdeg;
     if (ddeg>2 && bs>10){
-      index_t d1=degree(),d2=b.degree(),d3=*b.coord.front().index.iptr,d(dim);
+      index_t d1=degree(),d2=b.degree(),d3=b.coord.front().index.iref(),d(dim);
       // i-th degrees of th / other in quotient and remainder
       // are <= i-th degree of th + ddeg*(i-th degree of other - i-th degree of lcoeff of other) 
       double ans=1;
@@ -1078,17 +1095,43 @@ namespace giac {
     return TDivRem1(b,quo,r,allowrational,exactquo);
   }
 
+  template<class T> tensor<T> tensor<T>::coeff(int deg) const {
+    tensor<T> res(dim-1);
+    typename std::vector< monomial<T> >::const_iterator it=coord.begin(),itend=coord.end();
+    for (;it!=itend;++it){
+      int d=it->index.front();
+      if (d>deg)
+	continue;
+      if (d==deg)
+	return Tnextcoeff<T>(it,itend);
+      else
+	return res;
+    }
+    return res;
+  }
+
+  template<class T>
+  void tensor<T>::Tcoeffs(std::vector< tensor<T> > & v) const{
+    int current_deg=lexsorted_degree();
+    std::vector< tensor<T> > w(current_deg+1,dim-1);
+    typename std::vector< monomial<T> >::const_iterator it=coord.begin(),itend=coord.end();
+    for (;it!=itend;++it){
+      w[current_deg-it->index.front()].coord.push_back(it->trunc1());
+    }
+    w.swap(v);
+  }
 
   template<class T>
   std::vector< tensor<T> > tensor<T>::Tcoeffs() const{
     int current_deg=lexsorted_degree();
     std::vector< tensor<T> > v;
+    v.reserve(current_deg+1);
     typename std::vector< monomial<T> >::const_iterator it=coord.begin(),itend=coord.end();
     for (;it!=itend;--current_deg){
-      if (it->index.iptr->front()==current_deg){
+      if (it->index.front()==current_deg){
 	v.push_back(Tnextcoeff<T>(it,itend));
       }
-      else
+      else 
 	v.push_back(tensor<T>(dim-1));
     }
     for (;current_deg>=0;--current_deg) v.push_back(tensor<T>(dim-1));
@@ -1102,8 +1145,16 @@ namespace giac {
       return true;
     }
     if (*this==b){
-      quo=tensor<T>(1,dim);
+      quo=tensor<T>(T(1),dim);
       return true;
+    }
+    if (dim>1 && !allowrational && lexsorted_degree()==b.lexsorted_degree()){
+      if (!Tfirstcoeff(*this).trunc1().Texactquotient(Tfirstcoeff(b).trunc1(),quo,allowrational))
+	return false;
+      quo=quo.untrunc1();
+      if (is_one(quo))
+	return false; // already tested above
+      return *this==quo*b;
     }
     tensor<T> r(b.dim);
     return this->TDivRem1(b,quo,r,allowrational,1);
@@ -1111,13 +1162,13 @@ namespace giac {
 
   template <class T>
   bool tensor<T>::TDivRem (const tensor<T> & other, tensor<T> & quo, tensor<T> & rem, bool allowrational ) const {  
-    int asize=(*this).coord.size();
+    int asize=int((*this).coord.size());
     if (!asize){
       quo=*this;
       rem=*this; 
       return true;
     }
-    int bsize=other.coord.size();
+    int bsize=int(other.coord.size());
     if (!bsize){
       quo.dim=dim; quo.coord.clear();
       rem=*this;
@@ -1161,7 +1212,7 @@ namespace giac {
     rem=*this;
     if ( ! (a_max>=b_max) ){
       // test that the first power of a_max is < to that of b_max
-      return (a_max.iptr->front()<b_max.iptr->front());
+      return (a_max.front()<b_max.front());
     }
     T b=other.coord.front().value;
     while (a_max >= b_max){
@@ -1174,8 +1225,8 @@ namespace giac {
       }
       // end error trapping
       quo.coord.push_back(monomial<T>(q,a_max-b_max));
-      tensor<T> temp=other.shift(a_max-b_max,q);
-      rem = rem-temp;
+      const tensor<T> & temp=other.shift(a_max-b_max,q);
+      rem.TSub(temp,rem); // rem = rem-temp;
       if (rem.coord.size())
 	a_max=rem.coord.front().index;
       else
@@ -1188,7 +1239,8 @@ namespace giac {
   bool tensor<T>::TPseudoDivRem (const tensor<T> & other, tensor<T> & quo, tensor<T> & rem, tensor<T> & a) const {
     int m=this->lexsorted_degree();
     int n=other.lexsorted_degree();
-    a=tensor<T>(T(1),a.dim);
+    a.coord.clear();
+    a.coord.push_back(monomial<T>(T(1),a.dim));
     rem=*this;
     quo.coord.clear();
     if (m<n)
@@ -1198,17 +1250,42 @@ namespace giac {
     index_m ishift(dim);
     tensor<T> b0(Tfirstcoeff(other));
     for (int i=m;i>=n;--i){
+#ifdef NSPIRE
       a=a*b0;
       quo=quo*b0;
+#else
+#ifdef GIAC_VECTOR
+      a.coord *= b0.coord; // a.coord = a.coord*b0.coord; // a=a*b0;
+      quo.coord *= b0.coord; // quo.coord = quo.coord*b0.coord; // quo=quo*b0;
+#else
+      a *= b0; // a=a*b0
+      quo *= b0; // quo=quo*b0
+#endif // GIAC_VECTOR
+#endif // NSPIRE
       typename std::vector< monomial<T> >::const_iterator it=rem.coord.begin(),itend=rem.coord.end();
-      if (it==itend || it->index.iptr->front()!=i){
+      if (it==itend || it->index.front()!=i){
+#ifdef NSPIRE
 	rem=rem*b0;
+#else
+#ifdef GIAC_VECTOR
+	rem.coord *= b0.coord; // rem.coord = rem.coord*b0.coord; // rem=rem*b0;
+#else
+	rem *= b0; // rem=rem*b0;
+#endif
+#endif // NSPIRE
 	continue;
       }
-      ishift.iptr->front()=i-n;
+      ishift.front()=i-n;
       const tensor<T> & rem0 = Tfirstcoeff(rem).shift(ishift);
       quo.append(rem0);
+#if defined GIAC_VECTOR || defined NSPIRE
+      rem.coord = rem.coord*b0.coord; 
+      tensor<T> tmp(rem0.dim);
+      tmp.coord=rem0.coord*other.coord;
+      rem.TSub(tmp,rem); // rem=rem*b0-rem0*other;
+#else
       rem=rem*b0-rem0*other;
+#endif
     }
     return true;
   }
@@ -1246,12 +1323,6 @@ namespace giac {
   }
 
   template <class T>
-  void tensor<T>::divided_by_x(){
-    for (typename std::vector< monomial<T> >::const_iterator it=coord.begin();it!=coord.end();++it)
-      (*it).divided_by_x();
-  }
-
-  template <class T>
   void tensor<T>::reverse() {
     typename std::vector< monomial<T> >::const_iterator itend=coord.end();
     for (typename std::vector< monomial<T> >::iterator it=coord.begin();it!=itend;++it)
@@ -1282,9 +1353,10 @@ namespace giac {
   }
 
   template<class T>
-  T Tppz(tensor<T> & p){
+  T Tppz(tensor<T> & p,bool divide=true){
     T n=Tcontent(p);
-    p=p/n;
+    if (divide)
+      p /= n;
     return T(n);
   }
 
@@ -1294,7 +1366,9 @@ namespace giac {
       return false;
     if (!is_one(p.coord.front().value))
       return false;
-    for (index_t::const_iterator it=p.coord.front().index.iptr->begin();it!=p.coord.front().index.iptr->end() ;++it){
+    const index_m & i = p.coord.front().index;
+    index_t::const_iterator it=i.begin(),itend=i.end();
+    for (;it!=itend ;++it){
       if ((*it)!=0)
 	return false;
     }
@@ -1305,7 +1379,9 @@ namespace giac {
   bool Tis_constant(const tensor<T> & p){
     if (p.coord.size()!=1)
       return false;
-    for (index_t::const_iterator it=p.coord.front().index.iptr->begin();it!=p.coord.front().index.iptr->end() ;++it){
+    const index_m & i = p.coord.front().index;
+    index_t::const_iterator it=i.begin(),itend=i.end();
+    for (;it!=itend ;++it){
       if ((*it)!=0)
 	return false;
     }
@@ -1342,6 +1418,8 @@ namespace giac {
       pgcd=p;
       return ;
     } 
+    if (Tis_one(pgcd))
+      return;
     pgcd=pgcd.trunc1();
     typename std::vector< monomial<T> >::const_iterator it=p.coord.begin();
     typename std::vector< monomial<T> >::const_iterator itend=p.coord.end();
@@ -1354,7 +1432,7 @@ namespace giac {
     if (pgcd.coord.empty()){
       index_m i;
       for (int j=0;j<p.dim;j++)
-	i.iptr->push_back(0);
+	i.push_back(0);
       pgcd.coord.push_back(monomial<T>(T(1),i));
       ++pgcd.dim;
     }
@@ -1364,6 +1442,10 @@ namespace giac {
 
   template<class T>
   tensor<T> Tlgcd(const tensor<T> & p){
+    if (p.dim==1){
+      const T & c=Tcontent(p);
+      return tensor<T>(c,1);
+    }
     tensor<T> pgcd(p.dim); // pgcd=0
     Tlgcd(p,pgcd);
     return pgcd;
@@ -1399,7 +1481,7 @@ namespace giac {
     if (pgcd.coord.empty()){
       index_m i;
       for (int j=0;j<p.dim;j++)
-	i.iptr->push_back(0);
+	i.push_back(0);
       pgcd.coord.push_back(monomial<T>(T(1),i));
     }
     else
@@ -1410,9 +1492,9 @@ namespace giac {
   template<class T>
   tensor<T> Tcarcomp(const tensor<T> & p){
     typename std::vector< monomial<T> >::const_iterator it=p.coord.begin();
-    int n=it->index.iptr->front();
+    int n=it->index.front();
     tensor<T> res(p.dim);
-    for (;n==it->index.iptr->front();++it)
+    for (;n==it->index.front();++it)
       res.coord.push_back(monomial<T>(it->value,it->index));
     return res;
   }
@@ -1421,10 +1503,12 @@ namespace giac {
   tensor<T> Tfirstcoeff(const tensor<T> & p){
     typename std::vector< monomial<T> >::const_iterator it=p.coord.begin();
     typename std::vector< monomial<T> >::const_iterator itend=p.coord.end();
-    int n=it->index.iptr->front();
+    if (it==itend)
+      return p;
+    int n=it->index.front();
     tensor<T> res(p.dim);
-    for (;(it!=itend) && (n==it->index.iptr->front());++it)
-      res.coord.push_back(monomial<T>(it->value,it->index.firstzero()));
+    for (;(it!=itend) && (n==it->index.front());++it)
+      res.coord.push_back(monomial<T>(it->value,it->index.set_first_zero()));
     return res;
   }
 
@@ -1462,12 +1546,15 @@ namespace giac {
       prim=tensor<T>(T(1),0);
       return ;
     }
-    // std::cout << "Cont" << cont << std::endl; 
+    // COUT << "Cont" << cont << std::endl; 
     tensor<T> a(p.dim),b(p.dim),quo(p.dim),r(p.dim),tmp(p.dim);
     // a and b are the primitive part of p and q
-    p.TDivRem1(dp,a,r);
-    q.TDivRem1(dq,b,r);
-    while (!a.coord.empty()){
+    p.TDivRem1(dp,a,r,true);
+    q.TDivRem1(dq,b,r,true);
+    while (
+	   !a.coord.empty()
+	   && !ctrl_c && !interrupted
+	   ){
       int n=b.lexsorted_degree();
       int m=a.lexsorted_degree();
       if (!n) {// if b is constant (then b!=0), gcd=original Tlgcd
@@ -1480,8 +1567,13 @@ namespace giac {
 	  return;
       }
       int ddeg=m-n;
-      if (ddeg<0)
+      if (ddeg<0){
+#if defined RTOS_THREADX || defined BESTA_OS || defined USTL
+	tensor<T> t(a); a=b; b=t;
+#else
 	swap(a,b); // exchange a<->b may occur only at the beginning
+#endif
+      }
       else {
 	tensor<T> b0(Tfirstcoeff(b));
 	a.TPseudoDivRem(b,quo,r,tmp);
@@ -1501,7 +1593,7 @@ namespace giac {
 	g=b0;
       }
     }
-    // std::cout << "Prim" << b << std::endl;
+    // COUT << "Prim" << b << std::endl;
     b.TDivRem1(Tlgcd(b),prim,r,true);
   }
 
@@ -1519,7 +1611,7 @@ namespace giac {
     cont=Tlgcd(p);
     if (!p.dim)
       return ;
-    // std::cout << "Cont" << cont << std::endl; 
+    // COUT << "Cont" << cont << std::endl; 
     tensor<T> a(p.dim),b(p.dim),quo(p.dim),r(p.dim),tmp(p.dim);
     tensor<T> b0(g);
     std::vector< tensor<T> > sign_error(2,g);
@@ -1573,7 +1665,7 @@ namespace giac {
   tensor<T> Tgcdpsr(const tensor<T> & p, const tensor<T> & q,int gcddeg=0){
     tensor<T> prim(p.dim),cont(p.dim);
     Tcontentgcd(p,q,prim,cont,gcddeg);
-    // std::cout << "Prim" << prim << "Cont" << cont << std::endl;
+    // COUT << "Prim" << prim << "Cont" << cont << std::endl;
     return prim*cont;
   }
 
@@ -1592,7 +1684,11 @@ namespace giac {
       if ( (n*m) % 2)
 	sign=-1;
       int tmpint=n; n=m; m=tmpint;
+#if defined RTOS_THREADX || defined BESTA_OS || defined USTL
+      ptmp=q; qtmp=p; // swap(ptmp,qtmp);
+#else
       swap(ptmp,qtmp);
+#endif
     }
     // degree(qtmp)=n <= degree(ptmp)=m
     if (!n) // q is cst
@@ -1605,12 +1701,14 @@ namespace giac {
       if (m*n %2)
 	sign=-sign;
       ddeg=m-n;
-      tensor<T> tmp1(Tfirstcoeff(qtmp)),tmp2(p.dim),tmp3(pow(h,ddeg)),rem(p.dim);
-      (ptmp*pow(tmp1,ddeg+1)).TDivRem1(qtmp,tmp2,rem,false);
+      if (debug_infolevel)
+	CERR << CLOCK() << "Tresultant n,m,ddeg: " << n << " ," << m << " ," << ddeg << std::endl;
+      tensor<T> tmp1(Tfirstcoeff(qtmp)),tmp2(p.dim),tmp3(pow(h,ddeg)),rem(p.dim),a(p.dim);
+      ptmp.TPseudoDivRem(qtmp,tmp2,rem,a); // (ptmp*pow(tmp1,ddeg+1)).TDivRem1(qtmp,tmp2,rem,false);
       rem.high_order_degree_truncate(n);
       ptmp=qtmp;
       m=n;
-      qtmp=rem/(g*tmp3);
+      qtmp=(rem/g)/tmp3; // qtmp=rem/(g*tmp3);
       n=qtmp.lexsorted_degree();
       if (ddeg==1)
 	h=tmp1;
@@ -1635,11 +1733,14 @@ namespace giac {
     tensor<T> g(T(1),p1.dim);
     tensor<T> h(g);
     tensor<T> a(p1.dim),b(p1.dim),q(p1.dim),r(p1.dim);
-    tensor<T> cp1(Tlgcd(p1)), cp2(Tlgcd(p2)),pp1(p1/cp1),pp2(p2/cp2);
+    const tensor<T> & cp1=Tlgcd(p1);
+    const tensor<T> & cp2=Tlgcd(p2);
     bool Tswapped=false;
     if (p1.lexsorted_degree()<p2.lexsorted_degree())
       Tswapped=true;
     // initializes a and b to p1, p2
+    const tensor<T> & pp1=Tis_one(cp1)?p1:p1/cp1;
+    const tensor<T> & pp2=Tis_one(cp2)?p2:p2/cp2;
     if (Tswapped){
       a=pp2;
       b=pp1;
@@ -1650,6 +1751,7 @@ namespace giac {
     }
     // initializes ua to 1 and ub to 0, the coeff of u in ua*a+va*b=a
     tensor<T> ua(T(1),p1.dim), ub(p1.dim),ur(p1.dim);
+    tensor<T> b0pow(p1.dim);
     // loop: ddeg <- deg(a)-deg(b), 
     // TDivRem: b0^(ddeg+1)*a = bq+r 
     // hence ur <- ua*b0^(ddeg+1)-q*ub verifies
@@ -1663,23 +1765,31 @@ namespace giac {
 	break;
       }
       int ddeg=m-n;
-      tensor<T> b0(Tfirstcoeff(b)),b0pow(b0.dim);
+      const tensor<T> & b0=Tfirstcoeff(b);
       // b0pow=Tpow(b0,ddeg+1);
       // (a*b0pow).TDivRem1(b,q,r); // division works always
       a.TPseudoDivRem(b,q,r,b0pow);
       // if r is 0 then b is the gcd and ub the coeff
       if (r.coord.empty())
 	break;
-      // std::cout << ua*b0pow << std::endl << q*ub << std::endl ;
-      ur=ua*b0pow-q*ub;
-      // std::cout << ur << std::endl;
-      a=b;
-      tensor<T> temp(Tpow(h,ddeg));
+      // COUT << ua*b0pow << std::endl << q*ub << std::endl ;
+      (ua*b0pow).TSub(q*ub,ur); // ur=ua*b0pow-q*ub;
+      // COUT << ur << std::endl;
+#if defined RTOS_THREADX || defined BESTA_OS || defined USTL
+      a=b; 
+#else
+      swap(a,b); // a=b
+#endif
+      const tensor<T> & temp=Tpow(h,ddeg);
       // now divides r by g*h^(m-n), result is the new b
       r.TDivRem1(g*temp,b,q); // q is not used anymore
+#if defined RTOS_THREADX || defined BESTA_OS || defined USTL
       ua=ub;
+#else
+      swap(ua,ub); // ua=ub
+#endif
       ur.TDivRem1(g*temp,ub,q);
-      // std::cout << (b-ub*p1) << "/" << p2 << std::endl;
+      // COUT << (b-ub*p1) << "/" << p2 << std::endl;
       // new g=b0 and new h=b0^(m-n)*h/temp
       if (ddeg==1) // the normal case, remainder deg. decreases by 1 each time
 	h=b0;
@@ -1689,21 +1799,22 @@ namespace giac {
     }
     // ub is valid and b is the gcd, vb=(b-ub*p1)/p2 if not Tswapped
     // vb is stored in ua
-    // std::cout << ub << std::endl;
+    // COUT << ub << std::endl;
     if (Tswapped){
       (b-ub*pp2).TDivRem1(pp1,ua,r);
-      ua=ua*cp2;
-      ub=ub*cp1;
-      b=b*cp1*cp2;
+      ua *= cp2; // ua=ua*cp2;
+      ub *= cp1; // ub=ub*cp1;
+      b *= cp1; b *= cp2; // b=b*cp1*cp2;
     }
     else {
       (b-ub*pp1).TDivRem1(pp2,ua,r);
-      ua=ua*cp1;
-      ub=ub*cp2;
-      b=b*cp1*cp2;
+      ua *= cp1; // ua=ua*cp1;
+      ub *= cp2; // ub=ub*cp2;
+      b *= cp1; b *= cp2; // b=b*cp1*cp2;
     }
     // final simplifications
-    q=Tlgcd(b);
+    q.coord.clear();
+    Tlgcd(b,q); // q=Tlgcd(b);
     Tlgcd(ua,q);
     Tlgcd(ub,q);
     b.TDivRem1(q,d,r,true);  // d=b/Tlgcd
@@ -1748,11 +1859,11 @@ namespace giac {
     // a <- b, b <- r/Tlgcd, ua <- ub and ub<- ur/Tlgcd
     for (;;){
       int n=b.lexsorted_degree();
-      int m=a.lexsorted_degree();
+      // int m=a.lexsorted_degree();
       if (!n){ // b is cst !=0 hence is the gcd, ub is valid
 	break;
       }
-      int ddeg=m-n;
+      // int ddeg=m-n;
       tensor<T> b0(Tfirstcoeff(b)),b0pow(b0.dim);
       // b0pow=Tpow(b0,ddeg+1);
       // (a*b0pow).TDivRem1(b,q,r,true); // division works always
@@ -1771,7 +1882,7 @@ namespace giac {
     }
     // ub is valid and b is the gcd, vb=(b-ub*p1)/p2 if not Tswapped
     // vb is stored in ua
-    // std::cout << ub << std::endl;
+    // COUT << ub << std::endl;
     if (Tswapped){
       q=b-ub*pp2;
       tensor<T> b0(Tfirstcoeff(pp1));
@@ -1828,15 +1939,15 @@ namespace giac {
     (c*C).TDivRem1(d,coverd,temp);
     assert(temp.coord.empty()); // division of c by d must be exact
     // now multiply a*u+b*v=d by coverd -> a*u*coverd+b*v*coverd=c*d0pow
-    u=u*coverd;
-    v=v*coverd;
+    u *= coverd; // u=u*coverd;
+    v *= coverd; // v=v*coverd;
     m=u.lexsorted_degree();
     n=b.lexsorted_degree();
     if (m<n)
       return;
     // then reduces the degree of u, a*u+b*v=c*C
     d0=Tpow(Tfirstcoeff(b),m-n+1); 
-    C=C*d0;
+    C *= d0; // C=C*d0;
     // now a*u*d0+b*v*d0=c*C
     (u*d0).TDivRem1(b,temp,u); // replace u*d0 -> temp*b+u
     // a*b + b*(a*temp+v*d0) = c*C
@@ -1858,11 +1969,13 @@ namespace giac {
     if (coord.empty())
       return *this;
     tensor<T> res(dim);
+    if (dim==0)
+      return res;
     res.coord.reserve(coord.size());
     typename std::vector< monomial<T> >::const_iterator itend=coord.end();
     T tmp;
     for (typename std::vector< monomial<T> >::const_iterator it=coord.begin();it!=itend;++it){
-      index_t i=*(it->index.iptr);
+      index_t i= it->index.iref() ;
       T n(i.front());
       i[0]--;
       tmp = it->value*n;
@@ -1880,7 +1993,7 @@ namespace giac {
     res.coord.reserve(coord.size());
     typename std::vector< monomial<T> >::const_iterator itend=coord.end();
     for (typename std::vector< monomial<T> >::const_iterator it=coord.begin();it!=itend;++it){
-      index_t i=*(it->index.iptr);
+      index_t i = it->index.iref();
       T n(i.front()+1);
       i[0]++;
       if (!is_zero(n))
@@ -1891,17 +2004,17 @@ namespace giac {
 
   template<class T>
   void Tfracadd(const tensor<T> & n1, const tensor<T> & d1,const tensor<T> & n2, const tensor<T> & d2, tensor<T> & num, tensor<T> & den){
-    // std::cout << n1 << "/" << d1 << "+" << n2 << "/" << d2 << "=";
+    // COUT << n1 << "/" << d1 << "+" << n2 << "/" << d2 << "=";
     if (Tis_one(d1)){
       n2.TAdd(n1*d2,num);  //  num=n1*d2+n2;
       den=d2;
-      // std::cout << num << "/" << den << std::endl;
+      // COUT << num << "/" << den << std::endl;
       return;
     }
     if (Tis_one(d2)){
       n1.TAdd(n2*d1,num); // num=n2*d1+n1;
       den=d1;
-      // std::cout << num << "/" << den << std::endl;
+      // COUT << num << "/" << den << std::endl;
       return;
     }
     // n1/d1+n2/d2 with g=gcd(d1,d2), d1=d1g*g, d2=d2g*g is
@@ -1921,13 +2034,13 @@ namespace giac {
 
   template <class T>
   void Tfracmul(const tensor<T> & n1, const tensor<T> & d1,const tensor<T> & n2, const tensor<T> & d2, tensor<T> & num, tensor<T> & den){
-    // std::cout << n1 << "/" << d1 << "*" << n2 << "/" << d2 << "=";
+    // COUT << n1 << "/" << d1 << "*" << n2 << "/" << d2 << "=";
     if (Tis_one(d1)){
       num=n1;
       den=d2;
       simplify(num,den);
       num=num*n2;
-      // std::cout << num << "/" << den << std::endl;
+      // COUT << num << "/" << den << std::endl;
       return;
     }
     if (Tis_one(d2)){
@@ -1935,7 +2048,7 @@ namespace giac {
       den=d1;
       simplify(num,den);
       num=num*n1;
-      // std::cout << num << "/" << den << std::endl;
+      // COUT << num << "/" << den << std::endl;
       return;
     }
     num=n1;
@@ -1945,7 +2058,7 @@ namespace giac {
     simplify(ntemp,dtemp);
     num=num*ntemp;
     den=den*dtemp;
-    // std::cout << num << "/" << den << std::endl;
+    // COUT << num << "/" << den << std::endl;
   }
 
   /*
@@ -1972,8 +2085,8 @@ namespace giac {
     T prod(Tpow(it->fact,it->mult));
     ++it;
     for (;it!=itend;++it)
-      prod=prod*Tpow(it->fact,it->mult);
-    return T(prod);
+      prod *= it->mult==1?it->fact:Tpow(it->fact,it->mult); //  prod=prod*Tpow(it->fact,it->mult);
+    return prod;
   }
 
   template<class T>
@@ -1983,8 +2096,8 @@ namespace giac {
     T prod(Tpow(it->fact,it->mult));
     ++it;
     for (;it!=itend;++it)
-      prod=prod*Tpow(it->fact,it->mult);
-    return T(prod);
+      prod *= it->mult==1?it->fact:Tpow(it->fact,it->mult); // prod=prod*Tpow(it->fact,it->mult);
+    return prod;
   }
 
   // square-free factorization of a polynomial
@@ -1995,17 +2108,17 @@ namespace giac {
     tensor<T> c(simplify(w,y));
     // p=p_1*p_2^2*...*p_n^n, c=gcd(p,p')=p_2*...*p_n^(n-1), 
     // w=p/c=pi_i p_i, y=p'/c=sum_{i>=1} ip_i'*pi_{j!=i} p_j
-    y=y-w.derivative(); // y= sum_{i>=2} (i-1) p_i' * pi_{j!=i} p_j
+    y.TSub(w.derivative(),y); // y=y-w.derivative(); // y= sum_{i>=2} (i-1) p_i' * pi_{j!=i} p_j
     std::vector< facteur< tensor<T> > > v;
     int k=1; // multiplicity counter
     while(!y.coord.empty()){
       // y=sum_{i>=k+1} (i-k) p_i' * pi_{j!=i, j>=k} p_j
-      tensor<T> g=simplify(w,y);
+      const tensor<T> & g=simplify(w,y);
       if (!Tis_one(g))
 	v.push_back(facteur< tensor<T> >(g,k));
       // this push p_k, now w=pi_{i>=k+1} p_i and 
       // y=sum_{i>=k+1} (i-k) p_i' * pi_{j!=i, j>=k+1} p_j
-      y=y-w.derivative();
+      y.TSub(w.derivative(),y); // y=y-w.derivative();
       // y=sum_{i>=k+1} (i-(k+1)) p_i' * pi_{j!=i, j>=k+1} p_j
       k++;
     }
@@ -2022,6 +2135,7 @@ namespace giac {
     tensor<T> fact;
     tensor<T> den;
     int mult; // den=cste*fact^mult
+    pf(): num(),fact(),den(),mult(0) {}
     pf(const pf & a) : num(a.num), fact(a.fact), den(a.den), mult(a.mult) {}
     pf(const tensor<T> &n, const tensor<T> & d, const tensor<T> & f,int m) : num(n), fact(f), den(d), mult(m) {};
   };
@@ -2032,6 +2146,21 @@ namespace giac {
     return os;
   }
 
+#ifdef NSPIRE
+  template<class T,class I>
+  nio::ios_base<I> & operator << (nio::ios_base<I> & os, const std::vector< pf<T> > & v){
+    typename std::vector< pf<T> >::const_iterator itend=v.end();
+    for (typename std::vector< pf<T> >::const_iterator it=v.begin();;){
+      os << *it ;
+      ++it;
+      if (it==itend)
+	break;
+      else
+	os << "+";
+    }
+    return(os);
+  }
+#else
   template<class T>
   std::ostream & operator << (std::ostream & os, const std::vector< pf<T> > & v){
     typename std::vector< pf<T> >::const_iterator itend=v.end();
@@ -2045,18 +2174,21 @@ namespace giac {
     }
     return(os);
   }
+#endif
 
   template<class T>
   tensor<T> TsimplifybyTlgcd(tensor<T>& a,tensor<T> &b){
-    tensor<T> Tlgcdg(gcd(Tlgcd(a),Tlgcd(b)));
-    a=a/Tlgcdg;
-    b=b/Tlgcdg;
+    const tensor<T> & Tlgcdg=gcd(Tlgcd(a),Tlgcd(b));
+    if (!Tis_one(Tlgcdg)){
+      a=a/Tlgcdg;
+      b=b/Tlgcdg;
+    }
     return Tlgcdg;
   }
 
   // utility for Tpartfrac, see below
   template<class T>
-  void Tpartfrac(const tensor<T> & num, const tensor<T> & den, const std::vector< facteur< tensor<T> > > & w , int n, int m, std::vector < pf <T> > & pfdecomp ){
+  void Tpartfrac(const tensor<T> & num, const tensor<T> & den, /* const tensor<T> & dendiff ,*/const std::vector< facteur< tensor<T> > > & w , int n, int m, std::vector < pf <T> > & pfdecomp ){
     if (m==n)
       return;
     if (m-n==1){
@@ -2065,12 +2197,28 @@ namespace giac {
       pfdecomp.push_back(pf<T>(nums,dens,w[n].fact,w[n].mult));    
       return ;
     }
-    // first split v in 2 parts, then apply recursively Tpartfrac on each part
-    int p=(m+n)/2;
     typename std::vector< facteur< tensor<T> > >::const_iterator it=w.begin()+n; // &w[n];
     typename std::vector< facteur< tensor<T> > >::const_iterator it_end=w.begin()+m; // &w[m];
+    /*
+    // check if all factors of degree 1 and mult 1
+    for (;it!=itend;++it){
+      if (it->mult!=1 || it->fact.lexsorted_degree()!=1)
+	break;
+    }
+    if (it==itend){
+      // add rem(num,it->fact)/rem(dendiff,it->fact) / it->fact for all factors
+      it=w.begin()+n;
+      for (;it!=itend;++it){
+	
+      }
+    }
+    */
+    // split v in 2 parts, then apply recursively Tpartfrac on each part
+    it=w.begin()+n;
+    int p=(m+n)/2;
     typename std::vector< facteur< tensor<T> > >::const_iterator it_milieu=w.begin()+p; // &w[p];
-    tensor<T> fn(Tproduct< tensor<T> >(it,it_milieu)), fm(Tproduct< tensor<T> >(it_milieu,it_end));
+    const tensor<T> & fn=Tproduct< tensor<T> >(it,it_milieu);
+    const tensor<T> & fm=Tproduct< tensor<T> >(it_milieu,it_end);
     // write C*num=u*fn+v*fm
     tensor<T> C(den.dim),u(den.dim),v(den.dim);
     Tabcuv(fn,fm,num,u,v,C);
@@ -2086,17 +2234,18 @@ namespace giac {
   // num and den are assumed to be prime together
   template<class T>
   void Tpartfrac(const tensor<T> & num, const tensor<T> & den, const std::vector< facteur< tensor<T> > > & v , std::vector < pf <T> > & pfdecomp, tensor<T> & ipnum, tensor<T> & ipden ){
-    int n=v.size();
+    int n=int(v.size());
+    pfdecomp.reserve(n);
     // compute ip and call Tpartfrac
-    tensor<T> rem(num.dim),temp(num.dim);
+    tensor<T> rem(num.dim);
     num.TPseudoDivRem(den,ipnum,rem,ipden);
     // ipden*num=den*ipnum+rem hence num/den=ipnum/ipden+rem/(ipden*den)
-    temp=ipden*den;
+    const tensor<T> & temp=ipden*den;
     // simplify(rem,temp);
     if (n==1)
       pfdecomp.push_back(pf<T>(rem,temp,v.front().fact,v.front().mult));
     else
-      Tpartfrac(rem,temp,v,0,n,pfdecomp);
+      Tpartfrac(rem,temp,/* temp.derivative() ,*/ v,0,n,pfdecomp);
   }
 
   // reduction of a fraction with multiple poles to single poles by integration
@@ -2132,10 +2281,10 @@ namespace giac {
   // by part, the integrated part is added to intdecomp
   template<class T>
   pf<T> Tintreduce_pf(const pf<T> & p_cst, std::vector< pf<T> > & intdecomp ){
-    pf<T> p(p_cst);
-    assert(p.mult>0);
-    if (p.mult==1)
+    assert(p_cst.mult>0);
+    if (p_cst.mult==1)
       return p_cst;
+    pf<T> p(p_cst);
     tensor<T> fprime=p.fact.derivative();
     tensor<T> d(fprime.dim),u(fprime.dim),v(fprime.dim),C(fprime.dim);
     tensor<T> resnum(fprime.dim),resden(T(1),fprime.dim),numtemp(fprime.dim),dentemp(fprime.dim);
@@ -2205,6 +2354,7 @@ namespace giac {
 #ifndef NO_NAMESPACE_GIAC
 } // namespace giac
 #endif // ndef NO_NAMESPACE_GIAC
+
 
 #endif // ndef _GIAC_POLY_H
 

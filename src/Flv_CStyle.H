@@ -39,7 +39,15 @@
 //	have the global style defined. But you know the table is pretty bare...
 //	======================================================================
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#ifndef IN_GIAC
 #include <giac/first.h>
+#else
+#include "first.h"
+#endif
 #ifdef HAVE_LIBFLTK
 
 #ifndef FLV_CSTYLE_H

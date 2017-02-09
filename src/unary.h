@@ -1,6 +1,6 @@
 // -*- mode:C++ ; compile-command: "g++ -I.. -g -c unary.cc" -*-
 /*
- *  Copyright (C) 2000 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
+ *  Copyright (C) 2000,2014 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -13,8 +13,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #ifndef _GIAC_UNARY_H
 #define _GIAC_UNARY_H
@@ -26,44 +25,18 @@
 namespace giac {
 #endif // ndef NO_NAMESPACE_GIAC
 
-  typedef std::string ( * printfunction) (const gen &,const std::string & ,GIAC_CONTEXT ) ;
+  typedef std::string ( * printfunction) (const gen &,const char * funcsommetname ,GIAC_CONTEXT ) ;
+  typedef int ( * printfunc) (const gen & arg,const char * funcsommetname,std::string * appendstringptr,GIAC_CONTEXT ) ; // that should be the right way to print
+
   // print an operator between it's args
-  std::string printsommetasoperator(const gen & feuille,const std::string & sommetstr,GIAC_CONTEXT);
-  std::string texprintsommetasoperator(const gen & feuille,const std::string & sommetstr,GIAC_CONTEXT);
+  std::string printsommetasoperator(const gen & feuille,const char * sommetstr,GIAC_CONTEXT);
+  std::string texprintsommetasoperator(const gen & feuille,const char * sommetstr,GIAC_CONTEXT);
 
 
   // unary_function objects are functionnal objects
   // it's an abstract class with derived classes
   // unary_function_ptr is a class used to manage references to dynamically
   // allocated unary_function objects
-  class unary_function_abstract;
-  class unary_function_ptr {
-  public:
-    const unary_function_abstract * ptr;
-    int * ref_count;
-    int quoted; // will be used to avoid evaluation of args by eval
-    // constructors
-    // lexer_register is true to add dynamically the function name
-    // to the list of functions names recognized by the lexer
-    unary_function_ptr(const unary_function_abstract & myptr);
-    unary_function_ptr(const unary_function_abstract * myptr);
-    unary_function_ptr(const unary_function_abstract & myptr,int myquoted,int parser_token=0);
-    unary_function_ptr(const unary_function_abstract * myptr,int myquoted,int parser_token=0);
-    unary_function_ptr(const unary_function_ptr & myptr);
-    ~unary_function_ptr();
-    unary_function_ptr & operator = (const unary_function_ptr & acopier);
-    gen operator () (const gen & arg,GIAC_CONTEXT) const;
-    inline bool operator ==(const unary_function_ptr & u) const { 
-      // if (&u==this) return true; 
-      return ptr==u.ptr; 
-    }
-    inline bool operator !=(const unary_function_ptr & u) const { return !(*this==u); }
-    void dbgprint() const;
-  };
-  struct ref_unary_function_ptr {
-    int ref_count;
-    unary_function_ptr u;
-  };
 
   class partial_derivative;
 
@@ -74,8 +47,9 @@ namespace giac {
   // it will be 1/2 for asin(x) near x=1
   gen taylor(const gen & lim_point,int order,const unary_function_ptr & D, int direction,gen & shift_coeff,GIAC_CONTEXT);
   typedef gen ( * taylortype) (const gen &,const int ,const unary_function_ptr & D,int direction,gen &,GIAC_CONTEXT);
-  extern unary_function_ptr at_zero;
-  gen apply(const gen & e,const unary_function_ptr & f);
+  extern const unary_function_ptr * const  at_zero;
+  gen apply(const gen & e,const unary_function_ptr & f,GIAC_CONTEXT);
+  gen apply(const gen & e,const unary_function_ptr * f,GIAC_CONTEXT);
   gen apply(const gen & e, gen (* f) (const gen &) );
   gen apply(const gen & e, gen (* f) (const gen &,const context *),GIAC_CONTEXT );
   gen apply(const gen & e, const context * contextptr,const gen_op_context & f );
@@ -86,10 +60,12 @@ namespace giac {
   gen apply2nd(const gen & e1, const gen & e2,gen (* f) (const gen &, const gen &) );
   gen apply2nd(const gen & e1, const gen & e2,const context * contextptr, gen (* f) (const gen &, const gen &,const context *) );
 
-  class unary_function_abstract {
+#ifdef NO_UNARY_FUNCTION_COMPOSE
+
+  class unary_function_eval {
   public:
-    std::string s;
-    partial_derivative * D; // By convention D==0 means there is no derivative
+    const char * s;
+    const partial_derivative * D; // By convention D==0 means there is no derivative
     taylortype series_expansion;
     // how to print: gen is the argument of the unary function, string should
     // normally be s
@@ -98,25 +74,100 @@ namespace giac {
     printfunction texprint;
     // how to print if translated to C++
     printfunction cprint;
+    // the function to apply
+    gen_op_context op;
+    unsigned index_quoted_function; // bit 0= quoted, bit1-> index of function
+    // members functions
+    gen operator () (const gen & arg,const context * context_ptr) const { return op(arg,context_ptr); };    
+    // constructor
+    unary_function_eval(unsigned u,const gen_op_context & myop,const std::string & mys) : s(mys.c_str()),D(0),series_expansion(taylor),printsommet(0),texprint(0),cprint(0),op(myop),index_quoted_function(u) {};
+    unary_function_eval(unsigned u,const gen_op_context & myop,const char * mys) : s(mys),D(0),series_expansion(taylor),printsommet(0),texprint(0),cprint(0),op(myop),index_quoted_function(u) {};
+    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD,const std::string & mys) : s(mys.c_str()),D(myD),series_expansion(taylor),printsommet(0),texprint(0),cprint(0),op(myop),index_quoted_function(u) {};
+    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD,const char * mys) : s(mys),D(myD),series_expansion(taylor),printsommet(0),texprint(0),cprint(0),op(myop),index_quoted_function(u) {};
+    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD, taylortype mytaylor,const std::string & mys) : s(mys.c_str()),D(myD),series_expansion(mytaylor),printsommet(0),texprint(0),cprint(0),op(myop),index_quoted_function(u) { gen temp; mytaylor(0,-1,this,0,temp,0); };
+    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD, taylortype mytaylor,const char * mys) : s(mys),D(myD),series_expansion(mytaylor),printsommet(0),texprint(0),cprint(0),op(myop),index_quoted_function(u) { gen temp; mytaylor(0,-1,this,0,temp,0); };
+    unary_function_eval(unsigned u,const gen_op_context & myop,const std::string & mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : s(mys.c_str()),D(0),series_expansion(taylor),printsommet(myprintsommet),texprint(mytexprint),cprint(mycprint),op(myop),index_quoted_function(u) {};
+    unary_function_eval(unsigned u,const gen_op_context & myop,const char * mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : s(mys),D(0),series_expansion(taylor),printsommet(myprintsommet),texprint(mytexprint),cprint(mycprint),op(myop),index_quoted_function(u) {};
+    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD, const std::string & mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : s(mys.c_str()),D(myD),series_expansion(taylor),printsommet(myprintsommet),texprint(mytexprint),cprint(mycprint),op(myop),index_quoted_function(u) {};
+    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD, const char * mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : s(mys),D(myD),series_expansion(taylor),printsommet(myprintsommet),texprint(mytexprint),cprint(mycprint),op(myop),index_quoted_function(u) {};
+    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD, taylortype mytaylor,const std::string & mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : s(mys.c_str()),D(myD),series_expansion(mytaylor),printsommet(myprintsommet),texprint(mytexprint),cprint(mycprint),op(myop),index_quoted_function(u) { gen temp; mytaylor(0,-1,this,0,temp,0); };
+    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD, taylortype mytaylor,const char * mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : s(mys),D(myD),series_expansion(mytaylor),printsommet(myprintsommet),texprint(mytexprint),cprint(mycprint),op(myop),index_quoted_function(u) { gen temp; mytaylor(0,-1,this,0,temp,0); };
+    const char * print(GIAC_CONTEXT) const ;
+    void dbgprint() const { COUT << s << std::endl; };
+  };
+  std::ostream & operator << (std::ostream & os,const unary_function_eval & o);
+
+  struct alias_unary_function_eval {
+    const char * s;
+    const size_t D; // By convention D==0 means there is no derivative
+    taylortype series_expansion;
+    // how to print: gen is the argument of the unary function, string should
+    // normally be s
+    printfunction printsommet;
+    // how to print as a latex formula, 
+    printfunction texprint;
+    // how to print if translated to C++
+    printfunction cprint;
+    gen_op_context op;
+    unsigned index_quoted_function; // bit 0= quoted, bit1-> index of function
+  };
+#define Defineunary_function_eval(name, u, func, pardev, str, print, index)  \
+  static alias_unary_function_eval const unary##name= { str, pardev, NULL, print, NULL, NULL, func, index }
+
+  class partial_derivative {
+  public:
+    const unary_function_ptr df;
+    unary_function_ptr operator () (int i) const { return df ; }
+    partial_derivative(const unary_function_ptr & mydf ) : df(mydf) {}
+    partial_derivative(const unary_function_ptr * mydf ) : df(*mydf) {}
+    partial_derivative(gen (* mydf) (const gen & args,const context * contextptr) ) ; 
+  };
+
+  typedef partial_derivative partial_derivative_onearg;
+
+#else // NO_UNARY_FUNCTION_COMPOSE
+  class unary_function_abstract {
+  public:
+    const char * s;
+    const partial_derivative * D; // By convention D==0 means there is no derivative
+    taylortype series_expansion;
+    // how to print: gen is the argument of the unary function, string should
+    // normally be s
+    printfunction printsommet;
+    // how to print as a latex formula, 
+    printfunction texprint;
+    // how to print if translated to C++
+    printfunction cprint;
+    unsigned index_quoted_function; // bit 0= quoted, bit1-> index of function
     // members functions
     virtual gen operator () (const gen & arg,const context * context_ptr) const { return 0;} ;
     virtual unary_function_abstract * recopie() const ;
-    std::string print(GIAC_CONTEXT) const ;
-    void dbgprint() const { std::cout << s << std::endl; };
+    const char * print(GIAC_CONTEXT) const ;
+    void dbgprint() const { COUT << s << std::endl; };
     // constructors
-    unary_function_abstract() : D(0),series_expansion(taylor),printsommet(0),texprint(0),cprint(0) {};
-    unary_function_abstract(const std::string & mys): s(mys),D(0),series_expansion(0),printsommet(0),texprint(0),cprint(0) {};
-    unary_function_abstract(const std::string & mys,partial_derivative * myD): s(mys),D(myD),series_expansion(taylor),printsommet(0),texprint(0),cprint(0) {};
-    unary_function_abstract(const std::string & mys,partial_derivative * myD,printfunction myprintsommet, printfunction mytexprint,printfunction mycprint): s(mys),D(myD),series_expansion(taylor),printsommet(myprintsommet),texprint(mytexprint),cprint(mycprint) {};
+    unary_function_abstract(unsigned u) : D(0),series_expansion(taylor),printsommet(0),texprint(0),cprint(0),index_quoted_function(u) {};
+    unary_function_abstract(unsigned u,const std::string & mys): s(mys.c_str()),D(0),series_expansion(0),printsommet(0),texprint(0),cprint(0),index_quoted_function(u) {};
+    unary_function_abstract(unsigned u,const char * mys): s(mys),D(0),series_expansion(0),printsommet(0),texprint(0),cprint(0),index_quoted_function(u) {};
+    unary_function_abstract(unsigned u,const std::string & mys,const partial_derivative * myD): s(mys.c_str()),D(myD),series_expansion(taylor),printsommet(0),texprint(0),cprint(0),index_quoted_function(u) {};
+    unary_function_abstract(unsigned u,const char * mys,const partial_derivative * myD): s(mys),D(myD),series_expansion(taylor),printsommet(0),texprint(0),cprint(0),index_quoted_function(u) {};
+    unary_function_abstract(unsigned u,const std::string & mys,const partial_derivative * myD,printfunction myprintsommet, printfunction mytexprint,printfunction mycprint): s(mys.c_str()),D(myD),series_expansion(taylor),printsommet(myprintsommet),texprint(mytexprint),cprint(mycprint),index_quoted_function(u) {};
+    unary_function_abstract(unsigned u,const char * mys,const partial_derivative * myD,printfunction myprintsommet, printfunction mytexprint,printfunction mycprint): s(mys),D(myD),series_expansion(taylor),printsommet(myprintsommet),texprint(mytexprint),cprint(mycprint),index_quoted_function(u) {};
     // if preprocessing is needed for f,mytaylor for ordre==-1 should 
     // push back in a global std::vector f and it's substitution
-    unary_function_abstract(const std::string & mys,partial_derivative * myD,taylortype mytaylor): s(mys),D(myD),series_expansion(mytaylor),printsommet(0),texprint(0),cprint(0) { gen temp; mytaylor(0,-1,*this,0,temp,0); };
-    unary_function_abstract(const std::string & mys,partial_derivative * myD,taylortype mytaylor,printfunction myprintsommet,printfunction mytexprint,printfunction mycprint): s(mys),D(myD),series_expansion(mytaylor),printsommet(myprintsommet),texprint(mytexprint),cprint(mycprint) { gen temp; mytaylor(0,-1,*this,0,temp,0);};
-    unary_function_abstract(const std::string & mys,printfunction myprintsommet,printfunction mytexprint,printfunction mycprint): s(mys),D(0),printsommet(myprintsommet),texprint(mytexprint),cprint(mycprint) {};
+    unary_function_abstract(unsigned u,const std::string & mys,const partial_derivative * myD,taylortype mytaylor): s(mys.c_str()),D(myD),series_expansion(mytaylor),printsommet(0),texprint(0),cprint(0),index_quoted_function(u) { gen temp; mytaylor(0,-1,this,0,temp,0); };
+    unary_function_abstract(unsigned u,const char * mys,const partial_derivative * myD,taylortype mytaylor): s(mys),D(myD),series_expansion(mytaylor),printsommet(0),texprint(0),cprint(0),index_quoted_function(u) { gen temp; mytaylor(0,-1,this,0,temp,0); };
+    unary_function_abstract(unsigned u,const std::string & mys,const partial_derivative * myD,taylortype mytaylor,printfunction myprintsommet,printfunction mytexprint,printfunction mycprint): s(mys.c_str()),D(myD),series_expansion(mytaylor),printsommet(myprintsommet),texprint(mytexprint),cprint(mycprint),index_quoted_function(u) { gen temp; mytaylor(0,-1,this,0,temp,0);};
+    unary_function_abstract(unsigned u,const char * mys,const partial_derivative * myD,taylortype mytaylor,printfunction myprintsommet,printfunction mytexprint,printfunction mycprint): s(mys),D(myD),series_expansion(mytaylor),printsommet(myprintsommet),texprint(mytexprint),cprint(mycprint),index_quoted_function(u) { gen temp; mytaylor(0,-1,this,0,temp,0);};
+    unary_function_abstract(unsigned u,const std::string & mys,printfunction myprintsommet,printfunction mytexprint,printfunction mycprint): s(mys.c_str()),D(0),printsommet(myprintsommet),texprint(mytexprint),cprint(mycprint),index_quoted_function(u) {};
+    unary_function_abstract(unsigned u,const char * mys,printfunction myprintsommet,printfunction mytexprint,printfunction mycprint): s(mys),D(0),printsommet(myprintsommet),texprint(mytexprint),cprint(mycprint),index_quoted_function(u) {};
     virtual ~unary_function_abstract() {};
   };
 
+#ifdef NSPIRE
+  template<class T> nio::ios_base<T> & operator<<(nio::ios_base<T> & os,const unary_function_abstract & a);
+#else
   std::ostream & operator << (std::ostream & os,const unary_function_abstract & o);
+#endif
 
   class unary_function_unary : public unary_function_abstract {
   public:
@@ -124,12 +175,18 @@ namespace giac {
     // members
     gen operator () (const gen & arg,const context * context_ptr) const { return op(arg); };    
     // constructor
-    unary_function_unary(const gen_op & myop,const std::string & mys) : unary_function_abstract(mys),op(myop) {};
-    unary_function_unary(const gen_op & myop,partial_derivative * myD,const std::string & mys) : unary_function_abstract(mys,myD),op(myop) {};
-    unary_function_unary(const gen_op & myop,partial_derivative * myD, taylortype mytaylor,const std::string & mys) : unary_function_abstract(mys,myD,mytaylor),op(myop) {};
-    unary_function_unary(const gen_op & myop,const std::string & mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : unary_function_abstract(mys,myprintsommet,mytexprint,mycprint),op(myop) {};
-    unary_function_unary(const gen_op & myop,partial_derivative * myD, const std::string & mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : unary_function_abstract(mys,myD,myprintsommet,mytexprint,mycprint),op(myop) {};
-    unary_function_unary(const gen_op & myop,partial_derivative * myD, taylortype mytaylor,const std::string & mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : unary_function_abstract(mys,myD,mytaylor,myprintsommet,mytexprint,mycprint),op(myop) {};
+    unary_function_unary(unsigned u,const gen_op & myop,const std::string & mys) : unary_function_abstract(u,mys),op(myop) {};
+    unary_function_unary(unsigned u,const gen_op & myop,const char * mys) : unary_function_abstract(u,mys),op(myop) {};
+    unary_function_unary(unsigned u,const gen_op & myop,const partial_derivative * myD,const std::string & mys) : unary_function_abstract(u,mys,myD),op(myop) {};
+    unary_function_unary(unsigned u,const gen_op & myop,const partial_derivative * myD,const char * mys) : unary_function_abstract(u,mys,myD),op(myop) {};
+    unary_function_unary(unsigned u,const gen_op & myop,const partial_derivative * myD, taylortype mytaylor,const std::string & mys) : unary_function_abstract(u,mys,myD,mytaylor),op(myop) {};
+    unary_function_unary(unsigned u,const gen_op & myop,const partial_derivative * myD, taylortype mytaylor,const char * mys) : unary_function_abstract(u,mys,myD,mytaylor),op(myop) {};
+    unary_function_unary(unsigned u,const gen_op & myop,const std::string & mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : unary_function_abstract(u,mys,myprintsommet,mytexprint,mycprint),op(myop) {};
+    unary_function_unary(unsigned u,const gen_op & myop,const char * mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : unary_function_abstract(u,mys,myprintsommet,mytexprint,mycprint),op(myop) {};
+    unary_function_unary(unsigned u,const gen_op & myop,const partial_derivative * myD, const std::string & mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : unary_function_abstract(u,mys,myD,myprintsommet,mytexprint,mycprint),op(myop) {};
+    unary_function_unary(unsigned u,const gen_op & myop,const partial_derivative * myD, const char * mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : unary_function_abstract(u,mys,myD,myprintsommet,mytexprint,mycprint),op(myop) {};
+    unary_function_unary(unsigned u,const gen_op & myop,const partial_derivative * myD, taylortype mytaylor,const std::string & mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : unary_function_abstract(u,mys,myD,mytaylor,myprintsommet,mytexprint,mycprint),op(myop) {};
+    unary_function_unary(unsigned u,const gen_op & myop,const partial_derivative * myD, taylortype mytaylor,const char * mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : unary_function_abstract(u,mys,myD,mytaylor,myprintsommet,mytexprint,mycprint),op(myop) {};
     virtual unary_function_unary * recopie() const ;
   };
 
@@ -142,13 +199,53 @@ namespace giac {
     // members
     gen operator () (const gen & arg,const context * context_ptr) const { return op(arg,context_ptr); };    
     // constructor
-    unary_function_eval(const gen_op_context & myop,const std::string & mys) : unary_function_abstract(mys),op(myop) {};
-    unary_function_eval(const gen_op_context & myop,partial_derivative * myD,const std::string & mys) : unary_function_abstract(mys,myD),op(myop) {};
-    unary_function_eval(const gen_op_context & myop,partial_derivative * myD, taylortype mytaylor,const std::string & mys) : unary_function_abstract(mys,myD,mytaylor),op(myop) {};
-    unary_function_eval(const gen_op_context & myop,const std::string & mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : unary_function_abstract(mys,myprintsommet,mytexprint,mycprint),op(myop) {};
-    unary_function_eval(const gen_op_context & myop,partial_derivative * myD, const std::string & mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : unary_function_abstract(mys,myD,myprintsommet,mytexprint,mycprint),op(myop) {};
-    unary_function_eval(const gen_op_context & myop,partial_derivative * myD, taylortype mytaylor,const std::string & mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : unary_function_abstract(mys,myD,mytaylor,myprintsommet,mytexprint,mycprint),op(myop) {};
+    unary_function_eval(unsigned u,const gen_op_context & myop,const std::string & mys) : unary_function_abstract(u,mys),op(myop) {};
+    unary_function_eval(unsigned u,const gen_op_context & myop,const char * mys) : unary_function_abstract(u,mys),op(myop) {};
+    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD,const std::string & mys) : unary_function_abstract(u,mys,myD),op(myop) {};
+    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD,const char * mys) : unary_function_abstract(u,mys,myD),op(myop) {};
+    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD, taylortype mytaylor,const std::string & mys) : unary_function_abstract(u,mys,myD,mytaylor),op(myop) {};
+    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD, taylortype mytaylor,const char * mys) : unary_function_abstract(u,mys,myD,mytaylor),op(myop) {};
+    unary_function_eval(unsigned u,const gen_op_context & myop,const std::string & mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : unary_function_abstract(u,mys,myprintsommet,mytexprint,mycprint),op(myop) {};
+    unary_function_eval(unsigned u,const gen_op_context & myop,const char * mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : unary_function_abstract(u,mys,myprintsommet,mytexprint,mycprint),op(myop) {};
+    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD, const std::string & mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : unary_function_abstract(u,mys,myD,myprintsommet,mytexprint,mycprint),op(myop) {};
+    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD, const char * mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : unary_function_abstract(u,mys,myD,myprintsommet,mytexprint,mycprint),op(myop) {};
+    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD, taylortype mytaylor,const std::string & mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : unary_function_abstract(u,mys,myD,mytaylor,myprintsommet,mytexprint,mycprint),op(myop) {};
+    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD, taylortype mytaylor,const char * mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : unary_function_abstract(u,mys,myD,mytaylor,myprintsommet,mytexprint,mycprint),op(myop) {};
     virtual unary_function_eval * recopie() const ;
+  };
+
+  // Aliases to construct unary_function_eval or unary_function_unary
+  // at compile-time
+  struct alias_unary_function_eval {
+    const void * vtabptr; 
+    const char * s;
+    const partial_derivative * D; // By convention D==0 means there is no derivative
+    taylortype series_expansion;
+    // how to print: gen is the argument of the unary function, string should
+    // normally be s
+    printfunction printsommet;
+    // how to print as a latex formula, 
+    printfunction texprint;
+    // how to print if translated to C++
+    printfunction cprint;
+    gen_op_context op;    
+    unsigned index_quoted_function; // bit 0= quoted, bit1-> index of function
+  };
+
+  struct alias_unary_function_unary {
+    void * vtabptr; 
+    const char * s;
+    const partial_derivative * D; // By convention D==0 means there is no derivative
+    taylortype series_expansion;
+    // how to print: gen is the argument of the unary function, string should
+    // normally be s
+    printfunction printsommet;
+    // how to print as a latex formula, 
+    printfunction texprint;
+    // how to print if translated to C++
+    printfunction cprint;
+    gen_op_context op;    
+    unsigned index_quoted_function; // bit 0= quoted, bit1-> index of function
   };
 
   // composition of functions
@@ -158,7 +255,7 @@ namespace giac {
     // redefinition of () to call each element of op_v instead of calling op
     gen operator () (const gen & arg,const context * context_ptr ) const ;
     // constructors
-    unary_function_compose(const std::vector<unary_function_ptr> & v) ;
+    unary_function_compose(unsigned u,const std::vector<unary_function_ptr> & v) ;
     virtual unary_function_compose * recopie() const ;
   };
 
@@ -171,12 +268,12 @@ namespace giac {
     // redefinition of () to call each element of op_v and make a list
     gen operator () (const gen & arg ,const context * context_ptr) const ;
     // constructors
-    unary_function_list(const std::vector<unary_function_ptr> & v) ;
+    unary_function_list(unsigned u,const std::vector<unary_function_ptr> & v) ;
     virtual unary_function_list * recopie() const ;
   };
 
   std::ostream & operator << (std::ostream & os,const unary_function_list & p);
-  
+
   // we can now code for example x -> x + sin(x) as the composition of
   // the unary_function __plus and the unary_function_list (identity,sin)
   // but x -> 2*x + sin(x) requires coding constants function
@@ -186,7 +283,7 @@ namespace giac {
     // redefinition of () to return the constant
     gen operator () (const gen & arg,const context * context_ptr ) const { return constant; } ;
     // constructors
-    unary_function_constant(const gen & e) : unary_function_abstract(e.print(0)),constant(e) {} ;
+    unary_function_constant(unsigned u,const gen & e) : unary_function_abstract(u,* new std::string(e.print(0))),constant(e) {} ;
     virtual unary_function_constant * recopie() const ;
   };
 
@@ -198,7 +295,7 @@ namespace giac {
     // redefinition of () to remove indices at position in i from arg std::vector
     gen operator () (const gen & arg ,const context * context_ptr) const ;
     // constructors
-    unary_function_innerprod(const std::vector<int> & myi) : unary_function_abstract(std::string("\\")+print_INT_(myi)),i(myi) {} ;
+    unary_function_innerprod(unsigned u,const std::vector<int> & myi) : unary_function_abstract(u,* new std::string("\\")+print_INT_(myi)),i(myi) {} ;
     virtual unary_function_innerprod * recopie() const ;
   };
 
@@ -208,16 +305,13 @@ namespace giac {
     // redefinition of () to return the constant
     gen operator () (const gen & arg ,const context * context_ptr) const { return f(arg,context_ptr); } ;
     // constructors
-    unary_function_user(const gen & e,const std::string & s) : unary_function_abstract(s,&printsommetasoperator,&texprintsommetasoperator,0),f(e) {} ;
-    unary_function_user(const gen & e,const std::string & s,printfunction myprintsommet, printfunction mytexprint,printfunction mycprint) : unary_function_abstract(s,myprintsommet,mytexprint,mycprint),f(e) {} ;
+    unary_function_user(unsigned u,const gen & e,const std::string & s) : unary_function_abstract(u,s,&printsommetasoperator,&texprintsommetasoperator,0),f(e) {} ;
+    unary_function_user(unsigned u,const gen & e,const std::string & s,printfunction myprintsommet, printfunction mytexprint,printfunction mycprint) : unary_function_abstract(u,s,myprintsommet,mytexprint,mycprint),f(e) {} ;
     virtual unary_function_user * recopie() const ;
   };
 
   std::ostream & operator << (std::ostream & os,const unary_function_innerprod & i);
   
-  // the last class seems to be symbolic unary function class
-  // means f(x) where f is an identifier
-
   // d(i) returns the partial derivatives with respect to the i-th arg
   // df(x_1(t),...,x_n(t))/dt= Sigma(df/dx_i * dx_i/dt)
   // Example: for the sum +, df/dx_i=1 for all i
@@ -225,28 +319,32 @@ namespace giac {
   // For a unary operator d(1) is the usual derivative
   class partial_derivative {
   public:
-    virtual unary_function_ptr operator () (int i) { return at_zero; }
+    virtual unary_function_ptr operator () (int i) const { return *at_zero; }
+    virtual ~partial_derivative() { }
   };
 
   class partial_derivative_multiargs : public partial_derivative {
   public:
     unary_function_ptr (* d )(int i) ; 
-    virtual unary_function_ptr operator () (int i) { return d(i); }
+    virtual unary_function_ptr operator () (int i) const { return d(i); }
     partial_derivative_multiargs(unary_function_ptr ( * myd) (int i)) : d(myd) {}
+    virtual ~partial_derivative_multiargs() { }
   };
 
   class partial_derivative_onearg : public partial_derivative {
   public:
-    unary_function_ptr df;
-    virtual unary_function_ptr operator () (int i) { return df ; }
+    const unary_function_ptr df;
+    virtual unary_function_ptr operator () (int i) const { return df ; }
     partial_derivative_onearg(const unary_function_ptr & mydf ) : df(mydf) {}
+    partial_derivative_onearg(const unary_function_ptr * mydf ) : df(*mydf) {}
+#ifndef NO_UNARY_FUNCTION_COMPOSE
     partial_derivative_onearg(gen (* mydf) (const gen & args) ) ; 
+#endif
     partial_derivative_onearg(gen (* mydf) (const gen & args,const context * contextptr) ) ; 
     virtual ~partial_derivative_onearg() {};
   };
+#endif // NO_UNARY_FUNCTION_COMPOSE
 
-  extern partial_derivative_multiargs D_at_plus;
-  extern partial_derivative_multiargs D_at_prod;
 
 #ifndef NO_NAMESPACE_GIAC
 } // namespace giac

@@ -6,7 +6,7 @@
    bool is_one(const T & a) returns true if a==1 
    T(1) returns the 1 polynomial */
 /*
- *  Copyright (C) 2000 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
+ *  Copyright (C) 2000, 2014 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,14 +19,17 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef _GIAC_FRACTION_H_
 #define _GIAC_FRACTION_H_
 #include "first.h"
 #include <iostream>
+
+#ifndef NO_NAMESPACE_GIAC
+namespace giac {
+#endif // ndef NO_NAMESPACE_GIAC
 
 template <class T> class Tfraction {
 public:
@@ -37,6 +40,13 @@ public:
   Tfraction<T> (const Tfraction<T> & f) : num(f.num), den(f.den) {};
   Tfraction<T> normal() const;
   void dbgprint();
+};
+
+template <class T> class Tref_fraction {
+public:
+  ref_count_t ref_count;
+  Tfraction<T> f;
+  Tref_fraction(const Tfraction<T> & F):ref_count(1),f(F) {}
 };
 
 template <class T> Tfraction<T> Tfraction<T>::normal() const {
@@ -140,8 +150,10 @@ template <class T>  Tfraction<T> operator * (const T & a,const Tfraction<T> & b)
 template <class T>  Tfraction<T> operator / (const Tfraction<T> & a,const Tfraction<T> & b){
   if (is_one(a.den))
     return(Tfraction<T> (a.num/b));
-  if (is_one(b.den))
-    return(Tfraction<T> (b.num/a));
+  if (is_one(b.den)){ 
+    // std::cerr << "fraction code change"<<std::endl; 
+    return(Tfraction<T> (a/b.num)); 
+  }
   Tfraction<T> f1(a.num,b.num);
   simplify(f1.num,f1.den);
   Tfraction<T> f2(b.den,a.den);
@@ -173,16 +185,23 @@ template <class T> Tfraction<T> pow (const Tfraction<T> & p,int n){
   return Tfraction<T>(pow(Tfraction<T>(p.den,p.num),-n));
 }
 
-
-template <class T> 
-std::ostream & operator << (std::ostream & os, const Tfraction<T> & f ){
-  os << f.num << "/" << f.den << " " ;
-  return os;
-}
+#ifdef NSPIRE
+  template<class T,class U>
+  nio::ios_base<T> & operator << (nio::ios_base<T> & os, const Tfraction<U> & f ){
+    os << f.num << "/" << f.den << " " ;
+    return os;
+  }
+#else
+  template <class T> 
+  std::ostream & operator << (std::ostream & os, const Tfraction<T> & f ){
+    os << f.num << "/" << f.den << " " ;
+    return os;
+  }
+#endif
 
 template <class T> 
 void Tfraction<T>::dbgprint() {
-  std::cout << num << "/" << den << " " ;
+  COUT << num << "/" << den << " " ;
 }
 
 
@@ -194,14 +213,25 @@ void Tfraction<T>::dbgprint() {
   public:
     T fact;
     int mult;
+    facteur():fact(1),mult(0) {}
     facteur(const facteur & f) : fact(f.fact), mult(f.mult) {}
     facteur(const T & f, int m) : fact(f),mult(m) {}
+#ifdef NSPIRE
+    template<class I> friend nio::ios_base<I> & operator << (nio::ios_base<I> & os, const facteur<T> & m ){
+      return os << ":facteur:!" << m.fact << "!" << "^" << m.mult  ;
+    }
+#else
     friend std::ostream & operator << (std::ostream & os, const facteur<T> & m ){
       return os << ":facteur:!" << m.fact << "!" << "^" << m.mult  ;
     }
+#endif
     void dbgprint() const {
-      std::cout << *this << std::endl;
+      COUT << *this << std::endl;
     }
   };
+
+#ifndef NO_NAMESPACE_GIAC
+} // namespace giac
+#endif // ndef NO_NAMESPACE_GIAC
 
 #endif // ndef _GIAC_FRACTION_H_

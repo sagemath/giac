@@ -1,11 +1,14 @@
 // -*- mode:C++ ; compile-command: "g++ -I.. -g help.o aide.cc" -*-
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 #include "first.h"
 /*
  *  Copyright (C) 2000 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
+ *  the Free Software Foundation; either version 3 of the License, or
  *  (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -14,11 +17,11 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "help.h"
+#include "global.h"
 #include <iostream>
 using namespace std;
 using namespace giac;
@@ -39,7 +42,14 @@ int main(int ARGC, char *ARGV[]){
     language=3;
   // read all help
   int count;
-  vector<aide> v(readhelp(default_helpfile,count));
+  vector<aide> v;
+  giac::readhelp(v,"aide_cas",count,false);
+  if (!count){
+    if (getenv("XCAS_HELP"))
+      giac::readhelp(v,getenv("XCAS_HELP"),count,true);
+    else
+      giac::readhelp(v,(giac::giac_aide_dir()+"aide_cas").c_str(),count,true);
+  }
   multimap<string,string> mtt,mall;
   string html_help_dir("doc/");
   switch (language){
@@ -64,7 +74,9 @@ int main(int ARGC, char *ARGV[]){
     }
     return 0;
   }
+#ifndef EMCC
   find_all_index(html_help_dir,mtt,mall);
+#endif
   for (int j=1;j<ARGC;++j){
     // search for ARGV
     cout << "Help for " << ARGV[j] << ":" << endl;
@@ -72,11 +84,13 @@ int main(int ARGC, char *ARGV[]){
     aide cur_aide=helpon(current,v,language,count);
     string result=writehelp(cur_aide,language);
     cout << result;
+#ifndef EMCC
     vector<string> v(html_help(mtt,current));
     vector<string>::const_iterator it=v.begin(),itend=v.end();
     for (;it!=itend;++it){
       cout << *it << endl;
     }
+#endif
   } 
   return 0;
 } // end main

@@ -1,8 +1,12 @@
 // -*- mode:C++ ; compile-command: "g++-3.4 -I.. -I../include -g -c icas.cc" -*-
+// N.B. for valgrind check, use export GIAC_RELEASE=1
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 #include "first.h"
 
 /*
- *  Copyright (C) 2000 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
+ *  Copyright (C) 2000,2014 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -15,23 +19,27 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <stdio.h>
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 #include "global.h"
 #ifdef HAVE_LIBREADLINE
 #include <readline/readline.h>
 #include <readline/history.h>
 #endif // HAVE_LIBREADLINE
 using namespace std;
+
 #include <string>
 #include <stdexcept>
 #include <fstream>
 #include <iomanip>
 #include <time.h>
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
+#endif
 //#include <unistd.h> // For reading arguments from file
 #include <fcntl.h>
 #include <cstdlib>
@@ -57,6 +65,9 @@ using namespace std;
 #include "help.h"
 #include "plot.h"
 #include "input_lexer.h"
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 
 // using namespace giac;
@@ -145,12 +156,25 @@ void dealloc(struct Tgraph *graph);
 static int texmacs_counter= 0;
 
 
-volatile bool ctrl_c=false;
+#ifdef VISUALC
+using namespace giac;
+#define STDIN_FILENO 0
+namespace xcas {
+  void icas_eval(giac::gen & g,giac::gen & gg,int & reading_file,std::string &filename,giac::context * contextptr){
+    gg=protecteval(g,10,contextptr);
+  }
 
+  bool fltk_view(const giac::gen & g,giac::gen & ge,const std::string & filename,std::string & figure_filename,int file_type,const giac::context *contextptr){
+    return false;
+  }
+}
+
+#else
 void ctrl_c_signal_handler(int signum){
-  ctrl_c=true;
+  giac::ctrl_c=true;
   cerr << "icas/giac process " << getpid() << ", Ctrl-C pressed, interruption requested" << endl;
 }
+#endif
 
 void format_plugin () {
   // The configuration of a plugin can be completed at startup time.
@@ -161,12 +185,20 @@ void format_plugin () {
 }
 
 void flush_stdout(){
+#ifdef NSPIRE_NEWLIB
+  giac::usleep(2000);
+#else
   usleep(2000);
+#endif
   fflush (stdout);
 }
 
 void flush_stderr(){
+#ifdef NSPIRE_NEWLIB
+  giac::usleep(2000);
+#else
   usleep(2000);
+#endif
   fflush (stderr);
 }
 
@@ -197,28 +229,46 @@ void ifstream_output(istream & tmpif){
 
 
 
-void texmacs_graph_output(const giac::gen & g,const giac::gen & gg,const std::string & figfilename,int file_type,const giac::context * contextptr){
-  if (!xcas::fltk_view(g,gg,"casgraph",figfilename,file_type,contextptr)){
+void texmacs_graph_output(const giac::gen & g,giac::gen & gg,std::string & figfilename,int file_type,const giac::context * contextptr){
+  if (!xcas::fltk_view(g,gg,"casgraph.eps",figfilename,file_type,contextptr)){
     putchar(TEXMACS_DATA_BEGIN);
     printf("verbatim: Plot cancelled or unable to plot\n");
     putchar(TEXMACS_DATA_END);
     flush_stdout();
     return;
   }
-  // putchar(TEXMACS_DATA_BEGIN);
-  // printf("output#");
-  putchar(TEXMACS_DATA_BEGIN);
-  printf("verbatim:");
-  ifstream tmpif("casgraph.eps");
-  ifstream_output(tmpif);
-  putchar(TEXMACS_DATA_END);
-  // putchar(TEXMACS_DATA_END);
-  flush_stdout();
-  // ofstream log("log");
-  // log << g << endl;
+  if (0 
+      && figfilename.empty()
+      ){
+    putchar(TEXMACS_DATA_BEGIN);
+    if (gg.is_symb_of_sommet(giac::at_program))
+      printf("verbatim: %s\n",gg.print().c_str());
+    else {
+      if (gg.type==giac::_STRNG)
+	printf("verbatim: %s\n",gg._STRNGptr->c_str());
+      else 
+	printf("latex:\\[ %s \\]",giac::gen2tex(gg,giac::context0).c_str());
+    }
+  }
+  else {
+    putchar(TEXMACS_DATA_END);
+    // putchar(TEXMACS_DATA_END);
+    flush_stdout();
+    // putchar(TEXMACS_DATA_BEGIN);
+    // printf("output#");
+    putchar(TEXMACS_DATA_BEGIN);
+    printf("verbatim:");
+    ifstream tmpif("casgraph.eps");
+    ifstream_output(tmpif);
+    putchar(TEXMACS_DATA_END);
+    // putchar(TEXMACS_DATA_END);
+    flush_stdout();
+    // ofstream log("log");
+    // log << g << endl;
+  }
 }
 
-void texmacs_output(const giac::gen & g,const giac::gen & gg,bool reading_file,int no,const giac::context * contextptr){
+void texmacs_output(const giac::gen & g,giac::gen & gg,bool reading_file,int no,const giac::context * contextptr){
   giac::history_in(contextptr).push_back(g);
   giac::history_out(contextptr).push_back(gg);
   if (reading_file){
@@ -230,7 +280,8 @@ void texmacs_output(const giac::gen & g,const giac::gen & gg,bool reading_file,i
   }
   int graph_output=graph_output_type(gg);
   if (graph_output){
-    texmacs_graph_output(g,gg,"",0,contextptr);
+    string filename="";
+    texmacs_graph_output(g,gg,filename,0,contextptr);
     return;
   }
   if (reading_file && gg.is_symb_of_sommet(giac::at_program))
@@ -260,33 +311,560 @@ void check_browser_help(const giac::gen & g){
     if (f.type==giac::_SYMB)
       f=f._SYMBptr->sommet;
     if (f.type==giac::_FUNC)
-      s=f._FUNCptr->ptr->s;
+      s=f._FUNCptr->ptr()->s;
+#if !defined EMCC && !defined NSPIRE_NEWLIB
     giac::html_vtt=giac::html_help(giac::html_mtt,s);
 #ifndef HAVE_NO_SYSTEM
     if (!giac::html_vtt.empty())
-      system(giac::browser_command(giac::html_vtt.front()).c_str());
+      giac::system_browser_command(giac::html_vtt.front());
+#endif
 #endif
   }
 }
 
+#ifdef HAVE_LIBFLTK
+//#include "Equation.h"
+// split s at newline or space to avoid too long strings
+void split(std::string & s,int cut){
+  if (cut<30) cut=30;
+  std::string remains(s);
+  s.clear();
+  int ss;
+  while ( (ss=remains.size())>cut ){
+    int i=0;
+    for (;i<cut;++i){
+      if (remains[i]=='\n')
+	break;
+    }
+    if (i<cut){
+      s = s+remains.substr(0,i+1);
+      remains=remains.substr(i+1,ss-i-1);
+      ss=remains.size();
+      continue;
+    }
+    for (i=cut-10;i<ss;++i){
+      if (remains[i]==' ' || remains[i]=='\\' || remains[i]=='(' || remains[i]==')' || remains[i]=='{' || remains[i]=='}' || remains[i]=='[' || remains[i]==']')
+	break;
+    }
+    s = s+remains.substr(0,i)+'\n';
+    remains=remains.substr(i,ss-i);
+    ss=remains.size();
+  }
+  s = s+remains;
+}
+
+void verb(std::string & warn,int line,ostream & out,std::string cmd,const std::string & infile,int & texmacs_counter,bool slider,giac::context * contextptr,ostream * checkptr,std::ostream * checkptrin){
+  giac::gen g(cmd,contextptr),gg;
+  string gs=cmd;
+  split(cmd,50);
+  int pos=cmd.find('\n');
+  if (pos<0 || pos>=cmd.size())
+    pos=cmd.find('|');
+  if (pos<0 || pos>=cmd.size())
+    out << "\\verb|"<<cmd<<"|\\\\"<<endl;
+  else
+    out << "\\begin{verbatim}\n" << cmd << "\\end{verbatim}" << endl;
+  int reading_file=0;
+  std::string filename,tmp;
+  xcas::icas_eval(g,gg,reading_file,filename,contextptr);
+  if (checkptrin){
+    int ss=gs.size();
+    for (;ss>0;--ss){
+      if (gs[ss-1]!=' ' && gs[ss-1]!='\n')
+	break;
+    }
+    if (ss && gs[ss-1]!=';')
+      gs += ';';
+    *checkptrin << gs << endl ;
+  }
+  if (checkptr) *checkptr << gg << endl;
+  int graph_output=graph_output_type(gg);
+  if (graph_output){
+    filename=infile+giac::print_INT_(texmacs_counter)+".eps";
+    if (xcas::fltk_view(g,gg,filename,tmp,-1,contextptr)){
+      out << "\n\\begin{center}\n\\includegraphics[width=0.8\\linewidth]{" << filename << "}\n\\end{center}\n"<<std::endl;
+      ++texmacs_counter;
+    }
+  }
+  else {
+    if (slider) {
+      string tmp=gg.print(contextptr);
+      if (tmp.size()>256) tmp=tmp.substr(0,255)+"...";
+      warn +=  "Line " + giac::print_INT_(line)+" slider "+ g.print(contextptr)+ " -> " +tmp + '\n';
+      return;
+    }
+    int ta=taille(gg,41);
+    if (ta>=40){
+      string tmp=gg.print(contextptr);
+      if (tmp.size()>256) tmp=tmp.substr(0,255)+"...";
+      warn +=  "Line " + giac::print_INT_(line)+ " large output "+g.print(contextptr)+ " -> " +tmp + '\n';
+      // giac::attributs attr(14,0,1);
+      // giac::gen data=xcas::Equation_compute_size(g,attr,600,contextptr);
+    }
+    gg=giac::_latex(gg,contextptr);
+    std::string s=(gg.type==giac::_STRNG)?(*gg._STRNGptr):gg.print(contextptr);
+    out << "$$" << s << "$$" << std::endl;
+  }  
+}
+
+void pgiac(std::string infile,std::string outfile,std::ostream * checkptr,std::ostream * checkptrin){
+  COUT << "Giac pdflatex and HTML5 output" << endl;
+  COUT << "Partly inspired from pgiac by Jean-Michel Sarlat" << endl;
+  if (!giac::is_file_available("giac.tex")){
+    if (giac::is_file_available("/usr/share/giac/doc/giac.tex"))
+      system("cp /usr/share/giac/doc/giac.tex .");
+    else {
+      if (giac::is_file_available("/usr/local/share/giac/doc/giac.tex"))
+	system("cp /usr/local/share/giac/doc/giac.tex .");
+      else 
+	if (giac::is_file_available("/Applications/share/giac/doc/giac.tex"))
+	  system("cp /Applications/share/giac/doc/giac.tex .");
+    }
+  }
+  if (!giac::is_file_available("giacfr.tex")){
+    if (giac::is_file_available("/usr/share/giac/doc/giacfr.tex"))
+      system("cp /usr/share/giac/doc/giacfr.tex .");
+    else {
+      if (giac::is_file_available("/usr/local/share/giac/doc/giacfr.tex"))
+	system("cp /usr/local/share/giac/doc/giacfr.tex .");
+      else 
+	if (giac::is_file_available("/Applications/share/giac/doc/giacfr.tex"))
+	  system("cp /Applications/share/giac/doc/giacfr.tex .");
+    }
+  }
+  std::string infile_=giac::remove_extension(infile),warn;
+  int line=0;
+  giac::context ct;
+  debug_ptr(&ct)->debug_allowed=false;
+  ifstream in(infile.c_str());
+  ofstream out(outfile.c_str());
+  const int BUFFER_SIZE=32768-1;
+  char buf[BUFFER_SIZE+1];
+  buf[BUFFER_SIZE]=0;
+  bool inside=false,inprog=false,inverb=false;
+  string prg;
+  for (;;){
+    if (in.eof())
+      break;
+    in.getline(buf,BUFFER_SIZE,'\n');++line;
+    string s(buf);
+    if (s.empty() && inside)
+      out << endl;
+    for (;!s.empty();){
+      int ss=s.size();
+      int pos=0;
+      if (inside){
+	if (!inverb){
+	  pos=s.find("\\verb");
+	  if (pos>=0 && pos<ss){
+	    out << s << endl; // ignore filtering if \verb inside
+	    break;
+	  }
+	  pos=s.find("\\begin{verbatim}");
+	  if (pos>=0 && pos<ss){
+	    inverb=true;
+	    out << s << endl;
+	    break;
+	  }
+	}
+	pos=s.find("\\end{verbatim}");
+	if (pos>=0 && pos<ss){
+	  inverb=false;
+	  out << s << endl;
+	  break;
+	}
+      }
+      pos=s.find("%");
+      if (pos>=0 && pos<ss){
+	int pos1=s.find("{"),pos2=s.find("}");
+	if (pos1<0 || pos1>=pos || pos2<0 || pos2>=ss){ 
+	  s=s.substr(0,pos); // should check % inside verb/verbatim
+	  continue;
+	}
+      }
+      if (!inside){
+	int pos=s.find("\\begin{document}");
+	if (pos>=0 && pos<ss){
+	  out << "\\usepackage{graphicx}\n\\usepackage{xcolor}\n\\newcommand{\\MarqueCommandeGiac}[1]{\n\\color[HTML]{8B7500}$\\rightarrow$}\n\\newcommand{\\MarqueLaTeXGiac}{%\n\\color[HTML]{08868B}}\n\\newcommand{\\InscriptionFigureGiac}[1]{%\n\\begin{center}\n\\includegraphics[width=0.7\\linewidth]{#1}\n\\end{center}\n}" << endl;
+	  inside=true;
+	}
+      }
+      else {
+	int pos=s.find("\\end{document}");
+	if (pos>=0 && pos<ss){
+	  out << s << endl;
+	  out.close();
+	  COUT << "File " << outfile << " created, now running hevea in background and pgiac " << outfile << endl << "Then I will run pdflatex " << giac::remove_extension(outfile) << endl << "For HTML5 output, you can run\nhevea -fix " << infile_ << endl;
+	  std::string cmd="hevea -fix "+infile_+" &";
+	  system(cmd.c_str());
+	  cmd="makeindex "+giac::remove_extension(outfile);
+	  system(cmd.c_str());
+	  cmd=("pdflatex "+giac::remove_extension(outfile)+" && mv "+giac::remove_extension(outfile)+".pdf "+infile_+".pdf");
+	  COUT << cmd << endl;
+	  system(cmd.c_str());
+	  if (!warn.empty()){
+	    COUT << "*********************************" << endl;
+	    COUT << "*********************************" << endl;
+	    COUT << "Please take care of the warnings below. Press ENTER to continue" << endl << warn;
+	    COUT << "*********************************" << endl;	    
+	    COUT << "*********************************" << endl;
+	  }
+	  return;
+	}
+      }
+      if (inprog){
+	pos=s.find("\\end{giacprog}");
+	if (pos>=0 && pos<ss){
+	  prg += s.substr(0,pos);
+	  out << "\\begin{verbatim}\n" << prg << "\\end{verbatim}" << endl;
+	  giac::gen g(prg,&ct),gg;
+	  int reading_file=0;
+	  std::string filename;
+	  xcas::icas_eval(g,gg,reading_file,filename,&ct);  
+	  if (checkptrin){
+	    string gs=prg;
+	    int ss=gs.size();
+	    for (;ss>0;--ss){
+	      if (gs[ss-1]!=' ' && gs[ss-1]!='\n')
+		break;
+	    }
+	    if (ss && gs[ss-1]!=';')
+	      gs += ';';
+	    *checkptrin << gs << endl ;
+	  }
+	  if (checkptr) *checkptr << gg << endl;
+	  s=s.substr(pos+14,ss-14-pos);
+	  inprog=false;
+	  continue;
+	}
+	prg += s + '\n';
+	break; // read next line until \end{giacprog}
+      }
+      pos=s.find("\\begin{giacprog}");
+      if (pos>=0 && pos<ss){
+	prg = "";
+	s=s.substr(pos+16,ss-16-pos);
+	inprog=true;
+	continue;
+      }
+      pos=s.find("\\giac");
+      if (inside && pos>=0 && pos<ss){
+	out << s.substr(0,pos) << endl;
+	s=s.substr(pos,ss-pos);
+	ss=s.size();
+	bool invalid=false;
+	int pos1=s.find("{"),pos2=s.find("}");
+	while ( (pos1>=0 && pos1<ss ) && (pos2<0 || pos2>=ss)){
+	  // scan file until matching }
+	  if (in.eof())
+	    break;
+	  in.getline(buf,BUFFER_SIZE,'\n');++line;
+	  string adds(buf);
+	  s += adds; ss=s.size();
+	  pos2=s.find("}");
+	}
+	if (ss>10 && s.substr(1,8)=="giaclink" && pos1>=0 && pos1<ss && pos2>=0 && pos2<ss){
+	  out << s.substr(0,pos2+1) << endl;
+	  s=s.substr(pos2+1,ss-pos2-1);
+	  continue;
+	}
+	if (ss>20 && s.substr(1,10)=="giacslider" && pos1>=0 && pos1<ss && pos2>=0 && pos2<ss){
+	  string cmd=s.substr(pos1+1,pos2-pos1-1)+":=";
+	  for (int j=2;j<6;++j){
+	    s=s.substr(pos2+1,ss-pos2-1);
+	    ss=s.size();
+	    pos1=s.find("{");pos2=s.find("}");
+	    while ( (pos1>=0 && pos1<ss ) && (pos2<0 || pos2>=ss)){
+	      // scan file until matching }
+	      if (in.eof())
+		break;
+	      in.getline(buf,BUFFER_SIZE,'\n'); ++line;
+	      string adds(buf);
+	      s += adds; ss=s.size();
+	      pos2=s.find("}");
+	    }
+	    if (pos1>=0 && pos1<ss && pos2>=0 && pos2<ss)
+	      continue;
+	    invalid=true;
+	  }
+	  if (!invalid){
+	    cmd += s.substr(pos1+1,pos2-pos1-1);
+	    s=s.substr(pos2+1,ss-pos2-1);
+	    ss=s.size();
+	    pos1=s.find("{");pos2=s.find("}");
+	    while ( (pos1>=0 && pos1<ss ) && (pos2<0 || pos2>=ss)){
+	      // scan file until matching }
+	      if (in.eof())
+		break;
+	      in.getline(buf,BUFFER_SIZE,'\n'); ++line;
+	      string adds(buf);
+	      s += adds; ss=s.size();
+	      pos2=s.find("}");
+	    }
+	    if (pos1>=0 && pos1<ss && pos2>=0 && pos2<ss){
+	      cmd += ';'+s.substr(pos1+1,pos2-pos1-1);
+	      s=s.substr(pos2+1,ss-pos2-1);
+	      ss=s.size();
+	      verb(warn,line,out,cmd,infile_,texmacs_counter,true,&ct,checkptr,checkptrin);
+	    }
+	  }
+	  continue;
+	}
+	if (ss>10 && s.substr(1,7)=="giaccmd" && pos1>=0 && pos1<ss && pos2>=0 && pos2<ss){
+	  string cmd=s.substr(pos1+1,pos2-pos1-1);
+	  s=s.substr(pos2+1,ss-pos2-1);
+	  ss=s.size();
+	  pos1=s.find("{");pos2=s.find("}");
+	  while ( (pos1>=0 && pos1<ss ) && (pos2<0 || pos2>=ss)){
+	    // scan file until matching }
+	    if (in.eof())
+	      break;
+	    in.getline(buf,BUFFER_SIZE,'\n'); ++line;
+	    string adds(buf);
+	    s += adds; ss=s.size();
+	    pos2=s.find("}");
+	  }
+	  cmd = cmd + '('+s.substr(pos1+1,pos2-pos1-1)+')';
+	  verb(warn,line,out,cmd,infile_,texmacs_counter,false,&ct,checkptr,checkptrin); 
+	  s=s.substr(pos2+1,ss-pos2-1);	
+	  continue;
+	}
+	if (pos1>0 && pos1<ss && pos2>0 && pos2<ss){
+	  string cmd=s.substr(pos1+1,pos2-pos1-1);
+	  verb(warn,line,out,cmd,infile_,texmacs_counter,false,&ct,checkptr,checkptrin); 
+	  s=s.substr(pos2+1,ss-pos2-1);
+	  continue;
+	}
+	else
+	  COUT << "Invalid giac command " << s << endl;
+      }
+      out << s << endl;
+      break;
+    }
+  }
+  out.close();
+  COUT << "Missing \\end{document}. File " << outfile << " created" << endl;
+  //system(("pgiac "+outfile).c_str());
+}
+
+#else
+void pgiac(std::string infile,std::string outfile,std::ostream * checkptr,std::ostream * checkptrin){
+  ifstream in(infile.c_str());
+  ofstream out(outfile.c_str());
+  const int BUFFER_SIZE=32768-1;
+  char buf[BUFFER_SIZE+1];
+  buf[BUFFER_SIZE]=0;
+  bool inside=false,inprog=false,inverb=false;
+  string prg;
+  for (;;){
+    if (in.eof())
+      break;
+    in.getline(buf,BUFFER_SIZE,'\n');
+    string s(buf);
+    for (;!s.empty();){
+      int ss=s.size();
+      int pos=0;
+      if (inside){
+	if (!inverb){
+	  pos=s.find("\\verb");
+	  if (pos>=0 && pos<ss){
+	    out << s << endl; // ignore filtering if \verb inside
+	    break;
+	  }
+	  pos=s.find("\\begin{verbatim}");
+	  if (pos>=0 && pos<ss){
+	    inverb=true;
+	    out << s << endl;
+	    break;
+	  }
+	}
+	pos=s.find("\\end{verbatim}");
+	if (pos>=0 && pos<ss){
+	  inverb=false;
+	  out << s << endl;
+	  break;
+	}
+      }
+      pos=s.find("%");
+      if (pos>=0 && pos<ss){
+	int pos1=s.find("{"),pos2=s.find("}");
+	if (pos1<0 || pos1>=pos || pos2<0 || pos2>=ss){ 
+	  s=s.substr(0,pos); // should check % inside verb/verbatim
+	  continue;
+	}
+      }
+      if (!inside){
+	int pos=s.find("\\begin{document}");
+	if (pos>=0 && pos<ss){
+	  out << "\\usepackage{graphicx}\n\\usepackage{xcolor}\n\\newcommand{\\MarqueCommandeGiac}[1]{\n\\color[HTML]{8B7500}$\\rightarrow$}\n\\newcommand{\\MarqueLaTeXGiac}{%\n\\color[HTML]{08868B}}\n\\newcommand{\\InscriptionFigureGiac}[1]{%\n\\begin{center}\n\\includegraphics[width=0.7\\linewidth]{#1}\n\\end{center}\n}" << endl;
+	  inside=true;
+	}
+      }
+      else {
+	int pos=s.find("\\end{document}");
+	if (pos>=0 && pos<ss){
+	  out << s << endl;
+	  out.close();
+	  COUT << "File " << outfile << " created, now running hevea in background and pgiac " << outfile << endl << "Then I will run pdflatex " << giac::remove_extension(outfile) << endl << "For HTML5 output, you can run\nhevea -fix " << giac::remove_extension(infile) << endl;
+	  std::string cmd="hevea -fix "+giac::remove_extension(infile)+" &";
+	  system(cmd.c_str());
+	  cmd=("pgiac "+outfile+" && pdflatex "+giac::remove_extension(outfile)+" && mv "+giac::remove_extension(outfile)+".pdf "+giac::remove_extension(infile)+".pdf");
+	  COUT << cmd << endl;
+	  system(cmd.c_str());
+	  return;
+	}
+      }
+      if (inprog){
+	pos=s.find("\\end{giacprog}");
+	if (pos>=0 && pos<ss){
+	  prg += s.substr(0,pos);
+	  out << ".g " << prg << endl;
+	  s=s.substr(pos+14,ss-14-pos);
+	  inprog=false;
+	  continue;
+	}
+	prg += s + " ";
+	break; // read next line until \end{giacprog}
+      }
+      pos=s.find("\\begin{giacprog}");
+      if (pos>=0 && pos<ss){
+	prg = "";
+	s=s.substr(pos+16,ss-16-pos);
+	inprog=true;
+	continue;
+      }
+      pos=s.find("\\giac");
+      if (inside && pos>=0 && pos<ss){
+	out << s.substr(0,pos) << endl;
+	s=s.substr(pos,ss-pos);
+	ss=s.size();
+	bool invalid=false;
+	int pos1=s.find("{"),pos2=s.find("}");
+	while ( (pos1>=0 && pos1<ss ) && (pos2<0 || pos2>=ss)){
+	  // scan file until matching }
+	  if (in.eof())
+	    break;
+	  in.getline(buf,BUFFER_SIZE,'\n');
+	  string adds(buf);
+	  s += adds; ss=s.size();
+	  pos2=s.find("}");
+	}
+	if (ss>10 && s.substr(1,8)=="giaclink" && pos1>=0 && pos1<ss && pos2>=0 && pos2<ss){
+	  out << s.substr(0,pos2+1) << endl;
+	  s=s.substr(pos2+1,ss-pos2-1);
+	  continue;
+	}
+	if (ss>20 && s.substr(1,10)=="giacslider" && pos1>=0 && pos1<ss && pos2>=0 && pos2<ss){
+	  string cmd=s.substr(pos1+1,pos2-pos1-1)+":=";
+	  for (int j=2;j<6;++j){
+	    s=s.substr(pos2+1,ss-pos2-1);
+	    ss=s.size();
+	    pos1=s.find("{");pos2=s.find("}");
+	    while ( (pos1>=0 && pos1<ss ) && (pos2<0 || pos2>=ss)){
+	      // scan file until matching }
+	      if (in.eof())
+		break;
+	      in.getline(buf,BUFFER_SIZE,'\n');
+	      string adds(buf);
+	      s += adds; ss=s.size();
+	      pos2=s.find("}");
+	    }
+	    if (pos1>=0 && pos1<ss && pos2>=0 && pos2<ss)
+	      continue;
+	    invalid=true;
+	  }
+	  if (!invalid){
+	    cmd += s.substr(pos1+1,pos2-pos1-1);
+	    s=s.substr(pos2+1,ss-pos2-1);
+	    ss=s.size();
+	    pos1=s.find("{");pos2=s.find("}");
+	    while ( (pos1>=0 && pos1<ss ) && (pos2<0 || pos2>=ss)){
+	      // scan file until matching }
+	      if (in.eof())
+		break;
+	      in.getline(buf,BUFFER_SIZE,'\n');
+	      string adds(buf);
+	      s += adds; ss=s.size();
+	      pos2=s.find("}");
+	    }
+	    if (pos1>=0 && pos1<ss && pos2>=0 && pos2<ss){
+	      cmd += ';'+s.substr(pos1+1,pos2-pos1-1);
+	      s=s.substr(pos2+1,ss-pos2-1);
+	      ss=s.size();
+	      out << ".g " << cmd << endl ;
+	    }
+	  }
+	  continue;
+	}
+	if (ss>10 && s.substr(1,7)=="giaccmd" && pos1>=0 && pos1<ss && pos2>=0 && pos2<ss){
+	  string cmd=s.substr(pos1+1,pos2-pos1-1);
+	  s=s.substr(pos2+1,ss-pos2-1);
+	  ss=s.size();
+	  pos1=s.find("{");pos2=s.find("}");
+	  while ( (pos1>=0 && pos1<ss ) && (pos2<0 || pos2>=ss)){
+	    // scan file until matching }
+	    if (in.eof())
+	      break;
+	    in.getline(buf,BUFFER_SIZE,'\n');
+	    string adds(buf);
+	    s += adds; ss=s.size();
+	    pos2=s.find("}");
+	  }
+	  cmd = cmd + '('+s.substr(pos1+1,pos2-pos1-1)+')';
+	  out << ".g " << cmd << endl ;
+	  s=s.substr(pos2+1,ss-pos2-1);	
+	  continue;
+	}
+	if (pos1>0 && pos1<ss && pos2>0 && pos2<ss){
+	  string cmd=s.substr(pos1+1,pos2-pos1-1);
+	  out << ".g " << cmd << endl ;
+	  s=s.substr(pos2+1,ss-pos2-1);
+	  continue;
+	}
+	else
+	  COUT << "Invalid giac command " << s << endl;
+      }
+      out << s << endl;
+      break;
+    }
+  }
+  out.close();
+  COUT << "Missing \\end{document}. File " << outfile << " created, now running pgiac" << endl;
+  system(("pgiac "+outfile).c_str());
+}
+#endif
 
 int main(int ARGC, char *ARGV[]){    
+  //giac::step_infolevel=1;
+  cerr << "// Maximum number of parallel threads " << giac::threads << endl;
   giac::context giac_context;
   giac::context * contextptr = 
     //  (giac::context *) giac::context0 ; 
     &giac_context;
-  giac::xcasroot=giac::xcasroot_dir(ARGV[0]);
+#if !defined EMCC && !defined NSPIRE_NEWLIB
+  giac::xcasroot()=giac::xcasroot_dir(ARGV[0]);
+#endif
+#ifndef VISUALC
   signal(SIGINT,ctrl_c_signal_handler);
+#endif
   //cerr << giac::remove_filename(ARGV[0]) << endl;
 #ifdef HAVE_LIBGSL
   gsl_set_error_handler_off();
 #endif
+#ifdef HAVE_LIBFLTK
+#if !defined(__APPLE__) && !defined(WIN32)
+  if (getenv("DISPLAY"))
+#endif
+    Fl::gl_visual(FL_RGB | FL_DEPTH | FL_ACCUM | FL_ALPHA);
+#endif
   giac::secure_run=false;
+#if !defined EMCC && !defined NSPIRE_NEWLIB
   if (ARGC==2 && !strcmp(ARGV[1],"--rebuild-help-cache")){
-    for (int i=0;i<=3;++i)
+    for (int i=0;i<=4;++i)
       giac::html_help_init("aide_cas",i,true,true);
     return 0;
   }
+#endif
   giac::gnuplot_ymin=-2.4;
   giac::gnuplot_ymax=2.1;
 #ifdef GNUWINCE
@@ -306,8 +884,8 @@ int main(int ARGC, char *ARGV[]){
     ifstream in("Cas.txt");
     ofstream out("Out.txt");
     giac::outptr=&out;
-    giac::vecteur args,l;
-    giac::readargs_from_stream(in,args,l);
+    giac::vecteur args;
+    giac::readargs_from_stream(in,args);
     clock_t start, end;  
     int s=args.size();
     for (int i=0;i<s;++i){
@@ -332,26 +910,124 @@ int main(int ARGC, char *ARGV[]){
   giac::child_id=1;
   bool intexmacs=((ARGC>=2) && std::string(ARGV[1])=="--texmacs");
   bool inemacs=((ARGC>=2) && std::string(ARGV[1])=="--emacs");
+  bool insage=((ARGC>=2) && std::string(ARGV[1])=="--sage");
   if (inemacs){
     putchar(EMACS_DATA_BEGIN);
     putchar(EMACS_ERROR);
   }
+  if (insage)
+    ARGC=1;
   // Config
-  bool show_time=false,show_tex=false;
+  bool show_time=true,show_tex=false;
   giac::read_env(contextptr,!inemacs && !intexmacs);
   int savedbg=giac::debug_infolevel;
   giac::protected_read_config(contextptr,false);
+  if (getenv("GIAC_THREADS")){
+    int t=atoi(getenv("GIAC_THREADS"));
+    if (t>=1){
+      giac::threads=t;
+      *logptr(contextptr) << "Setting threads to " << t << endl;
+    }
+  }
+  if (getenv("GIAC_FFTMUL_SIZE")){
+    int t=atoi(getenv("GIAC_FFTMUL_SIZE"));
+    if (t>=1){
+      giac::FFTMUL_SIZE=t;
+      *logptr(contextptr) << "Setting FFT mult size to " << t << endl;
+    }
+  }
+  if (getenv("GIAC_MIN_PROBA_TIME")){
+    double t=atof(getenv("GIAC_MIN_PROBA_TIME"));
+    if (t>=0){
+      giac::min_proba_time=t;
+      *logptr(contextptr) << "Setting minimal probabilistic answer time delat to " << t << endl;
+    }
+  }
   if (savedbg)
     giac::debug_infolevel=savedbg;
+  if (ARGC>=2){
+    giac::set_language(giac::language(contextptr),contextptr);
+    ostream * checkptr=0,*checkptrin=0;
+    std::string infile(ARGV[1]),outfile=giac::remove_extension(infile);
+    if (infile==outfile && !giac::is_file_available(ARGV[1]) && giac::is_file_available((infile+".tex").c_str()))
+      infile=outfile+".tex";
+    if (infile==outfile+".tex"){
+      outfile=outfile+"_.tex";
+      // outfile=outfile+"_.w";
+      if (ARGC>=3){
+	if (std::string(ARGV[2])=="--check"){
+	  if (ARGC>=4){
+	    checkptr=new ofstream((string(ARGV[3])+".out").c_str());
+	    checkptrin=new ofstream((string(ARGV[3])+".in").c_str());
+	  }
+	  else {
+	    checkptr=new ofstream((infile+".out").c_str());
+	    checkptrin=new ofstream((infile+".in").c_str());
+	  }
+	}
+	else
+	  outfile=ARGV[2];
+      }
+      if (!giac::is_file_available(infile.c_str())){
+	COUT << "Unable to read " << infile << endl;
+	return 1;
+      }
+      pgiac(infile,outfile,checkptr,checkptrin);
+      if (checkptr) delete checkptr;
+      if (checkptrin) delete checkptrin;
+      return 0;
+    }
+  }
+  if (ARGC>=3 && std::string(ARGV[1])=="--tex"){
+    giac::set_language(giac::language(contextptr),contextptr);
+    ostream * checkptr=0,*checkptrin=0;
+    // scan ARGV[2], search for commands starting by \giac...{}
+    // output .g command, output everything else verbatim 
+    // output goes in ARGV[3] or in ARGV[2].w
+    // after that it is processed by pgiac
+    std::string infile(ARGV[2]),outfile=giac::remove_extension(infile);
+    if (infile==outfile){
+      infile=infile+".tex";
+      outfile=outfile+"_.w";
+    }
+    if (ARGC>=4){
+      if (std::string(ARGV[2])=="--check"){
+	if (ARGC>=5){
+	  checkptr=new ofstream((string(ARGV[4])+".out").c_str());
+	  checkptrin=new ofstream((string(ARGV[4])+".in").c_str());
+	}
+	else {
+	  checkptr=new ofstream((infile+".out").c_str());
+	  checkptrin=new ofstream((infile+".in").c_str());
+	}
+      }
+      else
+	outfile=ARGV[3];
+    }
+    if (!giac::is_file_available(infile.c_str())){
+      COUT << "Unable to read " << infile << endl;
+      return 1;
+    }
+    pgiac(infile,outfile,checkptr,checkptrin);
+    if (checkptr) delete checkptr;
+    if (checkptrin) delete checkptrin;
+    return 0;
+  }
   // Help and completion
   int helpitems;
-  (*giac::vector_aide_ptr)=giac::readhelp("aide_cas",helpitems,false);
-  if (!helpitems){
-    if (getenv("XCAS_HELP"))
-      (*giac::vector_aide_ptr)=giac::readhelp(getenv("XCAS_HELP"),helpitems);
-    else
-      (*giac::vector_aide_ptr)=giac::readhelp((giac::giac_aide_dir()+"aide_cas").c_str(),helpitems);
+#ifdef STATIC_BUILTIN_LEXER_FUNCTIONS
+  if (giac::debug_infolevel==-2){
+#endif
+    giac::readhelp((*giac::vector_aide_ptr()),"aide_cas",helpitems,false);
+    if (!helpitems){
+      if (getenv("XCAS_HELP"))
+	giac::readhelp((*giac::vector_aide_ptr()),getenv("XCAS_HELP"),helpitems,true);
+      else
+	giac::readhelp((*giac::vector_aide_ptr()),(giac::giac_aide_dir()+"aide_cas").c_str(),helpitems,true);
+    }
+#ifdef STATIC_BUILTIN_LEXER_FUNCTIONS
   }
+#endif
   if (giac::debug_infolevel){
     if (!helpitems)
       cerr << "Unable to open help file aide_cas" << endl;
@@ -364,15 +1040,20 @@ int main(int ARGC, char *ARGV[]){
    * EMACS *
    *********/
   // #define EMACS_DEBUG 1
+#if !defined EMCC && !defined NSPIRE_NEWLIB
   if (inemacs){
     giac::html_help_init(ARGV[0],false);
     int out_handle;
+#ifdef WITH_GNUPLOT
     giac::run_gnuplot(out_handle);
+#endif
     putchar(EMACS_DATA_END);
     putchar(EMACS_DATA_BEGIN);
     putchar(EMACS_RESULT);
-    printf(" Giac CAS for mupacs, released under the GPL license 3.0\n");
-    printf("| (c) 2008 B. Parisse & al (giac), F.Maltey & al (mupacs) |\n");
+    printf("Giac CAS for mupacs, released under the GPL license 3.0\n");
+    printf("See http://www.gnu.org for license details\n");
+    printf("May contain BSD licensed software parts (lapack, atlas, tinymt)\n");
+    printf("| (c) 2006, 2016 B. Parisse & al (giac), F.Maltey & al (mupacs) |\n");
     putchar(EMACS_DATA_END);
     bool prompt=true;
     for (int k=0;;++k) {
@@ -430,9 +1111,9 @@ int main(int ARGC, char *ARGV[]){
 	if (cmd==EMACS_ASK_COMPLETION){
 	  // reading possible completions from aide_cas
 	  vector<string> vres;
-	  for (unsigned k=0;k<(*giac::vector_completions_ptr).size();++k){
-	    if ((*giac::vector_completions_ptr)[k].substr(0,s)==buffer){
-	      vres.push_back((*giac::vector_completions_ptr)[k]);
+	  for (unsigned k=0;k<(*giac::vector_completions_ptr()).size();++k){
+	    if ((*giac::vector_completions_ptr())[k].substr(0,s)==buffer){
+	      vres.push_back((*giac::vector_completions_ptr())[k]);
 	    }
 	  }
 	  // add global names
@@ -489,7 +1170,7 @@ int main(int ARGC, char *ARGV[]){
 	  logfile << common << " " << l << " " << s;
 #endif
 	  if (l>s)
-	    printf(common.substr(s,l-s).c_str());
+	    printf("%s",common.substr(s,l-s).c_str());
 	  putchar(EMACS_DATA_END);
 	  prompt=false;
 	}
@@ -498,15 +1179,19 @@ int main(int ARGC, char *ARGV[]){
 	    break;
 	  if (buffer=="?")
 	    buffer="?giac";
+#ifdef HAVE_SIGNAL_H_OLD
 	  giac::messages_to_print="";
+#endif
 	  giac::gen g(buffer,contextptr),gg;
 	  
+#ifdef HAVE_SIGNAL_H_OLD
 	  if (giac::messages_to_print.size()>1){
 	    putchar(EMACS_DATA_BEGIN);
 	    putchar(EMACS_ERROR);
 	    printf("%s\n",giac::messages_to_print.c_str());
 	    putchar(EMACS_DATA_END);
 	  }
+#endif
 	  check_browser_help(g);
 	  putchar(EMACS_DATA_BEGIN);
 	  putchar(EMACS_RESULT);
@@ -541,7 +1226,7 @@ int main(int ARGC, char *ARGV[]){
       } // end normal command
     } // end while(1)
     return 0;
-  }
+  } // if (inemacs)
   /* END EMACS */
 
   /* *********************************************************
@@ -550,13 +1235,17 @@ int main(int ARGC, char *ARGV[]){
   if ( intexmacs){
     giac::html_help_init(ARGV[0],false);
     int out_handle;
+#ifdef WITH_GNUPLOT
     giac::run_gnuplot(out_handle);
+#endif
     putchar(TEXMACS_DATA_BEGIN);
     printf("verbatim:");
     format_plugin();
     printf("--------------------------------------------------------------------\n");
-    printf("|     Giac CAS for TeXmacs, released under the GPL license (2.0)    |\n");
-    printf("| (c) 2003,2006 B. Parisse & al (giac), J. van der Hoeven (TeXmacs) |\n");
+    printf("|     Giac CAS for TeXmacs, released under the GPL license (3.0)    |\n");
+    printf("|     See http://www.gnu.org for license details                    |\n");
+    printf("|  May contain BSD licensed software parts (lapack, atlas, tinymt)  |\n");
+    printf("| (c) 2003,2016 B. Parisse & al (giac), J. van der Hoeven (TeXmacs) |\n");
     printf("--------------------------------------------------------------------\n");
     switch (giac::xcas_mode(contextptr)){
     case 0:
@@ -585,11 +1274,15 @@ int main(int ARGC, char *ARGV[]){
 	  break;
 	car=i;
 	if (car=='\n'){
+#if !defined VISUALC && !defined __MINGW_H
 	  giac::set_nonblock_flag(STDIN_FILENO,1); // set non blocking mode on stdin
+#endif
 	  usleep(5000);
 	  // ssize_t s=read(STDIN_FILENO,&nxt,1);
 	  i=getchar();
+#if !defined VISUALC && !defined __MINGW_H
 	  giac::set_nonblock_flag(STDIN_FILENO,0); // set blocking mode on stdin
+#endif
 	  // cerr << "read "  << s << endl;
 	  if (i==EOF)
 	    break;
@@ -632,9 +1325,9 @@ int main(int ARGC, char *ARGV[]){
 	    // reading possible completions from aide_cas
 	    vector<string> vres;
 	    string res=partial_string.substr(0,n);
-	    for (unsigned k=0;k<(*giac::vector_completions_ptr).size();++k){
-	      if ((*giac::vector_completions_ptr)[k].substr(0,n)==res){
-		vres.push_back((*giac::vector_completions_ptr)[k]);
+	    for (unsigned k=0;k<(*giac::vector_completions_ptr()).size();++k){
+	      if ((*giac::vector_completions_ptr())[k].substr(0,n)==res){
+		vres.push_back((*giac::vector_completions_ptr())[k]);
 	      }
 	    }
 	    int vs=vres.size();
@@ -668,13 +1361,17 @@ int main(int ARGC, char *ARGV[]){
       // ONLINE HELP
       if (buffer=="?"){
 #ifndef HAVE_NO_SYSTEM
-	system(giac::browser_command("doc/index.html").c_str());
+	giac::system_browser_command("doc/index.html");
 #endif
 	buffer="?giac";
       }
+#ifdef HAVE_SIGNAL_H_OLD
       giac::messages_to_print="";
+#endif
       giac::gen g(buffer,contextptr),gg;
+#ifdef HAVE_SIGNAL_H_OLD
       printf("%s\n",giac::messages_to_print.c_str());
+#endif
       check_browser_help(g);
       // END ONLINE HELP
       // GEO SETUP
@@ -735,13 +1432,19 @@ int main(int ARGC, char *ARGV[]){
       putchar(TEXMACS_DATA_END); // end answer
       texmacs_next_input();
     }
+#ifdef WITH_GNUPLOT
     if (giac::has_gnuplot)
       giac::kill_gnuplot();
+#endif
     return 0;
   }
   /* *********************************************************
      *                       END OF TEXMACS                  *
      ********************************************************* */
+#endif // EMCC not defined
+
+  if (insage || getenv("GIAC_NO_TIME"))
+    show_time=false;
   if (getenv("GIAC_TIME"))
     show_time=true;
   if (getenv("GIAC_TEX")){
@@ -753,10 +1456,11 @@ int main(int ARGC, char *ARGV[]){
     struct tms start, end;  
     using_history();
     cout << "Welcome to giac readline interface" << endl;
-    cout << "(c) 2001,2008 B. Parisse & others" << endl;
+    cout << "(c) 2001,2016 B. Parisse & others" << endl;
     cout << "Homepage http://www-fourier.ujf-grenoble.fr/~parisse/giac.html" << endl;
     cout << "Released under the GPL license 3.0 or above" << endl;
     cout << "See http://www.gnu.org for license details" << endl;
+    cout << "May contain BSD licensed software parts (lapack, atlas, tinymt)" << endl;
     cout << "-------------------------------------------------" << endl;
     cout << "Press CTRL and D simultaneously to finish session" << endl;
     cout << "Type ?commandname for help" << endl;
@@ -765,14 +1469,55 @@ int main(int ARGC, char *ARGV[]){
       if (!res)
 	break;
       string s(res);
+      int bs=s.size();
+      if (insage && bs && s[bs-1]==63){
+	string complete_string(s.substr(0,bs-1));
+	// search non ascii char starting from the end
+	int bs=complete_string.size();
+	string partial_string;
+	for (int i=bs-1;i>=0;--i){
+	  if (giac::isalphan(complete_string[i]))
+	    ;
+	  else {
+	    complete_string=complete_string.substr(i+1,bs-i-1);
+	    break;
+	  }
+	}
+	bs=complete_string.size();
+	// reading pobsible completions from aide_cas
+	vector<string> vres;
+	for (unsigned k=0;k<(*giac::vector_completions_ptr()).size();++k){
+	  if ((*giac::vector_completions_ptr())[k].substr(0,bs)==complete_string){
+	    vres.push_back((*giac::vector_completions_ptr())[k]);
+	  }
+	}
+	int vs=vres.size();
+	for (int k=0;k<vs;k++){
+	  string & tmp=vres[k];
+	  printf("%s\n",tmp.c_str());
+	}
+	printf("%s","----\n");
+	continue;
+      }
       s += '\n';
+#ifdef HAVE_SIGNAL_H_OLD
       giac::messages_to_print="";
+#endif
       giac::gen gq(s,contextptr),ge;
-      giac::ctrl_c=false;
+      if (giac::first_error_line(contextptr)){
+	cout << parser_error(contextptr);
+      }
+      giac::ctrl_c=false; giac::interrupted=false;
       int reading_file=0;
       std::string filename;
+#ifdef __APPLE__
+      unsigned startc=clock();
+#endif
       times(&start);
       xcas::icas_eval(gq,ge,reading_file,filename,contextptr);
+#ifdef __APPLE_
+      startc=clock()-startc;
+#endif
       times(&end);
       giac::history_in(contextptr).push_back(gq);
       giac::history_out(contextptr).push_back(ge);
@@ -780,14 +1525,27 @@ int main(int ARGC, char *ARGV[]){
       int graph_output=graph_output_type(ge);
       if (reading_file>=2 || graph_output || (giac::ckmatrix(ge,true) &&ge.subtype==giac::_SPREAD__VECT) ){
 	if (xcas::fltk_view(gq,ge,"",filename,reading_file,contextptr))
-	  cout << "Done" << endl;
+	  cout << "Done";
 	else
-	  cout << "Plot cancelled or unable to plot" << endl;
+	  cout << "Plot cancelled or unable to plot";
       }
-      else
-	cout << ge.print(contextptr) << endl;
+      else {
+	int taillemax=1000;
+	if (getenv("GIAC_TAILLEMAX"))
+	  taillemax=atoi(getenv("GIAC_TAILLEMAX"));
+	string s=taille(ge,taillemax)>taillemax?"Done":ge.print(contextptr);
+	cout << s;
+      }
+      cout << endl;
+#ifdef HAVE_SIGNAL_H_OLD
       cerr << giac::messages_to_print << endl;
-      cerr << "// Time " << giac::delta_tms(start,end) << endl;
+#endif
+      if (show_time){
+#ifdef __APPLE__
+	cerr << "// dclock1 " << double(startc)/CLOCKS_PER_SEC << endl;
+#endif
+	cerr << "// Time " << giac::delta_tms(start,end) << endl;
+      }
 #ifdef HAVE_EQASCII
       struct Tgraph *graph=(Tgraph *)malloc(sizeof(struct Tgraph));
       char **screen;
@@ -807,8 +1565,10 @@ int main(int ARGC, char *ARGV[]){
       dealloc(graph); 
 #endif // HAVE_EQASCII
     }
+#ifdef WITH_GNUPLOT
     if (giac::has_gnuplot)
       giac::kill_gnuplot();
+#endif
     return 0;
   }
 #endif // HAVE_LIBREADLINE
@@ -847,37 +1607,59 @@ int main(int ARGC, char *ARGV[]){
     }
   }
   ofstream texlog("session.tex",ios::app);
+  giac::vecteur v;
+  giac::gen e;
+#if defined VISUALC || defined __MINGW_H
+  int f1,f2;
+  string st;
+#else
   timeval tt; // get time info for label initialization
   gettimeofday(&tt,0);
-  giac::gen et((int) tt.tv_sec),e;
+  giac::gen et((int) tt.tv_sec);
   string st(et.print(contextptr));
-  giac::vecteur v;
-  giac::vecteur l;
   struct tms start, end,f1,f2;  
   times(&start);
   f2=start;
+#endif
   //xcas_mode(contextptr)=1;
   //rpn_mode=true;
+#ifdef HAVE_SIGNAL_H_OLD
   giac::messages_to_print="";
+#endif
   if (ARGC==2)
     giac::parser_filename(ARGV[1],contextptr);
-  giac::readargs(ARGC,ARGV,l,v,contextptr);
+  giac::readargs(ARGC,ARGV,v,contextptr);
+#ifdef HAVE_SIGNAL_H_OLD
   cerr << giac::messages_to_print << endl;
   bool resultat=(giac::messages_to_print=="\n");
+#else
+  bool resultat=false;
+#endif
   giac::vecteur::const_iterator it=v.begin(),itend=v.end();
   for (int i=0;it!=itend;++it,++i){
+#ifdef HAVE_SIGNAL_H_OLD
     giac::messages_to_print = "";
+#endif
     f1=f2;
     giac::gen gq(*it);
     giac::history_in(contextptr).push_back(gq);
     int reading_file=0;
     std::string filename;
+    unsigned startc;
     if (command==-1){
       cout << "\\begin{equation} \\label{eq:d_" << st << "_" << i << "}" << endl;
       cout << giac::gen2tex(gq,contextptr)  ;
+#ifdef __APPLE__
+      startc=clock();
+#endif
       xcas::icas_eval(gq,e,reading_file,filename,contextptr);
+#ifdef __APPLE__
+      startc=clock()-startc;
+#endif
+#ifdef HAVE_SIGNAL_H_OLD
       if (!giac::messages_to_print.empty())
 	cerr << giac::messages_to_print << endl;
+#endif
       if ((gq.type==giac::_SYMB) && (gq!=e))
 	cout << " = " << giac::gen2tex(e,contextptr) ;
       cout << " \\end{equation} " << endl;
@@ -885,9 +1667,17 @@ int main(int ARGC, char *ARGV[]){
     else {
       if (command>0)
 	gq=giac::symbolic(*u._FUNCptr,gq);
+#ifdef __APPLE__
+      startc=clock();
+#endif
       xcas::icas_eval(gq,e,reading_file,filename,contextptr);
+#ifdef __APPLE__
+      startc=clock()-startc;
+#endif
+#ifdef HAVE_SIGNAL_H_OLD
       if (!giac::messages_to_print.empty())
 	cerr << giac::messages_to_print << endl;
+#endif
       if (showcommand)
 	cout << "// " << *it << endl;
       cout << e.print(contextptr) ;
@@ -897,9 +1687,15 @@ int main(int ARGC, char *ARGV[]){
       }
       else
 	cout << endl;
+#if !defined VISUALC && ! defined __MINGW_H
       times(&f2);
-      if (show_time)
+      if (show_time){
+#ifdef __APPLE__
+	cerr << "// dclock2 " << double(startc)/CLOCKS_PER_SEC << endl;
+#endif
 	cerr << "// Time " << giac::delta_tms(f1,f2) << endl;
+      }
+#endif
       if (show_tex) { // append to session.tex
 	texlog << "\\begin{equation} \\label{eq:d_" << st << "_" << i << "}" << endl;
 	texlog << giac::gen2tex(gq,contextptr);
@@ -911,8 +1707,9 @@ int main(int ARGC, char *ARGV[]){
     giac::history_out(contextptr).push_back(e); 
   }
   // cerr << messages_to_print << endl;
-  // ofstream ans(("ans"+giac::cas_suffixe).c_str());
+  // ofstream ans((string("ans")+giac::cas_suffixe).c_str());
   // ans << e << endl;
+#if !defined VISUALC && !defined __MINGW_H
   times(&end);
   if (command==-1){
     cout << giac::tex_end << endl;
@@ -920,8 +1717,13 @@ int main(int ARGC, char *ARGV[]){
   }
   else {
     if (show_time)
-      cerr << "// Total time" << giac::delta_tms(start,end) << endl;
+      cerr << "// Total time " << giac::delta_tms(start,end) << endl;
   }
+#endif
+#ifdef WITH_GNUPLOT
   giac::kill_gnuplot();
+#endif
+  if (getenv("GIAC_RELEASE"))
+    giac::release_globals();
   return resultat;
 }

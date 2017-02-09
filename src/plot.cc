@@ -1,18 +1,18 @@
-/* -*- mode:C++ ; compile-command: "g++-3.4 -I.. -I../include -g -c plot.cc -Wall" -*- */
+/* -*- mode:C++ ; compile-command: "g++ -I. -I.. -I../include -g -c plot.cc -Wall -DIN_GIAC -DHAVE_CONFIG_H -DGIAC_GENERIC_CONSTANTS " -*- */
 // NB: Using gnuplot optimally requires patching and recompiling gnuplot
 // If you use the -DGNUPLOT_IO compile flag, you
 // MUST compile gnuplot with interactive mode enabled, file src/plot.c
 // line 448
 /*
-diff plot.c plot.c~
-448c448
-<     interactive = TRUE; // isatty(fileno(stdin));
----
->     interactive = isatty(fileno(stdin));
+  diff plot.c plot.c~
+  448c448
+  <     interactive = TRUE; // isatty(fileno(stdin));
+  ---
+  >     interactive = isatty(fileno(stdin));
 */
 
 /*
- *  Copyright (C) 2000/7 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
+ *  Copyright (C) 2000/14 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
  *  implicitplot3d code adapted from 
  *  http://astronomy.swin.edu.au/~pbourke/modelling/polygonise 
  *  by Paul Bourke and  Cory Gene Bloyd
@@ -28,23 +28,32 @@ diff plot.c plot.c~
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "first.h"
+#include "giacPCH.h"
+
 using namespace std;
-#include <fstream>
+#ifndef NSPIRE
+#ifdef VISUALC13
+#undef clock
+#undef clock_t
+#endif
 #include <iomanip>
-#include <vector>
+#endif
+#include <fstream>
+#include "vector.h"
 #include <algorithm>
 #include <cmath>
 
 // C headers
 #include <stdio.h>
-#include <time.h> // for nanosleep
 #ifndef __VISUALC__
+#ifndef RTOS_THREADX
+#ifndef BESTA_OS
 #include <fcntl.h>
+#endif
+#endif
 #endif // __VISUALC__
 
 // Giac headers
@@ -71,6 +80,33 @@ using namespace std;
 #include "gauss.h"
 #include "misc.h"
 #include "lin.h"
+#include "quater.h"
+#include "giacintl.h"
+#ifdef USE_GMP_REPLACEMENTS
+#undef HAVE_GMPXX_H
+#undef HAVE_LIBMPFR
+#endif
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#else
+#ifndef BESTA_OS
+#define clock_t int
+#define CLOCK() 0
+#endif
+#endif
+#ifndef HAVE_NO_SYS_RESOURCE_WAIT_H
+#include <sys/resource.h>
+#include <sys/wait.h>
+#endif
+
+extern const int BUFFER_SIZE;
 
 #ifndef NO_NAMESPACE_GIAC
 namespace giac {
@@ -89,53 +125,34 @@ namespace giac {
 #ifdef GNUWINCE
   ofstream * outptr=0;
 #endif
-  vecteur plot_instructions;
   // int plot_instructionsh=300,plot_instructionsw=300;
-  bool run_modif=false; // obsolete, used by make_child and co
-#ifdef WIN32
-  bool win9x=true; // For win95/98/Me we can not pipe to gnuplot
-#else
-  bool win9x=false;
-#endif
-  int run_modif_pos;
-  pid_t gnuplot_pid=0;
-  string gnuplot_name(giac_gnuplot_location);
-  int gnuplot_fileno=0;
-  bool gnuplot_do_splot=true;
-  int gnuplot_in_pipe[2]={-1,-1},gnuplot_out_pipe[2]={-1,-1};
-  FILE * gnuplot_out_readstream=0;
 
-#ifdef IPAQ
-  bool gnuplot_hidden3d=false;
-#else
-  bool gnuplot_hidden3d=true;
-#endif
-  bool gnuplot_pm3d=false;
-  int gnuplot_wait_times=5;
 
-  string gnuplot_filename("session3d");
-  int _GROUP__VECT_subtype[]={_GROUP__VECT,_LINE__VECT,_HALFLINE__VECT,_VECTOR__VECT,_POLYEDRE__VECT,_POINT__VECT,0};
+  const int _GROUP__VECT_subtype[]={_GROUP__VECT,_LINE__VECT,_HALFLINE__VECT,_VECTOR__VECT,_POLYEDRE__VECT,_POINT__VECT,0};
 #ifdef IPAQ
   double gnuplot_xmin=-4,gnuplot_xmax=4,gnuplot_ymin=-4,gnuplot_ymax=4,gnuplot_zmin=-5,gnuplot_zmax=5,gnuplot_tmin=-6,gnuplot_tmax=6,gnuplot_tstep=0.3;
 #else
-  double gnuplot_xmin=-5,gnuplot_xmax=5,gnuplot_ymin=-5,gnuplot_ymax=5,gnuplot_zmin=-5,gnuplot_zmax=5,gnuplot_tmin=-6,gnuplot_tmax=6,gnuplot_tstep=0.3;
+  double gnuplot_xmin=-5,gnuplot_xmax=5,gnuplot_ymin=-5,gnuplot_ymax=5,gnuplot_zmin=-5,gnuplot_zmax=5,gnuplot_tmin=-6,gnuplot_tmax=6,gnuplot_tstep=0.1;
 #endif
   double global_window_xmin(gnuplot_xmin),global_window_xmax(gnuplot_xmax),global_window_ymin(gnuplot_ymin),global_window_ymax(gnuplot_ymax);
   double x_tick(1.0),y_tick(1.0);
   double class_minimum(0.0),class_size(1.0);
-  int gnuplot_pixels_per_eval=400;
+#if defined RTOS_THREADX || defined EMCC
+  int gnuplot_pixels_per_eval=128;
+#else
+  int gnuplot_pixels_per_eval=401;
+#endif
   bool autoscale=true;
 
   bool has_gnuplot=true;
 
   bool fastcurveprint=false;
-  string PICTautoname("A");
 
-  gen rand_complex(){
-    int i=rand(),j=rand();
+  static gen rand_complex(){
+    int i=std_rand(),j=std_rand();
     i=i/(RAND_MAX/10)-5;
     j=j/(RAND_MAX/10)-5;
-    return i+cst_i*j;
+    return i+j*cst_i;
   }
 
   gen abs_norm(const gen & g,GIAC_CONTEXT){
@@ -145,46 +162,75 @@ namespace giac {
       return abs(g,contextptr);
   }
 
+  gen abs_norm(const gen & a,const gen & b,GIAC_CONTEXT){
+    if (a.type==_VECT)
+      return abs_norm(b-a,contextptr);
+    gen ax,ay,bx,by;
+    reim(a,ax,ay,contextptr);
+    reim(b,bx,by,contextptr);
+    bx -= ax;
+    by -= ay;
+    return sqrt(bx*bx+by*by,contextptr);
+  }
+
   gen abs_norm2(const gen & g,GIAC_CONTEXT){
     if (g.type==_VECT)
       return dotvecteur(*g._VECTptr,*g._VECTptr);
     else
-      return ratnormal(_lin(g*conj(g,contextptr),contextptr));
+      return ratnormal(_lin(g*conj(g,contextptr),contextptr),contextptr);
   }
 
   gen dotvecteur(const gen & a,const gen & b,GIAC_CONTEXT){
     return scalar_product(a,b,contextptr);
     /*
-    if (a.type==_VECT)
+      if (a.type==_VECT)
       return dotvecteur(*a._VECTptr,*b._VECTptr);
-    else
+      else
       return -im(a*conj(cst_i*b,contextptr),contextptr);    
     */
   }
 
-  void set3derr(){
-    setsizeerr("2-d instruction");
+  static gen set3derr(GIAC_CONTEXT){
+    return gensizeerr(contextptr); // 2-d instruction
   }
 
-  void in_autoname_plus_plus(string & autoname){
-    int labs=autoname.size();
+  static void in_autoname_plus_plus(string & autoname){
+    int labs=int(autoname.size());
     if (!labs){
       autoname="A";
       labs=1;
     }
-    for (;labs>0;--labs){
+#ifdef GIAC_HAS_STO_38
+    int labsmin=1;
+#else
+    int labsmin=0;
+#endif
+    for (;labs>labsmin;--labs){
       char c=autoname[labs-1];
-      if (c!='Z'){ 
+      if (c!='Z' && c!='z'){ 
 	autoname[labs-1]=char(c+1);
 	return;
       }
       autoname[labs-1]='A';
     }
-    if (!labs)
+    if (labs==labsmin)
       autoname += 'A';
   }
 
   void autoname_plus_plus(string & autoname){
+#ifdef GIAC_HAS_STO_38
+    if (autoname.size()==2 && autoname[0]=='G' && autoname[1]<'Z'){
+      if (autoname[1]=='E')
+	autoname[1]='G';
+      else {
+	if (autoname[1]=='Z')
+	  autoname[1]='a';
+	else
+	  ++autoname[1];
+      }
+      return;
+    }
+#endif
     for (;;){
       in_autoname_plus_plus(autoname);
       if (gen(autoname,context0).type==_IDNT) // FIXME GIAC_CONTEXT
@@ -192,13 +238,17 @@ namespace giac {
     }
   }
 
+#ifdef WITH_GNUPLOT
+  string PICTautoname("A");
+
   void PICTautoname_plus_plus(){
     autoname_plus_plus(PICTautoname);
   }
+#endif
 
   // find last at_erase in history, return next position (or 0 if not found)
   int erase_pos(GIAC_CONTEXT){
-    int s=history_out(contextptr).size();
+    int s=int(history_out(contextptr).size());
     if (!s)
       return s;
     gen e;
@@ -217,7 +267,7 @@ namespace giac {
   }
 
   int erase_pos(int current,GIAC_CONTEXT){
-    int s=history_out(contextptr).size();
+    int s=int(history_out(contextptr).size());
     if (current>=s)
       current=s-1;
     if (!s)
@@ -239,15 +289,49 @@ namespace giac {
 
 
   gen remove_at_pnt(const gen & e){
-    if ((e.type==_SYMB) && (e._SYMBptr->sommet==at_pnt))
-      return e._SYMBptr->feuille._VECTptr->front();
-    else
-      return e;
+    if (e.type==_VECT && e.subtype==_GGB__VECT){
+      if (e._VECTptr->size()==2)
+	return e._VECTptr->front()+cst_i*e._VECTptr->back();
+      if (e._VECTptr->size()==3)
+	return change_subtype(e,_POINT__VECT);
+    }
+    if (e.type==_SYMB && e._SYMBptr->sommet==at_pnt){
+      gen & f = e._SYMBptr->feuille;
+      if (f.type==_VECT){
+	vecteur & v = *f._VECTptr;
+	int s=int(v.size());
+	if (s){
+	  /*
+	    if (s>1 && v[1].type==_VECT){
+	    gen & v1=v[1];
+	    if (v1.type==_VECT && v1._VECTptr->size()>1){
+	    gen v12=(*v1._VECTptr)[1];
+	    if (v12.type<=_CPLX)
+	    return v12;
+	    if (v12.type==_STRNG){
+	    string s=*v12._STRNGptr;
+	    if (!s.empty() && s[s.size()-1]==' '){
+	    gen g(s,context0);
+	    if (g.is_symb_of_sommet(at_equal))
+	    return g._SYMBptr->feuille._VECTptr->back();
+	    }
+	    }
+	    }
+	    }
+	  */
+	  return v.front();
+	}
+      }
+      return gensizeerr("Bad pnt argument");
+    }
+    return e;
   }
 
-  gen unsubtype(const gen & g){
+  /*
+    static gen unsubtype(const gen & g){
     return (g.type==_VECT)?gen(*g._VECTptr):g;
-  }
+    }
+  */
 
   gen remove_sto(const gen & e){
     if ( (e.type==_SYMB) && (e._SYMBptr->sommet==at_sto))
@@ -296,7 +380,7 @@ namespace giac {
       if ( (p.type==_SYMB) && (p._SYMBptr->sommet==at_pnt)){
 	p=p._SYMBptr->feuille._VECTptr->front();
 	if ( (p.type!=_VECT || p.subtype==_POINT__VECT) && ( (p.type!=_SYMB) || (!equalposcomp(not_point_sommets,p._SYMBptr->sommet))) )
-	  return it-v.begin();
+	  return int(it-v.begin());
       }
     }
     return -1;
@@ -310,10 +394,30 @@ namespace giac {
       if ( (p.type==_SYMB) && (p._SYMBptr->sommet==at_pnt)){
 	p=p._SYMBptr->feuille._VECTptr->front();
 	if ( (p.type==_SYMB) && (p._SYMBptr->sommet==at_cercle) )
-	  return it-v.begin();
+	  return int(it-v.begin());
       }
     }
     return -1;
+  }
+
+  symbolic symb_curve(const gen & source,const gen & plot){
+    return symbolic(at_curve,gen(makevecteur(source,plot),_GROUP__VECT));
+  }
+  static symbolic symb_perpendiculaire(const gen & aa){
+    gen a(aa);
+    if (a.type==_VECT) a.subtype=_SEQ__VECT;
+    return symbolic(at_perpendiculaire,a);
+  }
+  static symbolic symb_milieu(const gen & aa){
+    gen a(aa);
+    if (a.type==_VECT) a.subtype=_SEQ__VECT;
+    return symbolic(at_milieu,a);
+  }
+  static symbolic symb_plotfunc(const gen & a,const gen & b){
+    return symbolic(at_plotfunc,makesequence(a,b));
+  }
+  static gen setplotfuncerr(){
+    return gensizeerr(gettext("Plotfunc: bad variable name"));
   }
 
   // find best int in selected (and modify selected)
@@ -329,7 +433,7 @@ namespace giac {
       for (;it!=itend;++it){
 	if (is_segment(*it)){
 	  ++nsegments;
-	  n2=it-w.begin();
+	  n2=int(it-w.begin());
 	  if (n1<0)
 	    n1=n2;
 	}
@@ -339,7 +443,7 @@ namespace giac {
 	gen l1=remove_sto(history_in(contextptr)[history_position]);
 	history_position=erase_pos(contextptr)+selected[n2];
 	gen l2=remove_sto(history_in(contextptr)[history_position]);
-	res = symbolic(at_head,symbolic(at_inter,makevecteur(l1,l2)));
+	res = symbolic(at_head,symbolic(at_inter,makesequence(l1,l2)));
 	selected=vector<int>(2);
 	selected[0]=n1;
 	selected[1]=n2;
@@ -347,7 +451,7 @@ namespace giac {
       }
       if (nsegments){ // near middle point?
 	gen m=remove_at_pnt(_milieu(w[n1],0));
-	if (is_greater(eps,abs(p-m,contextptr),contextptr)){
+	if (!is_undef(m) && is_greater(eps,abs(p-m,contextptr),contextptr)){
 	  history_position=erase_pos(contextptr)+selected[n1];
 	  gen l1=remove_sto(history_in(contextptr)[history_position]);
 	  res=symb_milieu(l1);
@@ -364,7 +468,7 @@ namespace giac {
 	    history_position=erase_pos(contextptr)+selected[n1];
 	    gen l1=remove_sto(history_in(contextptr)[history_position]);
 	    res=symb_perpendiculaire(makevecteur(remove_sto(history_in(contextptr)[try_perp_history_pos]),l1));
-	    res=symbolic(at_head,symbolic(at_inter,makevecteur(l1,res)));
+	    res=symbolic(at_head,symbolic(at_inter,makesequence(l1,res)));
 	    selected=vector<int>(1,n1);
 	    return true;
 	  }
@@ -395,7 +499,20 @@ namespace giac {
     fclose(source);
   }
 
-#if !defined(VISUALC) && !defined(GNUWINCE)
+#if !defined VISUALC && ! defined __MINGW_H && !defined BESTA_OS
+  int set_nonblock_flag (int desc, int value){
+    int oldflags = fcntl (desc, F_GETFL, 0);
+    /* If reading the flags failed, return error indication now. */
+    if (oldflags == -1)
+      return -1;
+    /* Set just the flag we want to set. */
+    if (value != 0)
+      oldflags |= O_NONBLOCK;
+    else
+      oldflags &= ~O_NONBLOCK;
+    /* Store modified flag word in the descriptor. */
+    return fcntl (desc, F_SETFL, oldflags);
+  }
 
   int set_cloexec_flag (int desc, int value){
     int oldflags = fcntl (desc, F_GETFD, 0);
@@ -410,6 +527,31 @@ namespace giac {
     /* Store modified flag word in the descriptor. */
     return fcntl (desc, F_SETFD, oldflags);
   }
+#endif
+
+#ifdef WITH_GNUPLOT
+  vecteur plot_instructions;
+
+#ifdef WIN32
+  static bool win9x=true; // For win95/98/Me we can not pipe to gnuplot
+#else
+  static bool win9x=false;
+#endif
+  static pid_t gnuplot_pid=0;
+  string gnuplot_name(giac_gnuplot_location);
+  int gnuplot_fileno=0;
+  bool gnuplot_do_splot=true;
+  int gnuplot_in_pipe[2]={-1,-1},gnuplot_out_pipe[2]={-1,-1};
+  FILE * gnuplot_out_readstream=0;
+
+#ifdef IPAQ
+  bool gnuplot_hidden3d=false;
+#else
+  bool gnuplot_hidden3d=true;
+#endif
+  bool gnuplot_pm3d=false;
+  static int gnuplot_wait_times=5;
+  string gnuplot_filename("session3d");
 
   bool ck_gnuplot(string & s){
     if (!access(s.c_str(),R_OK))
@@ -422,21 +564,20 @@ namespace giac {
       s="/usr/bin/gnuplot";
       return true;
     }
-    if (!access((xcasroot+"gnuplot").c_str(),R_OK)){
-      s=xcasroot+"gnuplot";
+    if (!access((xcasroot()+"gnuplot").c_str(),R_OK)){
+      s=xcasroot()+"gnuplot";
       return true;
     }
     return false;
   }
 
   int run_gnuplot(int & r){
-#ifdef WITH_GNUPLOT
 #ifdef WIN32
     has_gnuplot=false;
     return -1;
 #ifdef GNUWINCE
 #endif
-    gnuplot_name=xcasroot+"pgnuplot.exe";
+    gnuplot_name=xcasroot()+"pgnuplot.exe";
 #endif //WIN32
     if (!gnuplot_pid){ // start a gnuplot process
       if (!ck_gnuplot(gnuplot_name))
@@ -467,7 +608,7 @@ namespace giac {
 #else
 	execlp("gnuplot","gnuplot -geometry 500x700 -noraise",0); // start gnuplot
 #endif
-	exit(1); // in case gnuplot is not found
+	return -1; // in case gnuplot is not found
       }
       else {
 	usleep(10000);
@@ -481,7 +622,6 @@ namespace giac {
     }
     r=gnuplot_out_pipe[0];
     return gnuplot_in_pipe[1];
-#endif // WITH_GNUPLOT
     return 0;
   }
 
@@ -489,7 +629,7 @@ namespace giac {
     if (win9x){
       r=-1;
 #ifdef WIN32
-      gnuplot_name="'"+xcasroot+"wgnuplot.exe'"; // was xcasroot+"wgnuplot.exe", 
+      gnuplot_name="'"+xcasroot()+"wgnuplot.exe'"; // was xcasroot()+"wgnuplot.exe", 
 #ifdef GNUWINCE 
       gnuplot_name="/gnuplot.exe";
 #endif
@@ -498,20 +638,20 @@ namespace giac {
       if (!stream)
 	stream=fopen("gnuplot.txt","w");
       if (!stream)
-	setsizeerr("Gnuplot write error");
+	setsizeerr(gettext("Gnuplot write error"));
       return stream;
     }
     FILE * res=fdopen(run_gnuplot(r),"w");
     if (!res)
-      setsizeerr("Gnuplot write error");
+      setsizeerr(gettext("Gnuplot write error"));
 #ifdef __APPLE__
     if (debug_infolevel)
       printf("set terminal aqua\n");
     fprintf(res,"set terminal aqua\n");
 #endif
-    // cerr << errno << endl;
+    // CERR << errno << endl;
     gnuplot_out_r = gnuplot_out_readstream;
-    // cerr << r << " " << errno << endl;
+    // CERR << r << " " << errno << endl;
     return res;
   }
 
@@ -549,26 +689,12 @@ namespace giac {
     terminal_stream_replot(terminal,stream,(gnuplot_filename+print_INT_(i)+"."+string(file_extension)).c_str());
   }
 
-  int set_nonblock_flag (int desc, int value){
-    int oldflags = fcntl (desc, F_GETFL, 0);
-    /* If reading the flags failed, return error indication now. */
-    if (oldflags == -1)
-      return -1;
-    /* Set just the flag we want to set. */
-    if (value != 0)
-      oldflags |= O_NONBLOCK;
-    else
-      oldflags &= ~O_NONBLOCK;
-    /* Store modified flag word in the descriptor. */
-    return fcntl (desc, F_SETFL, oldflags);
-  }
-
   void gnuplot_wait(int handle,FILE * gnuplot_out_readstream,int ngwait){
 #ifndef GNUPLOT_IO
     usleep(200000);
     return;
 #endif
-    // cerr << "gnuplot_wait " << handle << " " << gnuplot_out_readstream << " " << ngwait << endl;
+    // CERR << "gnuplot_wait " << handle << " " << gnuplot_out_readstream << " " << ngwait << endl;
     // wait for gnuplot to be quiet
     if (handle>0 && gnuplot_out_readstream){
       int i,ntry=500;
@@ -576,7 +702,7 @@ namespace giac {
 	usleep(10000);
 	set_nonblock_flag(handle,1); 
 	i=fgetc(gnuplot_out_readstream);
-	// cerr << char(i) ;
+	// CERR << char(i) ;
 	if (char(i)=='>')
 	  --ngwait;
 	set_nonblock_flag(handle,0); 
@@ -589,7 +715,7 @@ namespace giac {
 	set_nonblock_flag(handle,1); 
 	while (i!=EOF){
 	  i=fgetc(gnuplot_out_readstream);
-	  // cerr << char(i);
+	  // CERR << char(i);
 	  if (char(i)=='>')
 	    --ngwait;
 	}
@@ -597,16 +723,15 @@ namespace giac {
       }
       // fclose(gnuplot_out_readstream);
       usleep(10000);
-      // cerr << "gnuplot_wait end " << getpid() << " " <<clock() << endl;
+      // CERR << "gnuplot_wait end " << getpid() << " " <<CLOCK() << endl;
     }
     else
-      ;// cerr << "gnuplot wait no input" << endl;
+      ;// CERR << "gnuplot wait no input" << endl;
   }
 
   bool terminal_replot(const char * terminal,int i,const char * file_extension){
     if (!has_gnuplot)
       return 0;
-#ifdef WITH_GNUPLOT
     if (win9x){
       FILE * stream2 =fopen("gnuplot.gp","w");
       FILE * stream =fopen("gnuplot.txt","r");
@@ -621,7 +746,6 @@ namespace giac {
       terminal_stream_replot(terminal,stream,i,file_extension);
       gnuplot_wait(r,gnuplot_out_readstream,gnuplot_wait_times);
     }
-#endif
     return true;
   }
 
@@ -636,7 +760,6 @@ namespace giac {
     if (string(terminal)=="png")
       return 0;
 #endif
-#ifdef WITH_GNUPLOT
     if (win9x){
       FILE * stream = fopen("gnuplot.txt","r");
       FILE * stream2 =fopen("gnuplot.gp","w");
@@ -651,12 +774,10 @@ namespace giac {
       terminal_stream_replot(terminal,stream,s.c_str());
       gnuplot_wait(r,gnuplot_out_readstream,gnuplot_wait_times);
     }
-#endif
     return true;
-}
+  }
 
   void win9x_gnuplot(FILE * stream){
-#ifdef WITH_GNUPLOT
     if (!win9x){
 #ifndef IPAQ
 #ifndef __APPLE__
@@ -684,62 +805,17 @@ namespace giac {
     fflush(stream2);
     fclose(stream2);
     system((gnuplot_name+" gnuplot.gp").c_str());
-#endif // WITH_GNUPLOT
   }
 
   void kill_gnuplot(){
-#ifdef WITH_GNUPLOT
     if (gnuplot_pid){
       FILE *stream;
       stream = fdopen (gnuplot_in_pipe[1], "w");
       fprintf(stream,"\n\nq\n");
       if (fclose(stream))
-	cerr << "Error closing gnuplot" << endl;
+	CERR << "Error closing gnuplot" << endl;
     }
-#endif
   }
-
-#else // __VISUALC__
-
-  int run_gnuplot(int & r){
-    has_gnuplot=false;
-    return -1;
-  }
-
-  void kill_gnuplot(){
-  }
-
-  bool ck_gnuplot(string & s){
-    return false;
-  }
-
-  FILE * open_gnuplot(bool & clrplot,FILE * & gnuplot_out_r,int & r){
-    FILE * f=fopen("gnuplot.in","w");
-    r=-1;
-    return f;
-  }
-  
-  void terminal_stream_replot(const char * terminal,FILE * stream,const char * filename){
-  }
-
-  void gnuplot_wait(int handle,FILE * gnuplot_out_readstream,int ngwait){
-  }
-
-  bool terminal_replot(const char * terminal,int i,const char * file_extension){
-    return false;
-  }
-
-  bool terminal_replot(const char * terminal,const string & s){
-    return false;
-  }
-
-  void win9x_gnuplot(FILE * stream){
-  }
-
-  int set_nonblock_flag (int desc, int value){
-    return value;
-  }
-#endif // !defined(__VISUALC__) && !defined(GNUWINCE)
 
   bool png_replot(int i){
     return terminal_replot("png",i,"png");
@@ -762,7 +838,9 @@ namespace giac {
     return  ff_s;
   }
 
-  void plotpreprocess(gen & g,vecteur & quoted,GIAC_CONTEXT){
+#endif // WITH_GNUPLOT
+
+  static void plotpreprocess(gen & g,vecteur & quoted,GIAC_CONTEXT){
     gen tmp=eval(g,contextptr);
     if (tmp.type==_IDNT){
       g=tmp;
@@ -798,23 +876,21 @@ namespace giac {
     }
   }
 
-
   vecteur quote_eval(const vecteur & v,const vecteur & quoted,GIAC_CONTEXT){
     /*
-    vecteur l(quoted);
-    lidnt(v,l);
-    int qs=quoted.size();
-    l=vecteur(l.begin()+qs,l.end());
-    vecteur lnew=*eval(l,1,contextptr)._VECTptr;
-    vecteur w=subst(v,l,lnew,false,contextptr);
-    return w;
+      vecteur l(quoted);
+      lidnt(v,l);
+      int qs=quoted.size();
+      l=vecteur(l.begin()+qs,l.end());
+      vecteur lnew=*eval(l,1,contextptr)._VECTptr;
+      vecteur w=subst(v,l,lnew,true,contextptr);
+      return w;
     */
-    // old code
     const_iterateur it=quoted.begin(),itend=quoted.end();
     vector<int> save;
     for (;it!=itend;++it){
       gen tmp=*it;
-      if (tmp.is_symb_of_sommet(at_equal))
+      if (is_equal(tmp))
 	tmp=tmp._SYMBptr->feuille._VECTptr->front();
       if (tmp.type!=_IDNT)
 	save.push_back(-1);
@@ -824,21 +900,27 @@ namespace giac {
 	  save.push_back(0);
 	}
 	else {
-	  save.push_back(*tmp._IDNTptr->quoted);
-	  *tmp._IDNTptr->quoted=true;
+	  if (tmp._IDNTptr->quoted){
+	    save.push_back(*tmp._IDNTptr->quoted);
+	    *tmp._IDNTptr->quoted=1;
+	  }
+	  else
+	    save.push_back(0);
 	}
       }
     }
     vecteur res(v);
-    int s=v.size();
+    int s=int(v.size());
     for (int i=0;i<s;++i){
+#ifndef NO_STDEXCEPT
       try {
+#endif
 	bool done=false;
 	if (v[i].is_symb_of_sommet(at_prod) && v[i]._SYMBptr->feuille.type==_VECT){ // hack for polarplot using re(rho)
 	  vecteur vi = *v[i]._SYMBptr->feuille._VECTptr;
 	  if (!vi.empty() && vi.front().is_symb_of_sommet(at_re)){
 	    vi.front()=vi.front()._SYMBptr->feuille;
-	    gen tmp=eval(vi,1,contextptr);
+	    gen tmp=eval(vi,contextptr);
 	    if (tmp.type==_VECT){
 	      vi=*tmp._VECTptr;
 	      vi.front()=symbolic(at_re,vi.front());
@@ -847,11 +929,24 @@ namespace giac {
 	    }
 	  }
 	}
-	if (!done)
-	  res[i]=eval(v[i],1,contextptr);
-      } catch (std::runtime_error & e){
+	if (!done){
+#if 0
+	  vecteur lv=lidnt(v[i]);
+	  vecteur lw(lv);
+	  for (int j=0;j<int(lw.size());++j){
+	    gen g=eval(lv[j],1,contextptr);
+	    g=ifte2when(g,contextptr); 
+	    lw[j]=g;
+	  }
+	  res[i]=quotesubst(v[i],lv,lw,contextptr); // otherwise plots with if else fails (error not catched with emscripten)
+#endif
+	  res[i]=eval(v[i],contextptr); 
+	}
+#ifndef NO_STDEXCEPT
+      } catch (std::runtime_error & ){
 	;  //    *logptr(contextptr) << e.what() << endl;
       }
+#endif
     }
     it=quoted.begin();
     for (int i=0;it!=itend;++it,++i){
@@ -860,10 +955,10 @@ namespace giac {
 	  contextptr->quoted_global_vars->pop_back();
 	else {
 	  gen tmp=*it;
-	  if (tmp.is_symb_of_sommet(at_equal))
+	  if (is_equal(tmp))
 	    tmp=tmp._SYMBptr->feuille._VECTptr->front();
-	  if (tmp.type==_IDNT)
-	    *tmp._IDNTptr->quoted=save[i];
+	  if (tmp.type==_IDNT && tmp._IDNTptr->quoted)
+	    *tmp._IDNTptr->quoted=save[i]>0?save[i]:0;
 	}
       }
     }
@@ -876,59 +971,40 @@ namespace giac {
   // evaluate v with v[1] quoted
   vecteur plotpreprocess(const gen & args,GIAC_CONTEXT){
     vecteur v;
+
+    gen var,res;
+    if (args.type!=_VECT && is_algebraic_program(args,var,res))
+      return makevecteur(args,symb_interval(gnuplot_xmin,gnuplot_xmax));
+    int nd;
+    if ( (nd=is_distribution(args)) ){
+      gen a,b;
+      if (distrib_support(nd,a,b,true))
+	return makevecteur(args,symb_interval(a,b));
+    }
     if ((args.type!=_VECT) || (args.subtype!=_SEQ__VECT) )
       v=makevecteur(args,vx_var);
     else {
       v=*args._VECTptr;
       if (v.empty())
-	setsizeerr();
+	return vecteur(1,gensizeerr(contextptr));
       if (v.size()==1)
 	v.push_back(vx_var);
     }
     // find quoted variables from v[1]
     vecteur quoted;
-    if ( v[1].type==_SYMB && (v[1]._SYMBptr->sommet==at_equal ||v[1]._SYMBptr->sommet==at_same ))
+    if ( v[1].type==_SYMB && (v[1]._SYMBptr->sommet==at_equal || v[1]._SYMBptr->sommet==at_equal2 ||v[1]._SYMBptr->sommet==at_same ))
       plotpreprocess(v[1]._SYMBptr->feuille._VECTptr->front(),quoted,contextptr);
     else
       plotpreprocess(v[1],quoted,contextptr);
     return quote_eval(v,quoted,contextptr);
   }
 
-  void reset_gnuplot_hidden3d(FILE * stream){
-#ifndef GNUWICE
-    if (gnuplot_hidden3d){
-      if (debug_infolevel)
-	printf("\nset hidden3d nooffset\nset isosamples 16\n");
-      fprintf(stream,"\nset hidden3d nooffset\nset isosamples 16\n");
-    }
-    else {
-      if (debug_infolevel)
-	printf("\nunset hidden3d nooffset\nset isosamples 10\n"); 
-      fprintf(stream,"\nunset hidden3d nooffset\nset isosamples 10\n");
-    }
-#endif
-    if (debug_infolevel)
-      printf("set parametric\n");
-    fprintf(stream,"set parametric\n");
-    // Problems with history inclusion, see if it's a FLTK problem
-#ifndef GNUWINCE // GNUWINCE gnuplot is 3.7, no pm3d
-    if (gnuplot_pm3d){
-      if (debug_infolevel)
-	printf("set pm3d\n");
-      fprintf(stream,"set pm3d\n");
-    }
-    else {
-      if (debug_infolevel)
-	printf("unset pm3d\n");
-      fprintf(stream,"unset pm3d\n");
-    }
-#endif // GNUWINCE
-  }
-
   gen pnt_attrib(const gen & point,const vecteur & attributs,GIAC_CONTEXT){
+    if (is_undef(point))
+      return point;
     if (attributs.empty())
       return symb_pnt(point,default_color(contextptr),contextptr);
-    int s=attributs.size();
+    int s=int(attributs.size());
     if (s==1)
       return symb_pnt(point,attributs[0],contextptr);
     if (s>=3)
@@ -936,7 +1012,15 @@ namespace giac {
     return symb_pnt_name(point,attributs[0],attributs[1],contextptr);
   }
 
-  int arc_en_ciel_colors=105;
+  string print_DOUBLE_(double d,unsigned ndigits){
+    char s[256];
+    ndigits=ndigits<2?2:ndigits;
+    ndigits=ndigits>15?15:ndigits;
+    sprintfdouble(s,("%."+print_INT_(ndigits)+"g").c_str(),d);
+    return s;
+  }
+
+  static const int arc_en_ciel_colors=105;
 
   inline int density(double z,double fmin,double fmax){
     // z -> 256+arc_en_ciel_colors*(z-fmin)/(fmax-fmin)
@@ -947,16 +1031,8 @@ namespace giac {
     return 256+int(arc_en_ciel_colors*(z-fmin)/(fmax-fmin));
   }
 
-  string print_DOUBLE_(double d,unsigned ndigits){
-    char s[256];
-    ndigits=ndigits<2?2:ndigits;
-    ndigits=ndigits>15?15:ndigits;
-    sprintf(s,("%."+print_INT_(ndigits)+"g").c_str(),d);
-    return s;
-  }
-
   // horizontal scale for colors
-  vecteur densityscale(double xmin,double xmax,double ymin,double ymax,double fmin, double fmax,int n,GIAC_CONTEXT){
+  static vecteur densityscale(double xmin,double xmax,double ymin,double ymax,double fmin, double fmax,int n,GIAC_CONTEXT){
     vecteur res;
     if (n<10)
       n=10;
@@ -984,7 +1060,7 @@ namespace giac {
   // between xmin/xmax or including xmin/xmax (if bounds is true)
   vecteur ticks(double xmin,double xmax,bool bounds){
     if (xmax<xmin)
-      std::swap<double>(xmin,xmax);
+      swapdouble(xmin,xmax);
     double dx=xmax-xmin;
     vecteur res;
     if (dx==0)
@@ -1010,32 +1086,68 @@ namespace giac {
   // return a sequence of filled polygons with a color mapped from fmin..fmax
   // to 256..256+125 from a matrix of points
   // if regular is true, m is assumed to be equidistributed in x and y
-  vecteur density(const matrice & m,double fmin,double fmax,bool regular,GIAC_CONTEXT){
+  static vecteur density(const matrice & m,double fmin,double fmax,bool regular,GIAC_CONTEXT){
+#ifdef RTOS_THREADX
+    return vecteur(1,undef);
+#else
     if (!ckmatrix(m,true))
       return vecteur(1,undef);
-    int r=m.size(); // imax
-    int c=m.front()._VECTptr->size(); // jmax
+    int r=int(m.size()); // imax
+    int c=int(m.front()._VECTptr->size()); // jmax
     if (regular){
       vector< vector< double > > fij;
+      double Fmax=-1e307,Fmin=1e307;
       fij.reserve(r);
+      double nan=0.0;
+      nan=nan/nan;
       for (int i=0;i<r;++i){
 	vector<double> tmp;
 	tmp.reserve(c);
 	for (int j=0;j<c;++j){
-	  tmp.push_back(evalf_double(m[i][j][2],eval_level(contextptr),contextptr)._DOUBLE_val);
+	  gen val=m[i][j];
+	  if (val.type==_VECT)
+	    val=val[2];
+	  val=evalf_double(val,eval_level(contextptr),contextptr);
+	  if (val.type!=_DOUBLE_)
+	    tmp.push_back(nan);
+	  else {
+	    double vald=val._DOUBLE_val;
+	    tmp.push_back(vald);
+	    if (vald>Fmax)
+	      Fmax=vald;
+	    if (vald<Fmin)
+	      Fmin=vald;
+	  }
 	}
 	fij.push_back(tmp);
       }
+      if (fmax<=fmin){
+	fmax=Fmax;
+	fmin=Fmin;
+      }
       double xmin,xmax,dx,ymin,ymax,dy;
       gen xymin=m[0][0];
-      xmin=xymin[0]._DOUBLE_val;
-      ymin=xymin[1]._DOUBLE_val;
+      if (xymin.type==_VECT && xymin._VECTptr->size()>=2){
+	xmin=xymin[0]._DOUBLE_val;
+	ymin=xymin[1]._DOUBLE_val;
+      }
+      else {
+	xmin=0;
+	ymin=-c;
+      }
       gen xymax=m[r-1][c-1];
-      xmax=xymax[0]._DOUBLE_val;
-      ymax=xymax[1]._DOUBLE_val;
+      if (xymax.type==_VECT && xymax._VECTptr->size()>=2){
+	xmax=xymax[0]._DOUBLE_val;
+	ymax=xymax[1]._DOUBLE_val;
+      }
+      else {
+	xmax=r;
+	ymax=0;
+      }
       dx=(xmax-xmin)/(r-1);
       dy=(ymax-ymin)/(c-1);
-      vecteur lz(arc_en_ciel_colors);
+      vecteur lz;
+      lz.resize(arc_en_ciel_colors);
       double df=(fmax-fmin)/arc_en_ciel_colors;
       for (int i=0;i<arc_en_ciel_colors;++i)
 	lz[i]=fmin+i*df;
@@ -1084,26 +1196,35 @@ namespace giac {
       }
       return res;
     } // end not regular
+#endif
   }
 
   void local_sto_double(double value,const identificateur & i,GIAC_CONTEXT){
+    control_c();
     if (contextptr)
-      (*contextptr->tabptr)[*i.name]._DOUBLE_val=value;
+      (*contextptr->tabptr)[i.id_name]=value;
     else
-      i.localvalue->back()._DOUBLE_val=value;
+      i.localvalue->back()=value;
   }
 
   void local_sto_double_increment(double value,const identificateur & i,GIAC_CONTEXT){
+    control_c();
     if (contextptr)
-      (*contextptr->tabptr)[*i.name]._DOUBLE_val += value;
+      (*contextptr->tabptr)[i.id_name] += value;
     else
-      i.localvalue->back()._DOUBLE_val += value;
+      i.localvalue->back() += value;
   }
 
-  gen plotfunc(const gen & f,const gen & vars,const vecteur & attributs,bool densityplot,double function_xmin,double function_xmax,double function_ymin,double function_ymax,double function_zmin, double function_zmax,int nstep,int jstep,bool showeq,const context * contextptr){
+  double max_nstep=2e4;
+
+  gen plotfunc(const gen & f_,const gen & vars,const vecteur & attributs,bool densityplot,double function_xmin,double function_xmax,double function_ymin,double function_ymax,double function_zmin, double function_zmax,int nstep,int jstep,bool showeq,const context * contextptr){
+    gen f=when2piecewise(f_,contextptr);
+    f=Heavisidetopiecewise(f,contextptr); 
     double step=(function_xmax-function_xmin)/nstep;
-    if (step<=0 || (function_xmax-function_xmin)/step>1e5)
-      setsizeerr("Plotfunc, unable to discretize: xmin, xmax, step="+print_DOUBLE_(function_xmin,12)+","+print_DOUBLE_(function_xmax,12)+","+print_DOUBLE_(step,12));
+    if (debug_infolevel)
+      CERR << "plot " << f << " x=" << function_xmin << ".." << function_xmax << " " << step << endl;
+    if (step<=0 || (function_xmax-function_xmin)/step>max_nstep)
+      return gensizeerr(gettext("Plotfunc: unable to discretize: xmin, xmax, step=")+print_DOUBLE_(function_xmin,12)+","+print_DOUBLE_(function_xmax,12)+","+print_DOUBLE_(step,12)+gettext("\nTry a larger value for xstep"));
     vecteur res;
     int color=default_color(contextptr);
     gen attribut=attributs.empty()?color:attributs[0];
@@ -1111,7 +1232,7 @@ namespace giac {
       color=attribut.val;
     if (f.type==_VECT){ // multi-plot
       vecteur & vf=*f._VECTptr;
-      unsigned s=vf.size();
+      unsigned s=unsigned(vf.size());
       vecteur vattribut;
       if (attribut.type==_VECT)
 	vattribut=gen2vecteur(attribut);
@@ -1132,21 +1253,117 @@ namespace giac {
     }
 #ifndef GNUWINCE
     if (vars.type==_IDNT){ // function plot
+      gen a,b;
+      if (taille(f,100)<=100 && is_linear_wrt(f,vars,a,b,contextptr))	
+	return put_attributs(_segment(makesequence(function_xmin+cst_i*(a*function_xmin+b),function_xmax+cst_i*(a*function_xmax+b)),contextptr),attributs,contextptr);
+      vecteur lpiece(lop(f,at_piecewise));
+      if (!lpiece.empty()) lpiece=lvarx(lpiece,vars);
+      if (!lpiece.empty()){
+	gen piece=lpiece.front();
+	gen & piecef=piece._SYMBptr->feuille;
+	if (piecef.type==_VECT){
+	  vecteur piecev=*piecef._VECTptr,res;
+	  // check conditions: they must be linear wrt x
+	  double function_xmin_save=function_xmin,function_xmax_save=function_xmax;
+	  int vs=int(piecev.size()),i;
+	  for (i=0;i<vs/2;++i){
+	    gen cond=piecev[2*i];
+	    if (is_equal(cond) || cond.is_symb_of_sommet(at_same)){
+	      *logptr(contextptr) << gettext("Assuming false condition ") << cond << endl;
+	      continue;
+	    }
+	    if (cond.is_symb_of_sommet(at_different)){
+	      *logptr(contextptr) << gettext("Assuming true condition ") << cond << endl;
+	      f=quotesubst(f,piece,piecev[2*i+1],contextptr);
+	      return plotfunc(f,vars,attributs,densityplot,function_xmin,function_xmax,function_ymin,function_ymax,function_zmin,function_zmax,nstep,jstep,showeq,contextptr);
+	    }
+	    bool unable=true;
+	    if (cond.is_symb_of_sommet(at_superieur_strict) || cond.is_symb_of_sommet(at_superieur_egal)){
+	      cond=cond._SYMBptr->feuille[0]-cond._SYMBptr->feuille[1];
+	      unable=false;
+	    }
+	    if (cond.is_symb_of_sommet(at_inferieur_strict) || cond.is_symb_of_sommet(at_inferieur_egal)){
+	      cond=cond._SYMBptr->feuille[1]-cond._SYMBptr->feuille[0];
+	      unable=false;
+	    }
+	    gen a,b,l;
+	    if (unable || !is_linear_wrt(cond,vars,a,b,contextptr))
+	      break;
+	    // check if a*x+b>0 on [borne_inf,borne_sup]
+	    l=-b/a;
+	    l=evalf_double(l,1,contextptr);
+	    if (l.type!=_DOUBLE_)
+	      break;
+	    bool positif=ck_is_greater(a,0,contextptr);
+	    gen tmp=quotesubst(f,piece,piecev[2*i+1],contextptr);
+	    if (ck_is_greater(l,function_xmax,contextptr)){
+	      // borne_inf < borne_sup <= l
+	      if (positif) // test is false, continue
+		continue;
+	      // test is true make the plot
+	      return plotfunc(tmp,vars,attributs,densityplot,function_xmin,function_xmax,function_ymin,function_ymax,function_zmin,function_zmax,nstep,jstep,showeq,contextptr);
+	    }
+	    if (ck_is_greater(function_xmin,l,contextptr)){
+	      // l <= borne_inf < borne_sup
+	      if (!positif) // test is false, continue
+		continue;
+	      // test is true we can compute the integral
+	      return plotfunc(tmp,vars,attributs,densityplot,function_xmin,function_xmax,function_ymin,function_ymax,function_zmin,function_zmax,nstep,jstep,showeq,contextptr);
+	    }
+	    // borne_inf<l<borne_sup
+	    if (positif){
+	      // make plot between l and borne_sup
+	      gen curres = plotfunc(tmp,vars,attributs,densityplot,l._DOUBLE_val,function_xmax,function_ymin,function_ymax,function_zmin,function_zmax,nstep,jstep,showeq,contextptr);
+	      if (curres.type==_VECT)
+		res = mergevecteur(res,*curres._VECTptr);
+	      else
+		res.push_back(curres);
+	      function_xmax=l._DOUBLE_val; // continue with plot from borne_inf to l
+	      continue;
+	    }
+	    // make plot between borne_inf and l
+	    gen curres=plotfunc(tmp,vars,attributs,densityplot,function_xmin,l._DOUBLE_val,function_ymin,function_ymax,function_zmin,function_zmax,nstep,jstep,showeq,contextptr);
+	    if (curres.type==_VECT)
+	      res = mergevecteur(res,*curres._VECTptr);
+	    else
+	      res.push_back(curres);
+	    function_xmin=l._DOUBLE_val; // continue with plot from l to borne_sup
+	  } // end loop on i
+	  if (i==vs/2){
+	    if (vs%2){
+	      f=quotesubst(f,piece,piecev[vs-1],contextptr);
+	      gen curres = plotfunc(f,vars,attributs,densityplot,function_xmin,function_xmax,function_ymin,function_ymax,function_zmin,function_zmax,nstep,jstep,showeq,contextptr);
+	      if (curres.type==_VECT)
+		res = mergevecteur(res,*curres._VECTptr);
+	      else
+		res.push_back(curres);
+	    }
+	    return res;
+	  } // end i==vs/2
+	  // restore xmin/xmax
+	  function_xmin=function_xmin_save;
+	  function_xmax=function_xmax_save;
+	} // end piecef.type==_VECT
+      } // end piecewise
       gen locvar(vars);
       locvar.subtype=0;
       gen y=quotesubst(f,vars,locvar,contextptr),yy;
       // gen y=f.evalf2double(),yy;
-      double j,entrej,oldj,xmin=function_xmin,xmax=function_xmax+step/2;
+      double j,entrej,oldj=0,xmin=function_xmin,xmax=function_xmax+step/2;
       bool joindre;
       vecteur localvar(1,vars);
       context * newcontextptr= (context *) contextptr;
-      int protect=bind(vecteur(1,xmin),localvar,newcontextptr);
+      int protect=giac::bind(vecteur(1,xmin),localvar,newcontextptr);
       vecteur chemin;
-      for (double i=xmin;i<xmax;i+= step){
+      double i=xmin;
+      for (;i<xmax;i+= step){
+	// yy=evalf_double(subst(f,vars,i,false,contextptr),1,contextptr);
 	local_sto_double(i,*vars._IDNTptr,newcontextptr);
 	// vars._IDNTptr->localvalue->back()._DOUBLE_val =i;
 	yy=y.evalf2double(eval_level(contextptr),newcontextptr);
 	if (yy.type!=_DOUBLE_){
+	  if (debug_infolevel)
+	    CERR << y << " not real at " << i << " " << yy << endl;
 	  if (!chemin.empty())
 	    res.push_back(pnt_attrib(symb_curve(gen(makevecteur(vars+cst_i*f,vars,xmin,i,showeq),_PNT__VECT),gen(chemin,_GROUP__VECT)),attributs.empty()?color:attributs,contextptr));
 	  xmin=i;
@@ -1154,8 +1371,14 @@ namespace giac {
 	  continue;
 	}
 	j=yy._DOUBLE_val;
+	if (j>function_ymax)
+	  function_ymax=j;
+	if (j<function_ymin)
+	  function_ymin=j;
 	if (i!=xmin){
 	  if (fabs(oldj-j)>(function_ymax-function_ymin)/5){ // try middle-pnt
+	    if (debug_infolevel)
+	      CERR << y << " checking step at " << i << " " << yy << endl;
 	    local_sto_double_increment(-step/2,*vars._IDNTptr,newcontextptr);
 	    // vars._IDNTptr->localvalue->back()._DOUBLE_val -= step/2;
 	    yy=y.evalf2double(eval_level(contextptr),newcontextptr);
@@ -1173,21 +1396,29 @@ namespace giac {
 	  }
 	  else
 	    joindre=true;
-	} // if (i!=xmin)
+	}
 	else
 	  joindre=false;
 	if (joindre)
 	  chemin.push_back(gen(i,j));
 	else {
-	  if (!chemin.empty())
+	  if (!chemin.empty()){
+	    if (debug_infolevel){
+	      CERR << y << " step at " << i << " " << yy << endl;
+	      CERR << "curve " << chemin.size() << " " << chemin.front() << " .. " << chemin.back() << endl;
+	    }
 	    res.push_back(pnt_attrib(symb_curve(gen(makevecteur(vars+cst_i*f,vars,xmin,i,showeq),_PNT__VECT),gen(chemin,_GROUP__VECT)),attributs.empty()?color:attributs,contextptr));
+	  }
 	  xmin=i;
 	  chemin=vecteur(1,gen(i,j));
 	}
 	oldj=j;
       }
-      if (!chemin.empty())
-	res.push_back(pnt_attrib(symb_curve(gen(makevecteur(vars+cst_i*f,vars,xmin,xmax,showeq),_PNT__VECT),gen(chemin,_GROUP__VECT)),attributs.empty()?color:attributs,contextptr));
+      if (!chemin.empty()){
+	if (debug_infolevel)
+	  CERR << "curve " << chemin.size() << " " << chemin.front() << " .. " << chemin.back() << endl;
+	res.push_back(pnt_attrib(symb_curve(gen(makevecteur(vars+cst_i*f,vars,xmin,i-step,showeq),_PNT__VECT),gen(chemin,_GROUP__VECT)),attributs.empty()?color:attributs,contextptr));
+      }
       leave(protect,localvar,newcontextptr);
 #ifndef WIN32
       //      if (child_id)
@@ -1204,7 +1435,7 @@ namespace giac {
     int s=0;
     gen var1,var2;
     if (vars.type==_VECT){
-      s=vars._VECTptr->size();
+      s=int(vars._VECTptr->size());
       if (s>2)
 	s=0;
       if (s)
@@ -1219,7 +1450,7 @@ namespace giac {
       var1=vars;
     }
     if (!s)
-      settypeerr("Plotfunc 2nd arg must be var or [var1,var2]");
+      return gentypeerr(gettext("Plotfunc 2nd arg must be var or [var1,var2]"));
     gen ff=f; // f.evalf(eval_level(contextptr),contextptr);
     if (s==1)
       ff=makevecteur(t__IDNT_e,subst(ff,*var1._IDNTptr,t__IDNT_e,false,contextptr));
@@ -1363,7 +1594,7 @@ namespace giac {
     gnuplot_wait(out_handle,gnuplot_out_readstream,ng+gnuplot_wait_times);
     // usleep(50000);
     r.subtype=gnuplot_fileno,
-    ++gnuplot_fileno;
+      ++gnuplot_fileno;
     return r;
     //return gnuplot_fileno-1;
 #endif
@@ -1408,18 +1639,7 @@ namespace giac {
     return true;
   }
 
-
-  symbolic symb_plotfunc(const gen & a,const gen & b){
-    return symbolic(at_plotfunc,makevecteur(a,b));
-  }
-  symbolic symb_plotfunc(const gen & a){
-    return symbolic(at_plotfunc,a);
-  }
-  void setplotfuncerr(){
-    setsizeerr("Plotfunc: bad variable name");
-  }
-
-  gen bit_and(const gen & a,unsigned mask){
+  static gen bit_and(const gen & a,unsigned mask){
     if (a.type==_INT_)
       return int(unsigned(a.val) & mask);
     if (a.type==_VECT){
@@ -1432,9 +1652,42 @@ namespace giac {
     return a;
   }
 
+  static gen bit_ori(const gen & a,unsigned mask){
+    if (a.type==_INT_)
+      return int(unsigned(a.val) | mask);
+    if (a.type==_VECT){
+      vecteur res;
+      const_iterateur it=a._VECTptr->begin(),itend=a._VECTptr->end();
+      for (;it!=itend;++it)
+	res.push_back(bit_ori(*it,mask));
+      return res;
+    }
+    return a;
+  }
+
+  static gen bit_orv(const gen & a,const vecteur & v){
+    if (a.type==_INT_)
+      return bit_ori(v,a.val);
+    if (a.type==_VECT){
+      vecteur res;
+      const_iterateur it=a._VECTptr->begin(),itend=a._VECTptr->end(),jt=v.begin(),jtend=v.end();
+      for (;it!=itend && jt!=jtend;++it,++jt){
+	if (jt->type==_INT_)
+	  res.push_back(bit_ori(*it,jt->val));
+	else
+	  res.push_back(*it);
+      }
+      for (;it!=itend;++it){
+	res.push_back(*it);
+      }
+      return res;
+    }
+    return a;
+  }
+
   vecteur get_style(const vecteur & v,string & legende){
-    int s=v.size();
-    vecteur style(1,FL_BLACK);
+    int s=int(v.size());
+    vecteur style(1,int(FL_BLACK));
     if (s>=3)
       legende=gen2string(v[2]);
     if (s>1){
@@ -1458,52 +1711,59 @@ namespace giac {
   // read color like attributs and returns the first attribut index
   int read_attributs(const vecteur & v,vecteur & attributs,GIAC_CONTEXT){
     if (attributs.empty())
-      attributs.push_back(0);
+      attributs.push_back(default_color(contextptr));
     const_iterateur it=v.begin(),itend=v.end();
-    int s=itend-it,smax(s);
+    int s=int(itend-it),smax(s);
     for (;it!=itend;++it){
       if (*it==at_normalize){
-	s=it-v.begin();
+	s=int(it-v.begin());
 	attributs.push_back(*it);
 	continue;
       }
       if (it->type==_VECT){
 	if (read_attributs(*it->_VECTptr,attributs,contextptr)!=int(it->_VECTptr->size()))
-	  s=it-v.begin();
+	  s=int(it-v.begin());
 	continue;
       }
-      if (!it->is_symb_of_sommet(at_equal))
+      if (!is_equal(*it))
 	continue;
       gen & opt=it->_SYMBptr->feuille;
       if (opt.type!=_VECT || opt._VECTptr->size()!=2)
 	continue;
-      gen opt1=opt._VECTptr->front(),opt2=opt._VECTptr->back().eval(1,contextptr);
+      gen opt1=opt._VECTptr->front(),opt2=opt._VECTptr->back().eval(1,0);
       unsigned colormask=0xffff0000;
       if (opt1==at_couleur || opt1==at_display){
-	opt1=_COLOR;
+	opt1=_COLOR; opt1.subtype=_INT_COLOR;
 	colormask=0xffffffff;
       }
-      if (opt1==at_legende)
+      if (opt1==at_legende){
 	opt1=_LEGEND;
+	opt1.subtype=_INT_COLOR;
+      }
       if (opt1.type==_DOUBLE_)
 	opt1=gen(int(opt1._DOUBLE_val));
-      if (opt2.type==_DOUBLE_)
+      if (opt2.type==_DOUBLE_ && opt1.val!=_LEGEND)
 	opt2=gen(int(opt2._DOUBLE_val));
-      if ( opt1.type!=_INT_)
+      if ( opt1.type!=_INT_ || opt1.subtype==0 
+	   // || (opt1.subtype==_INT_PLOT && opt1.val>=_GL_X && opt1.val<=_GL_Z)
+	   ) 
 	continue;
       if (s==smax)
-	s=it-v.begin();
+	s=int(it-v.begin());
       switch (opt1.val){
       case _COLOR:
-	attributs[0]=bit_and(attributs[0],0xffff0000) + opt2;
+	if (opt2.type==_INT_)
+	  attributs[0]=bit_ori(bit_and(attributs[0],0xcfff0000),opt2.val);
+	if (opt2.type==_VECT)
+	  attributs[0]=bit_orv(bit_and(attributs[0],0xcfff0000),*opt2._VECTptr);
 	break;
       case _STYLE:
 	if (opt2==at_point)
-	  attributs[0]=bit_and(attributs[0],0xfe3fffff) + _DASHDOT_LINE;
+	  attributs[0]=bit_ori(bit_and(attributs[0],0xfe3fffff),_DASHDOT_LINE);
 	break;
       case _THICKNESS:
 	attributs[0]=bit_and(attributs[0], 0xfff8ffff);
-	attributs[0]=attributs[0]+_LINE_WIDTH_2*(bit_and(opt2,0x7)-1);
+	attributs[0]=bit_ori(attributs[0],_LINE_WIDTH_2*(bit_and(opt2,0x7).val-1));
 	break;
       case _LEGEND:
 	if (attributs.size()>1)
@@ -1525,7 +1785,7 @@ namespace giac {
   }
 
 
-  void read_option(const vecteur & v,double xmin,double xmax,double ymin,double ymax,double zmin,double zmax,vecteur & attributs, int & nstep,int & jstep,int & kstep,bool unfactored,GIAC_CONTEXT){
+  static void read_option(const vecteur & v,double xmin,double xmax,double ymin,double ymax,double zmin,double zmax,vecteur & attributs, int & nstep,int & jstep,int & kstep,bool unfactored,GIAC_CONTEXT){
     read_attributs(v,attributs,contextptr);
     const_iterateur it=v.begin(),itend=v.end();
     for (;it!=itend;++it){
@@ -1535,7 +1795,7 @@ namespace giac {
       }
       if (it->subtype==_INT_SOLVER && *it==_UNFACTORED)
 	unfactored=true;
-      if (!it->is_symb_of_sommet(at_equal))
+      if (!is_equal(*it))
 	continue;
       gen & opt=it->_SYMBptr->feuille;
       if (opt.type!=_VECT || opt._VECTptr->size()!=2)
@@ -1550,8 +1810,11 @@ namespace giac {
 	break;
       case _XSTEP:
 	opt2=evalf_double(abs(opt2,context0),2,context0); // ok
-	if (opt2.type==_DOUBLE_)
+	if (opt2.type==_DOUBLE_){
 	  nstep=int((xmax-xmin)/opt2._DOUBLE_val+.5);
+	  if (!jstep)
+	    jstep=nstep;
+	}
 	break;
       case _YSTEP:
 	opt2=evalf_double(abs(opt2,context0),2,context0); // ok
@@ -1572,7 +1835,7 @@ namespace giac {
     read_option(v,xmin,xmax,ymin,ymax,zmin,zmax,attributs,nstep,jstep,kstep,unfactored,contextptr);
   }
 
-  void read_option(const vecteur & v,double xmin,double xmax,double ymin,double ymax,vecteur & attributs, int & nstep,int & jstep,GIAC_CONTEXT){
+  static void read_option(const vecteur & v,double xmin,double xmax,double ymin,double ymax,vecteur & attributs, int & nstep,int & jstep,GIAC_CONTEXT){
     double zmin=gnuplot_zmin,zmax=gnuplot_zmax; int kstep=0;
     bool unfactored=false;
     read_option(v,xmin,xmax,ymin,ymax,zmin,zmax,attributs,nstep,jstep,kstep,unfactored,contextptr);
@@ -1586,7 +1849,14 @@ namespace giac {
     int nstep=gnuplot_pixels_per_eval,jstep=0;
     gen attribut=default_color(contextptr);
     vecteur vargs(plotpreprocess(args,contextptr));
-    int s=vargs.size();
+    if (is_undef(vargs))
+      return vargs;
+    int s=int(vargs.size());
+    if (ckmatrix(vargs[0])){
+      matrice m=*vargs[0]._VECTptr;
+      reverse(m.begin(),m.end());
+      return density(mtran(m),0,0,true,contextptr);
+    }
     for (int i=0;i<s;++i){
       if (vargs[i]==at_equation){
 	showeq=true;
@@ -1596,15 +1866,36 @@ namespace giac {
       }
     }
     if (s<1)
-      setsizeerr();
+      return gensizeerr(contextptr);
     gen e1=vargs[1];
+#if 0 // ?#ifdef EMCC
+    if (!densityplot && e1.type==_IDNT){
+      gen m=minus_inf,M=plus_inf;
+      vecteur poi,tvi;
+      if (step_func(vargs[0],e1,m,M,poi,tvi,true,false,contextptr)){
+	gen scale=(gnuplot_xmax-gnuplot_xmin)/5.0;
+	if (is_inf(m))
+	  m=gnuplot_xmin;
+	if (is_inf(M))
+	  M=gnuplot_xmax;
+	if (m!=M)
+	  scale=(M-m)/3.0;
+	m=m-0.973456*scale; M=M+1.018546*scale;
+	vargs[1]=symb_equal(vargs[1],symb_interval(m,M));
+	gen p=funcplotfunc(gen(vargs,_SEQ__VECT),false,contextptr);
+	poi=mergevecteur(poi,gen2vecteur(p));
+	//poi=mergevecteur(gen2vecteur(p),poi);
+	return gen(poi,_SEQ__VECT);
+      }
+    }
+#endif
     bool newsyntax;
     if (e1.type!=_VECT){
-      newsyntax=readrange(e1,gnuplot_xmin,gnuplot_xmax,e1,xmin,xmax,contextptr) && (e1.is_symb_of_sommet(at_equal) || s<=4);
+      newsyntax=readrange(e1,gnuplot_xmin,gnuplot_xmax,e1,xmin,xmax,contextptr) && (is_equal(vargs[1]) || s<4);
     }
     else {
       if (e1._VECTptr->size()!=2)
-	setplotfuncerr();
+	return setplotfuncerr();
       vecteur v(*e1._VECTptr);
       newsyntax=readrange(v[0],gnuplot_xmin,gnuplot_xmax,v[0],xmin,xmax,contextptr) && readrange(v[1],gnuplot_ymin,gnuplot_ymax,v[1],ymin,ymax,contextptr);
       if (newsyntax)
@@ -1612,18 +1903,18 @@ namespace giac {
     }
     if (!newsyntax){ // plotfunc(fonction,var,min,max[,zminmax,attribut])
       if (s<=3)
-	setplotfuncerr();
+	return setplotfuncerr();
       gen e2=vargs[2];
       gen e3=vargs[3];
       if (e1.type==_VECT){
 	if ((e2.type!=_VECT) || (e3.type!=_VECT) || (e2._VECTptr->size()!=2) || (e3._VECTptr->size()!=2))
-	  settypeerr("Plotfunc: Range must be [xmin,ymin] or [xmax,ymax]");
+	  return gentypeerr(gettext("Plotfunc: Range must be [xmin,ymin] or [xmax,ymax]"));
 	gen e21=evalf_double(e2._VECTptr->front(),eval_level(contextptr),contextptr);
 	gen e22=evalf_double(e2._VECTptr->back(),eval_level(contextptr),contextptr);
 	gen e31=evalf_double(e3._VECTptr->front(),eval_level(contextptr),contextptr);
 	gen e32=evalf_double(e3._VECTptr->back(),eval_level(contextptr),contextptr);
 	if ((e21.type!=_DOUBLE_) || (e22.type!=_DOUBLE_) || (e31.type!=_DOUBLE_) || (e32.type!=_DOUBLE_))
-	  settypeerr("Plotfunc: bad range value!");
+	  return gentypeerr(gettext("Plotfunc: bad range value!"));
 	xmin=e21._DOUBLE_val;
 	ymin=e22._DOUBLE_val;
 	xmax=e31._DOUBLE_val;
@@ -1634,7 +1925,7 @@ namespace giac {
 	    gen e41=evalf_double(e4._VECTptr->front(),eval_level(contextptr),contextptr);
 	    gen e42=evalf_double(e4._VECTptr->back(),eval_level(contextptr),contextptr);
 	    if (e41.type!=_DOUBLE_ || e42.type!=_DOUBLE_)
-	      settypeerr("Plotfunc: bad range value!");
+	      return gentypeerr(gettext("Plotfunc: bad range value!"));
 	    zmin=e41._DOUBLE_val;
 	    zmax=e42._DOUBLE_val;
 	  }
@@ -1650,7 +1941,7 @@ namespace giac {
 	e2=e2.evalf_double(eval_level(contextptr),contextptr);
 	e3=e3.evalf_double(eval_level(contextptr),contextptr);
 	if ((e2.type!=_DOUBLE_) || (e3.type!=_DOUBLE_))
-	  settypeerr("Plotfunc: bad range value!");
+	  return gentypeerr(gettext("Plotfunc: bad range value!"));
 	xmin=e2._DOUBLE_val;
 	xmax=e3._DOUBLE_val;
 	if (s>4)
@@ -1674,29 +1965,48 @@ namespace giac {
     return plotfunc(vargs[0],e1,attributs,densityplot,xmin,xmax,ymin,ymax,zmin,zmax,nstep,jstep,showeq,contextptr);
   }
   gen _plotfunc(const gen & args,const context * contextptr){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    int nd;
+    if ( (nd=is_distribution(args)) || (args.type==_VECT && !args._VECTptr->empty() && (nd=is_distribution(args._VECTptr->front())) ) ){
+      if (is_discrete_distribution(nd))
+	*logptr(contextptr) << "Correct commandname is histogram" << endl;
+      return _plot(args,contextptr);
+    }
     return funcplotfunc(args,false,contextptr);
   }
-  const string _plotfunc_s("plotfunc");
-  unary_function_eval __plotfunc(&giac::_plotfunc,_plotfunc_s);
-  unary_function_ptr at_plotfunc (&__plotfunc,_QUOTE_ARGUMENTS,true);
+  static const char _plotfunc_s []="plotfunc";
+  static define_unary_function_eval_quoted (__plotfunc,&giac::_plotfunc,_plotfunc_s);
+  define_unary_function_ptr5( at_plotfunc ,alias_at_plotfunc,&__plotfunc,_QUOTE_ARGUMENTS,true);
 
-  gen _funcplot(const gen & args,const context * contextptr=0){
+  gen _funcplot(const gen & args,const context * contextptr){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     return funcplotfunc(args,false,contextptr);
   }
-  const string _funcplot_s("funcplot"); // Same as plotfunc but with tex print
-  unary_function_eval __funcplot(&giac::_funcplot,_funcplot_s);
-  unary_function_ptr at_funcplot (&__funcplot,_QUOTE_ARGUMENTS,true);
+  static const char _funcplot_s []="funcplot"; // Same as plotfunc but with tex print
+  static define_unary_function_eval_quoted (__funcplot,&giac::_funcplot,_funcplot_s);
+  define_unary_function_ptr5( at_funcplot ,alias_at_funcplot,&__funcplot,_QUOTE_ARGUMENTS,true);
 
-  gen _plotdensity(const gen & args,const context * contextptr=0){
+  gen _plotdensity(const gen & args,const context * contextptr){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     return funcplotfunc(args,true,contextptr);
   }
-  const string _plotdensity_s("plotdensity"); 
-  unary_function_eval __plotdensity(&giac::_plotdensity,_plotdensity_s);
-  unary_function_ptr at_plotdensity (&__plotdensity,_QUOTE_ARGUMENTS,true);
+  static const char _plotdensity_s []="plotdensity"; 
+  static define_unary_function_eval_quoted (__plotdensity,&giac::_plotdensity,_plotdensity_s);
+  define_unary_function_ptr5( at_plotdensity ,alias_at_plotdensity,&__plotdensity,_QUOTE_ARGUMENTS,true);
 
-  const string _densityplot_s("densityplot"); 
-  unary_function_eval __densityplot(&giac::_plotdensity,_densityplot_s);
-  unary_function_ptr at_densityplot (&__densityplot,_QUOTE_ARGUMENTS,true);
+  gen _plotmatrix(const gen & args,const context * contextptr){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    if (!ckmatrix(args))
+      return gensizeerr(contextptr);
+    return funcplotfunc(args,true,contextptr);
+  }
+  static const char _plotmatrix_s []="plotmatrix"; 
+  static define_unary_function_eval_quoted (__plotmatrix,&giac::_plotmatrix,_plotmatrix_s);
+  define_unary_function_ptr5( at_plotmatrix ,alias_at_plotmatrix,&__plotmatrix,_QUOTE_ARGUMENTS,true);
+
+  static const char _densityplot_s []="densityplot"; 
+  static define_unary_function_eval_quoted (__densityplot,&giac::_plotdensity,_densityplot_s);
+  define_unary_function_ptr5( at_densityplot ,alias_at_densityplot,&__densityplot,_QUOTE_ARGUMENTS,true);
 
   bool chk_double_interval(const gen & g,double & inf,double & sup,GIAC_CONTEXT){
     gen h(g);
@@ -1717,7 +2027,7 @@ namespace giac {
   gen readvar(const gen & g){
     if (g.type==_IDNT)
       return g;
-    if (!g.is_symb_of_sommet(at_equal))
+    if (!is_equal(g))
       return undef;
     gen & f=g._SYMBptr->feuille;
     if (f.type!=_VECT || f._VECTptr->size()!=2)
@@ -1732,7 +2042,7 @@ namespace giac {
       x=g;
       return true;
     }
-    if (g.is_symb_of_sommet(at_equal)){
+    if (is_equal(g)){
       gen & f=g._SYMBptr->feuille;
       if (f.type!=_VECT)
 	return false;
@@ -1745,17 +2055,22 @@ namespace giac {
     }
     return false;
   }
-  symbolic symb_erase(const gen & a){
+  static symbolic symb_erase(const gen & aa){
+    gen a(aa);
+    if (a.type==_VECT) a.subtype=_SEQ__VECT;
     return symbolic(at_erase,a);
   }
   gen _erase(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+#ifdef WITH_GNUPLOT
     plot_instructions.clear();
+#endif
     __interactive.op(symbolic(at_erase,0),contextptr);
     return symb_erase(args);
   }
-  const string _erase_s("erase");
-  unary_function_eval __erase(&giac::_erase,_erase_s,&printasconstant);
-  unary_function_ptr at_erase (&__erase);
+  static const char _erase_s []="erase";
+  static define_unary_function_eval2 (__erase,&giac::_erase,_erase_s,&printasconstant);
+  define_unary_function_ptr( at_erase ,alias_at_erase ,&__erase);
 
   int erase3d(){
 #ifdef WITH_GNUPLOT
@@ -1780,19 +2095,22 @@ namespace giac {
     }
     ++gnuplot_fileno;
     gnuplot_do_splot=true;
-#endif
     return gnuplot_fileno-1;
+#else
+    return -1;
+#endif
   }
 
-  gen _erase3d(const gen & args){
+  gen _erase3d(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     return erase3d();
   }
-  const string _erase3d_s("erase3d");
-  unary_function_unary __erase3d(&giac::_erase3d,_erase3d_s);
-  unary_function_ptr at_erase3d (&__erase3d,0,true);
+  static const char _erase3d_s []="erase3d";
+  static define_unary_function_eval (__erase3d,&giac::_erase3d,_erase3d_s);
+  define_unary_function_ptr5( at_erase3d ,alias_at_erase3d,&__erase3d,0,true);
 
   // arg=real/complex or (real/complex,label) or same+color
-  gen pointonoff(const gen & args,const vecteur & attributs,GIAC_CONTEXT){
+  static gen pointonoff(const gen & args,const vecteur & attributs,GIAC_CONTEXT){
     gen e,a(args.evalf(eval_level(contextptr),contextptr)); 
     if ( (a.is_real(contextptr)) || (a.type==_CPLX) ){
       if (attributs.size()<=1)
@@ -1803,77 +2121,92 @@ namespace giac {
     else { 
       if (args.type!=_VECT)
 	return symb_pnt(args,attributs,contextptr);
-      int s=args._VECTptr->size();
+      int s=int(args._VECTptr->size());
       if ( (s!=2) && (s!=3) )
-	setsizeerr("pointon");
+	return gensizeerr(gettext("pointon"));
       gen x=args._VECTptr->front(),y=(*args._VECTptr)[1],c;
       if ( (s==3) || (y.type==_STRNG))
 	e=symbolic(at_pnt,args);
       else 
 	e=symb_pnt_name(x,attributs[0].val,y,contextptr);
     }
-#ifndef WIN32
+#if !defined(WIN32) && defined(WITH_GNUPLOT)
     if (child_id) plot_instructions.push_back(e);
 #endif // WIN32
     return e;
   }
 
-  // pixel (i,j,[color,xmin,xmax,ymin,ymax])
+  // pixel (i,j,[color])
   gen _pixon(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     int s;
-    if (args.type!=_VECT || (s=args._VECTptr->size())<2)
-      setsizeerr();
+    if (args.type!=_VECT || (s=int(args._VECTptr->size()))<2)
+      return gensizeerr(contextptr);
     vecteur v(*args._VECTptr);
     if (s<3)
       v.push_back(default_color(contextptr));
     return symb_pnt(symbolic(at_pixon,gen(v,_SEQ__VECT)),0,contextptr);
   }
-  const string _pixon_s("pixon");
-  unary_function_eval __pixon(&giac::_pixon,_pixon_s);
-  unary_function_ptr at_pixon (&__pixon,0,true);
+  static const char _pixon_s []="pixon";
+  static define_unary_function_eval (__pixon,&giac::_pixon,_pixon_s);
+  define_unary_function_ptr5( at_pixon ,alias_at_pixon,&__pixon,0,true);
 
   gen _pixoff(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type!=_VECT || args._VECTptr->size()!=2)
-      setsizeerr();
+      return gensizeerr(contextptr);
     vecteur v(*args._VECTptr);
-    v.push_back(FL_WHITE);
+    v.push_back(int(FL_WHITE));
     return _pixon(gen(v,_SEQ__VECT),contextptr);
   }
-  const string _pixoff_s("pixoff");
-  unary_function_eval __pixoff(&giac::_pixoff,_pixoff_s);
-  unary_function_ptr at_pixoff (&__pixoff,0,true);
+  static const char _pixoff_s []="pixoff";
+  static define_unary_function_eval (__pixoff,&giac::_pixoff,_pixoff_s);
+  define_unary_function_ptr5( at_pixoff ,alias_at_pixoff,&__pixoff,0,true);
 
-  gen _droite_segment(const gen & args,int subtype,const vecteur & attributs,GIAC_CONTEXT){
+  static gen _droite_segment(const gen & args,int subtype,const vecteur & attributs,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     gen e;
     vecteur res(*args._VECTptr);
     iterateur it=res.begin(),itend=res.end();
     for (;it!=itend;++it){
+      if (it->is_symb_of_sommet(at_equal))
+	*it=_droite(*it,contextptr);
       bool ispnt=it->is_symb_of_sommet(at_pnt);
       *it=remove_at_pnt(*it);
       if ( (it->type==_SYMB) && (it->_SYMBptr->sommet==at_cercle)){
 	gen centre,rayon;
-	centre_rayon(*it,centre,rayon,false,0); // we don't care about rayon
+	if (!centre_rayon(*it,centre,rayon,false,contextptr))
+	  return gensizeerr(contextptr);// we don't care about rayon
 	*it=centre;
       }
       if (it->type==_VECT){
 	if (it->_VECTptr->size()==2){
-	  if (ispnt)
-	    *it=(it->_VECTptr->front()+it->_VECTptr->back())/2;
+	  if (ispnt){
+	    if (it->subtype==_LINE__VECT || it->subtype==_HALFLINE__VECT || it->subtype==_VECTOR__VECT)
+	      *it=res[0]+it->_VECTptr->back()-it->_VECTptr->front();
+	    else
+	      *it=(it->_VECTptr->front()+it->_VECTptr->back())/2;
+	  }
 	  else {
 	    *it=it->_VECTptr->front()+cst_i*it->_VECTptr->back();
 	    if (it!=res.begin())
 	      *it=*it+res[0];
 	  }
 	}
-	else
+	else {
+	  if (!ispnt && it!=res.begin() && it->subtype!=_POINT__VECT)
+	    *it=*it+res[0];
 	  it->subtype=_POINT__VECT;
+	}
       }
     }
+    if (res.size()==2 && is_zero(res.front()-res.back(),contextptr) && subtype!=_GROUP__VECT && subtype!=_VECTOR__VECT)
+      return undef;
     e=pnt_attrib(gen(res,subtype),attributs,contextptr);
     // ofstream pict("PICT",ios::app);
     // pict << " ," << endl << e ;
     // pict.close();
-#ifndef WIN32
+#if !defined(WIN32) && defined(WITH_GNUPLOT)
     if (child_id) plot_instructions.push_back(e);
 #endif // WIN32
     return e;
@@ -1883,11 +2216,11 @@ namespace giac {
     vecteur attributs(1,default_color(contextptr));
     int s=read_attributs(v,attributs,contextptr);
     if (!s)
-      setdimerr();
+      return gendimerr(contextptr);
     gen eq(remove_equal(v[0])),x(x__IDNT_e),y(y__IDNT_e),z;
-    if (s>=2 && v[1].is_symb_of_sommet(at_equal)){
+    if (s>=2 && is_equal(v[1])){
       if (est_plan) // Only 1 cartesian eq for a 3-d plan
-	setsizeerr();
+	return gensizeerr(contextptr);
       if (s<3) ck_parameter_x(contextptr); else x=v[2];
       if (s<4) ck_parameter_y(contextptr); else y=v[3];
       if (s<5){
@@ -1897,32 +2230,39 @@ namespace giac {
       else
 	z=v[4];
       if (x.type!=_IDNT || y.type!=_IDNT || z.type!=_IDNT)
-	setsizeerr();
+	return gensizeerr(contextptr);
       vecteur vxyz(makevecteur(x,y,z));
       gen eq1(v[1]._SYMBptr->feuille._VECTptr->front()-v[1]._SYMBptr->feuille._VECTptr->back());
       gen v0(derive(eq,vxyz,contextptr)),v1(derive(eq1,vxyz,contextptr));
+      if (is_undef(v0) || is_undef(v1))
+	return v0+v1;
       gen A;
-      if (!is_zero(derive(v0,vxyz,contextptr)) || !is_zero(derive(v1,vxyz,contextptr)) )
-	setsizeerr("Non linear equations");
-      vecteur directeur(*normal(cross(*v0._VECTptr,*v1._VECTptr),contextptr)._VECTptr);
-      if (is_zero(directeur))
-	setsizeerr("Parallel plans");
-      if (is_zero(directeur[2])){ // z is constant on the line
-	if (is_zero(directeur[1]))
-	  A=gen(vecteur(3),_POINT__VECT);
+      if (!is_zero(derive(v0,vxyz,contextptr),contextptr) || !is_zero(derive(v1,vxyz,contextptr),contextptr) )
+	return gensizeerr(gettext("Non linear equations"));
+      vecteur directeur(*normal(cross(*v0._VECTptr,*v1._VECTptr,contextptr),contextptr)._VECTptr);
+      if (is_zero(directeur,contextptr))
+	return gensizeerr(gettext("Parallel plans"));
+      if (is_zero(directeur[2],contextptr)){ // z is constant on the line
+	if (is_zero(directeur[1],contextptr)){ // fix x=0 and solve for y and z
+	  gen sol=solve(makevecteur(subst(eq,x,0,false,contextptr),subst(eq1,x,0,false,contextptr)),makevecteur(y,z),0,contextptr);
+	  if (is_undef(sol) || sol.type!=_VECT || sol._VECTptr->size()!=1)
+	    return gensizeerr(contextptr);
+	  sol=sol._VECTptr->front();
+	  A=gen(makevecteur(0,sol._VECTptr->front(),sol._VECTptr->back()),_POINT__VECT);
+	}
 	else {
 	  // fix y=0 for A, solve
 	  gen sol=solve(makevecteur(subst(eq,y,0,false,contextptr),subst(eq1,y,0,false,contextptr)),makevecteur(x,z),0,contextptr);
-	  if (sol.type!=_VECT || sol._VECTptr->size()!=1)
-	    setsizeerr();
+	  if (is_undef(sol) || sol.type!=_VECT || sol._VECTptr->size()!=1)
+	    return gensizeerr(contextptr);
 	  sol=sol._VECTptr->front();
 	  A=gen(makevecteur(sol._VECTptr->front(),0,sol._VECTptr->back()),_POINT__VECT);
 	}
       }
       else { // Fix z=0
 	gen sol=solve(makevecteur(subst(eq,z,0,false,contextptr),subst(eq1,z,0,false,contextptr)),makevecteur(x,y),0,contextptr);
-	if (sol.type!=_VECT || sol._VECTptr->size()!=1)
-	  setsizeerr();
+	if (is_undef(sol) || sol.type!=_VECT || sol._VECTptr->size()!=1)
+	  return gensizeerr(contextptr);
 	sol=sol._VECTptr->front();
 	A=gen(makevecteur(sol._VECTptr->front(),sol._VECTptr->back(),0),_POINT__VECT);
       }
@@ -1940,42 +2280,49 @@ namespace giac {
 	z=v[3];
     }
     if ( x.type!=_IDNT || y.type!=_IDNT || (est_plan && z.type!=_IDNT) )
-      setsizeerr();
+      return gensizeerr(contextptr);
     gen eqx=normal(derive(eq,*x._IDNTptr,contextptr),contextptr);
     gen eqy=normal(derive(eq,*y._IDNTptr,contextptr),contextptr);
     gen eqz;
     if (est_plan)
       eqz=normal(derive(eq,*z._IDNTptr,contextptr),contextptr);
+    if (is_undef(eqx)||is_undef(eqy)||is_undef(eqz))
+      return eqx+eqy+eqz;
+    vecteur eqxyz=makevecteur(eqx,eqy,eqz);
     // FIXME The test should be done with all derivatives
-    if (!is_zero(derive(eqx,*x._IDNTptr,contextptr)) || !is_zero(derive(eqy,*y._IDNTptr,contextptr)) || (est_plan && !is_zero(derive(eqz,*z._IDNTptr,contextptr))) )
-      setsizeerr();
-    if (is_zero(eqx) && is_zero(eqy) && is_zero(eqz) )
-      setsizeerr();
+    if (!lvarx(eqxyz,x).empty() || !lvarx(eqxyz,y).empty() || (est_plan && !lvarx(eqxyz,z).empty()) )
+      return gensizeerr(contextptr);
+    if (is_zero(eqx,contextptr) && is_zero(eqy,contextptr) && is_zero(eqz,contextptr) )
+      return gensizeerr(contextptr);
     // equation: eqx*x+eqy*y+eqz*z+cte=0
-    gen cte=subst(eq,makevecteur(x,y,z),vecteur(3,zero),false,contextptr),A,B;
+    gen cte,A,B;
+    if (est_plan)
+      cte=subst(eq,makevecteur(x,y,z),vecteur(3,zero),false,contextptr);
+    else
+      cte=subst(eq,makevecteur(x,y),vecteur(2,zero),false,contextptr);
     if (est_plan){
       B=makevecteur(eqx,eqy,eqz);
-      if (is_zero(eqz)){
-	if (is_zero(eqy))
+      if (is_zero(eqz,contextptr)){
+	if (is_zero(eqy,contextptr))
 	  A=gen(makevecteur(-cte/eqx,0,0),_POINT__VECT);
 	else
 	  A=gen(makevecteur(0,-cte/eqy,0),_POINT__VECT);
       }
       else
 	A=gen(makevecteur(0,0,-cte/eqz),_POINT__VECT);
-      A=ratnormal(A);
+      A=ratnormal(A,contextptr);
       return pnt_attrib(symbolic(at_hyperplan,gen(makevecteur(B,A),_SEQ__VECT)),attributs,contextptr);
     }
     // 2-d line
-    if (is_zero(eqy)){
+    if (is_zero(eqy,contextptr)){
       eqx=-eqx;
-      A=rdiv(cte,eqx);
+      A=rdiv(cte,eqx,contextptr);
     }
     else
-      A=cst_i*rdiv(-cte,eqy);
-    A=ratnormal(A);
+      A=cst_i*rdiv(-cte,eqy,contextptr);
+    A=ratnormal(A,contextptr);
     B=A + eqy - eqx*cst_i;
-    B=ratnormal(B);
+    B=ratnormal(B,contextptr);
     gen e=pnt_attrib(gen(makevecteur(A,B),_LINE__VECT),attributs,contextptr);
     return e;
   }
@@ -1992,62 +2339,104 @@ namespace giac {
 	v.push_back(rand_3d());
       break;
     default:
-      setdimerr();
+      return gendimerr(contextptr);
     }
     return f(gen(v,_SEQ__VECT),contextptr);
   }
 
   // v[0] should be a vect
-  gen droite_parametric(const vecteur & v,const vecteur & attributs,GIAC_CONTEXT){
+  static gen droite_parametric(const vecteur & v,const vecteur & attributs,GIAC_CONTEXT){
     if (v.size()<2 || v.front().type!=_VECT)
-      setsizeerr();
+      return gensizeerr(contextptr);
     vecteur & v0=*v[0]._VECTptr;
-    int s=v0.size();
+    int s=int(v0.size());
     const gen & t=v[1];
-    vecteur directeur(*derive(v0,t,contextptr)._VECTptr);
-    if (!is_zero(derive(directeur,t,contextptr)))
-      setsizeerr("Not a line!");
+    gen diffv0=derive(v0,t,contextptr);
+    if (is_undef(diffv0) || diffv0.type!=_VECT)
+      return diffv0;
+    vecteur directeur(*diffv0._VECTptr);
+    if (!is_zero(derive(directeur,t,contextptr),contextptr))
+      return gensizeerr(gettext("Not a line!"));
     gen A(subst(v0,t,0,false,contextptr)),d(directeur);
     if (s==2){
       A=A[0]+cst_i*A[1];
       d=d[0]+cst_i*d[1];
     }
+    else
+      return _droite_segment(makevecteur(A,d),_LINE__VECT,attributs,contextptr);
     return _droite_segment(makevecteur(A,A+d),_LINE__VECT,attributs,contextptr);
   }
 
   gen _slope(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     gen g=remove_at_pnt(args);
     if (g.type!=_VECT || g._VECTptr->size()!=2)
-      setsizeerr();
+      return gensizeerr(contextptr);
     g=g._VECTptr->front()-g._VECTptr->back();
     if (g.type==_VECT)
-      settypeerr("2-d instruction");
+      return gentypeerr(gettext("2-d instruction"));
     return normal(im(g,contextptr)/re(g,contextptr),contextptr);
   }
-  const string _slope_s("slope");
-  unary_function_eval __slope(&giac::_slope,_slope_s);
-  unary_function_ptr at_slope (&__slope,0,true);
+  static const char _slope_s []="slope";
+  static define_unary_function_eval (__slope,&giac::_slope,_slope_s);
+  define_unary_function_ptr5( at_slope ,alias_at_slope,&__slope,0,true);
 
-  gen _droite(const gen & args,GIAC_CONTEXT){
+  vecteur eval_with_xy_quoted(const gen & args0,GIAC_CONTEXT){
+    vecteur v(lidnt(args0));
+    int xy=0, XY=0;
+    for (unsigned i=0;i<v.size();++i){
+      gen & g=v[i];
+      if (g.type!=_IDNT || strlen(g._IDNTptr->id_name)!=1)
+	continue;
+      char ch=g._IDNTptr->id_name[0];
+      if (ch=='x' || ch=='y')
+	++xy;
+      if (ch=='X' || ch=='Y')
+	++XY;
+    }
+    if (xy || !XY){ // priority to x/y
+      gen idx(identificateur("x")),idy(identificateur("y"));
+      vecteur v(makevecteur(idx,idy));
+      vecteur argv(makevecteur(args0,idx,idy));
+      argv=quote_eval(argv,v,contextptr);
+      return argv;
+    }
+    if (XY){
+      gen idx(identificateur("X")),idy(identificateur("Y"));
+      vecteur v(makevecteur(idx,idy));
+      vecteur argv(makevecteur(args0,idx,idy));
+      argv=quote_eval(argv,v,contextptr);
+      return argv;
+    }
+    return vecteur(1,eval(args0,eval_level(contextptr),contextptr));
+  }
+
+  gen _droite(const gen & args0,GIAC_CONTEXT){
+    if (is_undef(args0)) return args0;
+    if (args0.type==_SYMB || args0.type==_IDNT){
+      // eval args with x/y or X/Y quoted
+      vecteur argv=eval_with_xy_quoted(args0,contextptr);
+      return droite_by_equation(argv,false,contextptr);
+    }
+    gen args=eval(args0,eval_level(contextptr),contextptr);
     if (args.type==_INT_)
       return mkrand2d3d(args.val,2,_droite,contextptr);
-    if (args.type==_SYMB)
-      return droite_by_equation(vecteur(1,args),false,contextptr);
     if (args.type!=_VECT)
-      settypeerr();
+      return gentypeerr(contextptr);
     vecteur attributs(1,default_color(contextptr));
     int s=read_attributs(*args._VECTptr,attributs,contextptr);
     if (s<1)
-      setdimerr();
+      return gendimerr(contextptr);
     gen & v0=args._VECTptr->front();
-    if ( v0.type==_SYMB && v0._SYMBptr->sommet==at_equal)
+    if ( v0.type==_IDNT || is_equal(v0))
       return droite_by_equation(*args._VECTptr,false,contextptr);
     if (s<2)
-      setdimerr();
+      return gendimerr(contextptr);
     gen v1=(*args._VECTptr)[1];
-    if (v1.is_symb_of_sommet(at_equal) && v1._SYMBptr->feuille.type==_VECT){
+    if (is_equal(v1) && v1._SYMBptr->feuille.type==_VECT){
       vecteur & v1v=*v1._SYMBptr->feuille._VECTptr;
       if (v1v.size()==2 && v1v[0]==at_slope){
+	v0=_affixe(v0,contextptr);
 	v1=v0+(1+cst_i*v1v[1]);
       }
     }
@@ -2057,24 +2446,25 @@ namespace giac {
       return _parallele(args,contextptr);
     return _droite_segment(gen(makevecteur(v0,v1),_SEQ__VECT),_LINE__VECT,attributs,contextptr);
   }
-  const string _droite_s("line");
-  unary_function_eval __droite(&giac::_droite,_droite_s);
-  unary_function_ptr at_droite (&__droite,0,true);
+  static const char _droite_s []="line";
+  static define_unary_function_eval_quoted (__droite,&giac::_droite,_droite_s);
+  define_unary_function_ptr5( at_droite ,alias_at_droite,&__droite,_QUOTE_ARGUMENTS,true);
 
   gen _demi_droite(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type==_INT_)
       return mkrand2d3d(args.val,2,_demi_droite,contextptr);
     if (args.type!=_VECT)
-      settypeerr();
+      return gentypeerr(contextptr);
     vecteur attributs(1,default_color(contextptr));
     int s=read_attributs(*args._VECTptr,attributs,contextptr);
     if (s<2)
-      setdimerr();
+      return gendimerr(contextptr);
     vecteur v = *args._VECTptr;
     gen seg=gen(makevecteur(v[0],v[1]),_SEQ__VECT);
     if (s==3){
       v[0]=remove_at_pnt(v[0]);
-      v[1]=remove_at_pnt(v[1]);
+      // v[1]=remove_at_pnt(v[1]);
       vecteur w;
       w.push_back(eval(symb_sto(_point(v[0],contextptr),v[2]),contextptr));
       w.push_back(_droite_segment(seg,_HALFLINE__VECT,attributs,contextptr));
@@ -2082,58 +2472,81 @@ namespace giac {
     }
     return _droite_segment(seg,_HALFLINE__VECT,attributs,contextptr);
   }
-  const string _demi_droite_s("half_line");
-  unary_function_eval __demi_droite(&giac::_demi_droite,_demi_droite_s);
-  unary_function_ptr at_demi_droite (&__demi_droite,0,true);
+  static const char _demi_droite_s []="half_line";
+  static define_unary_function_eval (__demi_droite,&giac::_demi_droite,_demi_droite_s);
+  define_unary_function_ptr5( at_demi_droite ,alias_at_demi_droite,&__demi_droite,0,true);
 
   gen _vector(const gen & args,GIAC_CONTEXT){
+    if ( is_undef(args)) return args;
     if (args.type!=_VECT || args.subtype!=_SEQ__VECT)
       return _vector(gen(vecteur(1,args),_SEQ__VECT),contextptr);
     vecteur attributs(1,default_color(contextptr));
     int s=read_attributs(*args._VECTptr,attributs,contextptr);
     vecteur v = *args._VECTptr;
     if (!s)
-      setdimerr();
-    if (s==1)
+      return gendimerr(contextptr);
+    if (s==1){
       v=makevecteur(0*v[0],v[0]);
-    v[0]=remove_at_pnt(v[0]);
-    v[1]=remove_at_pnt(v[1]);
-    if (v[0].type==_VECT && v[0]._VECTptr->size()==2)
-      v[0]=v[0]._VECTptr->front()+cst_i*v[0]._VECTptr->back();
-    if (v[1].type==_VECT && v[1].subtype==_VECTOR__VECT && v[1]._VECTptr->size()==2){
-      vecteur & w=*v[1]._VECTptr;
-      v[1]=v[0]+w[1]-w[0];
+      ++s;
     }
-    if (v[1].type==_VECT && v[1]._VECTptr->size()==2)
-      v[1]=v[1]._VECTptr->front()+cst_i*v[1]._VECTptr->back();
+    if (s>=2 && s<=3 && v[0].type!=_VECT && v[1].type!=_VECT && !v[0].is_symb_of_sommet(at_pnt) && !v[1].is_symb_of_sommet(at_pnt) && is_zero(im(v[0],contextptr),contextptr) && is_zero(im(v[1],contextptr),contextptr)){
+      if (s==2){
+	v[1]=v[0]+cst_i*v[1];
+	v[0]=0;
+      }
+      else {
+	if (v[2].type!=_VECT && !v[2].is_symb_of_sommet(at_pnt) && is_zero(im(v[2],contextptr),contextptr)){
+	  v[1]=v;
+	  v[0]=makevecteur(0,0,0);
+	  v.pop_back();
+	}
+      }
+    }
+    v[0]=remove_at_pnt(v[0]);
+    if (v[1].type!=_VECT) {
+      v[1]=remove_at_pnt(v[1]);
+      if (v[0].type==_VECT && v[0]._VECTptr->size()==2)
+	v[0]=v[0]._VECTptr->front()+cst_i*v[0]._VECTptr->back();
+      if (v[1].type==_VECT && v[1].subtype==_VECTOR__VECT && v[1]._VECTptr->size()==2){
+	vecteur & w=*v[1]._VECTptr;
+	v[1]=v[0]+w[1]-w[0];
+      }
+      if (v[1].type==_VECT && v[1]._VECTptr->size()==2)
+	v[1]=v[1]._VECTptr->front()+cst_i*v[1]._VECTptr->back();
+    }
     gen seg=gen(makevecteur(v[0],v[1]),_SEQ__VECT);
     return _droite_segment(seg,_VECTOR__VECT,attributs,contextptr);
   }
-  const string _vector_s("vector");
-  unary_function_eval __vector(&giac::_vector,_vector_s);
-  unary_function_ptr at_vector (&__vector,0,true);
+  static const char _vector_s []="vector";
+  static define_unary_function_eval (_pb_vector,(const gen_op_context &)&giac::_vector,_vector_s);
+  define_unary_function_ptr5( at_vector ,alias_at_vector,&_pb_vector,0,true);
 
   gen _segment(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type==_INT_)
       return mkrand2d3d(args.val,2,_segment,contextptr);
     if (args.type!=_VECT)
-      setsizeerr();
+      return gensizeerr(contextptr);
     vecteur attributs(1,default_color(contextptr));
     int s=read_attributs(*args._VECTptr,attributs,contextptr);
     if (s<2)
-      setdimerr();
+      return gendimerr(contextptr);
     vecteur v = *args._VECTptr;
     gen seg=gen(makevecteur(v[0],v[1]),_SEQ__VECT);
     if (s==4){
       v[0]=remove_at_pnt(v[0]);
       v[1]=remove_at_pnt(v[1]);
       gen name;
+#ifndef NO_STDEXCEPT
       try {
+#endif
 	name=gen(v[2].print(contextptr)+v[3].print(contextptr),contextptr);
+#ifndef NO_STDEXCEPT
       }
-      catch (std::runtime_error & e){
+      catch (std::runtime_error & ){
 	name=undef;
       }
+#endif
       vecteur w;
       if (v[2].type>=_IDNT)
 	w.push_back(eval(symb_sto(_point(v[0],contextptr),v[2]),contextptr));
@@ -2148,10 +2561,11 @@ namespace giac {
     }
     return _droite_segment(seg,_GROUP__VECT,attributs,contextptr);
   }
-  const string _segment_s("segment");
-  unary_function_eval __segment(&giac::_segment,_segment_s);
-  unary_function_ptr at_segment (&__segment,0,true);
+  static const char _segment_s []="segment";
+  static define_unary_function_eval_index (28,__segment,&giac::_segment,_segment_s);
+  define_unary_function_ptr5( at_segment ,alias_at_segment,&__segment,0,true);
 
+#ifdef WITH_GNUPLOT
   void gnuplot_set_hidden3d(bool hidden){
     gnuplot_hidden3d=hidden;
   }
@@ -2168,13 +2582,46 @@ namespace giac {
     fprintf(stream,"set arrow 1 to %g,0,0 lt 1\nset arrow 2 to 0,%g,0 lt 2\nset arrow 3 to 0,0,%g lt 3\n",gnuplot_xmax,gnuplot_ymax,gnuplot_zmax);
   }
 
+  void reset_gnuplot_hidden3d(FILE * stream){
+#ifndef GNUWICE
+    if (gnuplot_hidden3d){
+      if (debug_infolevel)
+	printf("\nset hidden3d nooffset\nset isosamples 16\n");
+      fprintf(stream,"\nset hidden3d nooffset\nset isosamples 16\n");
+    }
+    else {
+      if (debug_infolevel)
+	printf("\nunset hidden3d nooffset\nset isosamples 10\n"); 
+      fprintf(stream,"\nunset hidden3d nooffset\nset isosamples 10\n");
+    }
+#endif
+    if (debug_infolevel)
+      printf("set parametric\n");
+    fprintf(stream,"set parametric\n");
+    // Problems with history inclusion, see if it's a FLTK problem
+#ifndef GNUWINCE // GNUWINCE gnuplot is 3.7, no pm3d
+    if (gnuplot_pm3d){
+      if (debug_infolevel)
+	printf("set pm3d\n");
+      fprintf(stream,"set pm3d\n");
+    }
+    else {
+      if (debug_infolevel)
+	printf("unset pm3d\n");
+      fprintf(stream,"unset pm3d\n");
+    }
+#endif // GNUWINCE
+  }
+
+#endif
+
   int gnuplot_show_pnt(const symbolic & e,GIAC_CONTEXT){
 #ifdef WITH_GNUPLOT
     if (!show_point(contextptr))
       return -1;
     gen f=e.feuille;
     vecteur fv(lidnt(f));
-    vecteur fvs(*evalf(fv,1,contextptr)._VECTptr);
+    vecteur fvs(*evalf(fv)._VECTptr);
     if (!lidnt(fvs).empty())
       return -1;
     f = subst(f,fv,fvs,false,contextptr);
@@ -2290,10 +2737,12 @@ namespace giac {
       } // end if (p.type==_VECT)
       if (p.is_symb_of_sommet(at_hyperplan)){
 	vecteur P,n;
-	hyperplan_normal_point(p,n,P);
+	if (!hyperplan_normal_point(p,n,P))
+	  return false;
 	with_point=2;
 	vecteur v1,v2;
-	normal3d(n,v1,v2);
+	if (!normal3d(n,v1,v2))
+	  return false;
 	gen v1c=evalf(v1,1,contextptr);
 	v1c=(les3/2/deltat)*v1c/abs_norm(v1c,0);
 	gen v2c=evalf(v2,1,contextptr);
@@ -2320,10 +2769,10 @@ namespace giac {
 	    if (v.size()>=3 && v[2].type==_VECT && v[2]._VECTptr->size()==3){
 	      dir3=*v[2]._VECTptr;
 	      dir3=divvecteur(dir3,sqrt(dotvecteur(dir3,dir3),contextptr));
-	      if (!is_zero(dir3[0]) || !is_zero(dir3[1]) ){
+	      if (!is_zero(dir3[0],contextptr) || !is_zero(dir3[1],contextptr) ){
 		dir1=makevecteur(-dir3[1],dir3[0],0);
 		dir1=divvecteur(dir1,sqrt(dotvecteur(dir1,dir1),contextptr));
-		dir2=cross(dir3,dir1);
+		dir2=cross(dir3,dir1,contextptr);
 	      }
 	    }
 	    gen par_eq=v.front()+r*(cos(uu,contextptr)*(cos(vv,contextptr)*dir1+sin(vv,contextptr)*dir2)+sin(uu,contextptr)*dir3);
@@ -2412,7 +2861,7 @@ namespace giac {
     gen e;
     if (c.empty())
       e=symbolic(at_pnt,gen(makevecteur(gen(makevecteur(x,y),type),default_color(contextptr)),_PNT__VECT));
-    if (c.size()==1 || is_zero(c[1]))
+    if (c.size()==1 || is_zero(c[1],contextptr))
       e=symbolic(at_pnt,gen(makevecteur(gen(makevecteur(x,y),type),c[0]),_PNT__VECT));
     else
       e=symbolic(at_pnt,gen(makevecteur(gen(makevecteur(x,y),type),c[0],c[1]),_PNT__VECT));
@@ -2423,9 +2872,13 @@ namespace giac {
     return ee;
   }
   gen symb_pnt(const gen & x,const gen & c,GIAC_CONTEXT){
-    symbolic e= symbolic(at_pnt,gen(makevecteur(x,c),_PNT__VECT));
-    gen ee(e);
-    ee.subtype=gnuplot_show_pnt(e,contextptr);
+    if (is_undef(x)) return x;
+    gen ee = new_ref_symbolic(symbolic(at_pnt,gen(makenewvecteur(x,c),_PNT__VECT)));
+#ifdef WITH_GNUPLOT
+    ee.subtype=gnuplot_show_pnt(*ee._SYMBptr,contextptr);
+#else
+    ee.subtype=-1;
+#endif
     if (io_graph(contextptr))
       __interactive.op(ee,contextptr);
     return ee;
@@ -2433,7 +2886,36 @@ namespace giac {
   gen symb_pnt(const gen & x,GIAC_CONTEXT){
     return symb_pnt(x,gen(0),contextptr); // 0 instead of FL_BLACK
   }
-  gen _pnt(const gen & args){
+  static string printaspnt(const gen & feuille,const char * sommetstr,GIAC_CONTEXT){
+    if ( calc_mode(contextptr)==1 && feuille.type==_VECT && !feuille._VECTptr->empty()){
+      gen f0=feuille._VECTptr->front();
+      /*
+	if (f0.type==_VECT && f0.subtype==_VECTOR__VECT){
+	f0.subtype=_SEQ__VECT;
+	return "vector("+f0.print(contextptr)+")";
+	}
+      */
+      if (f0.type==_VECT && f0.subtype==_POINT__VECT){
+	f0.subtype=_SEQ__VECT;
+	return '('+f0.print(contextptr)+')';
+      }
+      if (f0.type!=_VECT){
+	if (f0.type==_SYMB && (f0._SYMBptr->sommet==at_hyperplan || f0._SYMBptr->sommet==at_hypersphere)){
+	  return f0.print(contextptr);
+	}
+	if (f0.type!=_SYMB || !equalposcomp(plot_sommets,f0._SYMBptr->sommet)){
+	  gen r,i;
+	  reim(f0,r,i,contextptr);
+	  r=ratnormal(r,contextptr); // _evalfa(recursive_normal(r,contextptr),contextptr);
+	  i=ratnormal(i,contextptr); // _evalfa(recursive_normal(i,contextptr),contextptr);
+	  return '('+r.print(contextptr)+','+i.print(contextptr)+')';
+	}
+      }
+    }
+    return string(sommetstr)+('('+feuille.print(contextptr)+')');
+  }
+  gen _pnt(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if ((args.type==_SYMB) && (args._SYMBptr->sommet==at_pnt))
       return args;
     if ( (args.type==_VECT) && (args._VECTptr->size()) ){
@@ -2447,16 +2929,16 @@ namespace giac {
     }
     return symbolic(at_pnt,args);
   }
-  const string _pnt_s("pnt");
-  unary_function_unary __pnt(&giac::_pnt,_pnt_s);
-  unary_function_ptr at_pnt (&__pnt,0,true);
+  static const char _pnt_s []="pnt";
+  static define_unary_function_eval2_index (24,__pnt,&giac::_pnt,_pnt_s,&printaspnt);
+  define_unary_function_ptr5( at_pnt ,alias_at_pnt,&__pnt,0,true);
 
   bool centre_rayon(const gen & cercle,gen & centre,gen & rayon,bool absrayon,GIAC_CONTEXT){
     gen c=remove_at_pnt(cercle);
     if (c.is_symb_of_sommet(at_hypersphere)){
       gen & f=c._SYMBptr->feuille;
       if (f.type!=_VECT || f._VECTptr->size()!=2)
-	setsizeerr();
+	return false; // setsizeerr(contextptr);
       centre=f._VECTptr->front();
       rayon=f._VECTptr->back();
       return true;
@@ -2468,10 +2950,10 @@ namespace giac {
       return false;
     gen a=remove_at_pnt(diam._VECTptr->front());
     gen b=remove_at_pnt(diam._VECTptr->back());
-    centre=normal(rdiv(a+b,plus_two),contextptr);
-    rayon=rdiv(a-b,plus_two);
+    centre=recursive_normal(rdiv(a+b,plus_two,contextptr),contextptr);
+    rayon=rdiv(b-a,plus_two,contextptr);
     if (absrayon)
-      rayon=abs(normal(rayon,contextptr),contextptr);
+      rayon=abs(recursive_normal(rayon,contextptr),contextptr);
     return true;
   }
 
@@ -2483,6 +2965,8 @@ namespace giac {
     if (tmp.is_symb_of_sommet(at_cercle) || sphere){
       gen c=remove_at_pnt(tmp);
       gen f=c._SYMBptr->feuille;
+      if (f.type==_VECT && f._VECTptr->size()>=3)
+	f=f._VECTptr->front();
       if (f.type!=_VECT || f._VECTptr->size()!=2)
 	return undef;
       gen c1=f._VECTptr->front(),c2=f._VECTptr->back();
@@ -2491,16 +2975,17 @@ namespace giac {
       return c1;
     }
     if (tmp.is_symb_of_sommet(at_curve))
-      setsizeerr();
+      return gensizeerr(contextptr);
     if (tmp.is_symb_of_sommet(at_hyperplan)){
       vecteur n,P;
-      hyperplan_normal_point(tmp,n,P);
+      if (!hyperplan_normal_point(tmp,n,P))
+	return gensizeerr(contextptr);
       return gen(P,_POINT__VECT);
     }
     if (tmp.type!=_VECT)
       return tmp;
     vecteur & v =*tmp._VECTptr;
-    int s=v.size();
+    int s=int(v.size());
     if (tmp.subtype==_POINT__VECT || (tmp.subtype==0 && (s==2 || s==3)) ){
       if (s==2)
 	return v[0]+cst_i*v[1];
@@ -2513,18 +2998,16 @@ namespace giac {
     return v[n];
   }
 
-  symbolic symb_point(const gen & x,const gen & y){
-    return symbolic(at_point,makevecteur(x,y));
-  }
   gen _point(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if ( (args.type==_SYMB) && (args._SYMBptr->sommet==at_pnt))
       return args;
-    vecteur attributs(1,default_color(contextptr));
+    vecteur attributs(1,default_color(contextptr) | _QUADRANT3);
     if (args.type==_VECT) {
       int s=read_attributs(*args._VECTptr,attributs,contextptr);
       vecteur v(args._VECTptr->begin(),args._VECTptr->begin()+s);
       if (s<1)
-	setdimerr();
+	return gendimerr(contextptr);
       if (has_i(v)){
 	for (int i=0;i<s;++i){
 	  v[i]=pnt_attrib(v[i],attributs,contextptr);
@@ -2546,27 +3029,27 @@ namespace giac {
       }
       if (s==2){
 	if (args._VECTptr->front().type==_VECT || args._VECTptr->back().type==_VECT)
-	  setsizeerr();
+	  return gensizeerr(contextptr);
 	return pointonoff(args._VECTptr->front()+cst_i*(*args._VECTptr)[1],attributs,contextptr);
       }
       return pnt_attrib(gen(v,_POINT__VECT),attributs,contextptr);
     }
     return pnt_attrib(args,attributs,contextptr);
   }
-  const string _point_s("point");
-  unary_function_eval __point(&giac::_point,_point_s);
-  unary_function_ptr at_point (&__point,0,true);
+  static const char _point_s []="point";
+  static define_unary_function_eval_index (26,__point,&giac::_point,_point_s);
+  define_unary_function_ptr5( at_point ,alias_at_point,&__point,0,true);
 
-  gen rand_2d3d(bool espace){
+  static gen rand_2d3d(bool espace){
     if (espace)
       return do_point3d(rand_3d());
     else
       return rand_complex();
   }
-  gen point2d3d(bool espace,const vecteur & attributs,GIAC_CONTEXT){
+  static gen point2d3d(bool espace,const vecteur & attributs,GIAC_CONTEXT){
     return pnt_attrib(rand_2d3d(espace),attributs,contextptr);
   }
-  gen point2d3d(const gen & args,bool espace,GIAC_CONTEXT){
+  static gen point2d3d(const gen & args,bool espace,GIAC_CONTEXT){
     vecteur v(gen2vecteur(args));
     vecteur attributs(1,default_color(contextptr));
     int s=read_attributs(v,attributs,contextptr);
@@ -2576,25 +3059,28 @@ namespace giac {
     vecteur w;
     const_iterateur it=v.begin(),itend=v.end();
     for (;it!=itend;++it){
-      w.push_back(symbolic(at_sto,makevecteur(symbolic(at_pnt,gen(makevecteur(rand_2d3d(espace),attributs[0]),_PNT__VECT)),*it)));
+      w.push_back(symbolic(at_sto,makesequence(symbolic(at_pnt,gen(makevecteur(rand_2d3d(espace),attributs[0]),_PNT__VECT)),*it)));
     }
     return eval(w,contextptr);
   }
   gen _point3d(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     return point2d3d(args,true,contextptr);
   }
-  const string _point3d_s("point3d");
-  unary_function_eval __point3d(&giac::_point3d,_point3d_s);
-  unary_function_ptr at_point3d (&__point3d,_QUOTE_ARGUMENTS,true);
+  static const char _point3d_s []="point3d";
+  static define_unary_function_eval_quoted (__point3d,&giac::_point3d,_point3d_s);
+  define_unary_function_ptr5( at_point3d ,alias_at_point3d,&__point3d,_QUOTE_ARGUMENTS,true);
 
   gen _point2d(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     return point2d3d(args,false,contextptr);
   }
-  const string _point2d_s("point2d");
-  unary_function_eval __point2d(&giac::_point2d,_point2d_s);
-  unary_function_ptr at_point2d (&__point2d,_QUOTE_ARGUMENTS,true);
+  static const char _point2d_s []="point2d";
+  static define_unary_function_eval_quoted (__point2d,&giac::_point2d,_point2d_s);
+  define_unary_function_ptr5( at_point2d ,alias_at_point2d,&__point2d,_QUOTE_ARGUMENTS,true);
 
   gen _affixe(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type==_VECT && args._VECTptr->size()==2 && !args._VECTptr->front().is_symb_of_sommet(at_pnt))
       return args._VECTptr->front()+cst_i*args._VECTptr->back();
     if (args.type==_VECT)
@@ -2604,15 +3090,24 @@ namespace giac {
       return g._VECTptr->back()-g._VECTptr->front();
     return g;
   }
-  const string _affixe_s("affix");
-  unary_function_eval __affixe(&giac::_affixe,_affixe_s);
-  unary_function_ptr at_affixe (&__affixe,0,true);
+  static const char _affixe_s []="affix";
+  static define_unary_function_eval (__affixe,&giac::_affixe,_affixe_s);
+  define_unary_function_ptr5( at_affixe ,alias_at_affixe,&__affixe,0,true);
 
   gen _abscisse(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type==_VECT && args._VECTptr->size()==2 && !args._VECTptr->front().is_symb_of_sommet(at_pnt))
       return args._VECTptr->front();
-    if (args.type==_VECT)
+    if (args.type==_VECT&& args.subtype!=_POINT__VECT)
       return apply(args,contextptr,_abscisse);
+    if (args.type==_IDNT)
+      return symbolic(at_abscisse,args);
+    if (is_equal(args)){
+      gen tmp=equal2diff(args),a,b;
+      if (is_linear_wrt(tmp,x__IDNT_e,a,b,contextptr) && a!=0)
+	return -b/a;
+      return gensizeerr(contextptr);
+    }
     gen g=remove_at_pnt(args);
     if (g.type==_VECT && g._VECTptr->size()>=2){
       if (g.subtype==_VECTOR__VECT)
@@ -2621,15 +3116,24 @@ namespace giac {
     }
     return re(g,contextptr);
   }
-  const string _abscisse_s("abscissa");
-  unary_function_eval __abscisse(&giac::_abscisse,_abscisse_s);
-  unary_function_ptr at_abscisse (&__abscisse,0,true);
+  static const char _abscisse_s []="abscissa";
+  static define_unary_function_eval (__abscisse,&giac::_abscisse,_abscisse_s);
+  define_unary_function_ptr5( at_abscisse ,alias_at_abscisse,&__abscisse,0,true);
 
   gen _ordonnee(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type==_VECT && args._VECTptr->size()==2 && !args._VECTptr->front().is_symb_of_sommet(at_pnt))
       return args._VECTptr->back();
-    if (args.type==_VECT)
+    if (args.type==_VECT && args.subtype!=_POINT__VECT)
       return apply(args,contextptr,_ordonnee);
+    if (args.type==_IDNT)
+      return symbolic(at_ordonnee,args);
+    if (is_equal(args)){
+      gen tmp=equal2diff(args),a,b;
+      if (is_linear_wrt(tmp,y__IDNT_e,a,b,contextptr) && a!=0)
+	return -b/a;
+      return gensizeerr(contextptr);
+    }
     gen g=remove_at_pnt(args);
     if (g.type==_VECT && g._VECTptr->size()>=2){
       if (g.subtype==_VECTOR__VECT)
@@ -2638,29 +3142,67 @@ namespace giac {
     }
     return im(g,contextptr);
   }
-  const string _ordonnee_s("ordinate");
-  unary_function_eval __ordonnee(&giac::_ordonnee,_ordonnee_s);
-  unary_function_ptr at_ordonnee (&__ordonnee,0,true);
+  static const char _ordonnee_s []="ordinate";
+  static define_unary_function_eval (__ordonnee,&giac::_ordonnee,_ordonnee_s);
+  define_unary_function_ptr5( at_ordonnee ,alias_at_ordonnee,&__ordonnee,0,true);
 
   gen _cote(const gen & args,GIAC_CONTEXT){
-    if (args.type==_VECT)
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    if (args.type==_VECT && args.subtype!=_POINT__VECT)
       return apply(args,contextptr,_cote);
+    if (args.type==_IDNT)
+      return symbolic(at_cote,args);
+    if (is_equal(args)){
+      gen tmp=equal2diff(args),a,b;
+      if (is_linear_wrt(tmp,z__IDNT_e,a,b,contextptr) && a!=0)
+	return -b/a;
+      return gensizeerr(contextptr);
+    }
     gen g=remove_at_pnt(args);
     if (g.type==_VECT && g._VECTptr->size()>=3)
       return (*g._VECTptr)[2];
-    setsizeerr("3-d instruction");
-    return 0;
+    return gensizeerr(gettext("3-d instruction"));
   }
-  const string _cote_s("cote");
-  unary_function_eval __cote(&giac::_cote,_cote_s);
-  unary_function_ptr at_cote (&__cote,0,true);
+  static const char _cote_s []="cote";
+  static define_unary_function_eval (__cote,&giac::_cote,_cote_s);
+  define_unary_function_ptr5( at_cote ,alias_at_cote,&__cote,0,true);
 
-  gen _coordonnees(const gen & args,GIAC_CONTEXT){
+  gen coordonnees(const gen & args,bool in,GIAC_CONTEXT){  
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type==_VECT){
+      if (args._VECTptr->empty())
+	return args;
       if (args.subtype==_POINT__VECT){
 	gen g=args;
-	g.subtype=0;
+	g.subtype=calc_mode(contextptr)==1?_GGB__VECT:0;
 	return g;
+      }
+      if (is_equal(args._VECTptr->front())){
+	vecteur v=*args._VECTptr,res;
+	vecteur last(2);
+	bool lastx=false;
+	for (unsigned i=0;i<v.size();++i){
+	  string args0s="x";
+	  if (i<v.size() && v[i].is_symb_of_sommet(at_equal)){
+	    args0s=v[i]._SYMBptr->feuille[0].print(contextptr);
+	    v[i]=v[i]._SYMBptr->feuille[1];
+	  }
+	  if (args0s[args0s.size()-1]=='x'){
+	    if (lastx)
+	      res.push_back(gen(last,_GGB__VECT));
+	    last[0]=v[i];
+	    last[1]=0;
+	    lastx=true;
+	  }
+	  if (args0s[args0s.size()-1]=='y'){
+	    last[1]=v[i];
+	    res.push_back(gen(last,_GGB__VECT));
+	    lastx=false;
+	  }
+	}
+	if (lastx)
+	  res.push_back(gen(last,_GGB__VECT));
+	return res;
       }
       if (args._VECTptr->size()==2 && args.subtype==_VECTOR__VECT){
 	gen a = args._VECTptr->front();
@@ -2671,85 +3213,134 @@ namespace giac {
 	b = remove_at_pnt(b);
 	if ( (a.type==_VECT && b.type!=_VECT) &&
 	     (b.type==_VECT && a.type!=_VECT) )
-	  settypeerr();
+	  return gentypeerr(contextptr);
 	gen c=b-a;
 	if (c.type==_VECT)
 	  return c;
-	return makevecteur(re(c,contextptr),im(c,contextptr));
+	return gen(makevecteur(re(c,contextptr),im(c,contextptr)),calc_mode(contextptr)==1?_GGB__VECT:0);
+      }
+      if (calc_mode(contextptr)==1 && args.subtype!=_GGB__VECT){
+	vecteur res;
+	iterateur it=args._VECTptr->begin(),itend=args._VECTptr->end();
+	if (in && itend-it==2 && it->type!=_VECT) 
+	  return change_subtype(args,_GGB__VECT);
+	for (;it!=itend;++it){
+	  res.push_back(coordonnees(*it,true,contextptr));
+	}
+	return res; // normal list here
       }
       return apply(args,contextptr,_coordonnees);
     }
     gen P=remove_at_pnt(args);
     if (P.type==_VECT){
-      if (P.subtype==_VECTOR__VECT && P._VECTptr->size()==2)
-	return _coordonnees(P._VECTptr->back()-P._VECTptr->front(),contextptr);
+      if (P.subtype==_VECTOR__VECT && P._VECTptr->size()==2){
+	P=P._VECTptr->back()-P._VECTptr->front();
+	if (P.type==_VECT)
+	  P.subtype=_POINT__VECT;
+	return coordonnees(P,true,contextptr);
+      }
       if (P.subtype==_POINT__VECT)
-	P.subtype=0;
+	P.subtype=calc_mode(contextptr)==1?_GGB__VECT:0;
       return P;
     }
-    return makevecteur(re(P,contextptr),im(P,contextptr));
+    return gen(makevecteur(re(P,contextptr),im(P,contextptr)),calc_mode(contextptr)==1?_GGB__VECT:0);
   }
-  const string _coordonnees_s("coordinates");
-  unary_function_eval __coordonnees(&giac::_coordonnees,_coordonnees_s);
-  unary_function_ptr at_coordonnees (&__coordonnees,0,true);
+  gen _coordonnees(const gen & args,GIAC_CONTEXT){
+    return coordonnees(args,false,contextptr);
+  }
+  static const char _coordonnees_s []="coordinates";
+  static define_unary_function_eval (__coordonnees,&giac::_coordonnees,_coordonnees_s);
+  define_unary_function_ptr5( at_coordonnees ,alias_at_coordonnees,&__coordonnees,0,true);
 
   gen _coordonnees_polaires(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     gen c=args.is_symb_of_sommet(at_pnt)?_coordonnees(args,contextptr):args;
-    if (c.type!=_VECT || c._VECTptr->size()!=2)
-      setsizeerr();
-    gen a=c._VECTptr->front();
-    gen b=c._VECTptr->back();
-    if (a.type==_VECT && b.type==_VECT){
-      gen tmp=a-b;
-      if (tmp.type!=_VECT || tmp._VECTptr->size()!=2)
-	setsizeerr();
-      a=tmp._VECTptr->front();
-      b=tmp._VECTptr->back();
+    if (c.type==_VECT && c._VECTptr->size()==2){
+      gen a=c._VECTptr->front();
+      gen b=c._VECTptr->back();
+      if (a.type==_VECT && b.type==_VECT){
+	gen tmp=a-b;
+	if (tmp.type!=_VECT || tmp._VECTptr->size()!=2)
+	  return gensizeerr(contextptr);
+	a=tmp._VECTptr->front();
+	b=tmp._VECTptr->back();
+      }
+      c=a+cst_i*b;
     }
-    c=a+cst_i*b;
-    a=abs(c,contextptr);
-    b=arg(c,contextptr);
+    if (c.type==_VECT)
+      return gensizeerr(contextptr);
+    gen a=abs(c,contextptr);
+    gen b=arg(c,contextptr);
     return makevecteur(a,b);
   }
-  const string _coordonnees_polaires_s("polar_coordinates");
-  unary_function_eval __coordonnees_polaires(&giac::_coordonnees_polaires,_coordonnees_polaires_s);
-  unary_function_ptr at_coordonnees_polaires (&__coordonnees_polaires,0,true);
+  static const char _coordonnees_polaires_s []="polar_coordinates";
+  static define_unary_function_eval (__coordonnees_polaires,&giac::_coordonnees_polaires,_coordonnees_polaires_s);
+  define_unary_function_ptr5( at_coordonnees_polaires ,alias_at_coordonnees_polaires,&__coordonnees_polaires,0,true);
 
   gen _coordonnees_rectangulaires(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.is_symb_of_sommet(at_pnt))
       return _coordonnees(args,contextptr);
-    if (args.type!=_VECT || args._VECTptr->size()!=2)
-      setsizeerr();
+    if (args.type!=_VECT)
+      return makevecteur(re(args,contextptr),im(args,contextptr));
+    if (args._VECTptr->size()!=2)
+      return gensizeerr(contextptr);
     gen a=args._VECTptr->front();
     gen b=args._VECTptr->back();
     return makevecteur(a*cos(b,contextptr),a*sin(b,contextptr));
   }
-  const string _coordonnees_rectangulaires_s("rectangular_coordinates");
-  unary_function_eval __coordonnees_rectangulaires(&giac::_coordonnees_rectangulaires,_coordonnees_rectangulaires_s);
-  unary_function_ptr at_coordonnees_rectangulaires (&__coordonnees_rectangulaires,0,true);
+  static const char _coordonnees_rectangulaires_s []="rectangular_coordinates";
+  static define_unary_function_eval (__coordonnees_rectangulaires,&giac::_coordonnees_rectangulaires,_coordonnees_rectangulaires_s);
+  define_unary_function_ptr5( at_coordonnees_rectangulaires ,alias_at_coordonnees_rectangulaires,&__coordonnees_rectangulaires,0,true);
 
   gen _point_polaire(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type!=_VECT || args._VECTptr->size()!=2)
-      setsizeerr();
+      return gensizeerr(contextptr);
     gen a=args._VECTptr->front();
     gen b=args._VECTptr->back();
     return _point(a*exp(cst_i*b,contextptr),contextptr);
   }
-  const string _point_polaire_s("polar_point");
-  unary_function_eval __point_polaire(&giac::_point_polaire,_point_polaire_s);
-  unary_function_ptr at_point_polaire (&__point_polaire,0,true);
+  static const char _point_polaire_s []="polar_point";
+  static define_unary_function_eval (__point_polaire,&giac::_point_polaire,_point_polaire_s);
+  define_unary_function_ptr5( at_point_polaire ,alias_at_point_polaire,&__point_polaire,0,true);
+
+  static inline gen divide_by_2(const gen & ra,GIAC_CONTEXT){
+    if (ra.type==_DOUBLE_ || (ra.type==_CPLX && (ra._CPLXptr->type==_DOUBLE_ || (ra._CPLXptr+1)->type==_DOUBLE_)) )
+      return ra/gen(2.0);
+    else
+      return normal(rdiv(ra,plus_two,contextptr),contextptr);
+  }
 
   // point + rayon or line
   gen _cercle(const gen & args,GIAC_CONTEXT){
+    if (is_undef(args)) return args;
+    // inert form (since cercle return itself with a pnt__vect arg)
+    if (args.type==_VECT && args.subtype==_PNT__VECT) return symbolic(at_cercle,args); 
     vecteur v(gen2vecteur(args));
     if (v.empty())
-      setsizeerr("cercle");
+      return gensizeerr(gettext("circle"));
     vecteur attributs(1,default_color(contextptr));
     int s=read_attributs(v,attributs,contextptr);
     // find diametre
+    if (s==1){
+      vecteur w=eval_with_xy_quoted(v.front(),contextptr);
+      for (unsigned i=1;i<v.size();++i)
+	w.push_back(v[i]);
+      gen tmp=_plotimplicit(gen(w,_SEQ__VECT),contextptr);
+      if (tmp.type==_VECT && tmp._VECTptr->size()==1)
+	return tmp._VECTptr->front();
+      else
+	return tmp;
+    }
     gen e=eval(v.front(),contextptr),diametre;
-    if (s==1)
-      return _plotimplicit(e,contextptr);
+    bool diam=true;
+    if (e.is_symb_of_sommet(at_equal) && e._SYMBptr->feuille.type==_VECT && e._SYMBptr->feuille._VECTptr->size()==2){
+      if (e._SYMBptr->feuille._VECTptr->front()==at_centre){
+	diam=false;
+	e=e._SYMBptr->feuille._VECTptr->back();
+      }
+    }
     int narg=0;
     if ( (e.type==_SYMB) && (e._SYMBptr->sommet==at_pnt)){
       gen f=e._SYMBptr->feuille._VECTptr->front();
@@ -2767,20 +3358,36 @@ namespace giac {
     }
     if (!narg){
       if (s<2)
-	setsizeerr("cercle");
+	return gensizeerr(gettext("circle"));
       gen f=eval(v[1],contextptr);
       if ((f.type==_SYMB) && (f._SYMBptr->sommet==at_pnt)){
 	gen g=remove_at_pnt(f);
-	diametre=gen(makevecteur(e,g),_GROUP__VECT);
+	if (g.type==_VECT && g._VECTptr->size()==2){
+	  // e=center, g=line, project e on g
+	  gen g1=g._VECTptr->front();
+	  gen g2=g._VECTptr->back();
+	  gen t=projection(g1,g2,e,contextptr);
+	  if (is_undef(t)) return t;
+	  g=g1+t*(g2-g1); // this is the projection
+	  diametre=gen(makevecteur(e+(e-g),g),_GROUP__VECT);
+	}
+	else {
+	  g=get_point(g,0,contextptr);
+	  if (is_undef(g)) return g;
+	  if (diam)
+	    diametre=gen(makevecteur(e,g),_GROUP__VECT);
+	  else
+	    diametre=gen(makevecteur(e+(e-g),g),_GROUP__VECT);
+	}
       }
       else {
 	while (f.type==_VECT){
 	  if (f._VECTptr->empty())
-	    setsizeerr();
+	    return gensizeerr(contextptr);
 	  f=f._VECTptr->front();
 	}
 	if (e.type==_VECT)
-	  setsizeerr();
+	  return gensizeerr(contextptr);
 	gen ee=e-f;
 	gen ff=e+f;
 	diametre=gen(makevecteur(ee,ff),_GROUP__VECT);
@@ -2788,136 +3395,177 @@ namespace giac {
       narg=2;
     }
     if (diametre.type!=_VECT || diametre._VECTptr->size()!=2 )
-      setsizeerr();
+      return gensizeerr(contextptr);
     gen d0=get_point(diametre._VECTptr->front(),0,contextptr);
     gen d1=get_point((*diametre._VECTptr)[1],1,contextptr);
-    gen ce=normal(rdiv(d0+d1,plus_two),contextptr);
-    gen ra=normal(rdiv(d1-d0,plus_two),contextptr);
+    if (is_undef(d0)) return d0;
+    if (is_undef(d1)) return d1;
+    gen ce,ra;
     if (d0.type==_VECT){     
       // 3-d circle, angles not allowed yet
       if (s!=1+narg)
-	set3derr();
+	return set3derr(contextptr);
       // 3rd point defines the plan
       gen d2=get_point(remove_at_pnt(eval(v[narg],contextptr)),2,contextptr);
+      if (is_undef(d2)) return d2;
       gen d02=d2-d0;
-      d02=cross(cross(ra,d02),ra); // normal in the same plan
+      ra=divide_by_2(d1-d0,contextptr);
+      d02=cross(cross(ra,d02,contextptr),ra,contextptr); // normal in the same plan
       d02=sqrt(dotvecteur(ra,ra)/dotvecteur(d02,d02),contextptr)*d02; // normalized
       // Make a parametric plot
-      identificateur t("t"),u("u");
+      identificateur t(" t"),u(" u");
+      ce=divide_by_2(d0+d1,contextptr);
       return plotparam3d(ce+cos(t,contextptr)*ra+sin(t,contextptr)*d02,makevecteur(t,u),gnuplot_xmin,gnuplot_xmax,gnuplot_ymin,gnuplot_ymax,gnuplot_zmin,gnuplot_zmax,0,2*M_PI,0,0,false,false,attributs,M_PI/30,0,undef,makevecteur(t,u),contextptr);
       // gen theta=(2*M_PI/(gnuplot_tmax-gnuplot_tmin))*t;
       // return paramplotparam(gen(makevecteur(ce+cos(theta,contextptr)*ra+sin(theta,contextptr)*d02,t),_SEQ__VECT),false,contextptr);
     }
     // find angles
     gen a1(zero),a2(cst_two_pi);
+    if (s==1+narg){
+      *logptr(contextptr) << "Assuming circumcircle call" << endl;
+      return _circonscrit(args,contextptr);
+    }
     if (s>1+narg){
       a1=eval(v[narg],contextptr);
       a2=eval(v[narg+1],contextptr);
     }
-    gen res=pnt_attrib(symbolic(at_cercle,gen(makevecteur(diametre,a1,a2),_PNT__VECT)),attributs,contextptr);
+    gen res=pnt_attrib(new_ref_symbolic(symbolic(at_cercle,gen(makenewvecteur(diametre,a1,a2),_PNT__VECT))),attributs,contextptr);
     if (s<3+narg)
       return res;
     vecteur w(1,res);
+    ce=divide_by_2(d0+d1,contextptr);
+    ra=divide_by_2(d1-d0,contextptr);
     gen ga1=ce+ra*exp(cst_i*a1,contextptr);
     gen ga2=ce+ra*exp(cst_i*a2,contextptr);
-    w.push_back(eval(symb_sto(_point(ga1,contextptr),v[narg+2]),contextptr));
+    if (v[narg+2].type==_IDNT)
+      w.push_back(eval(symb_sto(_point(ga1,contextptr),v[narg+2]),contextptr));
     if (s>3+narg)
       w.push_back(eval(symb_sto(_point(ga2,contextptr),v[narg+3]),contextptr));
     return  gen(w,_GROUP__VECT);
   }
-  const string _cercle_s("circle");
-  unary_function_eval __cercle(&giac::_cercle,_cercle_s);
-  unary_function_ptr at_cercle (&__cercle,_QUOTE_ARGUMENTS,true);
+  static const char _cercle_s []="circle";
+  static define_unary_function_eval_quoted (__cercle,&giac::_cercle,_cercle_s);
+  define_unary_function_ptr5( at_cercle ,alias_at_cercle,&__cercle,_QUOTE_ARGUMENTS,true);
 
-  symbolic symb_centre(const gen & args){
-    return symbolic(at_centre,args);
-  }
   gen _centre(const gen & args,GIAC_CONTEXT){
-    gen a=remove_at_pnt(args);
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    gen a=args;
+    if (a.is_symb_of_sommet(at_equal)){
+      a=_cercle(a,contextptr);
+      if (a.type==_VECT && !a._VECTptr->empty())
+	a=a._VECTptr->front();
+    }
+    if (a.type==_VECT && a.subtype==_SEQ__VECT && a._VECTptr->size()==1)
+      a=a._VECTptr->front();
+    a=remove_at_pnt(a);
     gen centre,rayon;
     if (!centre_rayon(a,centre,rayon,false,contextptr))
-      setsizeerr();
+      return gensizeerr(contextptr);
     vecteur attributs(1,default_color(contextptr));
     read_attributs(gen2vecteur(args),attributs,contextptr);
     return pnt_attrib(centre,attributs,contextptr);
   }
-  const string _centre_s("center");
-  unary_function_eval __centre(&giac::_centre,_centre_s);
-  unary_function_ptr at_centre (&__centre,0,true);
+  static const char _centre_s []="center";
+  static define_unary_function_eval (__centre,&giac::_centre,_centre_s);
+  define_unary_function_ptr5( at_centre ,alias_at_centre,&__centre,0,true);
 
-  symbolic symb_rayon(const gen & args){
-    return symbolic(at_rayon,args);
-  }
   gen _rayon(const gen & args,GIAC_CONTEXT){
-    gen a=remove_at_pnt(args);
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    gen a(args);
+    if (a.is_symb_of_sommet(at_equal)){
+      a=_cercle(a,contextptr);
+      if (a.type==_VECT && !a._VECTptr->empty())
+	a=a._VECTptr->front();
+    }
+    a=remove_at_pnt(a);
     gen centre,rayon;
     if (!centre_rayon(a,centre,rayon,true,contextptr))
       return false;
     return rayon;
   }
-  const string _rayon_s("radius");
-  unary_function_eval __rayon(&giac::_rayon,_rayon_s);
-  unary_function_ptr at_rayon (&__rayon,0,true);
+  static const char _rayon_s []="radius";
+  static define_unary_function_eval (__rayon,&giac::_rayon,_rayon_s);
+  define_unary_function_ptr5( at_rayon ,alias_at_rayon,&__rayon,0,true);
 
-  symbolic symb_milieu(const gen & x,const gen & y){
-    return symbolic(at_milieu,makevecteur(x,y));
-  }
-  symbolic symb_milieu(const gen & x){
-    return symbolic(at_milieu,x);
-  }
   gen _milieu(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+#if defined HAVE_LIBMPFI && !defined NO_RTTI
+    if (args.type==_REAL){
+      if (real_interval * ptr=dynamic_cast<real_interval *>(args._REALptr)){
+	mpfr_t tmp;
+	mpfr_init2(tmp,mpfi_get_prec(ptr->infsup));
+	mpfi_get_fr(tmp,ptr->infsup);
+	gen res=real_object(tmp);
+	mpfr_clear(tmp);
+	return res;
+      }
+      return real_object(args._REALptr->inf);
+    }
+#endif
+    if (args.type==_FRAC || args.type<=_POLY)
+      return args;
     vecteur attributs(1,default_color(contextptr));
     read_attributs(gen2vecteur(args),attributs,contextptr);
     gen e,f;
     if ( (args.type==_SYMB) && (args._SYMBptr->sommet==at_pnt)){
       e=remove_at_pnt(args);
       if ((e.type!=_VECT) || (e._VECTptr->size()!=2))
-	setsizeerr("milieu");
+	return gensizeerr(gettext("milieu"));
       f=e._VECTptr->back();
       e=e._VECTptr->front();
     }
     else {
-      if ( (args.type!=_VECT) || (args._VECTptr->size()<2))
+      if (args.type!=_VECT || args._VECTptr->empty())
 	return symbolic(at_milieu,args);
       e=remove_at_pnt(args._VECTptr->front());
+      if (args._VECTptr->size()==1)
+	return pnt_attrib(e,attributs,contextptr);
       f=remove_at_pnt((*args._VECTptr)[1]);
     }
     e=get_point(e,0,contextptr);
     f=get_point(f,1,contextptr);
     return pnt_attrib(e+(f-e)/2,attributs,contextptr);
   }
-  const string _milieu_s("midpoint");
-  unary_function_eval __milieu(&giac::_milieu,_milieu_s);
-  unary_function_ptr at_milieu (&__milieu,0,true);
+  static const char _milieu_s []="midpoint";
+  static define_unary_function_eval (__milieu,&giac::_milieu,_milieu_s);
+  define_unary_function_ptr5( at_milieu ,alias_at_milieu,&__milieu,0,true);
 
   // if suppl is true return in 3-d an object of dim'=3-dim, else dim'=dim
   gen perpendiculaire(const gen & args,bool suppl,GIAC_CONTEXT){
     if ( (args.type!=_VECT) || (args._VECTptr->size()<2))
-      setsizeerr();
+      return gensizeerr(contextptr);
     vecteur attributs(1,default_color(contextptr));
     vecteur v(*args._VECTptr);
     int s=read_attributs(v,attributs,contextptr);
     if (s<2)
-      setdimerr();
+      return gendimerr(contextptr);
     gen e=v.front(),f=v[1],M;
     e=remove_at_pnt(e);
     f=remove_at_pnt(f);
+    if (f.type==_VECT && f.subtype==_VECTOR__VECT && f._VECTptr->size()==2){
+      v.push_back(f._VECTptr->back());
+      ++s;
+      f=f._VECTptr->front();
+    }
     if (e.is_symb_of_sommet(at_hyperplan))
-      std::swap(e,f);
-    e=get_point(e,0,contextptr);
+      swapgen(e,f);
+    if (!f.is_symb_of_sommet(at_hyperplan))
+      e=get_point(e,0,contextptr);
+    if (is_undef(e)) return e;
     if (f.is_symb_of_sommet(at_hyperplan)){ 
       // args=point/line, hyperplan
       vecteur n,P;
-      hyperplan_normal_point(f,n,P);
+      if (!hyperplan_normal_point(f,n,P))
+	return gensizeerr(contextptr);
       if (e.type==_VECT &&e._VECTptr->size()==2){ 
 	// line/plan -> line or plan
 	M=e._VECTptr->front();
 	e=e._VECTptr->back()-e._VECTptr->front();
 	if (suppl){ // -> plan defined by line and n
-	  return pnt_attrib(symbolic(at_hyperplan,makevecteur(cross(e,n),M)),attributs,contextptr); // _plan(makevecteur(cross(e,n),M),contextptr);
+	  return pnt_attrib(symbolic(at_hyperplan,makesequence(cross(e,n,contextptr),M)),attributs,contextptr); // _plan(makevecteur(cross(e,n,contextptr),M),contextptr);
 	}
 	// line in plan orthogonal to e
-	gen directeur(cross(e,n));
+	gen directeur(cross(e,n,contextptr));
 	// base point M+ke s.t. (M-P+ke).n=0 -> k=(P-M).n/e.n
 	gen k(dotvecteur(P-M,n)/dotvecteur(e,n));
 	gen base=M+k*e;
@@ -2937,7 +3585,7 @@ namespace giac {
       else {
 	// args=point,point,point
 	if (s!=3)
-	  setsizeerr("3 points expected");
+	  return gensizeerr(gettext("3 points expected"));
 	M=f;
 	f=remove_at_pnt(v[2])-f;
       }
@@ -2946,7 +3594,7 @@ namespace giac {
     if (f.type==_VECT) {
       // 3-d point/line ->line or plan
       if (suppl)
-	return pnt_attrib(symbolic(at_hyperplan,makevecteur(f,e)),attributs,contextptr); // _plan(makevecteur(f,e),contextptr);
+	return pnt_attrib(symbolic(at_hyperplan,makesequence(f,e)),attributs,contextptr); // _plan(makevecteur(f,e),contextptr);
       // -> line, e in line, second point is M+kf s.t. (M-e+kf).f=0
       gen k=dotvecteur(e-M,f)/dotvecteur(f,f);
       return symb_segment(e,M+k*f,attributs,_LINE__VECT,contextptr);
@@ -2955,17 +3603,21 @@ namespace giac {
     return symb_segment(e,e+f,attributs,_LINE__VECT,contextptr);
   }
 
-  symbolic symb_mediatrice(const gen & x,const gen & y){
-    return symbolic(at_mediatrice,makevecteur(x,y));
+  gen makecomplex(const gen & a,const gen &b){
+    if ( (a.type>=_CPLX && a.type!=_FLOAT_) || (b.type>=_CPLX && b.type!=_FLOAT_) )
+      return a+cst_i*b;
+    else
+      return gen(a,b);
   }
   gen _mediatrice(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     vecteur attributs(1,default_color(contextptr));
     read_attributs(gen2vecteur(args),attributs,contextptr);
     gen e,f;
     if ( (args.type==_SYMB) && (args._SYMBptr->sommet==at_pnt)){
       e=remove_at_pnt(args);
       if ((e.type!=_VECT) || (e._VECTptr->size()!=2))
-	setsizeerr("midpoint");
+	return gensizeerr(gettext("midpoint"));
       f=e._VECTptr->back();
       e=e._VECTptr->front();
     }
@@ -2977,57 +3629,73 @@ namespace giac {
     }
     e=get_point(e,0,contextptr);
     f=get_point(f,1,contextptr);
+    if (is_undef(e)) return e;
+    if (is_undef(f)) return f;
     if (e.type==_VECT && f.type==_VECT)
       return perpendiculaire(makevecteur((e+f)/2,f-e),true,contextptr);
-    gen direction=im(f-e,contextptr)-cst_i*re(f-e,contextptr);
-    gen m=rdiv(e+f,plus_two);
-    return symb_segment(m-direction,m+direction,attributs,_LINE__VECT,contextptr);
+    gen ex,ey,fx,fy,efx,efy,mx,my,ax,ay,bx,by;
+    reim(e,ex,ey,contextptr); reim(f,fx,fy,contextptr);
+    mx=(ex+fx)/2; my=(ey+fy)/2;
+    efy=ex-fx; efx=fy-ey; // perpendicular to ef
+    ax=mx-efx; ay=my-efy;
+    bx=mx+efx; by=my+efy;
+    return symb_segment(makecomplex(ax,ay),makecomplex(bx,by),attributs,_LINE__VECT,contextptr);
+    /*
+      gen direction=im(f-e,contextptr)-cst_i*re(f-e,contextptr);
+      gen m=rdiv(e+f,plus_two);
+      return symb_segment(m-direction,m+direction,attributs,_LINE__VECT,contextptr);
+    */
   }
-  const string _mediatrice_s("perpen_bisector");
-  unary_function_eval __mediatrice(&giac::_mediatrice,_mediatrice_s);
-  unary_function_ptr at_mediatrice (&__mediatrice,0,true);
+  static const char _mediatrice_s []="perpen_bisector";
+  static define_unary_function_eval (__mediatrice,&giac::_mediatrice,_mediatrice_s);
+  define_unary_function_ptr5( at_mediatrice ,alias_at_mediatrice,&__mediatrice,0,true);
 
-  symbolic symb_perpendiculaire(const gen & a){
-    return symbolic(at_perpendiculaire,a);
-  }
- 
   gen _perpendiculaire(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     return perpendiculaire(args,false,contextptr);
   }
-  const string _perpendiculaire_s("perpendicular");
-  unary_function_eval __perpendiculaire(&giac::_perpendiculaire,_perpendiculaire_s);
-  unary_function_ptr at_perpendiculaire (&__perpendiculaire,0,true);
+  static const char _perpendiculaire_s []="perpendicular";
+  static define_unary_function_eval (__perpendiculaire,&giac::_perpendiculaire,_perpendiculaire_s);
+  define_unary_function_ptr5( at_perpendiculaire ,alias_at_perpendiculaire,&__perpendiculaire,0,true);
 
   gen _orthogonal(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     return perpendiculaire(args,true,contextptr);
   }
-  const string _orthogonal_s("orthogonal");
-  unary_function_eval __orthogonal(&giac::_orthogonal,_orthogonal_s);
-  unary_function_ptr at_orthogonal (&__orthogonal,0,true);
+  static const char _orthogonal_s []="orthogonal";
+  static define_unary_function_eval (__orthogonal,&giac::_orthogonal,_orthogonal_s);
+  define_unary_function_ptr5( at_orthogonal ,alias_at_orthogonal,&__orthogonal,0,true);
 
   bool check3dpoint(const gen & g){
     return g.type==_VECT && g._VECTptr->size()==3;
   }
 
   gen _parallele(const gen & args,GIAC_CONTEXT){
+    if ( is_undef(args)) return args;
     vecteur attributs(1,default_color(contextptr));
     if ( args.type!=_VECT )
       return symbolic(at_parallele,args);
     int s=read_attributs(*args._VECTptr,attributs,contextptr);
     if (s<2)
-      settypeerr();
+      return gentypeerr(contextptr);
     gen a=remove_at_pnt(args._VECTptr->front()),b((*args._VECTptr)[1]),d;
     a=get_point(a,0,contextptr);
+    if (is_undef(a)) return a;
     if (!b.is_symb_of_sommet(at_pnt)){
       // b=vector or complex -> make a line
-      b=symbolic(at_pnt,makevecteur(gen(makevecteur(0,b),_LINE__VECT),attributs[0]));
+      if (b.type==_VECT && b.subtype==_VECTOR__VECT)
+	b=vector2vecteur(*b._VECTptr);
+      if (b.type==_VECT && b._VECTptr->size()==2)
+	b=b._VECTptr->front()+cst_i*b._VECTptr->back();
+      if (b.type!=_VECT)
+	b=symbolic(at_pnt,gen(makevecteur(gen(makevecteur(0,b),_LINE__VECT),attributs[0]),_PNT__VECT));
     }
     if (s>2){
       b=remove_at_pnt(b);
       d=remove_at_pnt(args._VECTptr->back());
       if (a.type==_VECT && a._VECTptr->size()==3 && b.type==_VECT && b._VECTptr->size()==2 && d.type==_VECT && d._VECTptr->size()==2){
-	gen n=cross(b._VECTptr->front()-b._VECTptr->back(),d._VECTptr->front()-d._VECTptr->back());
-	return pnt_attrib(symbolic(at_hyperplan,makevecteur(n,a)),attributs,contextptr); // _plan(makevecteur(n,a),contextptr);	
+	gen n=cross(b._VECTptr->front()-b._VECTptr->back(),d._VECTptr->front()-d._VECTptr->back(),contextptr);
+	return pnt_attrib(symbolic(at_hyperplan,makesequence(n,a)),attributs,contextptr); // _plan(makevecteur(n,a),contextptr);	
       }
     }
     bool ahyper=a.is_symb_of_sommet(at_hyperplan);
@@ -3037,21 +3705,21 @@ namespace giac {
       else
 	if (a.type==_VECT)
 	  a.subtype=_POINT__VECT;
-      d=gen(makevecteur(zero,b),_LINE__VECT);
+      d=gen(makevecteur(zero*b,b),_LINE__VECT);
       b=a;
     }
     else {
       b=remove_at_pnt(b);
       if (ahyper)
-	std::swap(a,b);
+	swapgen(a,b);
       if (b.is_symb_of_sommet(at_hyperplan)){ // hyperplan, point
-	return pnt_attrib(symbolic(at_hyperplan,makevecteur(hyperplan_normal(b),a)),attributs,contextptr); // _plan(makevecteur(hyperplan_normal(b),a),contextptr);
+	return pnt_attrib(symbolic(at_hyperplan,makesequence(hyperplan_normal(b),a)),attributs,contextptr); // _plan(makevecteur(hyperplan_normal(b),a),contextptr);
       }
       if (b.type==_VECT && b._VECTptr->size()==2 && b.subtype!=_POINT__VECT){ // b is a line 
 	if (a.type==_VECT && a._VECTptr->size()==2 && a.subtype!=_POINT__VECT){ // a is a line -> d
 	  gen M=a._VECTptr->front();
-	  gen n=cross(M-a._VECTptr->back(),b._VECTptr->front()-b._VECTptr->back());
-	  return pnt_attrib(symbolic(at_hyperplan,makevecteur(n,M)),attributs,contextptr); // _plan(makevecteur(n,M),contextptr);
+	  gen n=cross(M-a._VECTptr->back(),b._VECTptr->front()-b._VECTptr->back(),contextptr);
+	  return pnt_attrib(symbolic(at_hyperplan,makesequence(n,M)),attributs,contextptr); // _plan(makevecteur(n,M),contextptr);
 	}
 	// b is a line, a is not a line
 	d=b;
@@ -3061,22 +3729,25 @@ namespace giac {
 	d=a;
     }
     if ( d.type!=_VECT || d._VECTptr->size()!=2 || (b.type==_VECT && b.subtype!=_POINT__VECT && b._VECTptr->size()!=3) )
-      setsizeerr();
+      return gensizeerr(contextptr);
     // parallel to d through b
+    if (d.type==_VECT)
+      d.subtype=_LINE__VECT;
     return pnt_attrib(d+(b-d._VECTptr->front()),attributs,contextptr);
   }
-  const string _parallele_s("parallel");
-  unary_function_eval __parallele(&giac::_parallele,_parallele_s);
-  unary_function_ptr at_parallele (&__parallele,0,true);
+  static const char _parallele_s []="parallel";
+  static define_unary_function_eval (__parallele,&giac::_parallele,_parallele_s);
+  define_unary_function_ptr5( at_parallele ,alias_at_parallele,&__parallele,0,true);
 
   gen _triangle(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type!=_VECT)
       return symbolic(at_triangle,args);
     vecteur attributs(1,default_color(contextptr));
     vecteur v(*args._VECTptr);
     int s=read_attributs(v,attributs,contextptr);
     if (s<3)
-      setdimerr();
+      return gendimerr(contextptr);
     gen a=remove_at_pnt(v.front()),b=remove_at_pnt(v[1]),c=remove_at_pnt(v[2]);
     a=get_point(a,0,contextptr);
     b=get_point(b,0,contextptr);
@@ -3084,18 +3755,19 @@ namespace giac {
     v=makevecteur(a,b,c,a);
     return pnt_attrib(gen(v,_GROUP__VECT),attributs,contextptr);
   }
-  const string _triangle_s("triangle");
-  unary_function_eval __triangle(&giac::_triangle,_triangle_s);
-  unary_function_ptr at_triangle (&__triangle,0,true);
+  static const char _triangle_s []="triangle";
+  static define_unary_function_eval (__triangle,&giac::_triangle,_triangle_s);
+  define_unary_function_ptr5( at_triangle ,alias_at_triangle,&__triangle,0,true);
 
   gen _quadrilatere(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type!=_VECT)
       return symbolic(at_quadrilatere,args);
     vecteur v(*args._VECTptr);
     vecteur attributs(1,default_color(contextptr));
     int s=read_attributs(v,attributs,contextptr);
     if (s<4)
-      setdimerr();
+      return gendimerr(contextptr);
     gen a=remove_at_pnt(v.front()),b=remove_at_pnt(v[1]),c=remove_at_pnt(v[2]),d=remove_at_pnt(v[3]);
     a=get_point(a,0,contextptr);
     b=get_point(b,0,contextptr);
@@ -3103,15 +3775,15 @@ namespace giac {
     d=get_point(d,0,contextptr);
     return pnt_attrib(gen(makevecteur(a,b,c,d,a),_GROUP__VECT),attributs,contextptr);
   }
-  const string _quadrilatere_s("quadrilateral");
-  unary_function_eval __quadrilatere(&giac::_quadrilatere,_quadrilatere_s);
-  unary_function_ptr at_quadrilatere (&__quadrilatere,0,true);
+  static const char _quadrilatere_s []="quadrilateral";
+  static define_unary_function_eval (__quadrilatere,&giac::_quadrilatere,_quadrilatere_s);
+  define_unary_function_ptr5( at_quadrilatere ,alias_at_quadrilatere,&__quadrilatere,0,true);
 
-  void get_rectangle_args(const vecteur & v,gen & e,gen & f,gen & g,gen & tmp,GIAC_CONTEXT){
+  static void get_rectangle_args(const vecteur & v,gen & e,gen & f,gen & g,gen & tmp,GIAC_CONTEXT){
     e=remove_at_pnt(eval(v[0],contextptr));
     f=remove_at_pnt(eval(v[1],contextptr));
-    e=get_point(e,0,contextptr);
-    f=get_point(f,1,contextptr);
+    e=remove_at_pnt(get_point(e,0,contextptr));
+    f=remove_at_pnt(get_point(f,1,contextptr));
     gen v2=eval(v[2],contextptr);
     gen d=remove_at_pnt(v2);
     if (d.type==_VECT){
@@ -3124,13 +3796,13 @@ namespace giac {
 	eg=d-e;
 	tmp=sqrt(dotvecteur(eg,eg),contextptr);
       }
-      eg=cross(cross(ef,eg),ef);
+      eg=cross(cross(ef,eg,contextptr),ef,contextptr);
       tmp=tmp/sqrt(dotvecteur(eg,eg),contextptr)*eg;
     }
     else {
       gen ef=f-e;
       if (v2.is_symb_of_sommet(at_pnt)){
-	tmp=projection(e,f,v2,contextptr);
+	tmp=projection(e,f,d,contextptr);
 	tmp=d-tmp*ef-e;
       }
       else
@@ -3140,15 +3812,18 @@ namespace giac {
   }
 
   gen _triangle_rectangle(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type!=_VECT)
       return symbolic(at_triangle_rectangle,args);
     vecteur v(*args._VECTptr);
     vecteur attributs(1,default_color(contextptr));
     int s=read_attributs(v,attributs,contextptr);
     if (s<3)
-      setdimerr();
+      return gendimerr(contextptr);
     gen e,f,g,tmp;
     get_rectangle_args(v,e,f,g,tmp,contextptr);
+    if (is_undef(e) || is_undef(f) || is_undef(g))
+      return e+f+g;
     gen res=pnt_attrib(gen(makevecteur(e,f,g,e),_GROUP__VECT),attributs,contextptr);
     if (s==3)
       return res;
@@ -3156,20 +3831,23 @@ namespace giac {
     w.push_back(eval(symb_sto(_point(g,contextptr),v[3]),contextptr));
     return gen(w,_GROUP__VECT);
   }
-  const string _triangle_rectangle_s("right_triangle");
-  unary_function_eval __triangle_rectangle(&giac::_triangle_rectangle,_triangle_rectangle_s);
-  unary_function_ptr at_triangle_rectangle (&__triangle_rectangle,_QUOTE_ARGUMENTS,true);
+  static const char _triangle_rectangle_s []="right_triangle";
+  static define_unary_function_eval_quoted (__triangle_rectangle,&giac::_triangle_rectangle,_triangle_rectangle_s);
+  define_unary_function_ptr5( at_triangle_rectangle ,alias_at_triangle_rectangle,&__triangle_rectangle,_QUOTE_ARGUMENTS,true);
 
   gen _rectangle(const gen & args, GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type!=_VECT)
       return symbolic(at_rectangle,args);
     vecteur v(*args._VECTptr);
     vecteur attributs(1,default_color(contextptr));
     int s=read_attributs(v,attributs,contextptr);
     if (s<3)
-      setdimerr();
+      return gendimerr(contextptr);
     gen e,f,g,tmp;
     get_rectangle_args(v,e,f,g,tmp,contextptr);
+    if (is_undef(e) || is_undef(f) || is_undef(g))
+      return e+f+g;
     gen h=f+tmp;
     gen res=pnt_attrib(gen(makevecteur(e,f,h,g,e),_GROUP__VECT),attributs,contextptr);
     if (s==3)
@@ -3180,11 +3858,12 @@ namespace giac {
       w.push_back(eval(symb_sto(_point(h,contextptr),v[4]),contextptr));
     return gen(w,_GROUP__VECT);
   }
-  const string _rectangle_s("rectangle");
-  unary_function_eval __rectangle(&giac::_rectangle,_rectangle_s);
-  unary_function_ptr at_rectangle (&__rectangle,_QUOTE_ARGUMENTS,true);
+  static const char _rectangle_s []="rectangle";
+  static define_unary_function_eval_quoted (__rectangle,&giac::_rectangle,_rectangle_s);
+  define_unary_function_ptr5( at_rectangle ,alias_at_rectangle,&__rectangle,_QUOTE_ARGUMENTS,true);
 
   gen _parallelogramme(const gen & args0,GIAC_CONTEXT){
+    if ( args0.type==_STRNG && args0.subtype==-1) return  args0;
     gen args(args0);
     if (args.type!=_VECT)
       args=eval(args,1,contextptr);
@@ -3193,13 +3872,41 @@ namespace giac {
     vecteur v(*args._VECTptr);
     vecteur attributs(1,default_color(contextptr));
     int s=read_attributs(v,attributs,contextptr);
+    if (s==2){
+      gen e=remove_at_pnt(eval(v[0],contextptr)),f=remove_at_pnt(eval(v[1],contextptr));
+      v.clear();
+      if (e.type==_VECT && e.subtype==_VECTOR__VECT && e._VECTptr->size()==2){
+	v.push_back(e._VECTptr->front());
+	v.push_back(e._VECTptr->back());
+      }
+      else
+	v.push_back(e);
+      if (f.type==_VECT && f.subtype==_VECTOR__VECT && f._VECTptr->size()==2){
+	if (v.size()==1){
+	  v.insert(v.begin(),f._VECTptr->front());
+	  v.push_back(f._VECTptr->back());
+	}
+	else
+	  v.push_back(v.back()+f._VECTptr->back()-f._VECTptr->front());
+      }
+      else
+	v.push_back(f);
+      s=int(v.size());
+    }
     if (s<3)
-      setdimerr();
+      return gendimerr(contextptr);
     gen e=remove_at_pnt(eval(v[0],contextptr)),f=remove_at_pnt(eval(v[1],contextptr)),d=remove_at_pnt(eval(v[2],contextptr));
-    e=get_point(e,0,contextptr);
-    f=get_point(f,0,contextptr);
-    d=get_point(d,0,contextptr);
-    gen g=d+(e-f);
+    e=remove_at_pnt(get_point(e,0,contextptr));
+    if (f.type==_VECT && f.subtype==_VECTOR__VECT && f._VECTptr->size()==2)
+      f=e+f._VECTptr->back()-f._VECTptr->front();
+    else
+      f=remove_at_pnt(get_point(f,0,contextptr));
+    if (d.type==_VECT && d.subtype==_VECTOR__VECT && d._VECTptr->size()==2)
+      d=e+d._VECTptr->back()-d._VECTptr->front();
+    else
+      d=remove_at_pnt(get_point(d,0,contextptr));
+    gen g=(e-f)+d;
+    if (is_undef(g)) return g;
     gen res=pnt_attrib(gen(makevecteur(e,f,d,g,e),_GROUP__VECT),attributs,contextptr);
     if (s==3)
       return res;
@@ -3207,22 +3914,22 @@ namespace giac {
     w.push_back(eval(symb_sto(_point(g,contextptr),v[3]),contextptr));
     return gen(w,_GROUP__VECT);
   }
-  const string _parallelogramme_s("parallelogram");
-  unary_function_eval __parallelogramme(&giac::_parallelogramme,_parallelogramme_s);
-  unary_function_ptr at_parallelogramme (&__parallelogramme,_QUOTE_ARGUMENTS,true);
+  static const char _parallelogramme_s []="parallelogram";
+  static define_unary_function_eval_quoted (__parallelogramme,&giac::_parallelogramme,_parallelogramme_s);
+  define_unary_function_ptr5( at_parallelogramme ,alias_at_parallelogramme,&__parallelogramme,_QUOTE_ARGUMENTS,true);
 
-  void get_losange_args(const vecteur &v,gen &e,gen &f,gen & g,GIAC_CONTEXT){
+  static void get_losange_args(const vecteur &v,gen &e,gen &f,gen & g,GIAC_CONTEXT){
     e=remove_at_pnt(eval(v[0],contextptr));
     f=remove_at_pnt(eval(v[1],contextptr));
-    e=get_point(e,0,contextptr);
-    f=get_point(f,1,contextptr);
+    e=remove_at_pnt(get_point(e,0,contextptr));
+    f=remove_at_pnt(get_point(f,1,contextptr));
     gen angle=remove_at_pnt(eval(v[2],contextptr));
     if (angle.type==_VECT){ // In 3-d angle is not the angle!
       gen ef=f-e;
       if (angle._VECTptr->size()==2){
 	gen eg=remove_at_pnt(angle._VECTptr->front())-e;
 	angle=angle._VECTptr->back(); 
-	eg=cross(cross(ef,eg),ef);
+	eg=cross(cross(ef,eg,contextptr),ef,contextptr);
 	eg=sqrt(dotvecteur(ef,ef)/dotvecteur(eg,eg),contextptr)*eg;
 	g=e+ef*cos(angle,contextptr)+eg*sin(angle,contextptr);
       }
@@ -3232,19 +3939,22 @@ namespace giac {
       }
     }
     else
-      g=e+(f-e)*exp(cst_i*angle,contextptr);
+      g=e+(f-e)*(cos(angle,contextptr)+cst_i*sin(angle,contextptr));
   }
 
   gen _triangle_isocele(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if ( (args.type!=_VECT) || (args._VECTptr->size()<3))
       return symbolic(at_triangle_isocele,args);
     vecteur v(*args._VECTptr);
     vecteur attributs(1,default_color(contextptr));
     int s=read_attributs(v,attributs,contextptr);
     if (s<3)
-      setdimerr();
+      return gendimerr(contextptr);
     gen e,f,g;
     get_losange_args(v,e,f,g,contextptr);
+    if (is_undef(e) || is_undef(f) || is_undef(g))
+      return e+f+g;
     gen res=pnt_attrib(gen(makevecteur(e,f,g,e),_GROUP__VECT),attributs,contextptr);
     if (s==3)
       return res;
@@ -3252,20 +3962,23 @@ namespace giac {
     w.push_back(eval(symb_sto(_point(g,contextptr),v[3]),contextptr));
     return gen(w,_GROUP__VECT);
   }
-  const string _triangle_isocele_s("isoceles_triangle");
-  unary_function_eval __triangle_isocele(&giac::_triangle_isocele,_triangle_isocele_s);
-  unary_function_ptr at_triangle_isocele (&__triangle_isocele,_QUOTE_ARGUMENTS,true);
+  static const char _triangle_isocele_s []="isosceles_triangle";
+  static define_unary_function_eval_quoted (__triangle_isocele,&giac::_triangle_isocele,_triangle_isocele_s);
+  define_unary_function_ptr5( at_triangle_isocele ,alias_at_triangle_isocele,&__triangle_isocele,_QUOTE_ARGUMENTS,true);
 
   gen _losange(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if ( (args.type!=_VECT) || (args._VECTptr->size()<3))
       return symbolic(at_losange,args);
     vecteur v(*args._VECTptr);
     vecteur attributs(1,default_color(contextptr));
     int s=read_attributs(v,attributs,contextptr);
     if (s<3)
-      setdimerr();
+      return gendimerr(contextptr);
     gen e,f,g;
     get_losange_args(v,e,f,g,contextptr);
+    if (is_undef(e) || is_undef(f) || is_undef(g))
+      return e+f+g;
     gen h=g;
     g=h-e+f;
     gen res=pnt_attrib(gen(makevecteur(e,f,g,h,e),_GROUP__VECT),attributs,contextptr);
@@ -3277,33 +3990,35 @@ namespace giac {
       w.push_back(eval(symb_sto(_point(h,contextptr),v[4]),contextptr));
     return gen(w,_GROUP__VECT);
   }
-  const string _losange_s("rhombus");
-  unary_function_eval __losange(&giac::_losange,_losange_s);
-  unary_function_ptr at_losange (&__losange,_QUOTE_ARGUMENTS,true);
+  static const char _losange_s []="rhombus";
+  static define_unary_function_eval_quoted (__losange,&giac::_losange,_losange_s);
+  define_unary_function_ptr5( at_losange ,alias_at_losange,&__losange,_QUOTE_ARGUMENTS,true);
 
   gen _triangle_equilateral(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if ( (args.type!=_VECT) || (args._VECTptr->size()<2))
       return symbolic(at_triangle_equilateral,args);
     vecteur & v=*args._VECTptr;
     vecteur attributs(1,default_color(contextptr));
     int s=read_attributs(v,attributs,contextptr);
     if (s<2)
-      setdimerr();
+      return gendimerr(contextptr);
     int dim=2;
     gen e=remove_at_pnt(eval(v[0],contextptr)),f=remove_at_pnt(eval(v[1],contextptr)),g;
-    e=get_point(e,0,contextptr);
-    f=get_point(f,1,contextptr);
+    e=remove_at_pnt(get_point(e,0,contextptr));
+    f=remove_at_pnt(get_point(f,1,contextptr));
     if (e.type==_VECT){
       dim=3;
       if (s==2)
-	set3derr();
+	return set3derr(contextptr);
       g=remove_at_pnt(eval(v[2],contextptr));
       gen ef=f-e,eg=g-e;
-      eg=cross(cross(ef,eg),ef);
+      eg=cross(cross(ef,eg,contextptr),ef,contextptr);
       g=e+(ef+sqrt(3*dotvecteur(ef,ef)/dotvecteur(eg,eg),contextptr)*eg)/2;
     }
     else
-      g=e+(f-e)*rdiv((plus_sqrt3*cst_i+plus_one),plus_two);
+      g=e+(f-e)*rdiv((plus_sqrt3*cst_i+plus_one),plus_two,contextptr);
+    if (is_undef(g)) return g;
     gen res=pnt_attrib(gen(makevecteur(e,f,g,e),_GROUP__VECT),attributs,contextptr);
     if (s==dim)
       return res;
@@ -3311,38 +4026,42 @@ namespace giac {
     w.push_back(eval(symb_sto(_point(g,contextptr),v[dim]),contextptr));
     return gen(w,_GROUP__VECT);
   }
-  const string _triangle_equilateral_s("equilateral_triangle");
-  unary_function_eval __triangle_equilateral(&giac::_triangle_equilateral,_triangle_equilateral_s);
-  unary_function_ptr at_triangle_equilateral (&__triangle_equilateral,_QUOTE_ARGUMENTS,true);
+  static const char _triangle_equilateral_s []="equilateral_triangle";
+  static define_unary_function_eval_quoted (__triangle_equilateral,&giac::_triangle_equilateral,_triangle_equilateral_s);
+  define_unary_function_ptr5( at_triangle_equilateral ,alias_at_triangle_equilateral,&__triangle_equilateral,_QUOTE_ARGUMENTS,true);
 
   // Args= Center A, point B, number of vertices
-  extern unary_function_ptr at_isopolygone;
   gen _isopolygone(const gen & args,GIAC_CONTEXT){
-    checkanglemode(contextptr);
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if ( (args.type!=_VECT) || (args._VECTptr->size()<3))
       return symbolic(at_isopolygone,args);
     vecteur & v=*args._VECTptr;
     vecteur attributs(1,default_color(contextptr));
     int s=read_attributs(v,attributs,contextptr);
     if (s<2)
-      setdimerr();
+      return gendimerr(contextptr);
     gen e=remove_at_pnt(v[0]);
     gen f=remove_at_pnt(v[1]),g;
-    e=get_point(e,0,contextptr);
-    f=get_point(f,1,contextptr);
+    e=remove_at_pnt(get_point(e,0,contextptr));
+    f=remove_at_pnt(get_point(f,1,contextptr));
     gen ef=f-e,nd;
+    if (is_undef(ef)) return ef;
     if (s>3){
       g=remove_at_pnt(v[2]);
       gen eg=g-e;
-      nd=cross(cross(ef,eg),ef);
-      nd=sqrt(ratnormal(dotvecteur(ef,ef)/dotvecteur(nd,nd)),contextptr)*nd;
+      nd=cross(cross(ef,eg,contextptr),ef,contextptr);
+      nd=sqrt(ratnormal(dotvecteur(ef,ef)/dotvecteur(nd,nd),contextptr),contextptr)*nd;
     }
     else
       nd=cst_i*ef;
     gen gn=v[s-1];
+    if (!is_integral(gn))
+      return gensizeerr(contextptr);  
     int n=gn.val;
     if (gn.type!=_INT_ || absint(n)<2)
-      setsizeerr();  
+      return gensizeerr(contextptr);  
+    //grad
+    int mode=get_mode_set_radian(contextptr);
     if (n>0){
       context tmp;
       gen c;
@@ -3352,8 +4071,8 @@ namespace giac {
       ef=f-e;
       if (s>3){
 	gen eg=g-e;
-	nd=cross(cross(ef,eg),ef);
-	nd=sqrt(ratnormal(dotvecteur(ef,ef)/dotvecteur(nd,nd)),contextptr)*nd;
+	nd=cross(cross(ef,eg,contextptr),ef,contextptr);
+	nd=sqrt(ratnormal(dotvecteur(ef,ef)/dotvecteur(nd,nd),contextptr),contextptr)*nd;
       }
       else
 	nd=cst_i*ef;
@@ -3363,37 +4082,41 @@ namespace giac {
     vecteur w;
     w.push_back(f);
     for (int i=1;i<n;++i){
-      w.push_back(e+ef*cos(2*cst_pi*i/n,contextptr)+nd*sin(2*cst_pi*i/n,contextptr));
+      w.push_back(e+ef*cos(2*i*cst_pi/n,contextptr)+nd*sin(2*i*cst_pi/n,contextptr));
     }
     w.push_back(f);
+    //grad
+    angle_mode(mode,contextptr);
     gen res=pnt_attrib(gen(w,_GROUP__VECT),attributs,contextptr);
     return res;
   }
-  const string _isopolygone_s("isopolygon");
-  unary_function_eval __isopolygone(&giac::_isopolygone,_isopolygone_s);
-  unary_function_ptr at_isopolygone (&__isopolygone,0,true);
+  static const char _isopolygone_s []="isopolygon";
+  static define_unary_function_eval (__isopolygone,&giac::_isopolygone,_isopolygone_s);
+  define_unary_function_ptr5( at_isopolygone ,alias_at_isopolygone,&__isopolygone,0,true);
 
   gen _carre(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if ( (args.type!=_VECT) || (args._VECTptr->size()<2))
       return symbolic(at_carre,args);
     vecteur & v=*args._VECTptr;
     vecteur attributs(1,default_color(contextptr));
     int s=read_attributs(v,attributs,contextptr);
     if (s<2)
-      setdimerr();
+      return gendimerr(contextptr);
     gen e=remove_at_pnt(eval(v[0],contextptr));
     gen f=remove_at_pnt(eval(v[1],contextptr));
-    e=get_point(e,0,contextptr);
-    f=get_point(f,1,contextptr);
+    e=remove_at_pnt(get_point(e,0,contextptr));
+    f=remove_at_pnt(get_point(f,1,contextptr));
     gen ef=f-e,g;
+    if (is_undef(ef)) return ef;
     int dim=2;
     if (ef.type==_VECT){
       dim=3;
       if (s==2)
-	set3derr();
+	return set3derr(contextptr);
       g=remove_at_pnt(eval(v[2],contextptr));
       gen eg=g-e;
-      eg=cross(cross(ef,eg),ef);
+      eg=cross(cross(ef,eg,contextptr),ef,contextptr);
       g=f+sqrt(dotvecteur(ef,ef)/dotvecteur(eg,eg),contextptr)*eg;
     }
     else
@@ -3408,35 +4131,37 @@ namespace giac {
       w.push_back(eval(symb_sto(_point(h,contextptr),v[dim+1]),contextptr));
     return gen(w,_GROUP__VECT);
   }
-  const string _carre_s("square");
-  unary_function_eval __carre(&giac::_carre,_carre_s);
-  unary_function_ptr at_carre (&__carre,_QUOTE_ARGUMENTS,true);
+  static const char _carre_s []="square";
+  static define_unary_function_eval_quoted (__carre,&giac::_carre,_carre_s);
+  define_unary_function_ptr5( at_carre ,alias_at_carre,&__carre,_QUOTE_ARGUMENTS,true);
 
   gen _hexagone(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type!=_VECT)
-      setsizeerr();
+      return gensizeerr(contextptr);
     vecteur & v=*args._VECTptr;
     vecteur attributs(1,default_color(contextptr));
     int s=read_attributs(v,attributs,contextptr);
     if (s<2)
-      setdimerr();
+      return gendimerr(contextptr);
     gen e=remove_at_pnt(eval(v[0],contextptr));
     gen f=remove_at_pnt(eval(v[1],contextptr));
-    e=get_point(e,0,contextptr);
-    f=get_point(f,1,contextptr);
+    e=remove_at_pnt(get_point(e,0,contextptr));
+    f=remove_at_pnt(get_point(f,1,contextptr));
     gen ef=f-e,ecenter,g,h,i,j;
+    if (is_undef(ef)) return ef;
     int dim=2;
     if (ef.type==_VECT){
       dim=3;
       if (s==2)
-	set3derr();
+	return set3derr(contextptr);
       ecenter=remove_at_pnt(eval(v[2],contextptr));
       gen eg=ecenter-e;
-      eg=cross(cross(ef,eg),ef);
+      eg=cross(cross(ef,eg,contextptr),ef,contextptr);
       ecenter=(ef+sqrt(3*dotvecteur(ef,ef)/dotvecteur(eg,eg),contextptr)*eg)/2;
     }
     else
-      ecenter=ef*rdiv((plus_sqrt3*cst_i+plus_one),plus_two);
+      ecenter=ef*rdiv((plus_sqrt3*cst_i+plus_one),plus_two,contextptr);
     g=e+ecenter+ef;
     h=e+2*ecenter;
     i=h-ef;
@@ -3454,12 +4179,12 @@ namespace giac {
       w.push_back(eval(symb_sto(_point(j,contextptr),v[dim+3]),contextptr));
     return gen(w,_GROUP__VECT);
   }
-  const string _hexagone_s("hexagon");
-  unary_function_eval __hexagone(&giac::_hexagone,_hexagone_s);
-  unary_function_ptr at_hexagone (&__hexagone,_QUOTE_ARGUMENTS,true);
+  static const char _hexagone_s []="hexagon";
+  static define_unary_function_eval_quoted (__hexagone,&giac::_hexagone,_hexagone_s);
+  define_unary_function_ptr5( at_hexagone ,alias_at_hexagone,&__hexagone,_QUOTE_ARGUMENTS,true);
 
-  void polygonify(vecteur & v,GIAC_CONTEXT){
-    int vs=v.size();
+  static void polygonify(vecteur & v,GIAC_CONTEXT){
+    int vs=int(v.size());
     for (int i=0;i<vs;++i){
       v[i]=get_point(v[i],0,contextptr);
       if (v[i].type==_VECT && v[i]._VECTptr->size()==2)
@@ -3468,123 +4193,149 @@ namespace giac {
   }
 
   gen _polygone(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type!=_VECT)
       return symbolic(at_polygone,args);
     vecteur v(*apply(args,remove_at_pnt)._VECTptr);
     vecteur attributs(1,default_color(contextptr));
     int s=read_attributs(v,attributs,contextptr);
     if (s<2)
-      setdimerr();
+      return gendimerr(contextptr);
     v=vecteur(v.begin(),v.begin()+s);
     v.push_back(v.front());
     polygonify(v,contextptr);
     return pnt_attrib(gen(v,_GROUP__VECT),attributs,contextptr);
   }
-  const string _polygone_s("polygon");
-  unary_function_eval __polygone(&giac::_polygone,_polygone_s);
-  unary_function_ptr at_polygone (&__polygone,0,true);
+  static const char _polygone_s []="polygon";
+  static define_unary_function_eval (__polygone,&giac::_polygone,_polygone_s);
+  define_unary_function_ptr5( at_polygone ,alias_at_polygone,&__polygone,0,true);
 
   gen _polygone_ouvert(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type!=_VECT)
       return symbolic(at_polygone,args);
     vecteur v(*apply(args,remove_at_pnt)._VECTptr);
     vecteur attributs(1,default_color(contextptr));
     int s=read_attributs(v,attributs,contextptr);
     if (s<2)
-      setdimerr();
+      return gendimerr(contextptr);
+    v=vecteur(v.begin(),v.begin()+s);
     polygonify(v,contextptr);
     return pnt_attrib(gen(v,_GROUP__VECT),attributs,contextptr);
   }
-  const string _polygone_ouvert_s("open_polygon");
-  unary_function_eval __polygone_ouvert(&giac::_polygone_ouvert,_polygone_ouvert_s);
-  unary_function_ptr at_polygone_ouvert (&__polygone_ouvert,0,true);
+  static const char _polygone_ouvert_s []="open_polygon";
+  static define_unary_function_eval (__polygone_ouvert,&giac::_polygone_ouvert,_polygone_ouvert_s);
+  define_unary_function_ptr5( at_polygone_ouvert ,alias_at_polygone_ouvert,&__polygone_ouvert,0,true);
 
-  void gen23points(const gen & args,gen &e,gen &f,gen &g,vecteur & attributs,GIAC_CONTEXT){
-    if (args.type!=_VECT) setsizeerr("plot.cc/gen23points");
+  static bool gen23points(const gen & args,gen &e,gen &f,gen &g,vecteur & attributs,GIAC_CONTEXT){
+    if (args.type!=_VECT) return false; // setsizeerr(gettext("plot.cc/gen23points"));
     vecteur v(*args._VECTptr);
     int s=read_attributs(v,attributs,contextptr);
     if (s<2)
-      setdimerr();
+      return false; // setdimerr(contextptr);
     e=v.front();f=v[1];
     e=remove_at_pnt(e);
     f=remove_at_pnt(f);
-    e=get_point(e,0,contextptr);
-    if (f.type==_VECT && f.type!=_POINT__VECT){
+    e=remove_at_pnt(get_point(e,0,contextptr));
+    if (f.type==_VECT && f.subtype!=_POINT__VECT){
       if (f._VECTptr->size()!=2)
-	setsizeerr("gen23points");
+	return false; // setsizeerr(gettext("gen23points"));
       g=f._VECTptr->back();
       f=f._VECTptr->front();
     }
     else {
       if (s!=3)
-	setsizeerr("gen23points");
+	return false; // setsizeerr(gettext("gen23points"));
       g=remove_at_pnt(v[2]);
     }
-    f=get_point(f,0,contextptr);
-    g=get_point(g,0,contextptr);
+    f=remove_at_pnt(get_point(f,0,contextptr));
+    g=remove_at_pnt(get_point(g,0,contextptr));
+    return true;
   }
 
   gen _hauteur(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type!=_VECT)
       return symbolic(at_hauteur,args);
     gen e,f,g;
     vecteur attributs(1,default_color(contextptr));
-    gen23points(args,e,f,g,attributs,contextptr);
+    if (!gen23points(args,e,f,g,attributs,contextptr))
+      return gensizeerr(contextptr);
+    if (f.type==_VECT && f._VECTptr->size()==3){
+      // projection of e on f,g
+      gen h=_projection(gen(makevecteur(_droite(gen(makevecteur(f,g),_SEQ__VECT),contextptr),e),_SEQ__VECT),contextptr);
+      return symb_segment(e,h,attributs,_LINE__VECT,contextptr);
+    }
     f=f-g;
     f=im(f,contextptr)-cst_i*re(f,contextptr);
     return symb_segment(e,e+f,attributs,_LINE__VECT,contextptr);
   }
-  const string _hauteur_s("altitude");
-  unary_function_eval __hauteur(&giac::_hauteur,_hauteur_s);
-  unary_function_ptr at_hauteur (&__hauteur,0,true);
+  static const char _hauteur_s []="altitude";
+  static define_unary_function_eval (__hauteur,&giac::_hauteur,_hauteur_s);
+  define_unary_function_ptr5( at_hauteur ,alias_at_hauteur,&__hauteur,0,true);
 
   gen bissectrice(const gen & args,bool interieur,GIAC_CONTEXT){
-    gen e,f,g;
+    gen E,e,f,g;
     vecteur attributs(1,default_color(contextptr));
-    gen23points(args,e,f,g,attributs,contextptr);
+    if (!gen23points(args,e,f,g,attributs,contextptr))
+      return gensizeerr(contextptr);
+    if (e==f || e==g)
+      return gensizeerr(contextptr);
     // direction (f-e)+(g-e)*||f-e||/||g-e||
-    if (interieur)
-      return symb_segment(e,f+(g-e)*rdiv(abs_norm(f-e,contextptr),abs_norm(g-e,contextptr)),attributs,_LINE__VECT,contextptr);
-    else
-      return symb_segment(e,f-(g-e)*rdiv(abs_norm(f-e,contextptr),abs_norm(g-e,contextptr)),attributs,_LINE__VECT,contextptr);
+    E=f+(g-e)*rdiv(abs_norm(f,e,contextptr),abs_norm(g,e,contextptr),contextptr);
+    if (E==e){
+      if (interieur)
+	E=e+cst_i*(f-e);
+      else
+	E=f;
+    }
+    else {
+      if (!interieur)
+	E=e+cst_i*(E-e);
+    }
+    return symb_segment(e,E,attributs,_LINE__VECT,contextptr);
   }
 
   gen _bissectrice(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if ( (args.type!=_VECT) || (args._VECTptr->size()<2))
       return symbolic(at_bissectrice,args);
     return bissectrice(args,true,contextptr);
   }
-  const string _bissectrice_s("bisector");
-  unary_function_eval __bissectrice(&giac::_bissectrice,_bissectrice_s);
-  unary_function_ptr at_bissectrice (&__bissectrice,0,true);
+  static const char _bissectrice_s []="bisector";
+  static define_unary_function_eval (__bissectrice,&giac::_bissectrice,_bissectrice_s);
+  define_unary_function_ptr5( at_bissectrice ,alias_at_bissectrice,&__bissectrice,0,true);
 
   gen _exbissectrice(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if ( (args.type!=_VECT) || (args._VECTptr->size()<2))
       return symbolic(at_exbissectrice,args);
     return bissectrice(args,false,contextptr);
   }
-  const string _exbissectrice_s("exbisector");
-  unary_function_eval __exbissectrice(&giac::_exbissectrice,_exbissectrice_s);
-  unary_function_ptr at_exbissectrice (&__exbissectrice,0,true);
+  static const char _exbissectrice_s []="exbisector";
+  static define_unary_function_eval (__exbissectrice,&giac::_exbissectrice,_exbissectrice_s);
+  define_unary_function_ptr5( at_exbissectrice ,alias_at_exbissectrice,&__exbissectrice,0,true);
 
   gen _mediane(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type==_VECT && args.subtype!=_SEQ__VECT) return _median(args,contextptr);
     unsigned s=0;
-    if ( (args.type!=_VECT) || ((s=args._VECTptr->size())<2))
-      setsizeerr();
+    if ( (args.type!=_VECT) || ((s=unsigned(args._VECTptr->size()))<2))
+      return gensizeerr(contextptr);
     if (s==2 && args._VECTptr->front().type==_VECT && args._VECTptr->front()._VECTptr->size()>3) return _median(args,contextptr);
     gen e,f,g;
     vecteur attributs(1,default_color(contextptr));
-    gen23points(args,e,f,g,attributs,contextptr);
+    if (!gen23points(args,e,f,g,attributs,contextptr))
+      return gensizeerr(contextptr);      
     // direction (f-e)+(g-e)*||f-e||/||g-e||
-    return symb_segment(e,rdiv(f+g,plus_two),attributs,_LINE__VECT,contextptr);
+    return symb_segment(e,rdiv(f+g,plus_two,contextptr),attributs,_LINE__VECT,contextptr);
   }
-  const string _mediane_s("median_line");
-  unary_function_eval __mediane(&giac::_mediane,_mediane_s);
-  unary_function_ptr at_mediane (&__mediane,0,true);
+  static const char _mediane_s []="median_line";
+  static define_unary_function_eval (__mediane,&giac::_mediane,_mediane_s);
+  define_unary_function_ptr5( at_mediane ,alias_at_mediane,&__mediane,0,true);
 
   // chk if g is a pnt with 3 pnts as first argument
-  gen chk_3pnt(const gen & g){
+  static gen chk_3pnt(const gen & g){
     if (!g.is_symb_of_sommet(at_pnt))
       return zero;
     gen & f=g._SYMBptr->feuille;
@@ -3599,11 +4350,11 @@ namespace giac {
 
   // True if a=coeff*b
   bool est_parallele_vecteur(const vecteur & a,const vecteur &b,gen & coeff,GIAC_CONTEXT){
-    unsigned int s=a.size(),i,j;
+    unsigned int s=unsigned(a.size()),i,j;
     if (s!=b.size())
-      setsizeerr();
+      return false; // setsizeerr(contextptr);
     for (i=0;i<s;++i){
-      if (!is_zero(b[i]))
+      if (!is_zero(b[i],contextptr))
 	break;
     }
     if (i==s){ // b==0
@@ -3612,8 +4363,10 @@ namespace giac {
     }
     coeff=a[i]/b[i];
     j=i;
-    for (++i;i<s;++i){
-      if (!is_zero(simplify(a[i]*b[j]-a[j]*b[i],contextptr)))
+    for (i=0;i<s;++i){
+      if (i==j)
+	continue;
+      if (!is_zero(simplify(a[i]*b[j]-a[j]*b[i],contextptr),contextptr))
 	return false;
     }
     return true;
@@ -3628,35 +4381,35 @@ namespace giac {
       return est_parallele_vecteur(*a._VECTptr,*b._VECTptr,coeff,contextptr);
     }
     gen d(im(a*conj(b,contextptr),contextptr));
-    return is_zero(simplify(d,contextptr));
+    return is_zero(simplify(d,contextptr),contextptr);
   }
   int est_aligne(const gen & a,const gen & b,const gen & c,GIAC_CONTEXT){
     return est_parallele(b-a,c-a,contextptr);
     // gen d(im((b-a)*conj(c-a,contextptr),contextptr));
-    // return is_zero(d);
+    // return is_zero(d,contextptr);
   }
 
-  vecteur inter2droites2(const gen & a1,const gen & a2,const gen & b1,const gen & b2,int asub,int bsub,GIAC_CONTEXT){
+  static vecteur inter2droites2(const gen & a1,const gen & a2,const gen & b1,const gen & b2,int asub,int bsub,GIAC_CONTEXT){
     // 2-d line intersection
     gen v(a2-a1),w(b2-b1);
     gen x=(b1-a1).re(contextptr),y=(b1-a1).im(contextptr),vx=v.re(contextptr),vy=v.im(contextptr);
     gen wx=w.re(contextptr),wy=w.im(contextptr);
-    gen alpha=rdiv(wy*x-wx*y,wy*vx-wx*vy);
+    gen alpha=rdiv(wy*x-wx*y,wy*vx-wx*vy,contextptr);
     return remove_not_in_segment(b1,b2,bsub,remove_not_in_segment(a1,a2,asub,makevecteur(symb_pnt(normal(a1+alpha*v,contextptr),default_color(contextptr),contextptr)),contextptr),contextptr);
   }
 
-  vecteur inter2droites3(const gen & a1,const gen & a2,const gen & b1,const gen & b2,int asub,int bsub,GIAC_CONTEXT){
+  static vecteur inter2droites3(const gen & a1,const gen & a2,const gen & b1,const gen & b2,int asub,int bsub,GIAC_CONTEXT){
     // 3-d line intersection
     gen M,N;
     vecteur n;
     if (perpendiculaire_commune(makevecteur(a1,a2),makevecteur(b1,b2),M,N,n,contextptr)){
-      if (is_zero(M-N))
+      if (is_zero(ratnormal(M-N,contextptr),contextptr))
 	return remove_not_in_segment(b1,b2,bsub,remove_not_in_segment(a1,a2,asub,makevecteur(symb_pnt(M,default_color(contextptr),contextptr)),contextptr),contextptr);
     }
     return vecteur(0);
   }
 
-  gen inscrit_circonscrit(const gen & arg_orig,vecteur & attributs,GIAC_CONTEXT){
+  static gen inscrit_circonscrit(const gen & arg_orig,vecteur & attributs,GIAC_CONTEXT){
     gen args(arg_orig);
     if (args.type==_VECT){
       int s=read_attributs(*args._VECTptr,attributs,contextptr);
@@ -3667,8 +4420,8 @@ namespace giac {
     }
     if ( (args.type!=_VECT) || (args._VECTptr->size()!=3)){
       gen tmp=chk_3pnt(args);
-      if (is_zero(tmp))
-	setsizeerr();
+      if (is_zero(tmp,contextptr))
+	return gensizeerr(contextptr);
       else
 	return tmp;
     }
@@ -3676,65 +4429,71 @@ namespace giac {
   }
 
   gen _circonscrit(const gen & arg_orig,GIAC_CONTEXT){
+    if ( arg_orig.type==_STRNG && arg_orig.subtype==-1) return  arg_orig;
     vecteur attributs(1,default_color(contextptr));
     gen args(inscrit_circonscrit(arg_orig,attributs,contextptr));
+    if (is_undef(args) || args.type!=_VECT || args._VECTptr->size()<3)
+      return args;
     vecteur v(*args._VECTptr);
     gen e,f,g,h;
     e=remove_at_pnt(v[0]);
     f=remove_at_pnt(v[1]);
     g=remove_at_pnt(v[2]);
-    e=get_point(e,0,contextptr);
-    f=get_point(f,0,contextptr);
-    g=get_point(g,0,contextptr);
-    if (est_aligne(e,f,g,contextptr))
+    e=remove_at_pnt(get_point(e,0,contextptr));
+    f=remove_at_pnt(get_point(f,0,contextptr));
+    g=remove_at_pnt(get_point(g,0,contextptr));
+    if (est_aligne(e,f,g,contextptr) || is_undef(e) || is_undef(f) || is_undef(g))
       return undef;
     if (e.type==_VECT || f.type==_VECT || g.type==_VECT)
-      set3derr();
+      return set3derr(contextptr);
     gen ef=(e+f)/2; gen fg=(f+g)/2;
     vecteur w(inter2droites2(ef,ef+cst_i*(f-e),fg,fg+cst_i*(g-f),_LINE__VECT,_LINE__VECT,contextptr)); 
     if (w.empty())
-      setsizeerr();
+      return gensizeerr(contextptr);
     h=remove_at_pnt(w.front());
     return pnt_attrib(symbolic(at_cercle,gen(makevecteur(makevecteur(e,2*h-e),0,2*cst_pi),_PNT__VECT)),attributs,contextptr); 
     // was return _cercle(makevecteur(h,e-remove_at_pnt(h)),contextptr);
   }
-  const string _circonscrit_s("circumcircle");
-  unary_function_eval __circonscrit(&giac::_circonscrit,_circonscrit_s);
-  unary_function_ptr at_circonscrit (&__circonscrit,0,true);
+  static const char _circonscrit_s []="circumcircle";
+  static define_unary_function_eval (__circonscrit,&giac::_circonscrit,_circonscrit_s);
+  define_unary_function_ptr5( at_circonscrit ,alias_at_circonscrit,&__circonscrit,0,true);
 
   gen _orthocentre(const gen & arg_orig,GIAC_CONTEXT){
+    if ( arg_orig.type==_STRNG && arg_orig.subtype==-1) return  arg_orig;
     vecteur attributs(1,default_color(contextptr));
     gen args(inscrit_circonscrit(arg_orig,attributs,contextptr));
+    if (is_undef(args) || args.type!=_VECT || args._VECTptr->size()<3)
+      return args;
     vecteur v(*args._VECTptr);
     gen e,f,g,h;
     e=remove_at_pnt(v[0]);
     f=remove_at_pnt(v[1]);
     g=remove_at_pnt(v[2]);
-    e=get_point(e,0,contextptr);
-    f=get_point(f,0,contextptr);
-    g=get_point(g,0,contextptr);
-    if (est_aligne(e,f,g,contextptr))
+    e=remove_at_pnt(get_point(e,0,contextptr));
+    f=remove_at_pnt(get_point(f,0,contextptr));
+    g=remove_at_pnt(get_point(g,0,contextptr));
+    if (est_aligne(e,f,g,contextptr) || is_undef(e) || is_undef(f) || is_undef(g))
       return undef;
     if (e.type==_VECT || f.type==_VECT || g.type==_VECT)
-      set3derr();
+      return set3derr(contextptr);
     gen e1=e+cst_i*(g-f);
     gen f1=f+cst_i*(e-g);
     vecteur w(inter2droites2(e,e1,f,f1,_LINE__VECT,_LINE__VECT,contextptr)); 
     if (w.empty())
-      setsizeerr();
+      return gensizeerr(contextptr);
     h=remove_at_pnt(w.front());
     return pnt_attrib(h,attributs,contextptr); 
     // was return _cercle(makevecteur(h,e-remove_at_pnt(h)),contextptr);
   }
-  const string _orthocentre_s("orthocenter");
-  unary_function_eval __orthocentre(&giac::_orthocentre,_orthocentre_s);
-  unary_function_ptr at_orthocentre (&__orthocentre,0,true);
+  static const char _orthocentre_s []="orthocenter";
+  static define_unary_function_eval (__orthocentre,&giac::_orthocentre,_orthocentre_s);
+  define_unary_function_ptr5( at_orthocentre ,alias_at_orthocentre,&__orthocentre,0,true);
 
   // given 2 points e and f return equation of line e,f as coeffs a,b,c
-  void point2abc(const gen & e,const gen & f,gen & a,gen & b,gen & c,GIAC_CONTEXT){
+  bool point2abc(const gen & e,const gen & f,gen & a,gen & b,gen & c,GIAC_CONTEXT){
     gen tmp=f-e;
     if (tmp.type==_VECT)
-      set3derr();
+      return false;
     a=im(tmp,contextptr);
     b=-re(tmp,contextptr);
     c=-a*re(e,contextptr)-b*im(e,contextptr);
@@ -3743,19 +4502,20 @@ namespace giac {
     a=v[0];
     b=v[1];
     c=v[2];
+    return true;
   }
 
-  gen inscrit(const gen & args,const vecteur & attributs,bool exinscrit,GIAC_CONTEXT){
+  static gen inscrit(const gen & args,const vecteur & attributs,bool exinscrit,GIAC_CONTEXT){
     vecteur v(*args._VECTptr),w;
     // /* new code using barycentre A,a B,c C,c 
     gen A,B,C;
     A=remove_at_pnt(v[0]);
     B=remove_at_pnt(v[1]);
     C=remove_at_pnt(v[2]);
-    A=get_point(A,0,contextptr);
-    B=get_point(B,0,contextptr);
-    C=get_point(C,0,contextptr);
-    if (est_aligne(A,B,C,contextptr))
+    A=remove_at_pnt(get_point(A,0,contextptr));
+    B=remove_at_pnt(get_point(B,0,contextptr));
+    C=remove_at_pnt(get_point(C,0,contextptr));
+    if (est_aligne(A,B,C,contextptr) || is_undef(A) || is_undef(B) || is_undef(B))
       return undef;
     gen a2=distance2pp(B,C,contextptr),b2=distance2pp(C,A,contextptr),c2=distance2pp(A,B,contextptr);
     gen a=exinscrit?-sqrt(a2,contextptr):sqrt(a2,contextptr);
@@ -3770,97 +4530,104 @@ namespace giac {
     // end new code */
     // old code 
     /*
-    gen e,f,g;
-    e=remove_at_pnt(v[0]);
-    f=remove_at_pnt(v[1]);
-    g=remove_at_pnt(v[2]);
-    // find equations of droite(e,f) droite(e,g) droite(f,g)
-    gen a_ef,b_ef,c_ef,a_fg,b_fg,c_fg,a_ge,b_ge,c_ge;
-    point2abc(e,f,a_ef,b_ef,c_ef,contextptr);
-    point2abc(f,g,a_fg,b_fg,c_fg,contextptr);
-    point2abc(e,g,a_ge,b_ge,c_ge,contextptr);
-    // value of equations droite(e,f) at g, etc.
-    gen efg,fge,gef;
-    efg=a_ef*re(g,contextptr)+b_ef*im(g,contextptr)+c_ef;
-    fge=a_fg*re(e,contextptr)+b_fg*im(e,contextptr)+c_fg;
-    gef=a_ge*re(f,contextptr)+b_ge*im(f,contextptr)+c_ge;
-    gen eq_ef,eq_fg,eq_ge;
-    gen sqrtg(sign(efg,contextptr)*sqrt(a_ef*a_ef+b_ef*b_ef)),sqrte(sign(fge,contextptr)*sqrt(a_fg*a_fg+b_fg*b_fg)),sqrtf(sign(gef,contextptr)*sqrt(a_ge*a_ge+b_ge*b_ge));
-    vecteur coeff_eq_ef(makevecteur(a_ef/sqrtg,b_ef/sqrtg,c_ef/sqrtg));
-    vecteur coeff_eq_fg(makevecteur(a_fg/sqrte,b_fg/sqrte,c_fg/sqrte));
-    vecteur coeff_eq_ge(makevecteur(a_ge/sqrtf,b_ge/sqrtf,c_ge/sqrtf));
-    matrice m(makevecteur(coeff_eq_fg,coeff_eq_ge,coeff_eq_ef));
-    vecteur lv(alg_lvar(m));
-    m=*e2r(m,lv)._VECTptr;
-    // system to solve is A*x+B*y+C=0 D*x+E*y+F=0
-    gen A,B,C,D,E,F;
-    if (exinscrit){
+      gen e,f,g;
+      e=remove_at_pnt(v[0]);
+      f=remove_at_pnt(v[1]);
+      g=remove_at_pnt(v[2]);
+      // find equations of droite(e,f) droite(e,g) droite(f,g)
+      gen a_ef,b_ef,c_ef,a_fg,b_fg,c_fg,a_ge,b_ge,c_ge;
+      point2abc(e,f,a_ef,b_ef,c_ef,contextptr);
+      point2abc(f,g,a_fg,b_fg,c_fg,contextptr);
+      point2abc(e,g,a_ge,b_ge,c_ge,contextptr);
+      // value of equations droite(e,f) at g, etc.
+      gen efg,fge,gef;
+      efg=a_ef*re(g,contextptr)+b_ef*im(g,contextptr)+c_ef;
+      fge=a_fg*re(e,contextptr)+b_fg*im(e,contextptr)+c_fg;
+      gef=a_ge*re(f,contextptr)+b_ge*im(f,contextptr)+c_ge;
+      gen eq_ef,eq_fg,eq_ge;
+      gen sqrtg(sign(efg,contextptr)*sqrt(a_ef*a_ef+b_ef*b_ef)),sqrte(sign(fge,contextptr)*sqrt(a_fg*a_fg+b_fg*b_fg)),sqrtf(sign(gef,contextptr)*sqrt(a_ge*a_ge+b_ge*b_ge));
+      vecteur coeff_eq_ef(makevecteur(a_ef/sqrtg,b_ef/sqrtg,c_ef/sqrtg));
+      vecteur coeff_eq_fg(makevecteur(a_fg/sqrte,b_fg/sqrte,c_fg/sqrte));
+      vecteur coeff_eq_ge(makevecteur(a_ge/sqrtf,b_ge/sqrtf,c_ge/sqrtf));
+      matrice m(makevecteur(coeff_eq_fg,coeff_eq_ge,coeff_eq_ef));
+      vecteur lv(alg_lvar(m));
+      m=*e2r(m,lv)._VECTptr;
+      // system to solve is A*x+B*y+C=0 D*x+E*y+F=0
+      gen A,B,C,D,E,F;
+      if (exinscrit){
       A=m[0][0]+m[1][0];
       B=m[0][1]+m[1][1];
       C=m[0][2]+m[1][2];
-    }
-    else {
+      }
+      else {
       A=m[0][0]-m[1][0];
       B=m[0][1]-m[1][1];
       C=m[0][2]-m[1][2];
-    }
-    D=m[1][0]-m[2][0];
-    E=m[1][1]-m[2][1];
-    F=m[1][2]-m[2][2];
-    // Solution is :
-    gen x=(B*F-E*C)/(-D*B+A*E),y=(A*F-D*C)/(-A*E+B*D);
-    // Compute r
-    gen r=r2sym(dotvecteur(*m[0]._VECTptr,makevecteur(x,y,1)),lv);
-    gen xy=r2sym(x+cst_i*y,lv);
-    return _cercle(makevecteur(xy,r),contextptr);
-    // end old code     */
+      }
+      D=m[1][0]-m[2][0];
+      E=m[1][1]-m[2][1];
+      F=m[1][2]-m[2][2];
+      // Solution is :
+      gen x=(B*F-E*C)/(-D*B+A*E),y=(A*F-D*C)/(-A*E+B*D);
+      // Compute r
+      gen r=r2sym(dotvecteur(*m[0]._VECTptr,makevecteur(x,y,1)),lv);
+      gen xy=r2sym(x+cst_i*y,lv);
+      return _cercle(makevecteur(xy,r),contextptr);
+      // end old code     */
     /*
-    if (exinscrit)
+      if (exinscrit)
       w=inter(bissectrice(makevecteur(e,f,g),false),bissectrice(makevecteur(f,g,e)));
-    else
+      else
       w=inter(bissectrice(makevecteur(e,f,g)),bissectrice(makevecteur(f,g,e)));
-    if (w.empty())
-      setsizeerr();
-    h=w.front();
-    ef=_droite(makevecteur(e,f));
-    w= inter(ef,_perpendiculaire(makevecteur(h,ef))); // point on circle
-    if (w.empty())
-      setsizeerr();
-    d=w.front();
-    return _cercle(makevecteur(h,d-h));
+      if (w.empty())
+      return gensizeerr(contextptr);
+      h=w.front();
+      ef=_droite(makevecteur(e,f));
+      w= inter(ef,_perpendiculaire(makevecteur(h,ef))); // point on circle
+      if (w.empty())
+      return gensizeerr(contextptr);
+      d=w.front();
+      return _cercle(makevecteur(h,d-h));
     */
   }
 
   gen _inscrit(const gen & arg_orig,GIAC_CONTEXT){
+    if ( arg_orig.type==_STRNG && arg_orig.subtype==-1) return  arg_orig;
     vecteur attributs(1,default_color(contextptr));
     gen args=inscrit_circonscrit(arg_orig,attributs,contextptr);
+    if (is_undef(args) || args.type!=_VECT || args._VECTptr->size()<3)
+      return args;
     return inscrit(args,attributs,false,contextptr);
   }
-  const string _inscrit_s("incircle");
-  unary_function_eval __inscrit(&giac::_inscrit,_inscrit_s);
-  unary_function_ptr at_inscrit (&__inscrit,0,true);
+  static const char _inscrit_s []="incircle";
+  static define_unary_function_eval (__inscrit,&giac::_inscrit,_inscrit_s);
+  define_unary_function_ptr5( at_inscrit ,alias_at_inscrit,&__inscrit,0,true);
 
   gen _exinscrit(const gen & arg_orig,GIAC_CONTEXT){
+    if ( arg_orig.type==_STRNG && arg_orig.subtype==-1) return  arg_orig;
     vecteur attributs(1,default_color(contextptr));
     gen args=inscrit_circonscrit(arg_orig,attributs,contextptr);
+    if (is_undef(args) || args.type!=_VECT || args._VECTptr->size()<3)
+      return args;
     return inscrit(args,attributs,true,contextptr);
   }
-  const string _exinscrit_s("excircle");
-  unary_function_eval __exinscrit(&giac::_exinscrit,_exinscrit_s);
-  unary_function_ptr at_exinscrit (&__exinscrit,0,true);
+  static const char _exinscrit_s []="excircle";
+  static define_unary_function_eval (__exinscrit,&giac::_exinscrit,_exinscrit_s);
+  define_unary_function_ptr5( at_exinscrit ,alias_at_exinscrit,&__exinscrit,0,true);
 
   gen _isobarycentre(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type!=_VECT){
       if (args.is_symb_of_sommet(at_pnt)){
 	gen & f=args._SYMBptr->feuille;
 	if (f.type!=_VECT)
 	  return args;
 	vecteur & v=*f._VECTptr;
-	int s=v.size();
+	int s=int(v.size());
 	if (!s)
 	  return args;
 	gen &g=v[0];
-	if (g.type!=_VECT || (s=g._VECTptr->size())<2)
+	if (g.type!=_VECT || (s=int(g._VECTptr->size()))<2)
 	  return args;
 	gen sum;
 	const_iterateur it=g._VECTptr->begin(),itend=g._VECTptr->end();
@@ -3873,22 +4640,24 @@ namespace giac {
       return _point(args,contextptr);
     }
     vecteur attributs(1,default_color(contextptr));
-    const_iterateur it=args._VECTptr->begin(),itend=args._VECTptr->end();
+    const_iterateur it=args._VECTptr->begin(); // ,itend=args._VECTptr->end();
     int i=0;
     int s=read_attributs(*args._VECTptr,attributs,contextptr);
     gen sum;
     for (;i<s;++it,++i){
       sum = sum+remove_at_pnt(*it);
     }
-    return pnt_attrib(rdiv(sum,i),attributs,contextptr);
+    if (sum.type==_VECT)
+      sum.subtype=_POINT__VECT;
+    return pnt_attrib(rdiv(sum,i,contextptr),attributs,contextptr);
   }
-  const string _isobarycentre_s("isobarycenter");
-  unary_function_eval __isobarycentre(&giac::_isobarycentre,_isobarycentre_s);
-  unary_function_ptr at_isobarycentre (&__isobarycentre,0,true);
+  static const char _isobarycentre_s []="isobarycenter";
+  static define_unary_function_eval (__isobarycentre,&giac::_isobarycentre,_isobarycentre_s);
+  define_unary_function_ptr5( at_isobarycentre ,alias_at_isobarycentre,&__isobarycentre,0,true);
 
-  gen inbarycentre(const gen & args,GIAC_CONTEXT){
-    if (args.type!=_VECT) setsizeerr();
-    const_iterateur it=args._VECTptr->begin(),itend=args._VECTptr->end();
+  static gen inbarycentre(const gen & args,GIAC_CONTEXT){
+    if (args.type!=_VECT) return gensizeerr(contextptr);
+    const_iterateur it=args._VECTptr->begin(); // ,itend=args._VECTptr->end();
     int i=0;
     vecteur attributs(1,default_color(contextptr));
     int s=read_attributs(*args._VECTptr,attributs,contextptr);
@@ -3901,58 +4670,77 @@ namespace giac {
       else {
 	vecteur & v = *it->_VECTptr;
 	if (v.size()!=2)
-	  setsizeerr();
+	  return gensizeerr(contextptr);
 	sum = sum + v.back()*remove_at_pnt(v.front());
 	n = n + v.back();
       }
     }
-    if (is_zero(n))
-      setsizeerr("Sum of coeff is 0");
-    sum=rdiv(sum,n);
+    if (is_zero(n,contextptr))
+      return gensizeerr(gettext("Sum of coeff is 0"));
+    if (sum.type==_VECT)
+      sum=inv(n,contextptr)*sum;
+    else
+      sum=rdiv(sum,n,contextptr);
     if (sum.type==_VECT)
       sum.subtype=_POINT__VECT;
     return pnt_attrib(sum,attributs,contextptr);
   }
   gen _barycentre(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type!=_VECT || args._VECTptr->empty())
-      setsizeerr();
+      return gensizeerr(contextptr);
     const_iterateur it=args._VECTptr->begin(),itend=args._VECTptr->end();
-    if (itend-it==2 && ckmatrix(args)){
+    if (itend-it==2 && args.subtype!=_SEQ__VECT && ckmatrix(args)){
       vecteur & v=*(it+1)->_VECTptr;
-      if (!v.front().is_symb_of_sommet(at_pnt))
-	return inbarycentre(_tran(args),contextptr);
+      if (!v.front().is_symb_of_sommet(at_pnt) && is_zero(im(v.front(),contextptr),contextptr))
+	return inbarycentre(_tran(args,contextptr),contextptr);
     }
     return inbarycentre(args,contextptr);
   }
 
-  const string _barycentre_s("barycenter");
-  unary_function_eval __barycentre(&giac::_barycentre,_barycentre_s);
-  unary_function_ptr at_barycentre (&__barycentre,0,true);
+  static const char _barycentre_s []="barycenter";
+  static define_unary_function_eval (__barycentre,&giac::_barycentre,_barycentre_s);
+  define_unary_function_ptr5( at_barycentre ,alias_at_barycentre,&__barycentre,0,true);
 
   gen scalar_product(const gen & a0,const gen & b0,GIAC_CONTEXT){
     gen a=remove_at_pnt(a0);
     gen b=remove_at_pnt(b0);
     if (a.type==_VECT && b.type==_VECT)
-      return dotvecteur(a,b);
-    gen res=re(a,contextptr)*re(b,contextptr)+im(a,contextptr)*im(b,contextptr);
-    return res;
+      return scalarproduct(*a._VECTptr,*b._VECTptr,contextptr);
+    gen ax,ay; reim(a,ax,ay,contextptr);
+    gen bx,by; reim(b,bx,by,contextptr);
+    return ax*bx+ay*by;
+    // gen res=re(a,contextptr)*re(b,contextptr)+im(a,contextptr)*im(b,contextptr);
+    // return res;
   }
-  gen normalized_scalar_product(const gen & a,const gen & b,GIAC_CONTEXT){
+#if 0
+  static gen normalized_scalar_product(const gen & a,const gen & b,GIAC_CONTEXT){
     if (a.type==_VECT && b.type==_VECT)
       return dotvecteur(*a._VECTptr,*b._VECTptr)/sqrt(dotvecteur(*a._VECTptr,*a._VECTptr)*dotvecteur(*b._VECTptr,*b._VECTptr),contextptr);
     gen res1=re(a,contextptr)*re(b,contextptr)+im(a,contextptr)*im(b,contextptr);
     gen res2=sqrt(a.squarenorm(contextptr)*b.squarenorm(contextptr),contextptr);
-    return rdiv(res1,res2);
+    return rdiv(res1,res2,contextptr);
   }
+#endif
   // return t such that tb+(1-t)a is the projection of c on [a,b] 
   gen projection(const gen & a,const gen & b,const gen & c,GIAC_CONTEXT){
-    gen num=scalar_product(a-c,a-b,contextptr),den=scalar_product(b-a,b-a,contextptr);
-    return rdiv(num,den);
+    gen ax,ay,bx,by,cx,cy,abx,aby;
+    reim(a,ax,ay,contextptr);
+    reim(b,bx,by,contextptr);
+    reim(c,cx,cy,contextptr);
+    abx=ax-bx;aby=ay-by;
+    gen num=(ax-cx)*abx+(ay-cy)*aby;
+    gen den=abx*abx+aby*aby;
+    // gen num=scalar_product(a-c,a-b,contextptr),den=scalar_product(b-a,b-a,contextptr);
+    return rdiv(num,den,contextptr);
   }
 
   void rewrite_with_t_real(gen & eq,const gen & t,GIAC_CONTEXT){
-    eq=subst(eq,im(t,contextptr),zero,false,contextptr);
-    eq=subst(eq,re(t,contextptr),t,false,contextptr);
+    gen tx,ty; reim(t,tx,ty,contextptr);
+    if (!is_zero(ty,contextptr)){
+      eq=subst(eq,ty,zero,false,contextptr);
+      eq=subst(eq,tx,t,false,contextptr);
+    }
   }
 
   // test if a point f is on a parametric curve e
@@ -3963,8 +4751,8 @@ namespace giac {
       e=e_orig._SYMBptr->feuille._VECTptr->front();
     else
       e=e_orig;
-    if ((e.type!=_VECT) || (e._VECTptr->size()!=4) )
-      settypeerr("on");
+    if ((e.type!=_VECT) || (e._VECTptr->size()<4) )
+      return false; // settypeerr(gettext("on"));
     vecteur ee(*e._VECTptr);
     gen tt=ee[1];
     gen tmin=ee[2],tmax=ee[3];
@@ -3973,7 +4761,7 @@ namespace giac {
     vecteur v(solve(eq,tt,0,contextptr));
     const_iterateur it=v.begin(),itend=v.end();
     for (;it!=itend;++it){
-      if ( is_zero(normal(subst(im(ee[0],contextptr),tt,*it,false,contextptr)-im(f,contextptr),contextptr)) && 
+      if ( is_zero(normal(subst(im(ee[0],contextptr),tt,*it,false,contextptr)-im(f,contextptr),contextptr),contextptr) && 
 	   ck_is_greater(*it,tmin,contextptr) && ck_is_greater(tmax,*it,contextptr) ){
 	t=*it;
 	return true;
@@ -3987,20 +4775,45 @@ namespace giac {
     gen p=remove_at_pnt(pp);
     if (p.type==_SYMB){
       if ( (p._SYMBptr->sommet==at_cercle) || (p._SYMBptr->sommet==at_curve))
-	setsizeerr();
+	return gensizeerr(contextptr);
     }
     if (p.type==_VECT)
-      setsizeerr();
+      return gensizeerr(contextptr);
     gen sur=remove_at_pnt(e);
+    if (e.type==_VECT && !e._VECTptr->empty())
+      sur=remove_at_pnt(e._VECTptr->front());
     if ( (sur.type==_VECT) && (sur._VECTptr->size()>=2)){
-      gen a=sur._VECTptr->front();
-      gen b=(*sur._VECTptr)[1];
-      return projection(a,b,p,contextptr);
+      int s=int(sur._VECTptr->size());
+      gen res,proj,dist;
+      for (int i=0;i<s-1;++i){
+	gen a=(*sur._VECTptr)[i];
+	gen b=(*sur._VECTptr)[i+1];
+	gen c=projection(a,b,p,contextptr);
+	if (s>2){
+	  if (is_positive(-c,contextptr))
+	    c=0;
+	  if (is_positive(c-1,contextptr))
+	    c=1;
+	}
+	gen cur_proj=a+c*(b-a),cur_dist;
+	if (!is_undef(c) && (i==0 || is_strictly_greater(dist,(cur_dist=distance2pp(p,cur_proj,contextptr)),contextptr))){
+	  res=i?makevecteur(i,c):c;
+	  proj=cur_proj;
+	  dist=i?cur_dist:distance2pp(p,cur_proj,contextptr);
+	}
+      }
+      return res;
     }
     if ( (sur.type==_SYMB) && (sur._SYMBptr->sommet==at_cercle) ){
       gen centre,rayon;
-      centre_rayon(sur,centre,rayon,false,0); // don't care about radius
-      return arg(p-centre,contextptr); 
+      if (!centre_rayon(sur,centre,rayon,false,contextptr))
+	return gensizeerr(contextptr); // don't care about radius
+      //grad
+      int mode=get_mode_set_radian(contextptr);
+      gen res=arg(p-centre,contextptr); 
+      angle_mode(mode,contextptr);
+
+      return res;
     }
     // if p is on e return 0
     if ( (sur.type==_SYMB) && (sur._SYMBptr->sommet==at_curve) ){
@@ -4011,36 +4824,80 @@ namespace giac {
       // find all orthogonalities tangeant/rayon 
       vecteur v(*sur._VECTptr);
       identificateur tt=*v[1]._IDNTptr;
-      gen tangeant(derive(v[0],tt,contextptr));
+      gen vparameq(v[0]);
+#if 1
+      if (v.size()>6 && !is_undef(v[6])){
+	v[0]=vparameq=v[6];
+	v[1]=t__IDNT_e;
+	v[2]=minus_inf;
+	v[3]=plus_inf;
+	tt=*v[1]._IDNTptr;
+      }
+#endif
+      gen tangeant(derive(vparameq,tt,contextptr));
+      if (is_undef(tangeant))
+	return tangeant;
       gen t_found=v[2];
+#ifndef NO_STDEXCEPT
       try {
+#endif
 	gen eq=scalar_product(tangeant,p-v[0],contextptr);
+	if (is_undef(eq)) return eq;
+	if (is_inf(v[2]) || is_inf(v[3]))
+	  eq=exact(eq,contextptr);
 	// should expand and assume that tt is real
 	rewrite_with_t_real(eq,v[1],contextptr);
-	vecteur sol(solve(eq,v[1],0,contextptr));
+	vecteur sol;
+	if (has_num_coeff(eq)){
+	  gen rep=re(p,contextptr);
+	  // first try bisection near re(p) if re(v[0])==v[1]
+	  if (re(v[0],contextptr)==v[1]){
+	    gen dx=(gnuplot_xmax-gnuplot_xmin)/2; // or maybe v[3]-v[2]?
+	    int iszero=-1;
+	    vecteur sol1=bisection_solver(eq,v[1],rep-dx,rep+dx,iszero,contextptr);
+	    // keep only solutions, no sign reversal
+	    for (unsigned i=0;i<sol1.size();++i){
+	      if (is_greater(1e-4,subst(eq,v[1],sol1[i],false,contextptr),contextptr))
+		sol.push_back(sol1[i]);
+	    }
+	  }
+	  if (sol.empty()){
+	    vecteur eqv(makevecteur(eq,symb_equal(v[1],symb_interval(v[2],v[3])),symb_equal(change_subtype(_NSTEP,_INT_PLOT),30),1e-4));
+	    sol=gen2vecteur(in_fsolve(eqv,contextptr));
+	  }
+	}
+	else
+	  sol=solve(eq,v[1],0,contextptr);
+	if (calc_mode(contextptr)==1 && sol.empty())
+	  return undef;
 	sol.push_back(v[3]);
 	// find smallest 
 	const_iterateur it=sol.begin(),itend=sol.end();
-	gen distance2_found=distance2pp(subst(v[0],v[1],v[2],false,contextptr),p,contextptr),cur_distance2;
+	gen distance2_found=distance2pp(limit(v[0],*v[1]._IDNTptr,v[2],0,contextptr),p,contextptr),cur_distance2;
+	if (is_undef(distance2_found))
+	  distance2_found=plus_inf;
 	for (;it!=itend;++it){
-	  if (!is_zero(it->im(contextptr)))
+	  if (!is_zero(it->im(contextptr),contextptr))
 	    continue;
-	  cur_distance2=distance2pp(subst(v[0],v[1],*it,false,contextptr),p,contextptr);
+	  cur_distance2=distance2pp(limit(v[0],*v[1]._IDNTptr,*it,0,contextptr),p,contextptr);
+	  if (is_undef(cur_distance2)) continue;
 	  if (ck_is_greater(distance2_found,cur_distance2,contextptr)){
 	    t_found=*it;
 	    distance2_found=cur_distance2;
 	  }
 	} // end for
+#ifndef NO_STDEXCEPT
       } // end try
-      catch(std::runtime_error & error ){ // could not solve
+      catch(std::runtime_error & ){ // could not solve
 	// if curve is a function (plotfunc) return re(p)
 	gen eq=re(v[0],contextptr);
 	rewrite_with_t_real(eq,v[1],contextptr);
 	vecteur sol(solve(eq-re(p,contextptr),v[1],0,contextptr));
 	if (sol.empty())
-	  setsizeerr();
+	  return gensizeerr(contextptr);
 	t_found=sol.front();
       }
+#endif
       return t_found;
     }
     // unknown
@@ -4051,14 +4908,15 @@ namespace giac {
   gen cercle2curve(const gen & f,GIAC_CONTEXT){
     // ck_parameter_t();
     gen centre,rayon;
-    centre_rayon(f,centre,rayon,false,contextptr); // don't care about radius sign
+    if (!centre_rayon(f,centre,rayon,false,contextptr))
+      return gensizeerr(contextptr); // don't care about radius sign
     return symb_curve(gen(makevecteur(centre+normal(rayon,contextptr)*symb_exp(cst_i*t__IDNT_e),t__IDNT_e,zero,cst_two_pi),_PNT__VECT),f);
   }
 
   // line to parametric curve
   gen line2curve(const gen & f){
     if ( (f.type!=_VECT) || (f._VECTptr->size()!=2))
-      setsizeerr("line2curve");
+      return gensizeerr(gettext("line2curve"));
     identificateur idt(" t");
     gen t(idt);
     gen A(f._VECTptr->front());
@@ -4072,15 +4930,14 @@ namespace giac {
       tmin=zero;
       tmax=plus_one;
     }
-    return symb_curve(gen(makevecteur(ratnormal(t*B+(1-t)*A),t,tmin,tmax),_PNT__VECT),f);
+    return symb_curve(gen(makevecteur(ratnormal(t*B+(1-t)*A,context0),t,tmin,tmax),_PNT__VECT),f);
   }
 
   // square distance curve/curve
-  gen distance2cc(const gen & e,const gen & f,GIAC_CONTEXT){
-    setsizeerr("Distance curve/curve not implemented");
-    return zero;
+  static gen distance2cc(const gen & e,const gen & f,GIAC_CONTEXT){
+    return gensizeerr(gettext("Distance curve/curve not implemented"));
   }
-  gen complex_abs3(const gen & f,GIAC_CONTEXT){
+  static gen complex_abs3(const gen & f,GIAC_CONTEXT){
     if (f.type==_VECT && f.subtype==_POINT__VECT && f._VECTptr->size()==3){
       if (f._VECTptr->back().type==_CPLX){
 	vecteur f1(*f._VECTptr);
@@ -4093,25 +4950,82 @@ namespace giac {
 
   // square distance curve/point or curve/curve
   // ee is a curve
-  gen distance2cp(const gen & ee,const gen & f0,GIAC_CONTEXT){
+  static gen distance2cp(const gen & ee,const gen & f0,GIAC_CONTEXT){
     gen f=complex_abs3(f0,contextptr);
-    gen e=ee._SYMBptr->feuille._VECTptr->front();
+    gen e=ee._SYMBptr->feuille;
+    if (e.type==_VECT && !e._VECTptr->empty())
+      e=e._VECTptr->front();
     if ((f.type==_SYMB) && (f._SYMBptr->sommet==at_curve))
       return distance2cc(e,f._SYMBptr->feuille._VECTptr->front(),contextptr);
     if ((f.type==_SYMB) && (f._SYMBptr->sommet==at_cercle))
       return distance2cp(ee,cercle2curve(f,contextptr),contextptr);
+    if (e.type!=_VECT || e._VECTptr->size()<2)
+      return undef;
     vecteur v(*e._VECTptr);
-    gen projete=subst(v[0],v[1],projection(ee,f,contextptr),false,contextptr);
+    gen p=projection(ee,f,contextptr);
+    gen projete=subst(v[0],v[1],p,false,contextptr);
     return distance2pp(projete,f,contextptr);
+  }
+
+  // square distance line/point
+  static gen distance2sp(const_iterateur it,const const_iterateur itend,const gen & p0,int subtype,GIAC_CONTEXT){
+    gen res,newres,a,b,t,c,r,p=complex_abs3(p0,contextptr);
+    bool is_cercle=centre_rayon(p,c,r,false,contextptr);
+    a=*it;
+    if (is_cercle && it+2==itend && subtype==_LINE__VECT){
+      ++it;
+      b=*it;
+      t=projection(a,b,c,contextptr);
+      if (is_undef(t)) return undef;
+      gen pr=t*b+(1-t)*a; // projection of the center c
+      gen d2=abs_norm2(pr-c,contextptr);
+      gen r2=r*conj(r,contextptr);
+      if (is_strictly_greater(d2,r2,contextptr))
+	return pow(sqrt(d2,contextptr)-sqrt(r2,contextptr),2);
+      return 0;
+    }
+    res=distance2pp(a,p,contextptr);
+    ++it;
+    for (;;){
+      b=*it;
+      if (is_cercle) // FIXME this is incorrect, see above for line__vect
+	t=projection(a,b,c,contextptr);
+      else
+	t=projection(a,b,p,contextptr);
+      if (is_undef(t)) return t;
+      if (subtype==_LINE__VECT || (ck_is_positive(t,contextptr) && (subtype==_HALFLINE__VECT || ck_is_greater(1,t,contextptr))))
+	newres=distance2pp(t*b+(1-t)*a,p,contextptr);
+      else
+	newres=distance2pp(b,p,contextptr);
+      if (subtype==_LINE__VECT || ck_is_greater(res,newres,contextptr))
+	res=newres;
+      ++it;
+      if (it==itend)
+	break;
+      a=b;
+    }
+    return res;
   }
 
   // square distance point/point
   gen distance2pp(const gen & ee,const gen & ff,GIAC_CONTEXT){
+    if (is_undef(ee) || is_undef(ff))
+      return ee+ff;
     gen e(remove_at_pnt(ee));
     gen f(remove_at_pnt(ff));
     f=complex_abs3(f,contextptr);
+    if (e.is_symb_of_sommet(at_hyperplan)){
+      if (!f.is_symb_of_sommet(at_hyperplan))
+	return distance2pp(f,e,contextptr);
+      vecteur n1,P1,n2,P2;
+      hyperplan_normal_point(e,n1,P1);
+      hyperplan_normal_point(f,n2,P2);
+      if (!est_parallele_vecteur(n1,n2,contextptr))
+	return 0;
+      return pow(dotvecteur(n1,subvecteur(P2,P1)),2,contextptr)/dotvecteur(n1,n1);
+    }
     if (e.type==_VECT){
-      if (e.subtype==_POINT__VECT){ // n-d point
+      if (e.subtype==_POINT__VECT || (f.type==_VECT && f.subtype==_POINT__VECT && e.subtype!=_LINE__VECT)){ // n-d point
 	vecteur & ev = *e._VECTptr;
 	if (f.type==_VECT && f.subtype==_POINT__VECT){ // square distance between 2 n-d points
 	  vecteur ef(subvecteur(*f._VECTptr,ev));
@@ -4121,20 +5035,21 @@ namespace giac {
 	  // get normal vector n and base point P of hyperplan
 	  gen & ff=f._SYMBptr->feuille;
 	  if (ff.type==_VECT && ff._VECTptr->size()==2){
-	    gen & P = ff._VECTptr->front();
-	    gen & n = ff._VECTptr->back();
+	    gen & n = ff._VECTptr->front();
+	    gen & P = ff._VECTptr->back();
 	    // -> ((P-e).n)^2/n.n
 	    if (P.type==_VECT && n.type==_VECT){
 	      vecteur & nv = *n._VECTptr;
 	      vecteur & Pv = *P._VECTptr;
-	      return dotvecteur(subvecteur(Pv,ev),nv)/dotvecteur(nv,nv);
+	      return pow(dotvecteur(subvecteur(Pv,ev),nv),2,contextptr)/dotvecteur(nv,nv);
 	    }
 	  }
 	}
 	if (f.is_symb_of_sommet(at_hypersphere)){
 	  // point to hypersphere: (abs_norm(point-center)-radius)^2
 	  gen centre,rayon;
-	  centre_rayon(f,centre,rayon,true,contextptr); 
+	  if (!centre_rayon(f,centre,rayon,true,contextptr))
+	    return gensizeerr(contextptr);
 	  gen delta=abs_norm(e-centre,contextptr)-rayon; 
 	  return delta*delta;
 	}
@@ -4149,31 +5064,49 @@ namespace giac {
 	    vecteur & vB=*B._VECTptr;
 	    vecteur vAB(subvecteur(vB,vA));
 	    vecteur veA(subvecteur(vA,ev));
-	    gen t=dotvecteur(veA,vAB)/dotvecteur(vAB,vAB);
+	    gen t=-dotvecteur(veA,vAB)/dotvecteur(vAB,vAB);
 	    // distance2 = (M-e).(M-e), M-e=A-e+t*(B-A)
 	    vecteur veM(addvecteur(veA,multvecteur(t,vAB)));
-	    return dotvecteur(veM,veM);
+	    t=dotvecteur(veM,veM);
+	    // cerr << dotvecteur(veM,vAB)  << endl;
+	    return  t;
 	  }
 	}
       } // end e of type n-d point
       if (e._VECTptr->size()==2){ // e of type line
+	if (f.type!=_VECT){ // 2-d line/point
+	  return distance2sp(e._VECTptr->begin(),e._VECTptr->end(),f,e.subtype,contextptr);
+	}
 	if (f.type==_VECT && f.subtype==_POINT__VECT)
 	  return distance2pp(f,e,contextptr);
 	if (f.type==_VECT && f._VECTptr->size()==2){ // line to line
 	  gen M,N;
 	  vecteur n;
-	  if (perpendiculaire_commune(e,f,M,N,n,contextptr)){
-	    gen MN(M-N);
-	    if (MN.type==_VECT){
-	      vecteur & vMN=*MN._VECTptr;
-	      return dotvecteur(vMN,vMN);
-	    }
+	  if (e._VECTptr->front().type!=_VECT){ // 2-d
+	    gen & A =e._VECTptr->front();
+	    gen & B =e._VECTptr->back();
+	    gen & C =f._VECTptr->front();
+	    gen & D =f._VECTptr->back();
+	    gen AB=B-A;
+	    if (!est_parallele(AB,D-C,contextptr))
+	      return 0;
+	    n=makevecteur(im(AB,contextptr),re(AB,contextptr));
+	    return pow(dotvecteur(n,makevecteur(re(C-A,contextptr),im(C-A,contextptr))),2,contextptr)/dotvecteur(n,n);
 	  }
-	}
-      }
-      return undef; // setsizeerr(); 
+	  else { // 3-d 
+	    if (perpendiculaire_commune(e,f,M,N,n,contextptr)){
+	      gen MN(M-N);
+	      if (MN.type==_VECT){
+		vecteur & vMN=*MN._VECTptr;
+		return dotvecteur(vMN,vMN);
+	      }
+	    }
+	  } // end 3-d
+	} // end f.type==_VECT && f._VECTptr->size()==2
+      } // end e._VECTptr->size()==2
+      return gensizeerr(contextptr); // undef; // setsizeerr(contextptr); 
       // commented setsizeerr otherwise lots of bad arg when loading a Figure
-    }
+    } // end e.type==_VECT
     if (f.type==_VECT) // f is a line or a point
       return distance2pp(f,e,contextptr);
     if ((e.type==_SYMB) && (e._SYMBptr->sommet==at_curve))
@@ -4183,8 +5116,8 @@ namespace giac {
     if ( (e.type==_SYMB) && (e._SYMBptr->sommet==at_cercle)){
       if ( (f.type==_SYMB) && (f._SYMBptr->sommet==at_cercle)){
 	gen centre1,rayon1,centre2,rayon2;
-	centre_rayon(e,centre1,rayon1,true,contextptr); 
-	centre_rayon(f,centre2,rayon2,true,contextptr); 
+	if (!centre_rayon(e,centre1,rayon1,true,contextptr) || !centre_rayon(f,centre2,rayon2,true,contextptr))
+	  return gensizeerr(contextptr);
 	gen r=abs_norm(centre2-centre1,contextptr)-rayon1-rayon2;
 	if (ck_is_positive(r,contextptr)) 
 	  return r*r;
@@ -4193,7 +5126,8 @@ namespace giac {
       }
       // cercle <-> point: (abs_norm(point-center)-radius)^2
       gen centre,rayon;
-      centre_rayon(e,centre,rayon,true,contextptr); 
+      if (!centre_rayon(e,centre,rayon,true,contextptr))
+	return gensizeerr(contextptr);
       gen delta=abs_norm(f-centre,contextptr)-rayon; 
       return delta*delta;
     }
@@ -4203,60 +5137,34 @@ namespace giac {
     gen r(re(e-f,contextptr)),i(im(e-f,contextptr));
     return r*r+i*i;
 #else
-    return pow(re(e-f,contextptr),2)+pow(im(e-f,contextptr),2);
+    if (e.type==_CPLX && f.type==_CPLX){
+      gen ref=*e._CPLXptr-*f._CPLXptr;
+      gen ief=*(e._CPLXptr+1)-*(f._CPLXptr+1);
+      return ref*ref+ief*ief;
+    }
+    gen ef=e-f;
+    return pow(re(ef,contextptr),2)+pow(im(ef,contextptr),2);
 #endif
   }
 
-  // square distance line/point
-  gen distance2sp(const_iterateur it,const const_iterateur itend,const gen & p0,int subtype,GIAC_CONTEXT){
-    gen res,newres,a,b,t,c,r,p=complex_abs3(p0,contextptr);
-    bool is_cercle=centre_rayon(p,c,r,false,0);
-    a=*it;
-    if (is_cercle && it+2==itend && subtype==_LINE__VECT){
-      ++it;
-      b=*it;
-      t=projection(a,b,c,contextptr);
-      gen pr=t*b+(1-t)*a; // projection of the center c
-      gen d2=abs_norm2(pr-c,contextptr);
-      gen r2=r*r;
-      if (is_strictly_greater(d2,r2,contextptr))
-	return pow(sqrt(d2,contextptr)-sqrt(r2,contextptr),2);
-      return 0;
-    }
-    res=distance2pp(a,p,contextptr);
-    ++it;
-    for (;;){
-      b=*it;
-      if (is_cercle) // FIXME this is incorrect, see above for line__vect
-	t=projection(a,b,c,contextptr);
-      else
-	t=projection(a,b,p,contextptr);
-      if (subtype==_LINE__VECT || (ck_is_positive(t,contextptr) && (subtype==_HALFLINE__VECT || ck_is_greater(1,t,contextptr))))
-	newres=distance2pp(t*b+(1-t)*a,p,contextptr);
-      else
-	newres=distance2pp(b,p,contextptr);
-      if (ck_is_greater(res,newres,contextptr))
-	res=newres;
-      ++it;
-      if (it==itend)
-	break;
-      a=b;
-    }
-    return res;
-  }
-
   gen distance2(const gen & f1,const gen & f2,GIAC_CONTEXT){
-    gen e1(remove_at_pnt(f1)),e2(remove_at_pnt(f2));
+    gen e1(remove_at_pnt(f1)),e2(f2);
+    if (e2.is_symb_of_sommet(at_equal)){
+      e2=_plotimplicit(e2,contextptr);
+      if (e2.type==_VECT && !e2._VECTptr->empty())
+	e2=e2._VECTptr->front();
+    }
+    e2=remove_at_pnt(e2);
     if (e1.type==_VECT && e1.subtype==_VECTOR__VECT)
       e1=vector2vecteur(*e1._VECTptr);
     if (e2.type==_VECT && e2.subtype==_VECTOR__VECT)
       e2=vector2vecteur(*e2._VECTptr);
     vecteur v1,v2;
-    if (e1.type!=_VECT || e1.subtype==_POINT__VECT)
+    if (e1.type!=_VECT || e1.subtype==_POINT__VECT || e1.subtype==_LINE__VECT )
       v1=makevecteur(e1);
     else
       v1=*e1._VECTptr;
-    if (e2.type!=_VECT || e2.subtype==_POINT__VECT)
+    if (e2.type!=_VECT || e2.subtype==_POINT__VECT || e2.subtype==_LINE__VECT)
       v2=makevecteur(e2);
     else
       v2=*e2._VECTptr;
@@ -4271,15 +5179,16 @@ namespace giac {
     for (;it!=itend;++it){
       for (jt=v2.begin();jt!=jtend;++jt){
 	newres=distance2pp(*it,*jt,contextptr);
-	if (ck_is_strictly_greater(res,newres,contextptr));
+	if (ck_is_strictly_greater(res,newres,contextptr))
 	  res=newres;
       }
     }
     return res;
   }
   gen _longueur2(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if ( args.type!=_VECT || args.subtype!=_SEQ__VECT || args._VECTptr->size()!=2)
-      setsizeerr();
+      return gensizeerr(contextptr);
     gen e1=args._VECTptr->front(),e2=args._VECTptr->back();
     if (e1.type==_VECT && e2.type==_VECT){
       vecteur e12=subvecteur(*e1._VECTptr,*e2._VECTptr);
@@ -4287,28 +5196,180 @@ namespace giac {
     }
     return distance2(e1,e2,contextptr);
   }
-  const string _longueur2_s("distance2");
-  unary_function_eval __longueur2(&giac::_longueur2,_longueur2_s);
-  unary_function_ptr at_longueur2 (&__longueur2,0,true);
+  static const char _longueur2_s []="distance2";
+  static define_unary_function_eval (__longueur2,&giac::_longueur2,_longueur2_s);
+  define_unary_function_ptr5( at_longueur2 ,alias_at_longueur2,&__longueur2,0,true);
 
   gen _longueur(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     return sqrt(_longueur2(args,contextptr),contextptr);
   }
-  const string _longueur_s("distance");
-  unary_function_eval __longueur(&giac::_longueur,_longueur_s);
-  unary_function_ptr at_longueur (&__longueur,0,true);
+  static const char _longueur_s []="distance";
+  static define_unary_function_eval (__longueur,&giac::_longueur,_longueur_s);
+  define_unary_function_ptr5( at_longueur ,alias_at_longueur,&__longueur,0,true);
+
+  gen approx_area(const gen & f,const gen & x,const gen & a_,const gen &b_,int n,int method,GIAC_CONTEXT){
+    gen a(a_),b(b_);
+    if (a.is_symb_of_sommet(at_pnt))
+      a=_abscisse(a,contextptr);
+    if (b.is_symb_of_sommet(at_pnt))
+      b=_abscisse(b,contextptr);
+    gen dx=(b-a)/n,x0=a,xf=x0,fxf,A;
+    if (method==_RECTANGLE_DROIT || method==_RECTANGLE_GAUCHE || method==_POINT_MILIEU){
+      if (method==_RECTANGLE_DROIT)
+	xf=a+dx;
+      if (method==_POINT_MILIEU)
+	xf=a+dx/2;
+      for (int i=0;i<n;++i){
+	fxf=evalf(quotesubst(f,x,xf,contextptr),1,contextptr);
+	A=A+dx*fxf;
+	xf=xf+dx;
+      }
+      return A;
+    }
+    if (method==_TRAPEZE){
+      fxf=evalf(quotesubst(f,x,a,contextptr),1,contextptr);
+      A=dx*fxf/2;
+      xf=a+dx;
+      for (int i=0;i<n-1;++i){
+	fxf=evalf(quotesubst(f,x,xf,contextptr),1,contextptr);
+	A=A+dx*fxf;
+	xf=xf+dx;
+      }
+      fxf=evalf(quotesubst(f,x,b,contextptr),1,contextptr);
+      A=A+dx*fxf/2;
+      return A;
+    }
+    if (method==_SIMPSON){
+      fxf=evalf(quotesubst(f,x,a,contextptr),1,contextptr);
+      A = dx*fxf/6;
+      xf = a+dx;
+      x0 = a+dx/2;
+      for (int i=0;i<n-1;++i){
+	fxf=evalf(quotesubst(f,x,x0,contextptr),1,contextptr);
+	A += 2*dx*fxf/3;
+	fxf=evalf(quotesubst(f,x,xf,contextptr),1,contextptr);
+	A += dx*fxf/3;
+	x0 += dx;
+	xf += dx;
+      }
+      fxf=evalf(quotesubst(f,x,x0,contextptr),1,contextptr);
+      A += 2*dx*fxf/3;
+      fxf=evalf(quotesubst(f,x,b,contextptr),1,contextptr);
+      A += dx*fxf/6;
+      return A;
+    }
+    if (method==_ROMBERGM)
+      return rombergo(f,x,a,b,n,contextptr);
+    if (method==_ROMBERGT)
+      return rombergt(f,x,a,b,n,contextptr);
+    return evalf_int(f,x,a,b,epsilon(contextptr),n,false,contextptr);
+  }
 
   gen _aire(const gen & args,GIAC_CONTEXT){
-    gen g=remove_at_pnt(args);
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    if (args.type==_VECT && !args._VECTptr->empty() && args._VECTptr->front().is_symb_of_sommet(at_pnt) && args._VECTptr->back().is_symb_of_sommet(at_pnt)){
+      gen res=0;
+      for (unsigned i=0;i<args._VECTptr->size();++i)
+	res += _aire((*args._VECTptr)[i],contextptr);
+      return res;
+    }
+    gen g=args;
+    if (g.is_symb_of_sommet(at_equal)){
+      g=_cercle(g,contextptr);
+      if (g.type==_VECT && !g._VECTptr->empty())
+	g=g._VECTptr->front();
+    }
+    g=remove_at_pnt(g);
     if (g.is_symb_of_sommet(at_cercle)){
       gen centre,rayon;
-      centre_rayon(g,centre,rayon,false,contextptr);
-      return cst_pi*pow(rayon,2);
+      if (!centre_rayon(g,centre,rayon,false,contextptr))
+	return gensizeerr(contextptr);
+      if (g._SYMBptr->feuille.type==_VECT && g._SYMBptr->feuille._VECTptr->size()>=3)
+	return normal(((*g._SYMBptr->feuille._VECTptr)[2]-(*g._SYMBptr->feuille._VECTptr)[1])*(rayon*conj(rayon,contextptr))/2,contextptr);
+      return cst_pi*normal(rayon*conj(rayon,contextptr),contextptr);
     }
-    if (g.type!=_VECT)
-      return undef;
+    if (g.is_symb_of_sommet(at_curve)){
+      gen f=g._SYMBptr->feuille;
+      if (f.type==_VECT && !f._VECTptr->empty())
+	f=f._VECTptr->front();
+      if (f.type==_VECT && f._VECTptr->size()>=4){
+	vecteur v=*f._VECTptr;
+#if 0
+	// workaround for ellipse because plotparam does evalf on range
+	if (is_zero(v[2]))
+	  v[2]=zero;
+	if (v[3].type==_DOUBLE_ && v[3]==2*M_PI)
+	  v[3]=cst_two_pi;
+#endif
+	gen x,y;
+	reim(v[0],x,y,contextptr);
+	y=-y*derive(x,v[1],contextptr);
+	return _integrate(makesequence(y,v[1],v[2],v[3]),contextptr);
+      }
+    }
+    if (g.type!=_VECT || g.subtype==_POINT__VECT || g._VECTptr->empty())
+      return 0; // so that a single point has area 0
     vecteur v=*g._VECTptr;
-    int s=v.size();
+    int s=int(v.size());
+    v[0]=remove_at_pnt(v[0]);
+    if (s==3 && v[0].is_symb_of_sommet(at_curve)){
+      v[1]=symb_interval(v[1],v[2]);
+      v.pop_back();
+      --s;
+    }
+    // search for a numeric integration method
+    if (s==2 && (v[1].is_symb_of_sommet(at_equal) || v[1].is_symb_of_sommet(at_interval)) ){
+      gen f(v[0]),x(vx_var),tmp(v[1]),a,b;
+      if (tmp.is_symb_of_sommet(at_equal) && tmp._SYMBptr->feuille.type==_VECT && tmp._SYMBptr->feuille._VECTptr->size()==2){
+	x=tmp._SYMBptr->feuille[0];
+	tmp=tmp._SYMBptr->feuille[1];
+      }
+      if (tmp.is_symb_of_sommet(at_interval) && tmp._SYMBptr->feuille.type==_VECT && tmp._SYMBptr->feuille._VECTptr->size()==2){
+	a=tmp._SYMBptr->feuille[0];
+	b=tmp._SYMBptr->feuille[1];
+	if (f.is_symb_of_sommet(at_curve)){
+	  f=f._SYMBptr->feuille;
+	  if (f.type!=_VECT || f._VECTptr->empty())
+	    return gensizeerr();
+	  f=f._VECTptr->front();
+	  if (f.type==_VECT && f._VECTptr->size()>1){
+	    gen r,i; 
+	    reim(f._VECTptr->front(),r,i,contextptr);
+	    x=(*f._VECTptr)[1];
+	    f=i*derive(r,x,contextptr);
+	    return _integrate(gen(makevecteur(f,x,a,b),_SEQ__VECT),contextptr);
+	  }
+	}
+	return _integrate(gen(makevecteur(f,x,a,b),_SEQ__VECT),contextptr);
+      }
+    }
+    if (v[0].is_symb_of_sommet(at_curve))
+      return gensizeerr(contextptr);
+    if (s>3){
+      for (int i=0;i<s;++i){
+	if (v[i].type==_INT_ && v[i].subtype==_INT_SOLVER){
+	  int method=v[i].val,n;
+	  v.erase(v.begin()+i);
+	  v[2]=_floor(v[2],contextptr);
+	  if (v[2].type!=_INT_)
+	    return gensizeerr(gettext("area(f(x),x=a..b,n,method])"));
+	  n=v[2].val;
+	  gen f(v[0]),x(vx_var),tmp(v[1]),a,b;
+	  if (tmp.is_symb_of_sommet(at_equal) && tmp._SYMBptr->feuille.type==_VECT && tmp._SYMBptr->feuille._VECTptr->size()==2){
+	    x=tmp._SYMBptr->feuille[0];
+	    tmp=tmp._SYMBptr->feuille[1];
+	  }
+	  if (tmp.is_symb_of_sommet(at_interval) && tmp._SYMBptr->feuille.type==_VECT && tmp._SYMBptr->feuille._VECTptr->size()==2){
+	    a=tmp._SYMBptr->feuille[0];
+	    b=tmp._SYMBptr->feuille[1];
+	  }
+	  else
+	    return gensizeerr(gettext("area(f(x),x=a..b,n,method])"));
+	  return approx_area(f,x,a,b,n,method,contextptr);
+	}
+      }
+    }
     if (s<3)
       return undef;
     if (v.front()!=v.back()){
@@ -4319,27 +5380,50 @@ namespace giac {
     for (int i=3;i<s;++i){
       gen cote1(v[i-2]-v[0]),cote2(v[i-1]-v[0]);
       if (cote1.type==_VECT && cote2.type==_VECT)
-	res += l2norm(cross(*cote1._VECTptr,*cote2._VECTptr),contextptr);
+	res += l2norm(cross(*cote1._VECTptr,*cote2._VECTptr,contextptr),contextptr);
       else
 	res += im(cote2,contextptr)*re(cote1,contextptr)-re(cote2,contextptr)*im(cote1,contextptr);
     }
-    return res/2;
+    return recursive_normal(res/2,contextptr);
   }
-  const string _aire_s("area");
-  unary_function_eval __aire(&giac::_aire,_aire_s);
-  unary_function_ptr at_aire (&__aire,0,true);
+  static const char _aire_s []="area";
+  static define_unary_function_eval (__aire,&giac::_aire,_aire_s);
+  define_unary_function_ptr5( at_aire ,alias_at_aire,&__aire,0,true);
 
   gen _perimetre(const gen & args,GIAC_CONTEXT){
-    gen g=remove_at_pnt(args);
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    gen g=args;
+    if (g.is_symb_of_sommet(at_equal)){
+      g=_cercle(g,contextptr);
+      if (g.type==_VECT && !g._VECTptr->empty())
+	g=g._VECTptr->front();
+    }
+    g=remove_at_pnt(g);
     if (g.is_symb_of_sommet(at_cercle)){
       gen centre,rayon;
-      centre_rayon(g,centre,rayon,true,contextptr);
-      return cst_two_pi*rayon;
+      if (!centre_rayon(g,centre,rayon,true,contextptr))
+	return gensizeerr(contextptr);
+      if (g._SYMBptr->feuille.type==_VECT && g._SYMBptr->feuille._VECTptr->size()>=3)
+	return recursive_normal(((*g._SYMBptr->feuille._VECTptr)[2]-(*g._SYMBptr->feuille._VECTptr)[1])*rayon,contextptr);	
+      return recursive_normal(cst_two_pi*rayon,contextptr);
+    }
+    if (g.is_symb_of_sommet(at_curve)){ // -> arclen
+      gen f=g._SYMBptr->feuille;
+      if (f.type==_VECT && !f._VECTptr->empty())
+	f=f._VECTptr->front();
+      if (f.type==_VECT && f._VECTptr->size()>=4){
+	vecteur v=*f._VECTptr;
+	gen x,y;
+	reim(v[0],x,y,contextptr);
+	y=derive(y,v[1],contextptr);
+	x=derive(x,v[1],contextptr);
+	return _integrate(makesequence(symbolic(at_sqrt,x*x+y*y),v[1],v[2],v[3]),contextptr);
+      }
     }
     if (g.type!=_VECT)
       return undef;
     vecteur v=*g._VECTptr;
-    int s=v.size();
+    int s=int(v.size());
     if (s<3)
       return undef;
     if (v.front()!=v.back()){
@@ -4350,22 +5434,23 @@ namespace giac {
     for (int i=0;i<s-1;++i){
       res = res + sqrt(distance2pp(v[i],v[i+1],contextptr),contextptr);
     }
-    return res;
+    return recursive_normal(res,contextptr);
   }
-  const string _perimetre_s("perimetre");
-  unary_function_eval __perimetre(&giac::_perimetre,_perimetre_s);
-  unary_function_ptr at_perimetre (&__perimetre,0,true);
+  static const char _perimetre_s []="perimeter";
+  static define_unary_function_eval (__perimetre,&giac::_perimetre,_perimetre_s);
+  define_unary_function_ptr5( at_perimetre ,alias_at_perimetre,&__perimetre,0,true);
 
   // angle accepts an optionnal last argument as a string
   // for legends, if the string has a terminal =, the value of
   // the angle is added to the legend
   gen angle(const vecteur & v1,const vecteur & v2,GIAC_CONTEXT){
-    return acos(dotvecteur(v1,v2)/sqrt(dotvecteur(v1,v1)*dotvecteur(v2,v2),contextptr),contextptr);
+    return acos(simplify(dotvecteur(v1,v2)/sqrt(dotvecteur(v1,v1)*dotvecteur(v2,v2),contextptr),contextptr),contextptr);
   }
 
   gen _angle(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if ( (args.type!=_VECT) || args.subtype!=_SEQ__VECT || (args._VECTptr->size()<2))
-      return arg(args,contextptr);
+      return arg(simplify(remove_at_pnt(args),contextptr),contextptr);
     vecteur v(*args._VECTptr);
     vecteur attributs(1,default_color(contextptr));
     int s=read_attributs(v,attributs,contextptr);
@@ -4380,46 +5465,100 @@ namespace giac {
       montrer=true;
     }
     if (v.size()<2)
-      setsizeerr();
+      return gensizeerr(contextptr);
     gen e=v.front(),f=v[1],g;
     e=remove_at_pnt(e);
     f=remove_at_pnt(f);
-    bool tmp=angle_radian(contextptr);
-    angle_radian(true,contextptr);
+    if (e.type==_VECT && e.subtype==_GGBVECT && f.type==_VECT && f.subtype==_GGBVECT){
+      if (e._VECTptr->size()==2 && f._VECTptr->size()==2)
+	return arg((f._VECTptr->front()+cst_i*f._VECTptr->back())/
+		   (e._VECTptr->front()+cst_i*e._VECTptr->back()),contextptr);
+      return angle(*e._VECTptr,*f._VECTptr,contextptr);
+    }
+    if (f.type==_VECT && f.subtype==_VECTOR__VECT && f._VECTptr->size()==2){
+      g=f._VECTptr->back();
+      f=f._VECTptr->front();
+      if (e.type==_VECT && e.subtype==_VECTOR__VECT && e._VECTptr->size()==2){
+	g=g-f;
+	f=e._VECTptr->back()-e._VECTptr->front();
+	e=0;
+      }
+      v=makevecteur(e,f,g);
+    }
+    if (e.type==_VECT && e.subtype==_VECTOR__VECT && e._VECTptr->size()==2){
+      g=f;
+      f=e._VECTptr->back();
+      e=e._VECTptr->front();
+      v=makevecteur(e,f,g);
+    }
+    //grad
+    int mode=get_mode_set_radian(contextptr);
     gen res;
-    if (e.is_symb_of_sommet(at_hyperplan))
-      std::swap(e,f);
+    if (e.is_symb_of_sommet(at_hyperplan)){
+      swapgen(e,f);
+    }
     if (f.is_symb_of_sommet(at_hyperplan)){
       vecteur nf=hyperplan_normal(f);
-      if (e.type!=_VECT || e._VECTptr->size()!=2)
-	setsizeerr("angle plan with unknown");
-      gen de=e._VECTptr->back()-e._VECTptr->front();
-      if (de.type!=_VECT)
-	setsizeerr();
-      res=angle(nf,*de._VECTptr,contextptr);
+      if (e.is_symb_of_sommet(at_hyperplan)){
+	vecteur ne=hyperplan_normal(e);
+	res=angle(nf,ne,contextptr);	
+      }
+      else {
+	if (e.type!=_VECT || e._VECTptr->size()!=2)
+	  return gensizeerr(gettext("angle plan with unknown"));
+	gen de=e._VECTptr->back()-e._VECTptr->front();
+	if (de.type!=_VECT)
+	  return gensizeerr(contextptr);
+	res=angle(nf,*de._VECTptr,contextptr);
+      }
     }
     else {
       if (e.type==_VECT && e._VECTptr->size()!=3){
 	if ((e._VECTptr->size()!=2) || (f._VECTptr->size()!=2))
-	  setsizeerr("angle");
-	vecteur w=inter(v.front(),v[1],0); // context does not apply for lines
-	if (w.empty())
-	  setsizeerr("Lines must intersect");
-	g=f._VECTptr->back();
-	f=e._VECTptr->back();
-	e=remove_at_pnt(w.front());
+	  return gensizeerr(gettext("angle"));
+	if (e._VECTptr->front().type==_VECT 
+	    // check added 12/8/2014 for angle(droite(y=x),droite(y=1-x),"") 
+	    || (e.subtype==_LINE__VECT || e.subtype==_HALFLINE__VECT)
+	    ){	
+	  vecteur w=inter(v.front(),v[1],0); // context does not apply for lines
+	  if (w.empty())
+	    return gensizeerr(gettext("Lines must intersect"));
+	  gen w0=remove_at_pnt(w.front());
+	  g=f._VECTptr->back();
+	  if (g==w0)
+	    g=f._VECTptr->front();
+	  f=e._VECTptr->back();
+	  if (f==w0)
+	    f=e._VECTptr->front();
+	  e=w0;
+	}
+	else {
+	  g=f._VECTptr->back()-f._VECTptr->front();
+	  f=e._VECTptr->back()-e._VECTptr->front();
+	  e=0;
+	}
       }
       else {
 	if (f.type==_VECT && f._VECTptr->size()!=3){
 	  if (f._VECTptr->size()!=2)
-	    setsizeerr("angle");
-	  g=f._VECTptr->back();
-	  f=f._VECTptr->front();
+	    return gensizeerr(gettext("angle"));
+	  if (v.size()==3){
+	    f=e+f._VECTptr->back()-f._VECTptr->front();
+	    g=remove_at_pnt(v[2]);
+	    if (g.type==_VECT && g._VECTptr->size()==2)
+	      g=e+g._VECTptr->back()-g._VECTptr->front();
+	  }
+	  else {
+	    g=f._VECTptr->back();
+	    f=f._VECTptr->front();
+	  }
 	}
 	else {
 	  if (v.size()!=3)
-	    setsizeerr("angle");
+	    return gensizeerr(gettext("angle"));
 	  g=remove_at_pnt(v[2]);
+	  if (g.type==_VECT && g._VECTptr->size()==2)
+	    g=e+g._VECTptr->back()-g._VECTptr->front();
 	}
       }
       if (e.type==_VECT && e._VECTptr->size()==3 && f.type==_VECT && f._VECTptr->size()==3 && g.type==_VECT && g._VECTptr->size()==3){
@@ -4427,26 +5566,38 @@ namespace giac {
 	res=angle(v1,v2,contextptr);
       }
       else
-	res=arg(conj(f-e,contextptr)*(g-e),contextptr);
+	res=recursive_normal(arg(simplify(conj(f-e,contextptr)*(g-e),contextptr),contextptr),contextptr);
     }
     gen c,c2;
     montrer = montrer && f.type!=_VECT;
     if (montrer){ 
       gen ef=(f-e)/5,eg=(g-e)/5;
       // Show the angle on the figure, using an arc of circle 
-      if (is_zero(evalf(abs(res,contextptr)-cst_pi_over_2,1,contextptr)))
+      if (is_zero(evalf(abs(res,contextptr)-cst_pi_over_2,1,contextptr),contextptr)){
+	gen ef_eg=abs(evalf(ef,1,contextptr)/evalf(eg,1,contextptr),contextptr);
+	if (is_greater(ef_eg,0.2,contextptr) && is_greater(5.0,ef_eg,contextptr)){
+	  ef_eg=sqrt(ef_eg,contextptr);
+	  ef=ef/ef_eg;
+	  eg=eg*ef_eg;
+	}
 	c=gen(makevecteur(e+ef,e+ef+eg,e+eg),_LINE__VECT);
+      }
       else
 	c=symbolic(at_cercle,gen(makevecteur(makevecteur(e-ef,e+ef),0,res,1),_PNT__VECT));
       c=symb_pnt(c,attributs[0],contextptr);
       c2=gen(makevecteur(f,e,g),_LINE__VECT);
       c2=symb_pnt(c2,attributs[0],contextptr);
     }
-    if (!tmp){
+    //grad
+    if (mode){ //not radians
       gen resd;
-      if (has_evalf(res,resd,1,contextptr))
-	res= resd*rad2deg_d;
-      angle_radian(tmp,contextptr);
+      if (has_evalf(res,resd,1,contextptr)){
+	if(mode==1) //are we in degrees
+	  res= rad2deg_d*resd;
+	else
+	  res= rad2grad_d*resd;
+      }
+      angle_mode(mode,contextptr);
     }
     if (montrer && c.is_symb_of_sommet(at_pnt) && c._SYMBptr->feuille.type==_VECT && c._SYMBptr->feuille._VECTptr->size()==2){
       vecteur v=*c._SYMBptr->feuille._VECTptr;
@@ -4454,19 +5605,22 @@ namespace giac {
 	v.push_back(string2gen(legende+res.print(contextptr),false));
       else
 	v.push_back(string2gen(legende,false));
-      c=symbolic(at_pnt,v);
+      c=symbolic(at_pnt,gen(v,_PNT__VECT));
       return gen(makevecteur(res,c,c2),_SEQ__VECT);
     }
     return res;
   }
-  const string _angle_s("angle");
-  unary_function_eval __angle(&giac::_angle,_angle_s);
-  unary_function_ptr at_angle (&__angle,0,true);
+  static const char _angle_s []="angle";
+  static define_unary_function_eval (__angle,&giac::_angle,_angle_s);
+  define_unary_function_ptr5( at_angle ,alias_at_angle,&__angle,0,true);
 
-  bool is_near(const gen & a,const gen & b,double eps,GIAC_CONTEXT){
+  static bool is_near(const gen & a,const gen & b0,double eps,GIAC_CONTEXT){
+    gen b=b0;
     if (b.is_symb_of_sommet(at_hyperplan) || b.is_symb_of_sommet(at_animation))
       return false;
     if (b.type==_VECT){
+      if (b.subtype==_VECTOR__VECT)
+	b.subtype=0;
       if (b.subtype==_POLYEDRE__VECT){
 	const_iterateur it=b._VECTptr->begin(),itend=b._VECTptr->end();
 	for (;it!=itend;++it){
@@ -4504,14 +5658,18 @@ namespace giac {
       return false;
     }
     gen d;
+#ifndef NO_STDEXCEPT
     try {
+#endif
       d=distance2(a,b,contextptr).evalf_double(eval_level(contextptr),contextptr); 
+#ifndef NO_STDEXCEPT
     }
-    catch (std::runtime_error & error ){
-      // cerr  << error.what() << endl;
+    catch (std::runtime_error & ){
+      // CERR  << error.what() << endl;
       // *logptr(contextptr) << error.what() << endl;
       return false;
     }
+#endif
     return d.type==_DOUBLE_ && d._DOUBLE_val<eps*eps;
   }
 
@@ -4523,25 +5681,40 @@ namespace giac {
     if (!lidnt(pf).empty())
       return res;
     const_iterateur it=v.begin(),itend=v.end();
-    for (int i=0;it!=itend;++it,++i){
-      vecteur w=gen2vecteur(*it);
-      const_iterateur jt=w.begin(),jtend=w.end();
-      for (;jt!=jtend;++jt){
-	gen g=*jt;
-	if ( (g.type==_SYMB) && equalposcomp(plot_sommets,g._SYMBptr->sommet)){
-	  qf=remove_at_pnt(evalf(g,1,contextptr));
-	  if ( (qf.is_symb_of_sommet(at_curve) || qf.is_symb_of_sommet(at_hypersurface) || lidnt(qf).empty()) && is_near(pf,qf,eps,contextptr)){
-	    res.push_back(i);
-	    break;
+#ifndef NO_STDEXCEPT
+    try {
+#endif
+      for (int i=0;it!=itend;++it,++i){
+	vecteur w=gen2vecteur(*it);
+	const_iterateur jt=w.begin(),jtend=w.end();
+	for (;jt!=jtend;++jt){
+	  gen g=*jt;
+	  if ( (g.type==_SYMB) && equalposcomp(plot_sommets,g._SYMBptr->sommet) && !g.is_symb_of_sommet(at_parameter)){
+	    qf=remove_at_pnt(evalf(g,1,contextptr));
+	    if ( (qf.is_symb_of_sommet(at_curve) || qf.is_symb_of_sommet(at_hypersurface) || lidnt(qf).empty()) && is_near(pf,qf,eps,contextptr)){
+	      if (is_segment(qf))
+		res.insert(res.begin(),i);
+              else
+		res.push_back(i);
+	      break;
+	    }
 	  }
 	}
       }
+#ifndef NO_STDEXCEPT
+    } catch (std::runtime_error & e){
+      *logptr(contextptr) << e.what() << endl;
     }
+#endif
     return res;
   }
 
-      // used to signal an intermediate answer to the parent process
+#ifdef HAVE_SIGNAL_H_OLD
+  extern bool signal_store; // if false then child sto is not signal to parent
+
+  // used to signal an intermediate answer to the parent process
   gen _signal(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
 #ifndef WIN32
     if (child_id) // must be a child process!
       return symbolic(at_signal,args);
@@ -4556,21 +5729,24 @@ namespace giac {
 #ifdef WIN32
     history_in(contextptr).push_back(symbolic(at_signal,args));
     history_out(contextptr).push_back(args_evaled);
+#ifdef WITH_GNUPLOT
     plot_instructions.push_back(args_evaled);    
+#endif
     return args_evaled;
 #else // WIN32
     ofstream child_out(cas_sortie_name().c_str());
     archive(child_out,symbolic(at_signal,args),contextptr);
     archive(child_out,args_evaled,contextptr);
-    child_out << messages_to_print << '�' ;
+    child_out << messages_to_print << "ÿ" ;
     child_out.close();
-    // cerr << "Signal reads " << res << endl;
+    // CERR << "Signal reads " << res << endl;
     return wait_parent();
 #endif // WIN32
   }
-  const string _signal_s("signal");
-  unary_function_eval __signal(&giac::_signal,_signal_s);
-  unary_function_ptr at_signal (&__signal,_QUOTE_ARGUMENTS);
+  static const char _signal_s []="signal";
+  static define_unary_function_eval_quoted (__signal,&giac::_signal,_signal_s);
+  define_unary_function_ptr5( at_signal ,alias_at_signal,&__signal,_QUOTE_ARGUMENTS,true);
+#endif // HAVE_SIGNAL_H_OLD
 
   vecteur gen2vecteur(const gen & args){
     if (args.type==_VECT)
@@ -4578,25 +5754,50 @@ namespace giac {
     else
       return vecteur(1,args);
   }
+#ifdef EMCC
+#include <emscripten.h>  
+#endif
   // user input sent back to the parent process
   // Use a vector of format [message,default_value,variable,convert_to_string]
   gen _click(const gen & args,GIAC_CONTEXT){
+    if (interactive_op_tab && interactive_op_tab[3])
+      return interactive_op_tab[3](args,contextptr);
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     vecteur v(gen2vecteur(args));
-    int vs=v.size();
+    int vs=int(v.size());
     if (vs>1)
       v[1]=eval(v[1],contextptr);
     gen res;
-#ifdef WIN32
-    cout << "// " << args ;
-    string s;
-    cin >> s;
+#if defined EMCC && !defined GIAC_GGB
+    string mesg="Input\n";
+    mesg += args[0].type==_STRNG?*args[0]._STRNGptr:args[0].print(contextptr);
+    int i=EM_ASM_INT({
+	var msg = Pointer_stringify($0); // Convert message to JS string
+	var tst=prompt(msg,' ');
+	if (tst==null) return 0;
+	return allocate(intArrayFromString(tst), 'i8', ALLOC_NORMAL);
+      }, mesg.c_str());
+    if (i==0){ ctrl_c=interrupted=true; return undef; }
+    char *ptr=(char *)i;
+    string s(ptr);
+    free(ptr);
     if (vs==4)
       res=string2gen(s,false);
     else
       res=gen(s,contextptr);
 #else
+#if 1 // def WIN32
+    COUT << "// " << args ;
+    string s;
+    CIN >> s;
+    if (vs==4)
+      res=string2gen(s,false);
+    else
+      res=gen(s,contextptr);
+#else
+#ifdef HAVE_SIGNAL_H_OLD
     if (child_id){ 
-      cout << "// " << args;
+      COUT << "// " << args;
       string s;
       cin >> s;
       if (vs==4)
@@ -4607,22 +5808,26 @@ namespace giac {
     else {
       ofstream child_out(cas_sortie_name().c_str());
       gen e(symbolic(at_click,args));
-      // cerr << "Archiving " << e << endl;
+      // CERR << "Archiving " << e << endl;
       archive(child_out,e,contextptr);
       archive(child_out,e,contextptr);
       if ( (args.type==_VECT) && (args._VECTptr->empty()) )
-	child_out << "User input requested\n" << '�' ;
+	child_out << "User input requested\n" << "ÿ" ;
       else
-	child_out << args << '�' ;
+	child_out << args << "ÿ" ;
       child_out.close();
       kill_and_wait_sigusr2();
       ifstream child_in(cas_entree_name().c_str());
-      res= unarchive(child_in,list_one_letter__IDNT,contextptr);
+      res= unarchive(child_in,contextptr);
       child_in.close();
-      // cerr << "Click reads " << res << endl;
+      // CERR << "Click reads " << res << endl;
     }
+#else // HAVE_SIGNAL_H_OLD
+    return undef;
+#endif // HAVE_SIGNAL_H_OLD
 #endif //WIN32
-    if (vs>2 && !is_zero(v[2])){
+#endif // EMCC
+    if (vs>2 && !is_zero(v[2],contextptr)){
       if (res.type==_VECT){
 	if (vs==4 && res._VECTptr->size()==2){
 	  vecteur tmp=*res._VECTptr;
@@ -4643,53 +5848,83 @@ namespace giac {
     else
       return res;
   }
-  const string _click_s("click");
-  unary_function_eval __click(&giac::_click,_click_s);
-  unary_function_ptr at_click (&__click,_QUOTE_ARGUMENTS);
+  static const char _click_s []="click";
+#ifdef RTOS_THREADX
+  define_unary_function_eval_index(1,__click,&giac::_click,_click_s);
+  // const unary_function_eval __click(1,&giac::_click,_click_s);
+#else
+  unary_function_eval __click(1,&giac::_click,_click_s);
+#endif
+  define_unary_function_ptr5( at_click ,alias_at_click,&__click,_QUOTE_ARGUMENTS,true);
 
-  vecteur make_VECTifnot_VECT(const gen & e){
-      if ((e.type==_VECT) && !e._VECTptr->empty())
-          return *e._VECTptr;
-      return makevecteur(e);
+  static vecteur make_VECTifnot_VECT(const gen & e){
+    if ((e.type==_VECT) && !e._VECTptr->empty())
+      return *e._VECTptr;
+    return makevecteur(e);
   }
 
-  gen in_parameter2point(const vecteur & v,GIAC_CONTEXT){
+  static gen in_parameter2point(const vecteur & v,GIAC_CONTEXT){
     // convert geometric object, parameter value to
     // a point on the geometric object
     gen res;
-    if (v.size()<2) setsizeerr("plot.cc/parameter2point");
+    if (v.size()<2) return gensizeerr(gettext("plot.cc/parameter2point"));
     gen t=v.back(); // was v[1], fixed for G:=plotfunc(1/t,t);element(G,t)
-    gen geo_obj=remove_at_pnt(v[0]);
+    gen v0=v[0];
+    if (v0.type==_VECT && !v0._VECTptr->empty())
+      v0=v0._VECTptr->front();
+    gen geo_obj=remove_at_pnt(v0);
     gen attribut=default_color(contextptr);
-    if (v[0].is_symb_of_sommet(at_pnt) && v[0]._SYMBptr->feuille.type==_VECT && v[0]._SYMBptr->feuille._VECTptr->size()>1)
-      attribut=(*v[0]._SYMBptr->feuille._VECTptr)[1];
+    if (v0.is_symb_of_sommet(at_pnt) && v0._SYMBptr->feuille.type==_VECT && v0._SYMBptr->feuille._VECTptr->size()>1)
+      attribut=(*v0._SYMBptr->feuille._VECTptr)[1];
     // geo_obj.type = _VECT (ligne brisee), _SYMB (at_cercle), symb_curve
     if (geo_obj.type==_VECT){
       vecteur ligne=*geo_obj._VECTptr;
-      if (ligne.size()<2) setsizeerr("plot.cc/parameter2point");
-      if (t.type!=_VECT){
+      if (ligne.size()<2) return gensizeerr(gettext("plot.cc/parameter2point"));
+      if (t.type!=_VECT && ligne.size()==2){
 	if ( (geo_obj.subtype==_GROUP__VECT || geo_obj.subtype==_HALFLINE__VECT) && is_positive(-t,contextptr))
 	  t=0;
 	if (geo_obj.subtype==_GROUP__VECT && is_greater(t,1,contextptr))
 	  t=1;
 	return symb_pnt(ligne[0]+t*(ligne[1]-ligne[0]),attribut,contextptr);
       }
-      vecteur param=*t._VECTptr;
-      if (param.size()<2) setsizeerr("plot.cc/parameter2point");
-      if (param[0].type!=_INT_) setsizeerr("plot.cc/parameter2point");
-      int n=param[0].val;
-      if (ligne.size()<=unsigned(n))
-	n=ligne.size()-1;
-      return symb_pnt(ligne[n]+param[1]*(ligne[n+1]-ligne[n]),attribut,contextptr);
+      int n; 
+      if (t.type==_VECT)
+	{
+	  vecteur param=*t._VECTptr;
+	  if (param.size()<2) return gensizeerr(gettext("plot.cc/parameter2point"));
+	  if (param[0].type!=_INT_) 
+	    { 
+	      if (param[0].type!=_DOUBLE_) return gensizeerr(gettext("plot.cc/parameter2point"));
+	      n= (int)param[0].DOUBLE_val();
+	    } else n=param[0].val;
+	  t= param[1];
+	} else {
+        t= t.evalf2double(1, contextptr);
+        if (t.type!=_DOUBLE_) return gensizeerr(gettext("plot.cc/parameter2point"));
+        n= (int)(t.DOUBLE_val());
+        t= t-n;
+      }
+      if (n<0) return symb_pnt(ligne.front(),attribut,contextptr);
+      if (n>=signed(ligne.size())-1) return symb_pnt(ligne.back(),attribut,contextptr);
+      return symb_pnt(ligne[n]+t*(ligne[n+1]-ligne[n]),attribut,contextptr);
     }
     if ( (geo_obj.type==_SYMB) && (geo_obj._SYMBptr->sommet==at_cercle)){
       gen centre,rayon;
-      centre_rayon(geo_obj,centre,rayon,true,contextptr);
+      if (!centre_rayon(geo_obj,centre,rayon,true,contextptr))
+	return gensizeerr(contextptr);
       return symb_pnt(centre+normal(rayon,contextptr)*exp(cst_i*t,contextptr),attribut,contextptr);
     }
     if ( (geo_obj.type==_SYMB) && (geo_obj._SYMBptr->sommet==at_curve)){
-      vecteur v(*geo_obj._SYMBptr->feuille._VECTptr->front()._VECTptr);
-      return subst(v[0],v[1],t,false,contextptr);
+      vecteur w(*geo_obj._SYMBptr->feuille._VECTptr->front()._VECTptr);
+      gen w06=w[0];
+      if (w.size()>6 && !is_undef(w[6]))
+	w06=w[6];
+      gen res=_limit(makesequence(w06,w[1],t),contextptr);
+      if (has_num_coeff(t))
+	res=evalf(res,1,contextptr);
+      if (res.type==_VECT && res._VECTptr->size()==2)
+	res=res._VECTptr->front()+cst_i*res._VECTptr->back();
+      return res;
     }
     return res;
   }
@@ -4700,8 +5935,7 @@ namespace giac {
       res.subtype=_POINT__VECT;
     return res;
   }
-
-  gen element(const gen & args,vecteur & attributs,GIAC_CONTEXT){
+  static gen element(const gen & args,vecteur & attributs,GIAC_CONTEXT){
     if ( args.type==_SYMB && args._SYMBptr->sommet==at_interval )
       return symbolic(at_parameter,args);
     if ( args.type==_VECT && args._VECTptr->size()>=2 ){
@@ -4717,7 +5951,7 @@ namespace giac {
     if (args.type==_VECT){
       v=(*a._VECTptr);
       if (v.empty())
-	setsizeerr();
+	return gensizeerr(contextptr);
       if ( (v.front().type==_VECT) && (v.front()._VECTptr->size()) )
 	v.front()=v.front()._VECTptr->front();
       if ( (v.front().type!=_SYMB) || (v.front()._SYMBptr->sommet!=at_pnt))
@@ -4725,7 +5959,11 @@ namespace giac {
     }
     if (v.size()==1)
       v.push_back(plus_one_half);
+    if (v[1].is_symb_of_sommet(at_pnt))
+      v[1]=plus_one_half;
     gen s=remove_at_pnt(parameter2point(v,contextptr));
+    if (is_undef(s))
+      return s;
     gen color=default_color(contextptr);
     if (!attributs.empty())
       color=attributs[0];
@@ -4735,26 +5973,27 @@ namespace giac {
     return symbolic(at_pnt,gen(tmp,_PNT__VECT)); // 0 instead of FL_BLACK
   }
   gen _element(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     vecteur attributs(1,default_color(contextptr));
     vecteur v(seq2vecteur(args));
     gen g;
     int s=read_attributs(v,attributs,contextptr);
     if (!s)
-      setdimerr();
-    if (s==1)
+      return gendimerr(contextptr);
+    if (s==1 && (args.type!=_VECT || args.subtype==_SEQ__VECT))
       g=v.front();
     else
       g=gen(vecteur(v.begin(),v.begin()+s),_SEQ__VECT);
     return element(g,attributs,contextptr);
   }
-  const string _element_s("element");
-  unary_function_eval __element(&giac::_element,_element_s);
-  unary_function_ptr at_element (&__element,0,true);
+  static const char _element_s []="element";
+  static define_unary_function_eval (__element,&giac::_element,_element_s);
+  define_unary_function_ptr5( at_element ,alias_at_element,&__element,0,true);
 
   // returns res as a local bloc
   // def_x is the definition of x as read from history
-  void reeval_with_1arg_quoted(const gen & x,gen & res,gen & def_x,GIAC_CONTEXT){
-    // cerr << x << " " << res << " " << history_in(contextptr) << endl;
+  static bool reeval_with_1arg_quoted(const gen & x,gen & res,gen & def_x,GIAC_CONTEXT){
+    // CERR << x << " " << res << " " << history_in(contextptr) << endl;
     // find first occurence of storing something in x in the history
     def_x=undef;
     const_iterateur it0=history_in(contextptr).begin()-1,itend=history_in(contextptr).end(),itpos,it;
@@ -4762,8 +6001,8 @@ namespace giac {
     vecteur localvars;
     for (;;--it){
       if (it==it0)
-	setsizeerr();
-      // cerr << *it << " " << x << endl;
+	return false; // setsizeerr();
+      // CERR << *it << " " << x << endl;
       if ( (it->type==_SYMB) && (it->_SYMBptr->sommet==at_sto) ){
 	if (it->_SYMBptr->feuille._VECTptr->back()==x){
 	  def_x=it->_SYMBptr->feuille._VECTptr->front();
@@ -4773,9 +6012,9 @@ namespace giac {
     }
     ++it;
     itpos=it;
-    // cerr << "Position " << itpos-history_in(contextptr).begin() << endl;
+    // CERR << "Position " << itpos-history_in(contextptr).begin() << endl;
     for (;it!=itend;++it){
-      // cerr << *it << " " << x << endl;
+      // CERR << *it << " " << x << endl;
       if ( (it->type==_SYMB) && (it->_SYMBptr->sommet==at_sto) ){
 	if (it->_SYMBptr->feuille._VECTptr->back()==res)
 	  break;
@@ -4784,83 +6023,104 @@ namespace giac {
       }
     }
     if (it==itend)
-      setsizeerr();
+      return false; // setsizeerr();
     ++it;
     vecteur prog(itpos,it);
     prog.back()=symbolic(at_return,(it-1)->_SYMBptr->feuille._VECTptr->front());
     res=symb_local(gen(localvars,_SEQ__VECT),prog,contextptr);
+    return true;
   }
   
   gen _as_function_of(const gen & args,GIAC_CONTEXT){
-    if ( rpn_mode || (args.type!=_VECT) || (args._VECTptr->size()!=2) || (args._VECTptr->back().type!=_IDNT) )
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    if ( rpn_mode(contextptr) || (args.type!=_VECT) || (args._VECTptr->size()!=2) || (args._VECTptr->back().type!=_IDNT) )
       return symbolic(at_as_function_of,args);
     gen res=args._VECTptr->front();
     gen x=args._VECTptr->back(),def_x;
-    reeval_with_1arg_quoted(x,res,def_x,contextptr);
+    if (!reeval_with_1arg_quoted(x,res,def_x,contextptr))
+      return gensizeerr(contextptr);
     return symb_program(x,zero,res,contextptr);
   }
-  const string _as_function_of_s("as_function_of");
-  unary_function_eval __as_function_of(&giac::_as_function_of,_as_function_of_s);
-  unary_function_ptr at_as_function_of (&__as_function_of,_QUOTE_ARGUMENTS,true);
+  static const char _as_function_of_s []="as_function_of";
+  static define_unary_function_eval_quoted (__as_function_of,&giac::_as_function_of,_as_function_of_s);
+  define_unary_function_ptr5( at_as_function_of ,alias_at_as_function_of,&__as_function_of,_QUOTE_ARGUMENTS,true);
 
   // equation f -> geometric object g
-  bool equation2geo2d(const gen & f0,const gen & x,const gen & y,gen & g,double tmin,double tmax,double tstep,const context * contextptr){
-    gen f=_fxnd(remove_equal(f0))._VECTptr->front();
+  // allowed 1 lines
+  // 2 lines and circles
+  // >2 all conics
+  static bool equation2geo2d(const gen & f0,const gen & x,const gen & y,gen & g,double tmin,double tmax,double tstep,const gen & pointon,int allowed,const context * contextptr){
+    gen f=_fxnd(remove_equal(f0),contextptr)._VECTptr->front();
+    gen eq=subst(f,makevecteur(x,y),makevecteur(x__IDNT_e,y__IDNT_e),false,contextptr);
+    if (!lop(f,at_abs).empty() || !lop(f,at_sign).empty())
+      return false;
     gen fx(derive(f,x,contextptr)),fy(derive(f,y,contextptr));
-    bool fx0=is_zero(fx),fy0=is_zero(fy);
+    bool fx0=is_zero(fx,contextptr),fy0=is_zero(fy,contextptr);
     if (fx0 && fy0)
       return false;
     gen fxx(derive(fx,x,contextptr)),fxy(derive(fx,y,contextptr)),fyy(derive(fy,y,contextptr));
-    if (is_zero(derive(fxx,x,contextptr)) && is_zero(derive(fxy,x,contextptr)) && is_zero(derive(fyy,x,contextptr)) && is_zero(derive(fxx,y,contextptr)) && is_zero(derive(fxy,y,contextptr)) && is_zero(derive(fyy,y,contextptr)) ){
+    if (is_undef(fx)||is_undef(fy) || is_undef(fxx) || is_undef(fxy) || is_undef(fyy))
+      return false;
+    if (is_zero(derive(fxx,x,contextptr),contextptr) && is_zero(derive(fxy,x,contextptr),contextptr) && is_zero(derive(fyy,x,contextptr),contextptr) && is_zero(derive(fxx,y,contextptr),contextptr) && is_zero(derive(fxy,y,contextptr),contextptr) && is_zero(derive(fyy,y,contextptr),contextptr) ){
       vecteur vxy(makevecteur(x,y)),v0(2,0);
-      gen c=ratnormal(subst(f,vxy,v0,false,contextptr));
-      fxx=ratnormal(fxx); fyy=ratnormal(fyy);
-      fxy=ratnormal(fxy);
-      if (is_zero(fxy)){
-	if (is_zero(fxx) && is_zero(fyy)){
+      gen c=ratnormal(subst(f,vxy,v0,false,contextptr),contextptr);
+      fxx=ratnormal(fxx,contextptr); fyy=ratnormal(fyy,contextptr);
+      fxy=ratnormal(fxy,contextptr);
+      if (is_zero(fxy,contextptr)){
+	if (is_zero(fxx,contextptr) && is_zero(fyy,contextptr)){
 	  gen d=gcd(fx,fy);
 	  fx=normal(fx/d,contextptr); fy=normal(fy/d,contextptr); c=normal(c/d,contextptr);
+#ifndef GIAC_HAS_STO_38
+	  *logptr(contextptr) << gettext("Line ") << fx*x+fy*y+c<< "=0" << endl;
+#endif
 	  // line
 	  if (fy0){
-	    gen tmp=ratnormal(-c/fx);
+	    gen tmp=ratnormal(-c/fx,contextptr);
 	    g=gen(makevecteur(tmp,tmp+cst_i),_LINE__VECT);
 	  }
 	  else {
-	    gen tmp=ratnormal(-c/fy);
+	    gen tmp=ratnormal(-c/fy,contextptr);
 	    g=gen(makevecteur(tmp*cst_i,tmp*cst_i+fy-fx*cst_i),_LINE__VECT);
 	  }
 	  return true;
-	}
-	if (is_zero(fxx-fyy)){
-	  fx=ratnormal(subst(fx,vxy,v0,false,contextptr));
-	  fy=ratnormal(subst(fy,vxy,v0,false,contextptr));
+	} // fxx==0 && fyy==0
+	if (allowed<=1) return false;
+	if (is_zero(fxx-fyy,contextptr)){
+	  fx=ratnormal(subst(fx,vxy,v0,false,contextptr),contextptr);
+	  fy=ratnormal(subst(fy,vxy,v0,false,contextptr),contextptr);
 	  if (is_positive(-fxx,contextptr)){
 	    fxx=-fxx; fx=-fx; fy=-fy; c=-c;
 	  }
 	  // f=fxx/2 (x^2 + y^2) + fx*x + fy*y + c=0
 	  // x^2 + y^2 + 2fx/fxx*x + 2fy/fxx*y + 2c/fxx
 	  // (x+fx/fxx)^2 + (y+fy/fxx)^2 = (fx^2+fy^2- 2c fxx)/fxx^2
-	  gen centre=ratnormal(-(fx+cst_i*fy)/fxx);
-	  gen rayon2( ratnormal((fx*fx+fy*fy-2*c*fxx)/(fxx*fxx)) );
-	  gen rayon(normal(sqrt(rayon2,contextptr),contextptr));
+	  gen centre=ratnormal(-(fx+cst_i*fy)/fxx,contextptr);
+	  gen rayon2( ratnormal((fx*fx+fy*fy-2*c*fxx)/(fxx*fxx),contextptr) );
+	  if (is_strictly_positive(-rayon2,contextptr)){
+	    g=vecteur(0);
+	    return true;
+	  }
+	  gen rayon(recursive_normal(sqrt(rayon2,contextptr),contextptr));
 	  g=symbolic(at_cercle,gen(makevecteur(gen(makevecteur(centre-rayon,centre+rayon),_GROUP__VECT),0,cst_two_pi),_PNT__VECT));
 	  return true;
 	}
       }
+      if (allowed<=2) return false;      
       // conique
-      gen x0,y0,propre,equation_reduite;
+      gen x0,y0,propre,equation_reduite,ratparam;
       vecteur V0,V1,param_curves;
-      conique_reduite(f,makevecteur(x,y),x0,y0,V0,V1,propre,equation_reduite,param_curves,contextptr);
+      if (!conique_reduite(eq,pointon,makevecteur(x__IDNT_e,y__IDNT_e),x0,y0,V0,V1,propre,equation_reduite,param_curves,ratparam,true,contextptr))
+	return false;
       vecteur res;
-      int n=param_curves.size();
+      int n=int(param_curves.size());
       for (int i=0;i<n;++i){
 	gen & obj=param_curves[i];
 	if (obj.type==_VECT){
 	  vecteur & objv=*obj._VECTptr;
-	  int s=objv.size();
+	  int s=int(objv.size());
 	  if (s==2)
 	    res.push_back(obj);
-	  if (s==5){
+	  if (s>=5){
 	    gen tmp=paramplotparam(gen(objv,_SEQ__VECT),false,contextptr);
 	    res.push_back(remove_at_pnt(tmp));
 	  }
@@ -4868,7 +6128,7 @@ namespace giac {
 	else
 	  res.push_back(obj);
       }
-      g= (res.size()==1)? res.front() : gen(res,_SEQ__VECT);
+      g= (res.size()==1)? res.front() : res; // gen(res,_SEQ__VECT);
       return true;
     }
     return false;
@@ -4879,7 +6139,8 @@ namespace giac {
       return false;
     if (geo_obj.is_symb_of_sommet(at_cercle)){
       gen centre,rayon;
-      centre_rayon(geo_obj,centre,rayon,false,contextptr);
+      if (!centre_rayon(geo_obj,centre,rayon,false,contextptr))
+	return false;
       m=centre+rayon*(1+cst_i*gen_t)/(1-cst_i*gen_t);
       if (!tminmax_defined){
 	tmin=-T;
@@ -4892,16 +6153,26 @@ namespace giac {
 	fg=fg._VECTptr->front();
 	if (fg.type==_VECT && fg._VECTptr->size()>3){
 	  vecteur & fgv=*fg._VECTptr;
-	  m=subst(fgv[0],fgv[1],gen_t,false,contextptr); 
 	  if (!tminmax_defined){
 	    tmin=fgv[2]; tmax=fgv[3];
 	  }
+	  m=fgv[0];
+	  if (fgv.size()>6 && !is_undef(fgv[6])){
+	    tmin=-1e307;
+	    tmax=1e307;
+	    m=fgv[6];
+	  }
+	  m=subst(m,fgv[1],gen_t,false,contextptr); 
 	  // Check for a conic: parametrization with cos(t)/sin(t) or cosh(t)/sinh(t)
 	  vecteur lv; 
-	  rlvarx(m,*gen_t._IDNTptr,lv);
+	  rlvarx(m,gen_t,lv);
 	  if (lv.size()==3){
 	    lv=makevecteur(lv[0],lv[2]);
-	    vecteur sincost(makevecteur(symb_sin(gen_t),symb_cos(gen_t)));
+	    bool deg=(equalposcomp(lidnt(lv),cst_pi))!=0;
+	    gen tg=gen_t;
+	    if (deg)
+	      tg=gen(180)/cst_pi*gen_t;
+	    vecteur sincost(makevecteur(symb_sin(tg),symb_cos(tg)));
 	    if (lv[0]==sincost[1])
 	      lv=makevecteur(lv[1],lv[0]);
 	    if (lv==sincost){
@@ -4930,6 +6201,10 @@ namespace giac {
 	  return false;
       }
     }
+    if (geo_obj.type==_VECT && geo_obj._VECTptr->size()>2){
+      tmin=0;
+      tmax=int(geo_obj._VECTptr->size()-1);
+    }
     if (geo_obj.type==_VECT && geo_obj._VECTptr->size()==2){
       m=geo_obj._VECTptr->front()+gen_t*(geo_obj._VECTptr->back()-geo_obj._VECTptr->front());
       if (!tminmax_defined){
@@ -4947,14 +6222,20 @@ namespace giac {
     return true;
   }
 
-  void doublify(const gen & tmin,const gen & tmax,double T,double & tmin_d,double & tmax_d,GIAC_CONTEXT){
+  static bool doublify(const gen & tmin,const gen & tmax,double T,double & tmin_d,double & tmax_d,GIAC_CONTEXT){
     tmin_d=gnuplot_tmin;
     tmax_d=gnuplot_tmax;
     gen tmin1=evalf_double(tmin,1,contextptr), tmax1=evalf_double(tmax,1,contextptr);
+    bool res=true;
     if (tmin1.type==_DOUBLE_)
       tmin_d=tmin1._DOUBLE_val;
+    else
+      res=false;
     if (tmax1.type==_DOUBLE_)
-      tmax_d=tmax1._DOUBLE_val;      
+      tmax_d=tmax1._DOUBLE_val;
+    else
+      res=false;
+    return res;
   }
 
   void read_tmintmaxtstep(vecteur & vargs,gen & t,int vstart,double &tmin,double & tmax,double &tstep,bool & tminmax_defined,bool & tstep_defined,GIAC_CONTEXT){
@@ -4967,7 +6248,7 @@ namespace giac {
       tminmax_defined=true;
       t=t._SYMBptr->feuille._VECTptr->front();
     }
-    int vs=vargs.size();
+    int vs=int(vargs.size());
     for (int i=vstart;i<vs;++i){
       if (readvar(vargs[i])==t){
 	readrange(vargs[i],gnuplot_tmin,gnuplot_tmax,tmp,tmin,tmax,contextptr);
@@ -4991,34 +6272,41 @@ namespace giac {
   }
 
   gen _lieu(const gen & args,GIAC_CONTEXT){
-    if ( rpn_mode || args.type!=_VECT  )
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    if ( rpn_mode(contextptr) || args.type!=_VECT  )
       return symbolic(at_lieu,args);
     vecteur attributs(1,default_color(contextptr));
     vecteur vargs=*args._VECTptr;
     int vs=read_attributs(vargs,attributs,contextptr);
     if (vs<2)
-      setdimerr();
-    vs=vargs.size();
-    identificateur id_t(" t");
+      return gendimerr(contextptr);
+    vs=int(vargs.size());
+    identificateur id_t("t_lieu");
     gen gen_t(id_t),m,tmin,tmax,tmp,prog;
     double T=1e300;
     double tstep;
     bool tminmax_defined,tstep_defined;
     double Tmin,Tmax;
-    read_tmintmaxtstep(vargs,t__IDNT_e,2,Tmin,Tmax,tstep,tminmax_defined,tstep_defined,contextptr);
+    gen tcopy(t__IDNT_e);
+    read_tmintmaxtstep(vargs,tcopy,2,Tmin,Tmax,tstep,tminmax_defined,tstep_defined,contextptr);
     if (tminmax_defined){
       tmin=Tmin; tmax=Tmax;
     }
+#ifdef HAVE_SIGNAL_H_OLD
     bool old_signal_store=signal_store;
     signal_store=false;
+#endif
     bool old_io_graph=io_graph(contextptr);
     io_graph(false,contextptr);
+#ifndef NO_STDEXCEPT
     try {
+#endif
       gen res=vargs[0];
       gen x=vargs[1],def_x;
       vecteur w;
       // x must eval to a parametric element of an object
       gen tt=x.eval(1,contextptr),N;
+      // COUT << history_in(contextptr) << endl << history_out(contextptr) << endl;
       if (tt.type==_IDNT){
 	// search back in history if tt is a parameter
 	const_iterateur it0=history_out(contextptr).begin()-1,itend=history_out(contextptr).end(),it;
@@ -5050,7 +6338,8 @@ namespace giac {
 	} // end for
       }
       else {
-	reeval_with_1arg_quoted(x,res,def_x,contextptr);
+	if (!reeval_with_1arg_quoted(x,res,def_x,contextptr))
+	  return gensizeerr(contextptr);
 	prog=symb_program(x,zero,res,contextptr);
 	if ( (def_x.type==_SYMB) && (def_x._SYMBptr->sommet==at_element) ){
 	  gen e;
@@ -5065,12 +6354,22 @@ namespace giac {
 	    gen tmin=e._SYMBptr->feuille._VECTptr->front().evalf_double(1,contextptr);
 	    gen tmax=e._SYMBptr->feuille._VECTptr->back().evalf_double(1,contextptr);
 	    if ( (tmin.type==_DOUBLE_) && (tmax.type==_DOUBLE_) ){
+	      // adjust tstep
+#ifdef RTOS_THREADX
+	      if (!tstep_defined)
+		tstep=(tmax._DOUBLE_val-tmin._DOUBLE_val)/10;
+#else
+	      if (!tstep_defined)
+		tstep=(tmax._DOUBLE_val-tmin._DOUBLE_val)/10;
+#endif
 	      vecteur p;
 	      double tmin_d=tmin._DOUBLE_val,tmax_d=tmax._DOUBLE_val;
 	      for (double t=tmin_d;t<tmax_d;t+=tstep){
 		p.push_back(remove_at_pnt(prog(t,contextptr)));
 	      }
+#ifdef HAVE_SIGNAL_H_OLD
 	      signal_store=old_signal_store;
+#endif
 	      io_graph(old_io_graph,contextptr);
 	      return pnt_attrib(gen(p,_GROUP__VECT),attributs,contextptr);
 	    }
@@ -5078,42 +6377,44 @@ namespace giac {
 	}
 	// type checking
 	if ( (tt.type!=_SYMB) || (tt._SYMBptr->sommet!=at_pnt) || (tt._SYMBptr->feuille.type!=_VECT) )
-	  setsizeerr();
+	  return gensizeerr(contextptr);
 	vecteur v=*tt._SYMBptr->feuille._VECTptr;
 	gen t0=v[1];
 	if (t0.type!=_VECT)
-	  setsizeerr();
+	  return gensizeerr(contextptr);
 	w=*t0._VECTptr;
 	t0=w[1];
 	if (t0.type!=_VECT)
-	  setsizeerr();
+	  return gensizeerr(contextptr);
 	w=*t0._VECTptr; // w[0] is the parametric object=pnt( pnt[object,.] )
 	gen geo_obj=remove_at_pnt(w[0]);
 	// geo_obj.type = _VECT (ligne brisee), _SYMB (at_cercle), symb_curve
 	// for lines, circles or rational curves try to find exact object eq
 	// circle rational parametrization by center+radius*(1+it)/(1-it)
 	if (!find_curve_parametrization(geo_obj,m,gen_t,T,tmin,tmax,tminmax_defined,contextptr))
-	  setsizeerr("Locus on an unknown parametric curve type");
-	if (!is_zero(m)){
-	  giac_assume(makevecteur(gen_t,at_real),contextptr);
-	  gen M=symbolic(at_pnt,makevecteur(m,0));
+	  return gensizeerr(gettext("Locus on an unknown parametric curve type"));
+	if (!is_zero(m,contextptr)){
+	  gen tmpg=giac_assume(makevecteur(gen_t,at_real),contextptr);
+	  if (is_undef(tmpg)) return tmpg;
+	  gen M=symbolic(at_pnt,gen(makevecteur(m,0),_PNT__VECT));
 	  if (tmin!=-T){
 	    if (tmax!=T)
-	      giac_assume(symbolic(at_and,makevecteur(symb_superieur_egal(gen_t,tmin),
-						  symb_inferieur_egal(gen_t,tmax)))
-		      ,contextptr);
+	      tmpg=giac_assume(symbolic(at_and,makevecteur(symb_superieur_egal(gen_t,tmin),
+							   symb_inferieur_egal(gen_t,tmax)))
+			       ,contextptr);
 	    else
-	      giac_assume(symb_superieur_egal(gen_t,tmin),contextptr);
+	      tmpg=giac_assume(symb_superieur_egal(gen_t,tmin),contextptr);
 	  }
 	  else {
 	    if (tmax!=T)
-	      giac_assume(symb_inferieur_egal(gen_t,tmax),contextptr);
+	      tmpg=giac_assume(symb_inferieur_egal(gen_t,tmax),contextptr);
 	  }
+	  if (is_undef(tmpg)) return tmpg;
 	  N=prog(M,contextptr);
 	}
       }
-      if (!is_zero(N)){
-	N=ratnormal(exact(remove_at_pnt(N),contextptr));
+      if (!is_zero(N,contextptr)){
+	N=ratnormal(exact(remove_at_pnt(N),contextptr),contextptr);
 	gen Nx,Ny,Nz;
 	if (N.type==_VECT && N._VECTptr->size()==2){
 	  // enveloppe, find equation of N as
@@ -5126,7 +6427,7 @@ namespace giac {
 	  // x=(b*c'-b'*c)/d, y=(a'*c-a*c')/d
 	  Nx=N._VECTptr->front();
 	  if (Nx.type==_VECT)
-	    setsizeerr("3-d enveloppe not implemented");
+	    return gensizeerr(gettext("3-d enveloppe not implemented"));
 	  gen ab(N._VECTptr->back()-Nx);
 	  gen a=im(ab,contextptr);
 	  // rewrite_with_t_real(a,gen_t,contextptr);
@@ -5135,9 +6436,11 @@ namespace giac {
 	  gen c=-(a*re(Nx,contextptr)+b*im(Nx,contextptr));
 	  // rewrite_with_t_real(c,gen_t,contextptr);
 	  gen ap(derive(a,gen_t,contextptr)),bp(derive(b,gen_t,contextptr)),cp(derive(c,gen_t,contextptr));
+	  if (is_undef(ap) || is_undef(bp) || is_undef(cp))
+	    return ap+bp+cp;
 	  gen d=a*bp-ap*b;
-	  Nx=ratnormal((b*cp-bp*c)/d);
-	  Ny=ratnormal((ap*c-a*cp)/d);
+	  Nx=ratnormal((b*cp-bp*c)/d,contextptr);
+	  Ny=ratnormal((ap*c-a*cp)/d,contextptr);
 	  N=Nx+cst_i*Ny;
 	}
 	else {
@@ -5153,21 +6456,34 @@ namespace giac {
 	    // rewrite_with_t_real(Ny,gen_t,contextptr);
 	  }
 	}
-	_purge(gen_t,contextptr);
-	if (lvarxpow(N,id_t).size()==1){
+	purgenoassume(gen_t,contextptr);
+	if (lvarxpow(N,gen_t).size()==1){
 	  // print resultant
 	  gen x(identificateur("x")),y(identificateur("y")),z(identificateur("z"));
 	  gen lieu_eq(undef),geoobj,lieu_geo;
-	  if (is_zero(Nz)){
+	  if (is_zero(Nz,contextptr)){
+#if 1
 	    lieu_eq=_resultant(makevecteur(x-Nx,y-Ny,gen_t),contextptr);
 	    lieu_eq=_factor(lieu_eq,contextptr);
-	    *logptr(contextptr) << "Equation 0 = " << lieu_eq << endl;
+#else
+	    gen tmp,numx,denx,numy,deny;
+	    tmp=_fxnd(Nx,contextptr);
+	    numx=tmp[0]; denx=tmp[1];
+	    tmp=_fxnd(Ny,contextptr);
+	    numy=tmp[0]; deny=tmp[1];
+	    lieu_eq=_resultant(makevecteur(x*denx-numx,y*deny-numy,gen_t),contextptr);
+	    lieu_eq=_factor(lieu_eq,contextptr);
+#endif
+#ifndef GIAC_HAS_STO_38
+	    *logptr(contextptr) << gettext("Equation 0 = ") << lieu_eq << endl;
+#endif
 	  }
 	  // FIXME: recognize 3-d locus
 	  double tmin_d,tmax_d;
-	  doublify(tmin,tmax,T,tmin_d,tmax_d,contextptr);
+	  if (!doublify(tmin,tmax,T,tmin_d,tmax_d,contextptr))
+	    return gensizeerr(contextptr);
 	  double tstep_d=tstep_defined?tstep:(tmax_d-tmin_d)/80;
-	  if (equation2geo2d(lieu_eq,x,y,geoobj,tmin_d,tmax_d,tstep_d,contextptr)){
+	  if (equation2geo2d(lieu_eq,x,y,geoobj,tmin_d,tmax_d,tstep_d,undef,3,contextptr)){
 	    vecteur lieu_vect;
 	    if (geoobj.type==_VECT && geoobj.subtype==_SEQ__VECT)
 	      lieu_vect=*geoobj._VECTptr;
@@ -5218,7 +6534,7 @@ namespace giac {
 	return _plotparam(gen(makevecteur(N,symb_equal(gen_t,symb_interval(tmin,tmax)),symb_equal(ntstep,gtstep)),_SEQ__VECT),contextptr);
       }
       if (w.size()<2)
-	setdimerr();
+	return gendimerr(contextptr);
       bool is_ligne_brisee=(w[1].type==_VECT);
       w[0]=w[0].evalf(1,contextptr);
       vecteur p;
@@ -5227,7 +6543,8 @@ namespace giac {
       if (tmax==-T)
 	tmin=-10;
       double tmin_d,tmax_d;
-      doublify(tmin,tmax,T,tmin_d,tmax_d,contextptr);
+      if (!doublify(tmin,tmax,T,tmin_d,tmax_d,contextptr))
+	return gensizeerr(contextptr);
       double tstep_d=tstep_defined?tstep:(tmax_d-tmin_d)/80;
       for (double t=tmin_d;t<=tmax_d;t+=tstep_d){
 	if (is_ligne_brisee)
@@ -5235,29 +6552,38 @@ namespace giac {
 	else
 	  w[1]=t;
 	gen tmp=prog(parameter2point(w,contextptr),contextptr);
+	if (is_undef(tmp))
+	  continue;
 	// makes lieu easier if the image is a line intersection
 	if (tmp.type==_VECT && tmp._VECTptr->size()==1)
 	  tmp=tmp._VECTptr->front();
 	p.push_back(remove_at_pnt(tmp));
       }
+#ifdef HAVE_SIGNAL_H_OLD
       signal_store=old_signal_store;
+#endif
       io_graph(old_io_graph,contextptr);
       return pnt_attrib(gen(p,_GROUP__VECT),attributs,contextptr);
+#ifndef NO_STDEXCEPT
     }
     catch (std::runtime_error & e){
+#ifdef HAVE_SIGNAL_H_OLD
       signal_store=old_signal_store;
+#endif
       io_graph(old_io_graph,contextptr);
       throw(std::runtime_error(e.what()));
     }
+#endif
   }
-  const string _lieu_s("locus");
-  unary_function_eval __lieu(&giac::_lieu,_lieu_s);
-  unary_function_ptr at_lieu (&__lieu,_QUOTE_ARGUMENTS,true);
+  static const char _lieu_s []="locus";
+  static define_unary_function_eval_quoted (__lieu,&giac::_lieu,_lieu_s);
+  define_unary_function_ptr5( at_lieu ,alias_at_lieu,&__lieu,_QUOTE_ARGUMENTS,true);
 
-  gen _head(const gen & args){
+  gen _head(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type==_STRNG){
       string & s =*args._STRNGptr;
-      int l=s.size();
+      int l=int(s.size());
       if (!l)
 	return args;
       return string2gen(s.substr(0,1),false);
@@ -5269,14 +6595,15 @@ namespace giac {
     else
       return args;
   }
-  const string _head_s("head");
-  unary_function_unary __head(&giac::_head,_head_s);
-  unary_function_ptr at_head (&__head,0,true);
+  static const char _head_s []="head";
+  static define_unary_function_eval (__head,&giac::_head,_head_s);
+  define_unary_function_ptr5( at_head ,alias_at_head,&__head,0,true);
 
-  gen _tail(const gen & args){
+  gen _tail(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type==_STRNG){
       string & s =*args._STRNGptr;
-      int l=s.size();
+      int l=int(s.size());
       if (!l)
 	return args;
       return string2gen(s.substr(1,l-1),false);
@@ -5290,14 +6617,35 @@ namespace giac {
     else
       return args;
   }
-  const string _tail_s("tail");
-  unary_function_unary __tail(&giac::_tail,_tail_s);
-  unary_function_ptr at_tail (&__tail,0,true);
+  static const char _tail_s []="tail";
+  static define_unary_function_eval (__tail,&giac::_tail,_tail_s);
+  define_unary_function_ptr5( at_tail ,alias_at_tail,&__tail,0,true);
+
+  gen _back(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    if (args.type==_STRNG){
+      string & s =*args._STRNGptr;
+      int l=int(s.size());
+      if (!l)
+	return args;
+      return string2gen(s.substr(l-1,1),false);
+    }
+    if (args.type!=_VECT)
+      return args;
+    if (args._VECTptr->size())
+      return args._VECTptr->back();
+    else
+      return args;
+  }
+  static const char _back_s []="back";
+  static define_unary_function_eval (__back,&giac::_back,_back_s);
+  define_unary_function_ptr5( at_back ,alias_at_back,&__back,0,true);
+
 
   // return the vector of affixes of vertices of a polygonal line
   // If popback is true and the polygonal line is closed
   // the last vertex is removed from the returned vector
-  vecteur sommet(const gen & args,bool popback=true){
+  static vecteur sommet(const gen & args,bool popback=true){
     if (args.type==_VECT){
       if (args.subtype==_POINT__VECT)
 	return vecteur(1,args);
@@ -5318,9 +6666,11 @@ namespace giac {
     }
     if (g.is_symb_of_sommet(at_hyperplan)){
       vecteur P,n;
-      hyperplan_normal_point(g,n,P);
+      if (!hyperplan_normal_point(g,n,P))
+	return vecteur(3,gensizeerr(gettext("sommet")));
       vecteur v1,v2;
-      normal3d(n,v1,v2);
+      if (!normal3d(n,v1,v2))
+	return vecteur(3,gensizeerr(gettext("sommet")));
       return makevecteur(P,v1,v2);
     }
     if (g.is_symb_of_sommet(at_hypersphere)){
@@ -5334,7 +6684,7 @@ namespace giac {
       const_iterateur it=v.begin(),itend=v.end();
       for (;it!=itend;++it){
 	if (!ckmatrix(*it))
-	  setsizeerr();
+	  return vecteur(1,gensizeerr(gettext("sommet")));
 	const_iterateur jt=it->_VECTptr->begin(),jtend=it->_VECTptr->end();
 	for (;jt!=jtend;++jt){
 	  if (!equalposcomp(res,*jt))
@@ -5349,50 +6699,56 @@ namespace giac {
   }
 
   gen _sommets(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     gen g=sommet(args,true);
+    if (is_undef(g))
+      return g;
     bool tmp=show_point(contextptr);
     show_point(false,contextptr);
     g=apply(g,_point,contextptr);
     show_point(tmp,contextptr);
     return g;
   }
-  const string _sommets_s("vertices");
-  unary_function_eval __sommets(&giac::_sommets,_sommets_s);
-  unary_function_ptr at_sommets (&__sommets,0,true);
+  static const char _sommets_s []="vertices";
+  static define_unary_function_eval (__sommets,&giac::_sommets,_sommets_s);
+  define_unary_function_ptr5( at_sommets ,alias_at_sommets,&__sommets,0,true);
 
   gen _sommets_abca(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     gen g=sommet(args,false);
+    if (is_undef(g))
+      return g;
     bool tmp=show_point(contextptr);
     show_point(false,contextptr);
     g=apply(g,_point,contextptr);
     show_point(tmp,contextptr);
     return g;
   }
-  const string _sommets_abca_s("vertices_abca");
-  unary_function_eval __sommets_abca(&giac::_sommets_abca,_sommets_abca_s);
-  unary_function_ptr at_sommets_abca (&__sommets_abca,0,true);
+  static const char _sommets_abca_s []="vertices_abca";
+  static define_unary_function_eval (__sommets_abca,&giac::_sommets_abca,_sommets_abca_s);
+  define_unary_function_ptr5( at_sommets_abca ,alias_at_sommets_abca,&__sommets_abca,0,true);
 
-  const string _sommets_abc_s("vertices_abc");
-  unary_function_eval __sommets_abc(&giac::_sommets,_sommets_abc_s);
-  unary_function_ptr at_sommets_abc (&__sommets_abc,0,true);
+  static const char _sommets_abc_s []="vertices_abc";
+  static define_unary_function_eval (__sommets_abc,&giac::_sommets,_sommets_abc_s);
+  define_unary_function_ptr5( at_sommets_abc ,alias_at_sommets_abc,&__sommets_abc,0,true);
 
-  gen symetriepoint(const gen & a,const gen & b,GIAC_CONTEXT){
+  static gen symetriepoint(const gen & a,const gen & b,GIAC_CONTEXT){
     gen res= 2*a-b;
     res.subtype=_POINT__VECT;
     return res;
   }
 
-  gen symetrieplan(const gen & a,const gen & b,GIAC_CONTEXT){
+  static gen symetrieplan(const gen & a,const gen & b,GIAC_CONTEXT){
     if (a.type==_VECT && a._VECTptr->size()==3){
       vecteur & w(*a._VECTptr);
       vecteur n(*w[0]._VECTptr),P(*w[1]._VECTptr); 
       gen n2(w[2]);
       gen res= b-2*scalar_product(n,b-P,contextptr)/n2*n;
+      if (is_undef(res)) return res;
       res.subtype=_POINT__VECT;
       return res;
     }
-    setsizeerr();
-    return undef;
+    return gensizeerr(contextptr);
   }
 
   gen apply3d(const gen & e1, const gen & e2,const context * contextptr, gen (* f) (const gen &, const gen &,const context *) ){
@@ -5403,8 +6759,12 @@ namespace giac {
     const_iterateur it=e2._VECTptr->begin(),itend=e2._VECTptr->end();
     vecteur v;
     v.reserve(itend-it);
-    for (;it!=itend;++it)
-      v.push_back(apply3d(e1,*it,contextptr,f));
+    for (;it!=itend;++it){
+      gen tmp=apply3d(e1,*it,contextptr,f);
+      if (is_undef(tmp))
+	return gen2vecteur(tmp);
+      v.push_back(tmp);
+    }
     return gen(v,e2.subtype);
   }
 
@@ -5417,6 +6777,12 @@ namespace giac {
       gen g=(*b._SYMBptr->feuille._VECTptr)[1];
       if (f.type==_VECT && !f._VECTptr->empty()){
 	vecteur fv=*f._VECTptr;
+	if (fv.size()==7){
+	  fv[6]=func(elem,fv[6],contextptr);
+	  fv[5]=rationalparam2equation(fv[6],t__IDNT_e,x__IDNT_e,y__IDNT_e,contextptr);
+	}
+	if (fv.size()==6)
+	  fv.pop_back();
 	fv[0]=func(elem,fv[0],contextptr);
 	if (fv.size()>4)
 	  fv[4]=apply3d(elem,fv[4],contextptr,func);
@@ -5432,9 +6798,13 @@ namespace giac {
 	  gen fvars=func(elem,vars,contextptr);
 	  // subst(g,fvars,vars); invert affine function
 	  if (vars.type==_VECT){
-	    vecteur dfunc=*derive(fvars,*vars._VECTptr,contextptr)._VECTptr;
-	    if (is_zero(derive(dfunc,vars,contextptr))){
+	    gen difffvars=derive(fvars,*vars._VECTptr,contextptr);
+	    if (is_undef(difffvars) || difffvars.type!=_VECT)
+	      return difffvars;
+	    vecteur dfunc=*difffvars._VECTptr;
+	    if (is_zero(derive(dfunc,vars,contextptr),contextptr)){
 	      matrice m(minv(dfunc,contextptr));
+	      if (is_undef(m)) return m;
 	      gen y_minus_b=vars-func(elem,vecteur(vars._VECTptr->size()),contextptr);
 	      fvars=m*y_minus_b;
 	      g=subst(g,vars,fvars,false,contextptr);
@@ -5451,12 +6821,11 @@ namespace giac {
       }
       return symb_pnt(g,default_color(contextptr),contextptr);
     }
-    setsizeerr();
-    return undef;
+    return gensizeerr(contextptr);
   }
 
   // image of b wrt to the line defined by vector of affixe w and point w0
-  gen symetrie_droite(const gen & w,const gen & w0,const gen & b,GIAC_CONTEXT){
+  static gen symetrie_droite(const gen & w,const gen & w0,const gen & b,GIAC_CONTEXT){
     if (b.type==_VECT){
       const_iterateur it=b._VECTptr->begin(),itend=b._VECTptr->end();
       vecteur res;
@@ -5466,11 +6835,27 @@ namespace giac {
       gen b1=gen(res,b.subtype);
       return b1;
     }
-    return b-plus_two*w*rdiv(scalar_product(b-w0,w,contextptr),w.squarenorm(contextptr));
+    return b-plus_two*w*rdiv(scalar_product(b-w0,w,contextptr),w.squarenorm(contextptr),contextptr);
+  }
+
+  static gen rotation(const gen & centre,const gen & angle,const gen & M,GIAC_CONTEXT){
+    if (M.type==_CPLX && centre.type==_CPLX){
+      gen Mx,My; reim(M,Mx,My,contextptr);
+      gen Cx,Cy; reim(centre,Cx,Cy,contextptr);
+      gen ca=cos(angle,contextptr);
+      gen sa=sin(angle,contextptr);
+      Mx -= Cx; My -= Cy;
+      // (ca+i*sa)*(Mx+i*My)=ca*Mx-sa*My+i*(sa*Mx+ca*My)
+      gen x=ca*Mx-sa*My,y=sa*Mx+ca*My;
+      x += Cx;
+      y += Cy;
+      return makecomplex(x,y);
+    }
+    return centre+exp(cst_i*angletorad(angle,contextptr),contextptr)*(M-centre);
   }
 
   // 2-d r(centre,angle,M) or 3-d r(line,angle,M)
-  gen rotation(const vecteur & v,int s,GIAC_CONTEXT){
+  static gen rotation(const vecteur & v,int s,GIAC_CONTEXT){
     if (s==3){
       gen centre=remove_at_pnt(v[0]);
       gen angle=v[1];
@@ -5488,14 +6873,15 @@ namespace giac {
       if (b.type==_VECT && b.subtype==_VECTOR__VECT && b._VECTptr->size()==2)
 	return _vector(gen(makevecteur(rotation(makevecteur(centre,angle,b._VECTptr->front()),s,contextptr),rotation(makevecteur(centre,angle,b._VECTptr->back()),s,contextptr)),_SEQ__VECT),contextptr);
       if ( centre.type==_SYMB && (centre._SYMBptr->sommet==at_cercle) )
-	setsizeerr();
+	return gensizeerr(contextptr);
       if (centre.is_symb_of_sommet(at_hyperplan)){
 	vecteur n,P;
-	hyperplan_normal_point(centre,n,P);
+	if (!hyperplan_normal_point(centre,n,P))
+	  return gensizeerr(contextptr);
 	return similitude3d(makevecteur(P,P+n),angle,1,b,-1,contextptr);
       }
       if (centre.type!=_VECT) // 2-d rotation
-	return symb_pnt(centre+exp(cst_i*degtorad(angle,contextptr),contextptr)*(b-centre),default_color(contextptr),contextptr);
+	return symb_pnt(rotation(centre,angle,b,contextptr),default_color(contextptr),contextptr);
       return similitude3d(*centre._VECTptr,angle,1,b,1,contextptr);
     }
     if (s==2){
@@ -5503,35 +6889,38 @@ namespace giac {
       w.push_back(x__IDNT_e);
       return symb_program(x__IDNT_e,zero,symbolic(at_rotation,gen(w,_SEQ__VECT)),contextptr);
     }
-    setdimerr();
-    return undef;
+    return gendimerr(contextptr);
   }
-  gen symetrie(const gen & aa,const gen & bb,GIAC_CONTEXT){
+  static gen symetrie(const gen & aa,const gen & bb,GIAC_CONTEXT){
     if (bb.type==_VECT)
       return apply2nd(aa,bb,contextptr,symetrie);
     gen a=remove_at_pnt(aa);
     if ( (a.type==_SYMB) && (a._SYMBptr->sommet==at_cercle) )
-      setsizeerr();
+      return gensizeerr(contextptr);
     gen b=remove_at_pnt(bb);
     if (b.type==_VECT && b.subtype==_VECTOR__VECT && b._VECTptr->size()==2)
       return _vector(gen(makevecteur(symetrie(aa,b._VECTptr->front(),contextptr),symetrie(aa,b._VECTptr->back(),contextptr)),_SEQ__VECT),contextptr);
     if (a.is_symb_of_sommet(at_hyperplan)){ // symmetry of b wrt plan
       vecteur n,P;
-      hyperplan_normal_point(a,n,P);
+      if (!hyperplan_normal_point(a,n,P))
+	return gensizeerr(contextptr);
       gen n2(dotvecteur(n,n));
       gen elem=makevecteur(n,P,n2);
       if (b.type==_VECT)
 	return symb_pnt(apply3d(elem,b,contextptr,symetrieplan),default_color(contextptr),contextptr);
       if (b.is_symb_of_sommet(at_hyperplan)){ // hyperplan wrt plan
 	vecteur nb,Pb;
-	hyperplan_normal_point(b,nb,Pb);
+	if (!hyperplan_normal_point(b,nb,Pb))
+	  return gensizeerr(contextptr);
 	gen nbi=nb-dotvecteur(nb,n)/n2*n;
 	gen Pbi=Pb-scalar_product(n,Pb-P,contextptr)/n2*n;
+	if (is_undef(Pbi)) return Pbi;
 	return _plan(makevecteur(nbi,Pbi),contextptr);
       }
       if (b.is_symb_of_sommet(at_hypersphere)){ // hypersphere wrt plan
 	gen c,r;
-	centre_rayon(b,c,r,0,false);
+	if (!centre_rayon(b,c,r,false,contextptr))
+	  return gensizeerr(contextptr);
 	return _sphere(makevecteur(c-scalar_product(n,c-P,contextptr)/n2*n,r),contextptr);
       }
       return curve_surface_apply(elem,b,symetrieplan,contextptr);
@@ -5547,18 +6936,20 @@ namespace giac {
       }
       if (b.is_symb_of_sommet(at_hyperplan)){ // plan wrt point
 	vecteur n,P;
-	hyperplan_normal_point(b,n,P);
+	if (!hyperplan_normal_point(b,n,P))
+	  return gensizeerr(contextptr);
 	return _plan(makevecteur(n,2*a-P),contextptr);
       }
       if (b.is_symb_of_sommet(at_hypersphere)){ // sphere wrt point
 	gen centre,rayon;
-	centre_rayon(b,centre,rayon,false,contextptr);
+	if (!centre_rayon(b,centre,rayon,false,contextptr))
+	  return gensizeerr(contextptr);
 	return _sphere(makevecteur(2*a-centre,rayon),contextptr);
       }
       return curve_surface_apply(a,b,symetriepoint,contextptr);
     } // end 3-d point symmetry 
     if (v.size()!=2)
-      setsizeerr();
+      return gensizeerr(contextptr);
     // line symmetry
     if (v[0].type==_VECT){ // 3-d line symmetry -> rotation of angle pi
       return rotation(makevecteur(aa,cst_pi,bb),3,contextptr);
@@ -5568,7 +6959,7 @@ namespace giac {
     if (b.is_symb_of_sommet(at_cercle)){
       gen bf=b._SYMBptr->feuille;
       if (bf.type!=_VECT || bf._VECTptr->size()<2)
-	setsizeerr();
+	return gensizeerr(contextptr);
       vecteur vb=*bf._VECTptr;
       vb[0]=symetrie_droite(w,v[0],vb[0],contextptr);
       bf=gen(vb,bf.subtype);
@@ -5578,10 +6969,17 @@ namespace giac {
     if (b.is_symb_of_sommet(at_curve)){
       gen bf=b._SYMBptr->feuille;
       if (bf.type!=_VECT || bf._VECTptr->size()<2)
-	setsizeerr();
+	return gensizeerr(contextptr);
       gen bf1=bf._VECTptr->front(),bf2=(*bf._VECTptr)[1];
       if (bf1.type==_VECT && !bf1._VECTptr->empty()){
 	vecteur bf1v=*bf1._VECTptr;
+	if (bf1v.size()==7) {
+	  bf1v[6]=symetrie_droite(w,v[0],bf1v[6],contextptr);
+	  // recompute cartesian equation
+	  bf1v[5]=rationalparam2equation(bf1v[6],t__IDNT_e,x__IDNT_e,y__IDNT_e,contextptr);
+	}
+	if (bf1v.size()==6)
+	  bf1v.pop_back();
 	bf1v[0]=symetrie_droite(w,v[0],bf1v[0],contextptr);
 	bf1=gen(bf1v,bf1.subtype);
       }
@@ -5606,46 +7004,48 @@ namespace giac {
     else
       return vecteur(1,g);
   }
-  gen symetrie(const vecteur & v,int s,GIAC_CONTEXT){
+  static gen symetrie(const vecteur & v,int s,GIAC_CONTEXT){
     if (s==2)
       return symetrie(v[0],v[1],contextptr);
     if (s==1){
       return symb_program(x__IDNT_e,zero,symbolic(at_symetrie,gen(makevecteur(v[0],x__IDNT_e),_SEQ__VECT)),contextptr);
     }
-    settypeerr();
-    return undef;
+    return gentypeerr(contextptr);
   }
   gen _symetrie(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     vecteur attributs(1,default_color(contextptr));
     vecteur v(seq2vecteur(args));
     int s=read_attributs(v,attributs,contextptr);
     if (!s)
-      setdimerr();
+      return gendimerr(contextptr);
     return put_attributs(symetrie(v,s,contextptr),attributs,contextptr);
   }
-  const string _symetrie_s("reflection");
-  unary_function_eval __symetrie(&giac::_symetrie,_symetrie_s);
-  unary_function_ptr at_symetrie (&__symetrie,0,true);
+  static const char _symetrie_s []="reflection";
+  static define_unary_function_eval (__symetrie,&giac::_symetrie,_symetrie_s);
+  define_unary_function_ptr5( at_symetrie ,alias_at_symetrie,&__symetrie,0,true);
 
   gen _rotation(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     vecteur attributs(1,default_color(contextptr));
     vecteur v(seq2vecteur(args));
     int s=read_attributs(v,attributs,contextptr);
     if (!s)
-      setdimerr();
+      return gendimerr(contextptr);
     return put_attributs(rotation(v,s,contextptr),attributs,contextptr);
   }
-  const string _rotation_s("rotation");
-  unary_function_eval __rotation(&giac::_rotation,_rotation_s);
-  unary_function_ptr at_rotation (&__rotation,0,true);
+  static const char _rotation_s []="rotation";
+  static define_unary_function_eval (__rotation,&giac::_rotation,_rotation_s);
+  define_unary_function_ptr5( at_rotation ,alias_at_rotation,&__rotation,0,true);
 
-  gen projectionpoint(const gen & aa,const gen & bb,GIAC_CONTEXT){
+  static gen projectionpoint(const gen & aa,const gen & bb,GIAC_CONTEXT){
     gen b=remove_at_pnt(bb);
     if (b.type==_VECT && b.subtype==_VECTOR__VECT && b._VECTptr->size()==2)
       return _vector(gen(makevecteur(projectionpoint(aa,b._VECTptr->front(),contextptr),projectionpoint(aa,b._VECTptr->back(),contextptr)),_SEQ__VECT),contextptr);
     if (aa.is_symb_of_sommet(at_hyperplan)){
       vecteur n,P;
-      hyperplan_normal_point(aa,n,P);
+      if (!hyperplan_normal_point(aa,n,P))
+	return gensizeerr(contextptr);
       gen n2(dotvecteur(n,n));
       // projection of point and line on hyperplan
       if (b.type==_VECT && b._VECTptr->size()==2){ // line
@@ -5654,13 +7054,16 @@ namespace giac {
 	gen & B=b._VECTptr->back();
 	gen AP=A+scalar_product(P-A,n,contextptr)/n2*n;
 	gen BP=B+scalar_product(P-B,n,contextptr)/n2*n;
+	if (is_undef(AP)) return AP;
+	if (is_undef(BP)) return BP;
 	return symb_pnt(gen(makevecteur(AP,BP),b.subtype),contextptr);
       }
       // point: b -> M=b+tn such that MP is orthogonal to n
       // hence (b-P+tn).n=0 -> t=(P-b).n/n.n
       if (b.type!=_VECT)
-	setsizeerr();
+	return gensizeerr(contextptr);
       gen tmp=b+scalar_product(P-b,n,contextptr)/n2*n;
+      if (is_undef(tmp)) return tmp;
       return symb_pnt(do_point3d(tmp),contextptr);
     }
     if (aa.type==_VECT && aa._VECTptr->size()==2){ 
@@ -5672,15 +7075,18 @@ namespace giac {
       // Find M such that M=A+t*(B-A) and (M-b).(B-A)=0
       // Hence (A-b).(B-A)+t(B-A)^2=0 -> t=(b-A).(B-A)/(B-A)^2
       gen t=scalar_product(b-A,v,contextptr)/scalar_product(v,v,contextptr);
+      if (is_undef(t)) return t;
       return symb_pnt(A+t*v,default_color(contextptr),contextptr);
     }
     vecteur v;
     v.push_back(aa);
-    v.push_back(projection(aa,b,contextptr));
+    gen tmpaa=projection(aa,b,contextptr);
+    if (is_undef(tmpaa)) return tmpaa;
+    v.push_back(tmpaa);
     return parameter2point(v,contextptr);
   }  
   
-  gen projection(const vecteur & v,int s,GIAC_CONTEXT){
+  static gen projection(const vecteur & v,int s,GIAC_CONTEXT){
     if (s==2){
       gen a=remove_at_pnt(v[0]);
       gen b=v[1];
@@ -5691,27 +7097,27 @@ namespace giac {
     }
     if (s==1)
       return symb_program(x__IDNT_e,zero,symbolic(at_projection,gen(makevecteur(v[0],x__IDNT_e),_SEQ__VECT)),contextptr);
-    settypeerr();
-    return undef;
+    return gentypeerr(contextptr);
   }
   gen _projection(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     vecteur attributs(1,default_color(contextptr));
     vecteur v(seq2vecteur(args));
     int s=read_attributs(v,attributs,contextptr);
     if (!s)
-      setdimerr();
+      return gendimerr(contextptr);
     return put_attributs(projection(v,s,contextptr),attributs,contextptr);
   }
-  const string _projection_s("projection");
-  unary_function_eval __projection(&giac::_projection,_projection_s);
-  unary_function_ptr at_projection (&__projection,0,true);
+  static const char _projection_s []="projection";
+  static define_unary_function_eval (__projection,&giac::_projection,_projection_s);
+  define_unary_function_ptr5( at_projection ,alias_at_projection,&__projection,0,true);
 
   // h(centre,rapport,M)
-  gen homothetie(const vecteur & v,int s,GIAC_CONTEXT){
+  static gen homothetie(const vecteur & v,int s,GIAC_CONTEXT){
     if (s==3){
       gen centre=remove_at_pnt(v[0]);
       if ( centre.type==_SYMB && centre._SYMBptr->sommet==at_cercle )
-	setsizeerr();
+	return gensizeerr(contextptr);
       gen rapport=v[1];
       gen b=v[2];
       if (b.type==_VECT){
@@ -5727,12 +7133,14 @@ namespace giac {
 	return _vector(gen(makevecteur(homothetie(makevecteur(centre,rapport,b._VECTptr->front()),s,contextptr),homothetie(makevecteur(centre,rapport,b._VECTptr->back()),s,contextptr)),_SEQ__VECT),contextptr);
       if (b.is_symb_of_sommet(at_hyperplan)){
 	vecteur n,P;
-	hyperplan_normal_point(b,n,P);
+	if (!hyperplan_normal_point(b,n,P))
+	  return gensizeerr(contextptr);
 	return _plan(makevecteur(n,centre+rapport*(P-centre)),contextptr);
       }
       if (b.is_symb_of_sommet(at_hypersphere)){
 	gen c,r;
-	centre_rayon(b,c,r,0,false);
+	if (!centre_rayon(b,c,r,false,contextptr))
+	  return gensizeerr(contextptr);
 	return _sphere(makevecteur(centre+rapport*(c-centre),rapport*r),contextptr);
       }
       return symb_pnt(centre+rapport*(b-centre),default_color(contextptr),contextptr);
@@ -5741,42 +7149,43 @@ namespace giac {
       vecteur w=makevecteur(v[0],v[1],x__IDNT_e);
       return symb_program(x__IDNT_e,zero,symbolic(at_homothetie,gen(w,_SEQ__VECT)),contextptr);
     }
-    settypeerr();
-    return undef;
+    return gentypeerr(contextptr);
   }
   gen _homothetie(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     vecteur attributs(1,default_color(contextptr));
     vecteur v(seq2vecteur(args));
     int s=read_attributs(v,attributs,contextptr);
     if (!s)
-      setdimerr();
+      return gendimerr(contextptr);
     return put_attributs(homothetie(v,s,contextptr),attributs,contextptr);
   }
-  const string _homothetie_s("homothety");
-  unary_function_eval __homothetie(&giac::_homothetie,_homothetie_s);
-  unary_function_ptr at_homothetie (&__homothetie,0,true);
+  static const char _homothetie_s []="homothety";
+  static define_unary_function_eval (__homothetie,&giac::_homothetie,_homothetie_s);
+  define_unary_function_ptr5( at_homothetie ,alias_at_homothetie,&__homothetie,0,true);
 
   // renvoie 2 si tous les points sont confondus
   // renvoie 1 si tous les points sont alignes et 0 sinon 
   gen _est_aligne(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     gen a;
     if (args.type!=_VECT) {
       a=remove_at_pnt(args);
-      if (a.type==_VECT) setsizeerr();
+      if (a.type==_VECT) return gensizeerr(contextptr);
       return 2;
     }
-    int s=args._VECTptr->size();
+    int s=int(args._VECTptr->size());
     vecteur v(*args._VECTptr);
     if (s==1) {
       a=remove_at_pnt(v[0]);
       if (a.type==_VECT)
-	setsizeerr();
+	return gensizeerr(contextptr);
       return 2;
     }
     if (s>=2){
       a=remove_at_pnt(v[0]);
       gen b=remove_at_pnt(v[1]);
-      bool res;
+      bool res=false;
       int i=2;
       while (a==b && i<s){
 	b=remove_at_pnt(v[i]);
@@ -5790,29 +7199,29 @@ namespace giac {
       //a!=b
       for (int j=i;j<s;j++){
 	gen c=remove_at_pnt(v[j]);
-	res=est_aligne(a,b,c,contextptr);
+	res=(est_aligne(a,b,c,contextptr))!=0;
 	if (res==0) return 0; 
       }
       return res;
     }
     return symbolic(at_est_aligne,args);
   }
-  const string _est_aligne_s("is_collinear");
-  unary_function_eval __est_aligne(&giac::_est_aligne,_est_aligne_s);
-  unary_function_ptr at_est_aligne (&__est_aligne,0,true);
+  static const char _est_aligne_s []="is_collinear";
+  static define_unary_function_eval (__est_aligne,&giac::_est_aligne,_est_aligne_s);
+  define_unary_function_ptr5( at_est_aligne ,alias_at_est_aligne,&__est_aligne,0,true);
 
   bool est_coplanaire(const gen & a,const gen & b,const gen & c,const gen & d,GIAC_CONTEXT){
     if (a.type!=_VECT)
-      setsizeerr("3-d instruction");    
+      return false; // setsizeerr(gettext("3-d instruction"));    
     gen n1(b-a),n2(c-a),n3(d-a);
-    return is_zero(mdet(makevecteur(n1,n2,n3),contextptr));
+    return is_zero(mdet(makevecteur(n1,n2,n3),contextptr),contextptr);
   }
 
-  void add_if_not_colinear(vecteur & v,const gen & p,GIAC_CONTEXT){
-    int s=v.size();
+  static void add_if_not_colinear(vecteur & v,const gen & p,GIAC_CONTEXT){
+    int s=int(v.size());
     bool add=true;
     if (s==1)
-      add=!is_zero(v.front()-p);
+      add=!is_zero(v.front()-p,contextptr);
     else {
       if (s==2)
 	add=!est_aligne(v[0],v[1],p,contextptr);
@@ -5821,10 +7230,11 @@ namespace giac {
       v.push_back(p);
   }
   gen _est_coplanaire(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type!=_VECT)
-      setsizeerr();
+      return gensizeerr(contextptr);
     vecteur & w=*args._VECTptr,v;
-    int s=w.size();
+    int s=int(w.size());
     for (int j=0;j<s;++j){
       gen tmp=remove_at_pnt(w[j]);
       if (tmp.type==_VECT && tmp._VECTptr->size()==2){
@@ -5835,53 +7245,54 @@ namespace giac {
 	add_if_not_colinear(v,tmp,contextptr);
       }
     }
-    int vs=v.size();
+    int vs=int(v.size());
     for(int i=3;i<vs;++i){
       if (!est_coplanaire(v[0],v[1],v[2],v[i],contextptr))
 	return false;
     }
     return true;
   }
-  const string _est_coplanaire_s("is_coplanar");
-  unary_function_eval __est_coplanaire(&giac::_est_coplanaire,_est_coplanaire_s);
-  unary_function_ptr at_est_coplanaire (&__est_coplanaire,0,true);
+  static const char _est_coplanaire_s []="is_coplanar";
+  static define_unary_function_eval (__est_coplanaire,&giac::_est_coplanaire,_est_coplanaire_s);
+  define_unary_function_ptr5( at_est_coplanaire ,alias_at_est_coplanaire,&__est_coplanaire,0,true);
 
-  gen gen2complex(const gen & a){
+  static gen gen2complex(const gen & a){
     if (a.type!=_VECT)
       return a;
     if (a._VECTptr->size()!=2)
-      setsizeerr();
+      return gensizeerr(gettext("gen2complex"));
     return a._VECTptr->front()+cst_i*a._VECTptr->back();
   }
 
   bool est_cocyclique(const gen & a,const gen & b,const gen & c,const gen & d,GIAC_CONTEXT){
+    gen ab=b-a,ac=c-a,ad=d-a;
+    if (is_zero(ab,contextptr) || is_zero(ac,contextptr) || is_zero(ad,contextptr) )
+      return true;
     if (a.type==_VECT && a._VECTptr->size()==3){
       if (!est_coplanaire(a,b,c,d,contextptr))
 	return false;
-      gen ab=b-a,ac=c-a,ad=d-a;
-      if (is_zero(ab) || is_zero(ac) || is_zero(ad) )
-	return true;
-      return est_aligne(a+ab/abs_norm2(ab,contextptr),a+ac/abs_norm2(ac,contextptr),a+ad/abs_norm2(ad,contextptr),contextptr);
+      return (est_aligne(a+ab/abs_norm2(ab,contextptr),a+ac/abs_norm2(ac,contextptr),a+ad/abs_norm2(ad,contextptr),contextptr))!=0;
     }
     gen A(gen2complex(a)),B(gen2complex(b)),C(gen2complex(c)),D(gen2complex(d));
     gen e(im((B-A)*(C-D)*conj(C-A,contextptr)*conj(B-D,contextptr),contextptr));
-    return is_zero(simplify(e,contextptr));
+    return is_zero(simplify(e,contextptr),contextptr);
   }
-  // renvoie 3 si tous les points sont confondus
-  // renvoie 2 si alignes
   // renvoie 1 si tous les points sont cocycliques et 0 sinon
   gen _est_cocyclique(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type!=_VECT)
       return 3;
-    int s=args._VECTptr->size();
+    int s=int(args._VECTptr->size());
     vecteur & v=*args._VECTptr ;
     gen a(v[0]),b(undef),c(undef);
     for (int i=1;i<s;++i){
       if (is_undef(b)){
-	if (!is_zero(v[0]-v[i]))
+	if (!is_zero(v[0]-v[i],contextptr))
 	  b=v[i];
       }
       else {
+	if (is_zero(v[i]-b,contextptr) || is_zero(v[i]-a,contextptr))
+	  continue;
 	if (est_aligne(a,b,v[i],contextptr))
 	  return 0;
 	if (is_undef(c))
@@ -5894,11 +7305,12 @@ namespace giac {
     }
     return 1;
   }
-  const string _est_cocyclique_s("is_concyclic");
-  unary_function_eval __est_cocyclique(&giac::_est_cocyclique,_est_cocyclique_s);
-  unary_function_ptr at_est_cocyclique (&__est_cocyclique,0,true);
+  static const char _est_cocyclique_s []="is_concyclic";
+  static define_unary_function_eval (__est_cocyclique,&giac::_est_cocyclique,_est_cocyclique_s);
+  define_unary_function_ptr5( at_est_cocyclique ,alias_at_est_cocyclique,&__est_cocyclique,0,true);
 
   gen _est_parallele(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if ((args.type==_VECT) && (args._VECTptr->size()==2)){
       vecteur v(*args._VECTptr);
       gen a=remove_at_pnt(v[0]),b=remove_at_pnt(v[1]);
@@ -5909,19 +7321,19 @@ namespace giac {
 	if (b.is_symb_of_sommet(at_hyperplan))
 	  return est_parallele_vecteur(n,hyperplan_normal(b),contextptr);
 	if (bv)
-	  return is_zero(simplify(scalar_product(n,b[0]-b[1],contextptr),contextptr));
+	  return is_zero(simplify(scalar_product(n,b[0]-b[1],contextptr),contextptr),contextptr);
       }
       if (b.is_symb_of_sommet(at_hyperplan) && av)
-	return is_zero(simplify(scalar_product(hyperplan_normal(b),a[0]-a[1],contextptr),contextptr));
+	return is_zero(simplify(scalar_product(hyperplan_normal(b),a[0]-a[1],contextptr),contextptr),contextptr);
       if ( !av || !bv)
-	setsizeerr();
+	return gensizeerr(contextptr);
       return est_parallele(a[0]-a[1],b[0]-b[1],contextptr);
     }
     return symbolic(at_est_parallele,args);
   }
-  const string _est_parallele_s("is_parallel");
-  unary_function_eval __est_parallele(&giac::_est_parallele,_est_parallele_s);
-  unary_function_ptr at_est_parallele (&__est_parallele,0,true);
+  static const char _est_parallele_s []="is_parallel";
+  static define_unary_function_eval (__est_parallele,&giac::_est_parallele,_est_parallele_s);
+  define_unary_function_ptr5( at_est_parallele ,alias_at_est_parallele,&__est_parallele,0,true);
 
   bool est_perpendiculaire(const gen & a,const gen & b,GIAC_CONTEXT){
     gen d;
@@ -5929,32 +7341,46 @@ namespace giac {
       d=dotvecteur(*a._VECTptr,*b._VECTptr);
     else
       d=re(a*conj(b,contextptr),contextptr);
-    return is_zero(simplify(d,contextptr));
+    return is_zero(simplify(d,contextptr),contextptr);
   }
 
   // check if a belongs to b, a must be a complex, b a line or circle or curve
   int est_element(const gen & a_orig,const gen & b_orig,GIAC_CONTEXT){
     gen a=remove_at_pnt(a_orig),b=remove_at_pnt(b_orig);
-    if (b.type==_VECT && b.subtype<=_SET__VECT)
-      return equalposcomp(*b._VECTptr,a);
+    if (b.type==_REAL)
+      return contains(b,a)?1:0;
+    if (b.type==_VECT && b.subtype<=_SET__VECT){
+      int p=equalposcomp(*b._VECTptr,a);
+      if (p) return p;
+      const_iterateur it=b._VECTptr->begin(),itend=b._VECTptr->end();
+      for (;it!=itend;++it){
+	if (it->is_symb_of_sommet(at_pnt))
+	  p=est_element(a,*it,contextptr);
+	if (p)
+	  return int(1+it-b._VECTptr->begin());
+      }
+      return 0;
+    }
     if (b.is_symb_of_sommet(at_cercle)){
       // check orthogonality with diameter
       gen diam=remove_at_pnt(b._SYMBptr->feuille._VECTptr->front());
       if (diam.type!=_VECT)
-	return false;
+	return 0;
       gen c1=remove_at_pnt(diam._VECTptr->front());
       gen c2=remove_at_pnt(diam._VECTptr->back());
       return est_perpendiculaire(a-c1,a-c2,contextptr);
     }
     if (b.is_symb_of_sommet(at_hypersphere)){
       gen c,r;
-      centre_rayon(b,c,r,0,false);
-      return is_zero(simplify(pow(a-c,2)-pow(r,2),contextptr));
+      if (!centre_rayon(b,c,r,false,contextptr))
+	return 0;
+      return is_zero(simplify(pow(a-c,2)-pow(r,2),contextptr),contextptr);
     }
     if (b.is_symb_of_sommet(at_hyperplan)){
       vecteur n,P;
-      hyperplan_normal_point(b,n,P);
-      return is_zero(simplify(scalar_product(a-P,n,contextptr),contextptr));
+      if (!hyperplan_normal_point(b,n,P))
+	return 0;// gensizeerr(contextptr);
+      return is_zero(simplify(scalar_product(a-P,n,contextptr),contextptr),contextptr);
     }
     if (b.is_symb_of_sommet(at_curve)){
       gen t;
@@ -5965,9 +7391,23 @@ namespace giac {
       gen c2=remove_at_pnt(b._VECTptr->back());      
       return est_aligne(c1,c2,a,contextptr);
     }
-    return false; // FIXME implement est_element of a polygon 
+    if (b.type==_VECT && b.subtype==_GROUP__VECT && b._VECTptr->size()>2){
+      vecteur v=*b._VECTptr;
+      int s=int(v.size());
+      for (int i=1;i<s;++i){
+	gen c1=remove_at_pnt(v[i-1]);
+	gen c2=remove_at_pnt(v[i]);   
+	if (est_aligne(c1,c2,a,contextptr)){
+	  gen m=re((a-c1)/(c2-c1),contextptr);
+	  if (is_greater(m,0,contextptr) && is_greater(1,m,contextptr))
+	    return i;
+	}
+      }
+    }
+    return 0; // FIXME implement est_element of a polygon 
   }
   gen _est_element(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if ((args.type==_VECT) && (args._VECTptr->size()==2)){
       vecteur v(*args._VECTptr);
       gen a=v[0],b=v[1];
@@ -5975,26 +7415,118 @@ namespace giac {
     }
     return symbolic(at_est_element,args);
   }
-  const string _est_element_s("is_element");
-  unary_function_eval __est_element(&giac::_est_element,_est_element_s);
-  unary_function_ptr at_est_element (&__est_element,0,true);
+  static const char _est_element_s []="is_element";
+  static define_unary_function_eval (__est_element,&giac::_est_element,_est_element_s);
+  define_unary_function_ptr5( at_est_element ,alias_at_est_element,&__est_element,0,true);
 
-  gen inversion(const gen & centre,const gen & rapport,const gen & arg,GIAC_CONTEXT){
-    gen b=remove_at_pnt(arg);
+  gen est_dans(const gen & a_,const gen &b_,GIAC_CONTEXT){
+    gen b=remove_at_pnt(b_);
+    gen M=remove_at_pnt(a_);
+    if (M.type<=_CPLX || M.type==_SYMB || M.type==_IDNT || M.type==_FLOAT_ || M.type==_FRAC){
+      if (b.is_symb_of_sommet(at_cercle)){
+	gen c,r;
+	centre_rayon(b,c,r,false,contextptr);
+	gen Mc=(c-M).squarenorm(contextptr),r2=r.squarenorm(contextptr);
+	return ck_is_greater(r2,Mc,contextptr);
+      }
+      if (b.type==_VECT && b._VECTptr->size()>=3 && is_zero(b._VECTptr->front()-b._VECTptr->back(),contextptr)){
+	// point in a polygon?
+	int n=0; // n is the number of intersections of halfline M direction 1 with polygon
+	for (unsigned j=1;j<b._VECTptr->size();++j){
+	  gen A=(*b._VECTptr)[j-1];
+	  gen B=(*b._VECTptr)[j];
+	  gen Ax,Ay,Bx,By,Mx,My;
+	  reim(A,Ax,Ay,contextptr);
+	  reim(B,Bx,By,contextptr);
+	  reim(M,Mx,My,contextptr);
+	  if (is_zero(recursive_normal(Ay-By,contextptr),contextptr))
+	    continue;
+	  if (ck_is_greater(Ay,By,contextptr)){
+	    swapgen(Ax,Bx);
+	    swapgen(Ay,By);
+	  }
+	  if (ck_is_greater(By,My,contextptr) && ck_is_strictly_greater(My,Ay,contextptr)){
+	    gen t=(My-Ay)/(By-Ay);
+	    gen alpha=recursive_normal((Ax-Mx)+t*(Bx-Ax),contextptr);
+	    if (ck_is_greater(alpha,0,contextptr))
+	      ++n;
+	  }
+	}
+	return n%2;
+      }
+    }
+    return gensizeerr(gettext("Not implemented or bad argument type/value"));
+  }
+  gen _est_dans(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    if ((args.type==_VECT) && (args._VECTptr->size()==2)){
+      vecteur v(*args._VECTptr);
+      gen a=v[0],b=v[1];
+      return est_dans(a,b,contextptr);
+    }
+    return gensizeerr(contextptr);
+  }
+  static const char _est_dans_s []="is_inside";
+  static define_unary_function_eval (__est_dans,&giac::_est_dans,_est_dans_s);
+  define_unary_function_ptr5( at_est_dans ,alias_at_est_dans,&__est_dans,0,true);
+
+  // adjust arguments and return true if b is an angle between a and c
+  static bool arg_between(const gen & a,const gen &b,const gen & c,GIAC_CONTEXT){
+    gen C=c;
+    if (is_greater(a,c,contextptr))
+      C=c+cst_two_pi;
+    gen B=b;
+    if (is_greater(a,b,contextptr))
+      B=b+cst_two_pi;
+    return is_greater(C,B,contextptr);
+  }
+
+  static gen inversion(const gen & centre,const gen & rapport,const gen & argument,GIAC_CONTEXT){
+    gen b=remove_at_pnt(argument);
     // special care must be taken for circles and segments
     if (b.type==_VECT && b.subtype!=_POINT__VECT){
       if (b._VECTptr->size()!=2)
-	setsizeerr("not implemented");
+	return gensizeerr(gettext("not implemented"));
       // inversion of a line
       gen c=b._VECTptr->front(),d=b._VECTptr->back();
-      if (est_aligne(centre,c,d,contextptr))
-	return b;
+      if (est_aligne(centre,c,d,contextptr)){
+	if (b.subtype==_LINE__VECT)
+	  return b;
+	return gen(makevecteur(inversion(centre,rapport,c,contextptr),inversion(centre,rapport,d,contextptr)),b.subtype);
+      }
       // find the image of the projection of the center of inversion
       // the image of the line is the circle of diameter centre,image
       gen t=projection(c,d,centre,contextptr);
+      if (is_undef(t)) return t;
       gen p=c+t*(d-c);
       gen image=inversion(centre,rapport,p,contextptr);
-      return remove_at_pnt(_cercle(gen(makevecteur((centre+image)/2,(image-centre)/2),_SEQ__VECT),contextptr));
+      if (is_undef(image)) return image;
+      if (b.subtype==_LINE__VECT)
+	return remove_at_pnt(_cercle(gen(makevecteur((centre+image)/2,(image-centre)/2),_SEQ__VECT),contextptr));
+      p=(centre+image)/2; // center of circle
+      c=inversion(centre,rapport,c,contextptr);
+      c=arg(c-p,contextptr);
+      d=inversion(centre,rapport,d,contextptr);
+      d=arg(d-p,contextptr);
+      gen e=arg(centre-p,contextptr),a1,a2;
+      // Segment: choose c,d or d,c (should not contain e), halfline: choose c,e or e,c (should contain d)
+      if (b.subtype==_HALFLINE__VECT){
+	if (arg_between(c,d,e,contextptr)){
+	  a1=c; a2=e;
+	}
+	else {
+	  a1=e; a2=c;
+	}
+      }
+      else {
+	if (arg_between(c,e,d,contextptr)){
+	  a1=d; a2=c;
+	}
+	else {
+	  a1=c; a2=d;
+	}
+      }
+      return remove_at_pnt(_cercle(gen(makevecteur(p,abs(image-centre,contextptr)/2,a1,a2),_SEQ__VECT),contextptr));
     }
     if ( (b.type!=_SYMB) || (!equalposcomp(plot_sommets,b._SYMBptr->sommet)) ){
       gen centre_b=b-centre;
@@ -6002,12 +7534,13 @@ namespace giac {
       // return centre+rapport*inv(conj(b-centre,contextptr));
     }
     if (b._SYMBptr->sommet!=at_cercle)
-      setsizeerr("not implemented");
+      return gensizeerr(gettext("not implemented"));
     // inversion of a circle
     // if it contains the center of inversion it's a line, otherw. a circle
     gen c,r;
-    centre_rayon(b,c,r,true,contextptr);
-    if (is_zero(evalf_double(distance2pp(c,centre,contextptr)-r*r,1,contextptr))){
+    if (!centre_rayon(b,c,r,true,contextptr))
+      return gensizeerr(contextptr);
+    if (is_zero(evalf_double(distance2pp(c,centre,contextptr)-r*r,1,contextptr),contextptr)){
       // c-centre is the normal direction
       gen n(c-centre);
       n=im(n,contextptr)-cst_i*re(n,contextptr);
@@ -6017,10 +7550,17 @@ namespace giac {
     }
     else {
       gen d(c-centre);
-      r=rdiv(r,abs_norm(d,contextptr))*d;
-      gen d1(inversion(centre,rapport,c+r,contextptr));
-      gen d2(inversion(centre,rapport,c-r,contextptr));
-      return remove_at_pnt(_cercle(_droite(makevecteur(d1,d2),contextptr),contextptr));
+      if (is_zero(d,contextptr)){
+	return _cercle(makesequence(centre,rapport/r),contextptr);
+      }
+      else {
+	r=rdiv(r,abs_norm(d,contextptr),contextptr)*d;
+	gen d1(inversion(centre,rapport,c+r,contextptr));
+	gen d2(inversion(centre,rapport,c-r,contextptr));
+	if (is_undef(d2)) return d2;
+	gen d3(inversion(centre,rapport,c+r*cst_i,contextptr));
+	return remove_at_pnt(_circonscrit(makesequence(d1,d2,d3),contextptr));
+      }
     }
   }
 
@@ -6030,7 +7570,7 @@ namespace giac {
       gen rapport=v[1];
       gen b=v[2];
       if ( (centre.type==_VECT && centre.subtype!=_POINT__VECT) || (centre.type==_SYMB && centre._SYMBptr->sommet==at_cercle) )
-	setsizeerr();
+	return gensizeerr(contextptr);
       if (b.type==_VECT){
 	const_iterateur it=b._VECTptr->begin(),itend=b._VECTptr->end();
 	vecteur res;
@@ -6045,27 +7585,27 @@ namespace giac {
     if (s==2){
       return symb_program(x__IDNT_e,zero,symbolic(at_inversion,gen(makevecteur(v[0],v[1],x__IDNT_e),_SEQ__VECT)),contextptr);      
     }
-    settypeerr();
-    return undef;
+    return gentypeerr(contextptr);
   }
   gen _inversion(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     vecteur attributs(1,default_color(contextptr));
     vecteur v(seq2vecteur(args));
     int s=read_attributs(v,attributs,contextptr);
     if (!s)
-      setdimerr();
+      return gendimerr(contextptr);
     return put_attributs(inversion(v,s,contextptr),attributs,contextptr);
   }
-  const string _inversion_s("inversion");
-  unary_function_eval __inversion(&giac::_inversion,_inversion_s);
-  unary_function_ptr at_inversion (&__inversion,0,true);
+  static const char _inversion_s []="inversion";
+  static define_unary_function_eval (__inversion,&giac::_inversion,_inversion_s);
+  define_unary_function_ptr5( at_inversion ,alias_at_inversion,&__inversion,0,true);
 
   // s(centre,rapport,angle,M)
-  gen similitude(const vecteur & v,int s,GIAC_CONTEXT){
+  static gen similitude(const vecteur & v,int s,GIAC_CONTEXT){
     if (s==4){
       gen centre=remove_at_pnt(v[0]);
       if ( centre.type==_SYMB && centre._SYMBptr->sommet==at_cercle )
-	setsizeerr();
+	return gensizeerr(contextptr);
       gen rapport=v[1];
       gen angle=v[2];
       gen b=v[3];
@@ -6074,42 +7614,48 @@ namespace giac {
 	vecteur res;
 	res.reserve(itend-it);
 	for (;it!=itend;++it){
-	  res.push_back(similitude(makevecteur(centre,rapport,angle,b),s,contextptr));
+	  res.push_back(similitude(makevecteur(centre,rapport,angle,*it),s,contextptr));
 	}
 	return gen(res,_GROUP__VECT);
       }
       if (centre.is_symb_of_sommet(at_hyperplan)){
 	vecteur n,P;
-	hyperplan_normal_point(centre,n,P);
+	if (!hyperplan_normal_point(centre,n,P))
+	  return gensizeerr(contextptr);
 	return similitude3d(makevecteur(P,P+n),angle,rapport,b,-1,contextptr);
       }
       b=remove_at_pnt(b);
       if (b.type==_VECT && b.subtype==_VECTOR__VECT && b._VECTptr->size()==2)
 	return _vector(gen(makevecteur(similitude(makevecteur(centre,rapport,angle,b._VECTptr->front()),s,contextptr),similitude(makevecteur(centre,rapport,angle,b._VECTptr->back()),s,contextptr)),_SEQ__VECT),contextptr);
       if (centre.type!=_VECT)
-	return symb_pnt(centre+rapport*exp(cst_i*degtorad(angle,contextptr),contextptr)*(b-centre),default_color(contextptr),contextptr);
+	return symb_pnt(centre+rapport*exp(cst_i*angletorad(angle,contextptr),contextptr)*(b-centre),default_color(contextptr),contextptr);
       return similitude3d(*centre._VECTptr,angle,rapport,b,1,contextptr);
     }
     if (s==3){
       vecteur w=makevecteur(v[0],v[1],v[2],x__IDNT_e);
       return symb_program(x__IDNT_e,zero,symbolic(at_similitude,gen(w,_SEQ__VECT)),contextptr);      
     }
-    settypeerr();
-    return undef;
+    return gentypeerr(contextptr);
   }
   gen _similitude(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     vecteur attributs(1,default_color(contextptr));
     vecteur v(seq2vecteur(args));
     int s=read_attributs(v,attributs,contextptr);
     if (!s)
-      setdimerr();
+      return gendimerr(contextptr);
     return put_attributs(similitude(v,s,contextptr),attributs,contextptr);
   }
-  const string _similitude_s("similarity");
-  unary_function_eval __similitude(&giac::_similitude,_similitude_s);
-  unary_function_ptr at_similitude (&__similitude,0,true);
+  static const char _similitude_s []="similarity";
+  static define_unary_function_eval (__similitude,&giac::_similitude,_similitude_s);
+  define_unary_function_ptr5( at_similitude ,alias_at_similitude,&__similitude,0,true);
 
-  gen translationpoint(const gen & a,const gen & b,GIAC_CONTEXT){
+  static gen translationpoint(const gen & a,const gen & b,GIAC_CONTEXT){
+    if (has_i(a) || (a.type==_VECT && a._VECTptr->size()>3)){
+      // change made 19 mai 2015 for e.g. translation(1+i,circle(0,1))
+      if (!is_analytic(b) && !b.is_symb_of_sommet(at_cercle) && evalf(b,1,contextptr).type==_SYMB)
+	return gensizeerr(contextptr);
+    }
     return a+b;
   }
   
@@ -6124,12 +7670,14 @@ namespace giac {
     gen b=remove_at_pnt(bb);
     if (b.is_symb_of_sommet(at_hyperplan)){
       vecteur n,P;
-      hyperplan_normal_point(b,n,P);
+      if (!hyperplan_normal_point(b,n,P))
+	return gensizeerr(contextptr);
       return _plan(makevecteur(n,elem+P),contextptr);
     }
     if (b.is_symb_of_sommet(at_hypersphere)){
       gen c,r;
-      centre_rayon(b,c,r,0,false);
+      if (!centre_rayon(b,c,r,false,contextptr))
+	return gensizeerr(contextptr);
       return _sphere(makevecteur(elem+c,r),contextptr);
     }
     if (b.is_symb_of_sommet(at_parameter))
@@ -6142,61 +7690,79 @@ namespace giac {
     return symb_pnt(res,default_color(contextptr),contextptr);
   }
 
-  gen translation(const vecteur & v,int s,GIAC_CONTEXT){
+  static gen translation(const vecteur & v,int s,GIAC_CONTEXT){
     if (s==2){
       gen a=v[0];
       if (a.is_symb_of_sommet(at_pnt)){
 	a=remove_at_pnt(a);
-	if (a.type==_VECT && a.subtype==_VECTOR__VECT && a._VECTptr->size()==2){
+	if (a.type==_VECT && (a.subtype==_VECTOR__VECT || a.subtype==_GROUP__VECT) && a._VECTptr->size()==2){
 	  return translation(makevecteur(a._VECTptr->back()-a._VECTptr->front(),v[1]),s,contextptr);
 	}
 	if (a.type!=_VECT || a.subtype!=_LINE__VECT)
-	  *logptr(contextptr) << "Warning: first arg of translation should not be a point" << endl;
+	  return gensizeerr(gettext("First arg of translation should not be a point"));
       }
       if ( (a.type==_SYMB) && (a._SYMBptr->sommet==at_cercle) )
-	setsizeerr();
+	return gensizeerr(contextptr);
       gen b=v[1];
       return apply2nd(a,b,contextptr,translation);
     }
     if (s==1){
       return symb_program(x__IDNT_e,zero,symbolic(at_translation,gen(makevecteur(v[0],x__IDNT_e),_SEQ__VECT)),contextptr);
     }
-    settypeerr();
-    return undef;
+    return gentypeerr(contextptr);
   }
   gen _translation(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     vecteur attributs(1,default_color(contextptr));
     vecteur v(seq2vecteur(args));
     int s=read_attributs(v,attributs,contextptr);
     if (!s)
-      setdimerr();
+      return gendimerr(contextptr);
     return put_attributs(translation(v,s,contextptr),attributs,contextptr);
   }
-  const string _translation_s("translation");
-  unary_function_eval __translation(&giac::_translation,_translation_s);
-  unary_function_ptr at_translation (&__translation,0,true);
+  static const char _translation_s []="translation";
+  static define_unary_function_eval (__translation,&giac::_translation,_translation_s);
+  define_unary_function_ptr5( at_translation ,alias_at_translation,&__translation,0,true);
 
   // curve is the innert form of a parametric curve
   // source=[pnt,var], plot=ligne brisee
-  string printascurve(const gen & feuille,const string & sommetstr,GIAC_CONTEXT){
+  static string printascurve(const gen & feuille,const char * sommetstr,GIAC_CONTEXT){
     if ( !fastcurveprint || (feuille.type!=_VECT) || (feuille._VECTptr->size()!=2) )
-      return sommetstr+'('+feuille.print(contextptr)+')';
-    return sommetstr+'('+feuille._VECTptr->front().print(contextptr)+",undef)";
+      return string(sommetstr)+('('+feuille.print(contextptr)+')');
+    return string(sommetstr)+('('+feuille._VECTptr->front().print(contextptr)+string(",undef)"));
   }
-  symbolic symb_curve(const gen & source,const gen & plot){
-    return symbolic(at_curve,gen(makevecteur(source,plot),_GROUP__VECT));
-  }
-  gen _curve(const gen & args){
+  /*
+    static int sprintascurve(const gen & feuille,const char * sommetstr,string * sptr,GIAC_CONTEXT){
+    int res=1+strlen(sommetstr);
+    if (sptr)
+    *sptr += '(';
+    if ( !fastcurveprint || (feuille.type!=_VECT) || (feuille._VECTptr->size()!=2) ){
+    res += feuille.sprint(sptr,contextptr);
+    if (sptr)
+    *sptr += ')';
+    return res+1;
+    }
+    res += feuille._VECTptr->front().sprint(sptr,contextptr);
+    if (sptr)
+    *sptr += ",undef)";
+    return res+7;    
+    }
+  */
+  gen _curve(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     return symbolic(at_curve,args);
   }
-  const string _curve_s("curve");
-  unary_function_unary __curve(&giac::_curve,_curve_s,&printascurve);
-  unary_function_ptr at_curve (&__curve,0,true);
+  static const char _curve_s []="curve";
+  static define_unary_function_eval2 (__curve,&giac::_curve,_curve_s,&printascurve);
+  define_unary_function_ptr5( at_curve ,alias_at_curve,&__curve,0,true);
 
 
-  gen plotparam(const gen & f,const gen & vars,const vecteur & attributs,bool densityplot,double function_xmin,double function_xmax,double function_ymin,double function_ymax,double function_tmin, double function_tmax,double function_tstep,const context * contextptr){
-    if (function_tstep<=0 || (function_tmax-function_tmin)/function_tstep>1e5)
-      setsizeerr("Plotparam, unable to discretize: tmin, tmax, tstep="+print_DOUBLE_(function_tmin,12)+","+print_DOUBLE_(function_tmax,12)+","+print_DOUBLE_(function_tstep,12));
+  gen plotparam(const gen & f,const gen & vars,const vecteur & attributs,bool densityplot,double function_xmin,double function_xmax,double function_ymin,double function_ymax,double function_tmin, double function_tmax,double function_tstep,const gen & equation,const gen & parameq,const context * contextptr){
+    if (function_tstep<=0 || (function_tmax-function_tmin)/function_tstep>max_nstep)
+      return gensizeerr(gettext("Plotparam: unable to discretize: tmin, tmax, tstep=")+print_DOUBLE_(function_tmin,12)+","+print_DOUBLE_(function_tmax,12)+","+print_DOUBLE_(function_tstep,12)+gettext("\nTry a larger value for tstep"));
+    gen fC(f);
+    if (f.type==_VECT && f._VECTptr->size()==2)
+      fC=f._VECTptr->front()+cst_i*f._VECTptr->back();
     gen attribut=attributs.empty()?default_color(contextptr):attributs[0];
     // bool save_approx_mode=approx_mode(contextptr);
     // approx_mode(true,contextptr);
@@ -6206,22 +7772,30 @@ namespace giac {
     bool joindre;
     vecteur localvar(1,vars),res;
     context * newcontextptr=(context *) contextptr;
-    int protect=bind(vecteur(1,function_tmin),localvar,newcontextptr);
+    int protect=giac::bind(vecteur(1,function_tmin),localvar,newcontextptr);
     vecteur chemin;
-    double i,j,oldi,oldj,entrei,entrej;
+    double i,j,oldi=0,oldj=0,entrei,entrej;
     double t=function_tmin;
     int nstep=int((function_tmax-function_tmin)/function_tstep+.5);
+    // bool old_io_graph=io_graph(contextptr);
+    // io_graph(false,contextptr);
     for (int count=0;count<=nstep;++count,t+= function_tstep){
       local_sto_double(t,*vars._IDNTptr,newcontextptr);
       // vars._IDNTptr->localvalue->back()._DOUBLE_val =t;
-      xy_=xy.evalf2double(eval_level(contextptr),newcontextptr);
-      if (xy_.type==_VECT && xy_._VECTptr->size()==2){
-	x_=xy_._VECTptr->front();
-	y_=xy_._VECTptr->back();
+      if (xy.type==_VECT && xy._VECTptr->size()==2){
+	x_=xy._VECTptr->front().evalf2double(eval_level(contextptr),newcontextptr);
+	y_=xy._VECTptr->back().evalf2double(eval_level(contextptr),newcontextptr);
       }
       else {
-	x_=re(xy_,newcontextptr);
-	y_=im(xy_,newcontextptr).evalf_double(eval_level(contextptr),newcontextptr);
+	xy_=xy.evalf2double(eval_level(contextptr),newcontextptr);
+	if (xy_.type==_VECT && xy_._VECTptr->size()==2){
+	  x_=xy_._VECTptr->front();
+	  y_=xy_._VECTptr->back();
+	}
+	else {
+	  x_=re(xy_,newcontextptr);
+	  y_=im(xy_,newcontextptr).evalf_double(eval_level(contextptr),newcontextptr);
+	}
       }
       if ( (x_.type!=_DOUBLE_) || (y_.type!=_DOUBLE_) )
 	continue;
@@ -6267,7 +7841,7 @@ namespace giac {
 	chemin.push_back(gen(i,j));
       else {
 	if (!chemin.empty())
-	  res.push_back(symb_pnt(symb_curve(gen(makevecteur(f,vars,function_tmin,t),_PNT__VECT),gen(chemin,_GROUP__VECT)),attribut,contextptr));
+	  res.push_back(symb_pnt(symb_curve(gen(makevecteur(fC,vars,function_tmin,t,0,equation,parameq),_PNT__VECT),gen(chemin,_GROUP__VECT)),attribut,contextptr));
 	function_tmin=t;
 	chemin=vecteur(1,gen(i,j));
       }
@@ -6275,9 +7849,10 @@ namespace giac {
       oldj=j;
     }
     if (!chemin.empty())
-      res.push_back(symb_pnt(symb_curve(gen(makevecteur(f,vars,function_tmin,function_tmax),_PNT__VECT),gen(chemin,_GROUP__VECT)),attribut,contextptr));
+      res.push_back(symb_pnt(symb_curve(gen(makevecteur(fC,vars,function_tmin,function_tmax,0,equation,parameq),_PNT__VECT),gen(chemin,_GROUP__VECT)),attribut,contextptr));
     leave(protect,localvar,newcontextptr);
-#ifndef WIN32
+    // io_graph(old_io_graph,contextptr);
+#if !defined(WIN32) && defined(WITH_GNUPLOT)
     if (child_id) plot_instructions.push_back(res);
 #endif // WIN32
     // approx_mode(save_approx_mode,contextptr);
@@ -6290,25 +7865,65 @@ namespace giac {
   gen paramplotparam(const gen & args,bool densityplot,const context * contextptr){
     // args= [x(t)+i*y(t),t] should add a t interval
     bool f_autoscale=autoscale;
-    if (args.type!=_VECT)
-      return paramplotparam(gen(makevecteur(args,t__IDNT_e),_SEQ__VECT),densityplot,contextptr);
+    if (args.type!=_VECT || args.subtype!=_SEQ__VECT){
+      gen m=minus_inf,M=plus_inf;
+      vecteur poi,tvi;
+      gen t=ggb_var(args);
+      gen fg=eval(args,1,contextptr),r,i;
+      if (fg.type==_VECT && fg._VECTptr->size()!=2)
+	return paramplotparam(makesequence(args,t),false,contextptr);
+      if (fg.type==_VECT && fg._VECTptr->size()==2){
+	r=fg._VECTptr->front();
+	i=fg._VECTptr->back();
+	fg=r+cst_i*i;
+      }
+      else 
+	reim(fg,r,i,contextptr);
+#if 0 // ? #ifdef EMCC
+      if (step_param(r,i,t,m,M,poi,tvi,true,false,contextptr)){
+	gen scale=(gnuplot_tmax-gnuplot_tmin)/5.0;
+	if (is_inf(m))
+	  m=gnuplot_tmin;
+	if (is_inf(M))
+	  M=gnuplot_tmax;
+	if (m!=M)
+	  scale=(M-m)/3.0;
+	m=m-0.973456*scale; M=M+1.018546*scale;
+	gen p=paramplotparam(makesequence(fg,symb_equal(t,symb_interval(m,M))),false,contextptr);
+	poi=mergevecteur(poi,gen2vecteur(p));
+	return gen(poi,_SEQ__VECT);
+      }
+      else
+#endif
+	return paramplotparam(makesequence(args,t),false,contextptr);
+    }
     vecteur vargs(plotpreprocess(args,contextptr));
+    if (is_undef(vargs))
+      return vargs;
     if (vargs.size()<2)
       return symbolic(at_plotparam,args);
     gen f=vargs.front();
     gen vars=vargs[1];
-    if (f.type==_VECT && f._VECTptr->size()==2)
+    /*
+      if (f.type==_VECT && f._VECTptr->size()==2)
       f=f._VECTptr->front()+cst_i*f._VECTptr->back();
-    if (f.type!=_VECT){
+    */
+    bool param2d=f.type!=_VECT || f._VECTptr->size()==2;
+    if (param2d){
       if (vars.type==_VECT){
 	if (vars._VECTptr->size()!=1)
-	  setsizeerr();
+	  return gensizeerr(contextptr);
 	vars=vars._VECTptr->front();
       }
     }
-    int s=vargs.size();
+    int s=int(vargs.size());
+    gen eq=undef,parameq=undef;
+    if (s>5)
+      eq=vargs[5];
+    if (s>6)
+      parameq=vargs[6];
     double umin=gnuplot_tmin,vmin=gnuplot_tmin,umax=gnuplot_tmax,vmax=gnuplot_tmax,tmin=gnuplot_tmin,tmax=gnuplot_tmax,xmin=gnuplot_xmin,xmax=gnuplot_xmax,ymin=gnuplot_ymin,ymax=gnuplot_ymax,zmin=gnuplot_zmin,zmax=gnuplot_zmax,tstep=-1,ustep=-1,vstep=-1;
-    if (f.type!=_VECT && s>=3){
+    if (param2d && s>=3){
       gen trange=vargs[2].evalf_double(eval_level(contextptr),contextptr);
       if ( (trange.type==_SYMB) && (trange._SYMBptr->sommet==at_interval)){
 	tmin=evalf_double(trange._SYMBptr->feuille._VECTptr->front(),eval_level(contextptr),contextptr)._DOUBLE_val;
@@ -6325,10 +7940,17 @@ namespace giac {
 	}
       }
       if (tmin>tmax )
-	std::swap(tmin,tmax);
+	swapdouble(tmin,tmax);
     }
     gen attribut=default_color(contextptr);
     for (int i=1;i<s;++i){
+#if 0 // def GIAC_HAS_STO_38
+      if (readvar(vargs[i])==vx_var){
+	f_autoscale=false;
+	readrange(vargs[i],tmin,tmax,vargs[i],tmin,tmax,contextptr); 
+	umin=tmin; umax=tmax;
+      }
+#endif
       if (readvar(vargs[i])==x__IDNT_e){
 	f_autoscale=false;
 	readrange(vargs[i],gnuplot_xmin,gnuplot_xmax,vargs[i],xmin,xmax,contextptr);
@@ -6358,7 +7980,7 @@ namespace giac {
 	gen n=vargs[i]._SYMBptr->feuille._VECTptr->back();
 	switch (vargs[i]._SYMBptr->feuille._VECTptr->front().val){
 	case _NSTEP:
-	  if (n.type!=_INT_) setsizeerr();
+	  if (n.type!=_INT_) return gensizeerr(contextptr);
 	  tstep=std::abs((tmax-tmin)/n.val);
 	  ustep=(umax-umin)/int(std::sqrt(double(n.val)));
 	  vstep=(vmax-vmin)/int(std::sqrt(double(n.val)));
@@ -6386,13 +8008,13 @@ namespace giac {
     if (f.type==_VECT && f._VECTptr->size()==3 && vars.type!=_VECT){ // 3-d curve
       if (s==4){
 	if (vargs[2].is_symb_of_sommet(at_interval)){
-	  vars=symbolic(at_equal,makevecteur(vars,vargs[2]));
+	  vars=symbolic(at_equal,makesequence(vars,vargs[2]));
 	  tstep=std::abs(evalf_double(vargs[3],1,contextptr)._DOUBLE_val);
 	}
 	else
-	  vars=symbolic(at_equal,makevecteur(vars,symbolic(at_interval,makevecteur(vargs[2],vargs[3]))));
+	  vars=symbolic(at_equal,makesequence(vars,symbolic(at_interval,makesequence(vargs[2],vargs[3]))));
       }
-      vars=makevecteur(vars,symbolic(at_equal,makevecteur(v__IDNT_e,symbolic(at_interval,makevecteur(vmin,vmax)))));
+      vars=makevecteur(vars,symbolic(at_equal,makesequence(v__IDNT_e,symbolic(at_interval,makesequence(vmin,vmax)))));
       curve3d=true;
     }
     if (tstep<0)
@@ -6400,7 +8022,7 @@ namespace giac {
     if (vars.type==_VECT && vars._VECTptr->size()>=2){
       vecteur v=*vars._VECTptr;
       if (v.size()!=2)
-	setsizeerr();
+	return gensizeerr(contextptr);
       if (readrange(v[0],tmin,tmax,v[0],umin,umax,contextptr) && readrange(v[1],tmin,tmax,v[1],vmin,vmax,contextptr)){
 	if (ustep<0)
 	  ustep=(umax-umin)/(curve3d?gnuplot_pixels_per_eval:std::sqrt(double(gnuplot_pixels_per_eval)));
@@ -6408,65 +8030,101 @@ namespace giac {
 	  vstep=(vmax-vmin)/std::sqrt(double(gnuplot_pixels_per_eval));
 	return plotparam3d(f,makevecteur(v[0],v[1]),xmin,xmax,ymin,ymax,zmin,zmax,umin,umax,vmin,vmax,densityplot,f_autoscale,attributs,ustep,vstep,undef,vecteur(0),contextptr);
       }
-      setsizeerr();
+      return gensizeerr(contextptr);
     }
     if (!readrange(vars,tmin,tmax,vars,tmin,tmax,contextptr))
-      setsizeerr("2nd arg must be a free variable");
-    return plotparam(f,vars,attributs,densityplot,xmin,xmax,ymin,ymax,tmin,tmax,tstep,contextptr);
+      return gensizeerr(gettext("2nd arg must be a free variable"));
+    return plotparam(f,vars,attributs,densityplot,xmin,xmax,ymin,ymax,tmin,tmax,tstep,eq,parameq,contextptr);
   }
   gen _plotparam(const gen & args,const context * contextptr){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     return paramplotparam(args,true,contextptr);
   }
-  const string _plotparam_s("plotparam");
-  unary_function_eval __plotparam(&giac::_plotparam,_plotparam_s);
-  unary_function_ptr at_plotparam (&__plotparam,_QUOTE_ARGUMENTS,true);
+  static const char _plotparam_s []="plotparam";
+  static define_unary_function_eval_quoted (__plotparam,&giac::_plotparam,_plotparam_s);
+  define_unary_function_ptr5( at_plotparam ,alias_at_plotparam,&__plotparam,_QUOTE_ARGUMENTS,true);
 
-  const string _courbe_parametrique_s("courbe_parametrique");
-  unary_function_eval __courbe_parametrique(&giac::_plotparam,_courbe_parametrique_s);
-  unary_function_ptr at_courbe_parametrique (&__courbe_parametrique,_QUOTE_ARGUMENTS,true);
+  static const char _courbe_parametrique_s []="courbe_parametrique";
+  static define_unary_function_eval_quoted (__courbe_parametrique,&giac::_plotparam,_courbe_parametrique_s);
+  define_unary_function_ptr5( at_courbe_parametrique ,alias_at_courbe_parametrique,&__courbe_parametrique,_QUOTE_ARGUMENTS,true);
 
   gen _paramplot(const gen & args,const context * contextptr){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     return paramplotparam(args,false,contextptr);
   }
-  const string _paramplot_s("paramplot");
-  unary_function_eval __paramplot(&giac::_paramplot,_paramplot_s);
-  unary_function_ptr at_paramplot (&__paramplot,_QUOTE_ARGUMENTS,true);
+  static const char _paramplot_s []="paramplot";
+  static define_unary_function_eval_quoted (__paramplot,&giac::_paramplot,_paramplot_s);
+  define_unary_function_ptr5( at_paramplot ,alias_at_paramplot,&__paramplot,_QUOTE_ARGUMENTS,true);
 
-  gen plotpoints(const vecteur & v,const vecteur & attributs,GIAC_CONTEXT){
+  static gen plotpoints(const vecteur & v,const vecteur & attributs,GIAC_CONTEXT){
     gen attribut=attributs.empty()?default_color(contextptr):attributs[0];
     vecteur w(v);
     iterateur it=w.begin(),itend=w.end();
     for (;it!=itend;++it){
       if (it->type!=_VECT || it->_VECTptr->size()!=2)
-	setsizeerr();
+	return gensizeerr(contextptr);
       *it=it->_VECTptr->front()+cst_i*it->_VECTptr->back();
     }
     return symb_pnt(gen(w,_GROUP__VECT),attribut.val,contextptr); 
     // should change symb_pnt so that attribut is more generic than color
   }
   gen _plot(const gen & g,const context * contextptr){
-    if (g.type!=_VECT)
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
+    gen var,res;
+    if (g.type!=_VECT && !is_distribution(g) && !is_algebraic_program(g,var,res) )
       return _plotfunc(g,contextptr);
-    vecteur v=plotpreprocess(g,contextptr);
-    int s=v.size();
+    vecteur v;
+    gen g_(g);
+    if (g.type==_VECT){
+      v=*g._VECTptr;
+      int s=int(v.size()),nd=0,nargs=0;
+      if (v[0].type==_FUNC && (nd=is_distribution(v[0])) && 1+(nargs=distrib_nargs(nd))<=s){
+	if (is_discrete_distribution(nd))
+	  return _histogram(g,contextptr);
+	gen d=distribution(nd);
+	if (d.type==_FUNC){
+	  if (nargs==1)
+	    v[0]=symbolic(*d._FUNCptr,v[1]);
+	  else
+	    v[0]=symbolic(*d._FUNCptr,gen(vecteur(v.begin()+1,v.begin()+1+nargs),_SEQ__VECT));
+	  s -= nargs;
+	  v.erase(v.begin()+1,v.begin()+1+nargs);
+	  if (s==1)
+	    g_=v.front();
+	  else
+	    g_=gen(vecteur(v.begin(),v.end()),_SEQ__VECT);
+	}
+      }
+    }
+    else {
+      int nd;
+      if ((nd=is_distribution(g))){
+	if (is_discrete_distribution(nd))
+	  return _histogram(g,contextptr);
+      }
+    }
+    v=plotpreprocess(g_,contextptr);
+    if (is_undef(v))
+      return v;
+    int s=int(v.size());
     gen attribut=default_color(contextptr);
     vecteur attributs(1,attribut);
     if (g.subtype!=_SEQ__VECT && s==3 ){
       if (v[2].type==_IDNT)
-	return plotparam(v[0]+cst_i*v[1],v[2],attributs,true,gnuplot_xmin,gnuplot_xmax,gnuplot_ymin,gnuplot_ymax,gnuplot_tmin,gnuplot_tmax,gnuplot_tstep,contextptr);
+	return plotparam(v[0]+cst_i*v[1],v[2],attributs,true,gnuplot_xmin,gnuplot_xmax,gnuplot_ymin,gnuplot_ymax,gnuplot_tmin,gnuplot_tmax,gnuplot_tstep,undef,undef,contextptr); // FIX equation?
       if (v[2].is_symb_of_sommet(at_equal)){ // parametric plot
 	gen & gw=v[2]._SYMBptr->feuille;
 	if (gw.type==_VECT && gw._VECTptr->size()==2){
 	  gen gx=gw._VECTptr->front();
 	  double inf,sup;
 	  if (gx.type==_IDNT && chk_double_interval(gw._VECTptr->back(),inf,sup,contextptr))
-	    return plotparam(v[0]+cst_i*v[1],gx,attributs,true,gnuplot_xmin,gnuplot_xmax,gnuplot_ymin,gnuplot_ymax,inf,sup,gnuplot_tstep,contextptr);
+	    return plotparam(v[0]+cst_i*v[1],gx,attributs,true,gnuplot_xmin,gnuplot_xmax,gnuplot_ymin,gnuplot_ymax,inf,sup,gnuplot_tstep,undef,undef,contextptr); // FIX EQUATION?
 	}
       }
     }
     if (s<1)
       return _plotfunc(g,contextptr);
-    if (g.subtype!=_SEQ__VECT)
+    if (g.type==_VECT && g.subtype!=_SEQ__VECT)
       return plotpoints(v,attributs,contextptr);
     double xmin=gnuplot_xmin,xmax=gnuplot_xmax,ymin=gnuplot_ymin,ymax=gnuplot_ymax,zmin=gnuplot_zmin,zmax=gnuplot_zmax;
     gen xvar=vx_var,yvar=y__IDNT_e;
@@ -6489,9 +8147,13 @@ namespace giac {
 	identificateur tmp(" x");
 	vecteur w(v);
 	w[0]=v[0](tmp,contextptr);
-	w[1]=symbolic(at_equal,makevecteur(tmp,v[1]));
+	w[1]=symbolic(at_equal,makesequence(tmp,v[1]));
 	return _plot(gen(w,_SEQ__VECT),contextptr);
       }
+      if (i==2 && (v[i].type<_CPLX || v[i].type==_FLOAT_))
+	xmin=evalf_double(v[i],1,contextptr)._DOUBLE_val;
+      if (i==3 && (v[i].type<_CPLX || v[i].type==_FLOAT_))
+	xmax=evalf_double(v[i],1,contextptr)._DOUBLE_val;
       if (!v[i].is_symb_of_sommet(at_equal))
 	continue;
       gen & opt=v[i]._SYMBptr->feuille;
@@ -6519,75 +8181,102 @@ namespace giac {
     else
       return plotfunc(v[0],xvar,attributs,false,xmin,xmax,ymin,ymax,zmin,zmax,nstep,0,showeq,contextptr);
   }
-  const string _plot_s("plot"); // FIXME use maple arguments
-  unary_function_eval __plot(&giac::_plot,_plot_s);
-  unary_function_ptr at_plot (&__plot,_QUOTE_ARGUMENTS,true);
+  static const char _plot_s []="plot"; // FIXME use maple arguments
+  static define_unary_function_eval_quoted (__plot,&giac::_plot,_plot_s);
+  define_unary_function_ptr5( at_plot ,alias_at_plot,&__plot,_QUOTE_ARGUMENTS,true);
 
-  const string _graphe_s("graphe");
-  unary_function_eval __graphe(&giac::_plot,_graphe_s);
-  unary_function_ptr at_graphe (&__graphe,_QUOTE_ARGUMENTS,true);
+  static const char _graphe_s []="graphe";
+  static define_unary_function_eval_quoted (__graphe,&giac::_plot,_graphe_s);
+  define_unary_function_ptr5( at_graphe ,alias_at_graphe,&__graphe,_QUOTE_ARGUMENTS,true);
 
   gen _plotpolar(const gen & args,const context * contextptr){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     // args= [rho(theta),theta] should add a theta interval
     vecteur vargs(plotpreprocess(args,contextptr));
+    if (is_undef(vargs))
+      return vargs;
     gen rho=vargs.front();
     gen theta=vargs[1];
     if (theta.is_symb_of_sommet(at_equal))
       theta=theta._SYMBptr->feuille._VECTptr->front();
     if (theta.type!=_IDNT)
-      setsizeerr("2nd arg must be a free variable");    
-    vargs.front()=symbolic(at_re,rho)*exp(cst_i*degtorad(theta,contextptr),contextptr);
+      return gensizeerr(gettext("2nd arg must be a free variable"));    
+    // vargs.front()=symbolic(at_re,rho)*exp(cst_i*degtorad(theta,contextptr),contextptr);
+    vargs.front()=makevecteur(rho*cos(angletorad(theta,contextptr),contextptr),rho*sin(angletorad(theta,contextptr),contextptr));
     return _plotparam(gen(vargs,_SEQ__VECT),contextptr);
   }
-  const string _plotpolar_s("plotpolar");
-  unary_function_eval __plotpolar(&giac::_plotpolar,_plotpolar_s);
-  unary_function_ptr at_plotpolar (&__plotpolar,_QUOTE_ARGUMENTS,true);
+  static const char _plotpolar_s []="plotpolar";
+  static define_unary_function_eval_quoted (__plotpolar,&giac::_plotpolar,_plotpolar_s);
+  define_unary_function_ptr5( at_plotpolar ,alias_at_plotpolar,&__plotpolar,_QUOTE_ARGUMENTS,true);
 
-  const string _polarplot_s("polarplot");
-  unary_function_eval __polarplot(&giac::_plotpolar,_polarplot_s);
-  unary_function_ptr at_polarplot (&__polarplot,_QUOTE_ARGUMENTS,true);
+  static const char _polarplot_s []="polarplot";
+  static define_unary_function_eval_quoted (__polarplot,&giac::_plotpolar,_polarplot_s);
+  define_unary_function_ptr5( at_polarplot ,alias_at_polarplot,&__polarplot,_QUOTE_ARGUMENTS,true);
 
-  const string _courbe_polaire_s("courbe_polaire");
-  unary_function_eval __courbe_polaire(&giac::_plotpolar,_courbe_polaire_s);
-  unary_function_ptr at_courbe_polaire (&__courbe_polaire,_QUOTE_ARGUMENTS,true);
+  static const char _courbe_polaire_s []="courbe_polaire";
+  static define_unary_function_eval_quoted (__courbe_polaire,&giac::_plotpolar,_courbe_polaire_s);
+  define_unary_function_ptr5( at_courbe_polaire ,alias_at_courbe_polaire,&__courbe_polaire,_QUOTE_ARGUMENTS,true);
 
   void ck_parameter_x(GIAC_CONTEXT){
+#if 1 // ndef GIAC_HAS_STO_38
     if (x__IDNT_e.evalf(1,contextptr)!=x__IDNT_e)
-      *logptr(contextptr) << "Variable x should be purged" << endl;
+      *logptr(contextptr) << gettext("Variable x should be purged") << endl;
+#endif
   }
 
   void ck_parameter_y(GIAC_CONTEXT){
+#if 1 // ndef GIAC_HAS_STO_38
     if (y__IDNT_e.evalf(1,contextptr)!=y__IDNT_e)
-      *logptr(contextptr) << "Variable y should be purged" << endl;
+      *logptr(contextptr) << gettext("Variable y should be purged") << endl;
+#endif
   }
 
   void ck_parameter_z(GIAC_CONTEXT){
+#if 1 // ndef GIAC_HAS_STO_38
     if (z__IDNT_e.evalf(1,contextptr)!=z__IDNT_e)
-      *logptr(contextptr) << "Variable z should be purged" << endl;
+      *logptr(contextptr) << gettext("Variable z should be purged") << endl;
+#endif
   }
 
   void ck_parameter(const gen & g,GIAC_CONTEXT){
+#if 1 // ndef GIAC_HAS_STO_38
     if ( (g.type==_IDNT) && (g.evalf(1,contextptr)!=g) )
-      *logptr(contextptr) << "Variable "+g.print(contextptr)+" should be purged" << endl;
+      *logptr(contextptr) << gettext("Variable ")+g.print(contextptr)+gettext(" should be purged") << endl;
+#endif
   }
 
   void ck_parameter_t(GIAC_CONTEXT){
+#if 1 // ndef GIAC_HAS_STO_38
     if (t__IDNT_e.evalf(1,contextptr)!=t__IDNT_e)
-      *logptr(contextptr) << "Variable t should be purged" << endl;
+      *logptr(contextptr) << gettext("Variable t should be purged") << endl;
+#endif
   }
 
   void ck_parameter_u(GIAC_CONTEXT){
+#if 1 // ndef GIAC_HAS_STO_38
     if (u__IDNT_e.evalf(1,contextptr)!=u__IDNT_e)
-      *logptr(contextptr) << "Variable u should be purged" << endl;
+      *logptr(contextptr) << gettext("Variable u should be purged") << endl;
+#endif
   }
 
   void ck_parameter_v(GIAC_CONTEXT){
+#if 1 // ndef GIAC_HAS_STO_38
     if (v__IDNT_e.evalf(1,contextptr)!=v__IDNT_e)
-      *logptr(contextptr) << "Variable v should be purged" << endl;
+      *logptr(contextptr) << gettext("Variable v should be purged") << endl;
+#endif
   }
 
   // Parametric equation
   gen _parameq(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    if (args.is_symb_of_sommet(at_equal)){
+      // supposed to be a cartesian equation in x/y
+      gen x0,y0,propre,equation_reduite,ratparam;
+      vecteur V0,V1,param_curves;
+      if (conique_reduite(args,undef,makevecteur(vx_var,y__IDNT_e),x0,y0,V0,V1,propre,equation_reduite,param_curves,ratparam,false,contextptr))
+	return ratparam;
+      return gensizeerr(contextptr);
+    }
     vecteur v;
     int s=1;
     if (args.type!=_VECT){
@@ -6595,15 +8284,31 @@ namespace giac {
       v.push_back(t__IDNT_e);
     }
     else {
-      s=args._VECTptr->size();
+      s=int(args._VECTptr->size());
+      if (s==1)
+	return _parameq(args._VECTptr->front(),contextptr);
       if (s>=2 && (*args._VECTptr)[1].is_symb_of_sommet(at_pnt))
 	return _parameq(args._VECTptr->front(),contextptr);
       if (s<2) 
-	setsizeerr();
+	return gensizeerr(contextptr);
       v=*args._VECTptr;
     }
     // e= symb_curve or line or cercle
     gen e=remove_at_pnt(v.front());
+    if (e.is_symb_of_sommet(at_Bezier)){
+      gen f=e._SYMBptr->feuille;
+      if (f.type!=_VECT || f._VECTptr->size()<2)
+	return gensizeerr(contextptr);
+      gen t=v[1];
+      vecteur & w=*f._VECTptr;
+      int s=int(w.size())-1;
+      vecteur coeff=pascal_nth_line(s);
+      gen res=0;
+      for (int i=0;i<=s;++i){
+	res += coeff[i]*pow(t,i,contextptr)*pow(1-t,s-i,contextptr)*w[i];
+      }
+      return res;
+    }
     if (e.is_symb_of_sommet(at_hypersurface)){
       gen & f = e._SYMBptr->feuille;
       if (f.type==_VECT && f._VECTptr->size()==3){
@@ -6627,18 +8332,20 @@ namespace giac {
 	u=v[2];
       if (e._SYMBptr->sommet==at_hypersphere){
 	gen centre,rayon;
-	if (!centre_rayon(e,centre,rayon,false,0) ||centre.type!=_VECT)
-	  setsizeerr();
+	if (!centre_rayon(e,centre,rayon,false,contextptr) ||centre.type!=_VECT)
+	  return gensizeerr(contextptr);
 	vecteur & v=*centre._VECTptr;
 	if (v.size()!=3)
-	  setdimerr();
+	  return gendimerr(contextptr);
 	par_eq=centre+makevecteur(rayon*cos(t,contextptr)*cos(u,contextptr),rayon*cos(t,contextptr)*sin(u,contextptr),rayon*sin(t,contextptr));
       }
       else {
 	vecteur P,n;
-	hyperplan_normal_point(e,n,P);
+	if (!hyperplan_normal_point(e,n,P))
+	  return gensizeerr(contextptr);
 	vecteur v1,v2;
-	normal3d(n,v1,v2);
+	if (!normal3d(n,v1,v2))
+	  return gensizeerr(contextptr);
 	par_eq=t*v1+u*v2+P;
       }
       return par_eq;
@@ -6649,9 +8356,14 @@ namespace giac {
       e=cercle2curve(e,contextptr);
     if (e.type==_VECT)
       e=line2curve(e);
+    if (is_undef(e))
+      return e;
     if ( (e.type==_SYMB) && (e._SYMBptr->sommet==at_curve)){
       vecteur v=*e._SYMBptr->feuille._VECTptr->front()._VECTptr;
-      gen tmp= subst(v[0],v[1],t,false,contextptr);
+      gen pareq=v[0];
+      if (v.size()>6 && !is_undef(v[6]))
+	pareq=v[6];
+      gen tmp= subst(pareq,v[1],t,false,contextptr);
       if (tmp.type==_VECT)
 	tmp.subtype=0;
       return tmp;
@@ -6659,17 +8371,98 @@ namespace giac {
     else
       return e;
   }
-  const string _parameq_s("parameq");
-  unary_function_eval __parameq(&giac::_parameq,_parameq_s);
-  unary_function_ptr at_parameq (&__parameq,0,true);
+  static const char _parameq_s []="parameq";
+  static define_unary_function_eval (__parameq,&giac::_parameq,_parameq_s);
+  define_unary_function_ptr5( at_parameq ,alias_at_parameq,&__parameq,0,true);
 
-  gen equation(const gen & arg,const gen & x,const gen & y, const gen & z,GIAC_CONTEXT){
+  gen rationalparam2equation(const gen & at_orig,const gen & t_orig,const gen &x,const gen & y,GIAC_CONTEXT){
+    if (t_orig==x || t_orig==y){
+      gen t(identificateur(t_orig.print(contextptr)+"_"));
+      return rationalparam2equation(subst(at_orig,t_orig,t,false,contextptr),t,x,y,contextptr);
+    }
+    // detect function plots
+    if (at_orig.is_symb_of_sommet(at_plus) && at_orig._SYMBptr->feuille.type==_VECT){
+      vecteur & v=*at_orig._SYMBptr->feuille._VECTptr;
+      if (v.size()==2 && v[0]==t_orig && v[1].is_symb_of_sommet(at_prod) && v[1]._SYMBptr->feuille.type==_VECT){
+	vecteur & w=*v[1]._SYMBptr->feuille._VECTptr;
+	if (w.size()==2 && w[0]==cst_i)
+	  return y-subst(w[1],t_orig,x,false,contextptr);
+      }
+    }
+    gen anum,aden,ax,ay;
+    gen at=at_orig;
+    gen t=t_orig;
+    bool approx=has_num_coeff(at);
+    if (approx)
+      at=exact(at,contextptr);
+    ax=re(at,contextptr);
+    ay=im(at,contextptr);
+    if (ax==t)
+      return y-subst(ay,t,x,false,contextptr);
+    if (t==x){
+      t=identificateur(" t");
+      at=subst(at,x,t,true,contextptr);
+    }
+    if (t==y){
+      t=identificateur(" t");
+      at=subst(at,y,t,true,contextptr);
+    }
+    vecteur v=lvar(ax);
+    fraction f=e2r(ax,v,contextptr);
+    fxnd(f,anum,aden);
+    anum=r2e(anum,v,contextptr);
+    aden=r2e(aden,v,contextptr);
+    gen eq1=anum-x*aden;
+    v=lvar(ay);
+    f=e2r(ay,v,contextptr);
+    fxnd(f,anum,aden);
+    anum=r2e(anum,v,contextptr);
+    aden=r2e(aden,v,contextptr);
+    gen eq2=anum-y*aden;
+    gen res=_resultant(makevecteur(eq1,eq2,t),contextptr);
+    vecteur resl=alg_lvar(res);
+    res=e2r(res,resl,contextptr);
+    if (res.type==_FRAC)
+      res=res._FRACptr->num;
+    if (res.type==_POLY){
+      gen c=Tcontent(*res._POLYptr);
+      if (is_positive(-res._POLYptr->coord.front()))
+	c=-c;
+      res=*res._POLYptr/c;
+    }
+    res=r2e(res,resl,contextptr);
+    if (is_undef(res)) return res;
+    if (approx)
+      res=evalf(res,1,contextptr);
+    v=lvar(res);
+    f=e2r(res,v,contextptr);
+    fxnd(f,anum,aden);
+    if (anum.type!=_POLY)
+      return res;
+    if (approx)
+      anum=anum/anum._POLYptr->coord.front().value;
+    else
+      ppz(*anum._POLYptr);
+    res=r2e(anum,v,contextptr);
+    return res;
+  }
+  
+  static gen equation(const gen & arg,const gen & x,const gen & y, const gen & z,GIAC_CONTEXT){
     if (arg.type==_VECT){
       vecteur res;
       const_iterateur it=arg._VECTptr->begin(),itend=arg._VECTptr->end();
+      gen prev;
       for (;it!=itend;++it){
-	res.push_back(equation(*it,x,y,z,contextptr));
+	gen tmp=equation(*it,x,y,z,contextptr);
+	if (tmp==prev)
+	  continue;
+	prev=tmp;
+	//if (calc_mode(contextptr)==1) tmp=remove_equal(tmp);
+	res.push_back(tmp);
       }
+      // if (calc_mode(contextptr)==1) return symbolic(at_equal,makesequence(_prod(res,contextptr),0));
+      if (res.size()==1)
+	return res.front();
       return res;
     }
     gen e=remove_at_pnt(arg);
@@ -6677,22 +8470,25 @@ namespace giac {
     if (e.is_symb_of_sommet(at_hyperplan)){
       gen & f=e._SYMBptr->feuille;
       if (ckmatrix(f) && f._VECTptr->size()==2){
-	return symbolic(at_equal,makevecteur(normal(dotvecteur(*f._VECTptr->front()._VECTptr,subvecteur(vxyz,*f._VECTptr->back()._VECTptr)),contextptr),zero));
+	return symbolic(at_equal,makesequence(normal(dotvecteur(*f._VECTptr->front()._VECTptr,subvecteur(vxyz,*f._VECTptr->back()._VECTptr)),contextptr),zero));
       }
     }
     if (e.is_symb_of_sommet(at_hypersphere)){
       gen f=hypersphere_equation(e,vxyz);
-      return symbolic(at_equal,makevecteur(f,zero));
+      return symbolic(at_equal,makesequence(f,zero));
     }
     if (e.is_symb_of_sommet(at_hypersurface)){
       gen f=hypersurface_equation(e,vxyz,contextptr);
-      return symbolic(at_equal,makevecteur(f,zero));
+      return symbolic(at_equal,makesequence(f,zero));
     }
     if ((e.type==_SYMB) && (e._SYMBptr->sommet==at_cercle)){
-      gen centre,rayon;
-      centre_rayon(e,centre,rayon,false,contextptr);
-      rayon=normal(rayon,contextptr);
-      return symbolic(at_equal,makevecteur(pow(x-re(centre,contextptr),2)+pow(y-im(centre,contextptr),2),rayon*conj(rayon,contextptr)));
+      gen centre,rayon,r,i;
+      if (!centre_rayon(e,centre,rayon,false,contextptr))
+	return gensizeerr(contextptr);
+      rayon=recursive_normal(rayon,contextptr);
+      reim(rayon,r,i,contextptr);
+      r=recursive_normal(r*r+i*i,contextptr);
+      return symbolic(at_equal,makesequence(pow(x-re(centre,contextptr),2)+pow(y-im(centre,contextptr),2),r));
     }
     if ( (e.type==_VECT) && (e._VECTptr->size()==2) ){
       gen A=e._VECTptr->front();
@@ -6701,14 +8497,14 @@ namespace giac {
       if (v.type==_VECT){ // 3-d line?
 	vecteur & vv=*v._VECTptr;
 	if (vv.size()!=3 || A.type!=_VECT || A._VECTptr->size()!=3)
-	  setsizeerr();
+	  return gensizeerr(contextptr);
 	vecteur & vA=*A._VECTptr;
-	if (is_zero(vv[0])&&is_zero(vv[1]))
-	  return gen(makevecteur(symbolic(at_equal,makevecteur(x,vA[0])),symbolic(at_equal,makevecteur(y,vA[1]))),_SEQ__VECT);
+	if (is_zero(vv[0],contextptr)&&is_zero(vv[1],contextptr))
+	  return gen(makevecteur(symbolic(at_equal,makesequence(x,vA[0])),symbolic(at_equal,makesequence(y,vA[1]))),_SEQ__VECT);
 	vecteur v1(makevecteur(vv[1],-vv[0],0));
-	vecteur v2(cross(vv,v1));
+	vecteur v2(cross(vv,v1,contextptr));
 	vecteur xyz(subvecteur(vxyz,vA));
-	return gen(makevecteur(symbolic(at_equal,makevecteur(normal(dotvecteur(v1,xyz),contextptr),zero)),symbolic(at_equal,makevecteur(normal(dotvecteur(v2,xyz),contextptr),zero))),_SEQ__VECT);
+	return gen(makevecteur(symbolic(at_equal,makesequence(normal(dotvecteur(v1,xyz),contextptr),zero)),symbolic(at_equal,makesequence(normal(dotvecteur(v2,xyz),contextptr),zero))),_SEQ__VECT);
       }
       gen a=im(v,contextptr);
       gen b=-re(v,contextptr);
@@ -6716,14 +8512,16 @@ namespace giac {
       a=normal(a/d,contextptr);
       b=normal(b/d,contextptr);
       gen c=a*re(A,contextptr)+b*im(A,contextptr);
-      if (!is_zero(b))
-	return symbolic(at_equal,makevecteur(y,normal(-a/b,contextptr)*x+normal(c/b,contextptr)));
-      return symbolic(at_equal,makevecteur(a*x+b*y,c));
+      if (!is_zero(b,contextptr))
+	return symbolic(at_equal,makesequence(y,normal(-a/b,contextptr)*x+normal(c/b,contextptr)));
+      return symbolic(at_equal,makesequence(a*x+b*y,c));
     }
     if ( (e.type==_SYMB) && (e._SYMBptr->sommet==at_curve)){
       vecteur v=*e._SYMBptr->feuille._VECTptr->front()._VECTptr; 
+      if (v.size()>=6 && !is_undef(v[5]))
+	return symbolic(at_equal,makesequence(subst(v[5],makevecteur(x__IDNT_e,y__IDNT_e,z__IDNT_e),makevecteur(x,y,z),false,contextptr),0));
       if (v[1].type!=_IDNT)
-	setsizeerr("Wrong parameter type "+v[1].print(contextptr));
+	return gensizeerr(gettext("Wrong parameter type ")+v[1].print(contextptr));
       identificateur & id=*v[1]._IDNTptr;
       if (v[0].type!=_VECT){
 	gen m,tmin,tmax;
@@ -6735,29 +8533,31 @@ namespace giac {
 	gen yt=im(v[0],contextptr);
 	rewrite_with_t_real(yt,v[1],contextptr);
 	// if xt and yt are rational fractions of v[1], use the resultant
-	if (lvarxpow(makevecteur(xt,yt),id).size()<=1){
-	  return _resultant(makevecteur(xt-x,yt-y,v[1]),contextptr);
+	if (lvarxpow(makevecteur(xt,yt),v[1]).size()<=1){
+	  // return _resultant(makevecteur(xt-x,yt-y,v[1]),contextptr);
+	  return symbolic(at_equal,makesequence(rationalparam2equation(v[0],v[1],x,y,contextptr),0));
 	}
 	vecteur w(solve(xt-x,v[1],0,contextptr));
 	if (w.empty())
-	  setsizeerr("Can't isolate");
+	  return gensizeerr(gettext("Can't isolate"));
 	yt=subst(yt,v[1],w.front(),false,contextptr);
-	return symbolic(at_equal,makevecteur(y,yt));
+	return symbolic(at_equal,makesequence(y,yt));
       }
       if (v[0].type==_VECT && v[0]._VECTptr->size()==3){
 	// 3-d curve -> 2 equations
 	vecteur & vv=*v[0]._VECTptr;
 	gen xt=vv[0],yt=vv[1],zt=vv[2];
-	if (lvarxpow(makevecteur(xt,yt,zt),id).size()<=1){
-	  return makevecteur(_resultant(makevecteur(xt-x,zt-z,id),contextptr),_resultant(makevecteur(yt-y,zt-z,id),contextptr));
+	if (lvarxpow(makevecteur(xt,yt,zt),v[1]).size()<=1){
+	  return makevecteur(_resultant(makesequence(xt-x,zt-z,id),contextptr),_resultant(makesequence(yt-y,zt-z,id),contextptr));
 	}
       }
-      setsizeerr();
+      return gensizeerr(contextptr);
     }
     return e;
   }
 
   gen _equation(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type!=_VECT || args._VECTptr->size()!=2 || (*args._VECTptr)[1].type!=_IDNT){
       ck_parameter_x(contextptr);
       ck_parameter_y(contextptr);
@@ -6768,27 +8568,30 @@ namespace giac {
     // e= symb_curve or line or cercle
     gen xy=v.back();
     if ( (xy.type!=_VECT) || (xy._VECTptr->size()<2))
-      setsizeerr();
+      return gensizeerr(contextptr);
     vecteur & vxyz=*xy._VECTptr;
     gen x(vxyz[0]),y(vxyz[1]),z;
     if (vxyz.size()==3)
       z=vxyz[2];
     return equation(v.front(),x,y,z,contextptr);
   }
-  const string _equation_s("equation");
-  unary_function_eval __equation(&giac::_equation,_equation_s);
-  unary_function_ptr at_equation (&__equation,0,true);
+  static const char _equation_s []="equation";
+  static define_unary_function_eval (__equation,&giac::_equation,_equation_s);
+  define_unary_function_ptr5( at_equation ,alias_at_equation,&__equation,0,true);
 
   // If subtype is segment/vector or halfline remove
   // the element of v that are not in the segment/halfline/... ab
   vecteur remove_not_in_segment(const gen & a,const gen & b,int subtype,const vecteur & v,GIAC_CONTEXT){
-    if (subtype==_LINE__VECT)
+    if (subtype==_LINE__VECT || is_undef(v))
       return v;
     gen ab(b-a);
     const_iterateur it=v.begin(),itend=v.end();
     vecteur res;
     for (;it!=itend;++it){
+      if (is_undef(*it))
+	continue;
       gen t=scalar_product(remove_at_pnt(*it)-a,ab,contextptr)/scalar_product(ab,ab,contextptr);
+      if (is_undef(t)) continue;
       if (subtype==_HALFLINE__VECT){
 	if (!is_strictly_positive(-t,contextptr))
 	  res.push_back(*it);
@@ -6801,26 +8604,70 @@ namespace giac {
     return res;
   }
 
+  vecteur remove_not_in_arc(const vecteur & v_,const gen & g,GIAC_CONTEXT){
+    vecteur v;
+    for (unsigned i=0;i<v_.size();++i){
+      if (!is_undef(v_[i]))
+	v.push_back(v_[i]);
+    }
+    if (g.type==_VECT && g._VECTptr->size()==2)
+      return remove_not_in_segment(g._VECTptr->front(),g._VECTptr->back(),g.subtype,v,contextptr);
+    if (!g.is_symb_of_sommet(at_cercle))
+      return v;
+    gen &f=g._SYMBptr->feuille;
+    if (f.type!=_VECT || f._VECTptr->size()!=3)
+      return v;
+    vecteur & fv=*f._VECTptr;
+    if (fv.front().type!=_VECT || fv.front()._VECTptr->size()!=2)
+      return v;
+    gen a=fv.front()._VECTptr->front(),b=fv.front()._VECTptr->back(),alpha=fv[1],beta=fv[2];
+    if (is_greater(beta-alpha,cst_two_pi,contextptr))
+      return v;
+    alpha=alpha-_floor(alpha/cst_two_pi,contextptr)*cst_two_pi;
+    beta=beta-_floor(beta/cst_two_pi,contextptr)*cst_two_pi;
+    if (is_greater(alpha,beta,contextptr))
+      beta+=cst_two_pi;
+    gen centre=(b+a)/2,rayon=(b-a)/2;
+    const_iterateur it=v.begin(),itend=v.end();
+    vecteur res;
+    for (;it!=itend;++it){
+      gen gamma=arg((remove_at_pnt(*it)-centre)/rayon,contextptr);
+      if (is_strictly_positive(-gamma,contextptr))
+	gamma+=cst_two_pi;
+      if (is_greater(gamma,alpha,contextptr) && is_greater(beta,gamma,contextptr))
+	res.push_back(*it);
+    }
+    return res;
+  }
+
   vecteur interdroitecercle(const gen & a,const gen &b,GIAC_CONTEXT){
     // D inter C
     gen centre,rayon;
-    centre_rayon(b,centre,rayon,true,contextptr);
+    if (!centre_rayon(b,centre,rayon,true,contextptr))
+      return vecteur(1,gensizeerr(contextptr));
     // projection of the center of C over D
     gen a1(a._VECTptr->front()),a2(a._VECTptr->back()); // D=(a1a2)
     if (a1.type==_VECT && b.is_symb_of_sommet(at_cercle))
-      setsizeerr("3-d line/2-d circle");
+      return vecteur(1,gensizeerr(gettext("3-d line/2-d circle")));
     if (a1.type!=_VECT && b.is_symb_of_sommet(at_hypersphere))
-      setsizeerr("2-d line/sphere");
+      return vecteur(1,gensizeerr(gettext("2-d line/sphere")));
     gen t(projection(a1,a2,centre,contextptr));
+    if (is_undef(t))
+      return vecteur(1,t);
     gen pr(t*a2+(1-t)*a1);
-    gen a_pr(pr-centre);
+    gen a_pr(recursive_normal(pr-centre,contextptr));
     gen delta(abs_norm(a_pr,contextptr));
-    if (ck_is_strictly_greater(delta,rayon,contextptr))
+    if (ck_is_strictly_positive(recursive_normal(delta-rayon,contextptr),contextptr))
       return vecteur(0);
     gen a_pr_perp=a2-a1;
-    a_pr_perp=rdiv(a_pr_perp,abs_norm(a_pr_perp,contextptr));
+    a_pr_perp=rdiv(a_pr_perp,abs_norm(a_pr_perp,contextptr),contextptr);
     gen d_a(sqrt(pow(rayon,plus_two,contextptr)-pow(delta,plus_two,contextptr),contextptr));
-    return remove_not_in_segment(a1,a2,a.subtype,makevecteur(symb_pnt(ratnormal(pr+d_a*a_pr_perp),default_color(contextptr),contextptr),symb_pnt(ratnormal(pr-d_a*a_pr_perp),default_color(contextptr),contextptr)),contextptr);
+    gen I1(recursive_normal(pr+d_a*a_pr_perp,contextptr)),I2(recursive_normal(pr-d_a*a_pr_perp,contextptr));
+    if (I1.type==_VECT) 
+      I1.subtype=_POINT__VECT;
+    if (I2.type==_VECT) 
+      I2.subtype=_POINT__VECT;
+    return remove_not_in_arc(remove_not_in_segment(a1,a2,a.subtype,makevecteur(symb_pnt(I1,default_color(contextptr),contextptr),symb_pnt(I2,default_color(contextptr),contextptr)),contextptr),b,contextptr);
   }  
 
 
@@ -6830,7 +8677,7 @@ namespace giac {
     if (itend-it<2)
       return res;
     for (++it;it!=itend;++it){
-      gen tmp=symbolic(at_pnt,makevecteur(gen(makevecteur(*(it-1),*it),_GROUP__VECT),0));
+      gen tmp=symbolic(at_pnt,gen(makevecteur(gen(makevecteur(*(it-1),*it),_GROUP__VECT),0),_PNT__VECT));
       vecteur add(inter(tmp,bb,contextptr));
       const_iterateur jt=add.begin(),jtend=add.end();
       for (;jt!=jtend;++jt){
@@ -6849,25 +8696,205 @@ namespace giac {
       return vecteur(0); // empty
     gen ababs(sqrt(ab2,contextptr));
     if (!a2d && (centre_a.type!=_VECT || centre_a._VECTptr->size()!=3 || centre_b.type!=_VECT || centre_b._VECTptr->size()!=3 ))
-      setsizeerr();
+      return vecteur(1,gensizeerr(contextptr));
     // delta=ra^2-rb^2+AB^2
     gen delta=rayon_a2-rayon_b2+ab2;
-    gen ab4=centre_a+delta/2/ab2*ab;;
+    gen ab4=centre_a+delta/2/ab2*ab;
     gen d_perp(sqrt(4*ab2*rayon_a2-pow(delta,2),contextptr)/2/ab2);
     if (a2d){ // circle inter circle = 2 points (or 1)
       gen ab_perp(im(ab,contextptr)-cst_i*re(ab,contextptr));
-      return makevecteur(symb_pnt(ratnormal(ab4+d_perp*ab_perp),default_color(contextptr),contextptr),symb_pnt(ratnormal(ab4-d_perp*ab_perp),default_color(contextptr),contextptr));
+      return makevecteur(symb_pnt(ratnormal(ab4+d_perp*ab_perp,contextptr),default_color(contextptr),contextptr),symb_pnt(ratnormal(ab4-d_perp*ab_perp,contextptr),default_color(contextptr),contextptr));
     }
     else { // 3-d sphere inter sphere = 2-d circle
       // we will draw a parametric curve in the plan perpendicular to ab
       // at ab4, with radius d_perp
       // Find 2 vectors normal to ab
       vecteur v1,v2;
-      normal3d(ab,v1,v2);
+      if (!normal3d(ab,v1,v2))
+	return vecteur(1,gensizeerr(contextptr));
       d_perp=sqrt(rayon_a2-pow(delta,2)/4/ab2,contextptr);
       gen eq=ab4+d_perp/abs_norm(v1,contextptr)*symb_cos(vx_var)*v1+d_perp/abs_norm(v2,contextptr)*symb_sin(vx_var)*v2;
       return makevecteur(_plotparam(eq,contextptr));
     }
+  }
+
+  vecteur curveintercircle(const gen & curve,const gen &circle,bool iscircle,GIAC_CONTEXT){
+    gen f=curve._SYMBptr->feuille;
+    if (f.type!=_VECT || f._VECTptr->empty() || f._VECTptr->front().type!=_VECT)
+      return vecteur(1,gensizeerr(contextptr));
+    vecteur vf=*f._VECTptr->front()._VECTptr;
+    gen m,tmin,tmax;
+    double T=1e300;
+    if (vf.size()>5){
+      // use parametric equation for circle or line
+      gen carteq=vf[5];
+      gen intervart("intervart",contextptr);
+      if (find_curve_parametrization(circle,m,intervart,T,tmin,tmax,false,contextptr)){
+	gen circlex,circley;
+	reim(m,circlex,circley,contextptr);
+	carteq=subst(carteq,makevecteur(x__IDNT_e,y__IDNT_e),makevecteur(circlex,circley),false,contextptr);
+	gen s=solve(carteq,intervart,0,contextptr);
+	if (s.type==_VECT){
+	  vecteur res;
+	  for (int i=0;i<int(s._VECTptr->size());++i)
+	    res.push_back(subst(m,intervart,s[i],false,contextptr));
+	  return remove_not_in_arc(res,circle,contextptr);
+	}
+      }
+    }
+    if (vf.size()<2 || vf[1].type!=_IDNT)
+      return vecteur(1,gensizeerr(contextptr));
+    if (find_curve_parametrization(curve,m,vf[1],T,tmin,tmax,false,contextptr)){
+      vf[0]=m;
+    }
+    gen eq;
+#ifndef NO_STDEXCEPT
+    try {
+#endif
+      if (iscircle){
+	gen centre,rayon;
+	if (!centre_rayon(circle,centre,rayon,false,contextptr))
+	  return vecteur(1,gensizeerr(contextptr)); // don't care about radius sign
+	gen rec,imc,rer,imr,ref,imf;
+	rec=re(centre,contextptr);
+	imc=im(centre,contextptr);
+	rer=re(rayon,contextptr);
+	imr=im(rayon,contextptr);
+	bool b=do_lnabs(contextptr);
+	do_lnabs(false,contextptr);
+	ref=re(vf[0],contextptr);
+	imf=im(vf[0],contextptr);
+	do_lnabs(b,contextptr);
+	eq=pow(ref-rec,2,contextptr)+pow(imf-imc,2,contextptr)-rer*rer-imr*imr;
+      }
+      else { // line
+	gen A(circle._VECTptr->front()),B(circle._VECTptr->back());
+	gen reA,imA,reB,imB,ref,imf;
+	reA=re(A,contextptr);
+	imA=im(A,contextptr);
+	reB=re(B,contextptr);
+	imB=im(B,contextptr);
+	bool b=do_lnabs(contextptr);
+	do_lnabs(false,contextptr);
+	ref=re(vf[0],contextptr);
+	imf=im(vf[0],contextptr);
+	do_lnabs(b,contextptr);
+	eq=(reA-ref)*(imA-imB)-(imA-imf)*(reA-reB);
+      }
+      eq=ratnormal(eq,contextptr);
+      vecteur num,den;
+      prod2frac(eq,num,den);
+      eq=vecteur2prod(num);
+      eq=normal(eq,contextptr);
+      vecteur res=solve(eq,*vf[1]._IDNTptr,0,contextptr);
+      int s=int(res.size());
+      for (int i=0;i<s;++i){
+	res[i]=symb_pnt(subst(vf[0],vf[1],res[i],false,contextptr),contextptr);
+      }
+      return remove_not_in_arc(res,circle,contextptr);
+#ifndef NO_STDEXCEPT
+    } catch (std::runtime_error & ){
+      *logptr(contextptr) << gettext("Unable to solve intersection equation ") << eq << endl;
+      return makevecteur(symbolic(at_inter,makesequence(curve,circle)));
+    }
+#endif
+  }
+ 
+  gen _innertln(const gen & g0,GIAC_CONTEXT){
+    return symbolic(at_innertln,g0);
+  }
+  static const char _innertln_s[]="innertln";
+  static define_unary_function_eval(__innertln,&_innertln,_innertln_s);
+  define_unary_function_ptr5( at_innertln ,alias_at_innertln,&__innertln,0,true);
+  static vecteur equationintercurve(const gen & at_orig,const gen & t,const gen & b,const gen & bu_orig,const gen & u,GIAC_CONTEXT){
+    gen bu=bu_orig,at=at_orig;
+    gen m,tmin,tmax; double T=1e300;
+    if (find_curve_parametrization(b,m,u,T,tmin,tmax,false,contextptr)){
+      bu=m;
+    }
+    bool approx=has_num_coeff(bu) || has_num_coeff(at);
+    if (approx){
+      bu=exact(bu,contextptr);
+      at=exact(at,contextptr);
+    }
+    // at has a rational parametrization, find cartesian equation
+    if (u.type!=_IDNT)
+      return vecteur(1,gensizeerr(contextptr));
+    gen x("x__"+print_INT_(std_rand()),contextptr),y("y__"+print_INT_(std::rand()),contextptr);
+    gen eq=rationalparam2equation(at,t,x,y,contextptr),tmp;
+    if (is_undef(eq))
+      return vecteur(1,eq);
+    // replace bu inside and solve for u
+    // insure ln are considered as reals
+    vecteur vln=lop(bu,at_ln),wln(vln);
+    for (int i=0;i<int(vln.size());++i){
+      if (vln[i].type==_SYMB)
+	wln[i]=symbolic(at_innertln,vln[i]._SYMBptr->feuille);
+    }
+    gen bu1=subst(bu,vln,wln,false,contextptr);
+    eq=subst(eq,makevecteur(x,y),makevecteur(re(bu1,contextptr),im(bu1,contextptr)),false,contextptr);
+    vln=lop(eq,at_innertln);wln=vln;
+    for (int i=0;i<int(vln.size());++i){
+      if (vln[i].type==_SYMB)
+	wln[i]=symbolic(at_ln,vln[i]._SYMBptr->feuille);
+    }
+    eq=subst(eq,vln,wln,false,contextptr);
+    gen eqx=evalf(eq,1,contextptr);
+    vecteur v=lvar(eqx);
+    if (v.size()>1)
+      eq=eqx;
+    else {
+      v=lvar(eq);
+      fraction f=e2r(eq,v,contextptr);
+      fxnd(f,eq,tmp);
+      if (approx)
+	eq=evalf(eq,1,contextptr);
+      eq=r2e(eq,v,contextptr);
+    }
+    vecteur res;
+#ifndef NO_STDEXCEPT
+    try {
+#endif
+      res=solve(eq,*u._IDNTptr,0,contextptr);
+      iterateur it=res.begin(),itend=res.end();
+      for (;it!=itend;++it){
+	*it=subst(bu,u,*it,false,contextptr);
+      }
+#ifndef NO_STDEXCEPT
+    }
+    catch (std::runtime_error & ) {
+    }
+#endif
+    return res;
+  }
+
+  bool intercartesianparametric(const gen & a0,const gen & b0,vecteur & res,GIAC_CONTEXT){ 
+    // intersection a0 cartesian equation, b0 parametric curve
+    gen a=remove_equal(a0);
+    if (is_undef(a))
+      return false;
+    gen m,mx,my,t(t__IDNT_e),tmin,tmax; double T=-1e300; bool tminmax=false; vecteur v;
+    if (!find_curve_parametrization(b0,m,t,T,tmin,tmax,tminmax,contextptr))
+      return false;
+    reim(m,mx,my,contextptr);
+    gen eq=subst(a,makevecteur(x__IDNT_e,y__IDNT_e),makevecteur(mx,my),false,contextptr);
+#ifndef NO_STDEXCEPT
+    try {
+#endif
+      v=solve(eq,t,0,contextptr);
+#ifndef NO_STDEXCEPT
+    } catch(std::runtime_error) {
+      return false;
+    }
+#endif
+    for (unsigned i=0;i<v.size();++i){
+      if (is_greater(v[i],tmin,contextptr) && is_greater(tmax,v[i],contextptr))
+	res.push_back(v[i]);
+    }
+    for (unsigned i=0;i<res.size();++i){
+      res[i]=subst(m,t,res[i],false,contextptr);
+    }
+    return true;
   }
 
   vecteur inter(const gen & aa,const gen & bb,GIAC_CONTEXT){
@@ -6897,12 +8924,12 @@ namespace giac {
     if (a.type==_VECT){
       if (a.subtype==_POLYEDRE__VECT)
 	return interpolyedre(*a._VECTptr,bb,contextptr);
-      int as=a._VECTptr->size();
+      int as=int(a._VECTptr->size());
       if (as>2)
 	return interpolygone(*a._VECTptr,bb,contextptr);
       if (as==2){ 
 	if (b.type==_VECT){
-	  int bs=b._VECTptr->size();
+	  int bs=int(b._VECTptr->size());
 	  if (bs>2)
 	    return interpolygone(*b._VECTptr,aa,contextptr);
 	  if (bs==2){ // D inter D'
@@ -6910,7 +8937,7 @@ namespace giac {
 	    gen v(a2-a1),w(b2-b1);
 	    if (v.type==_VECT){
 	      if (w.type!=_VECT || v._VECTptr->size()!=3 || w._VECTptr->size()!=3)
-		setsizeerr();
+		return vecteur(1,gensizeerr(contextptr));
 	      return inter2droites3(a1,a2,b1,b2,a.subtype,b.subtype,contextptr);
 	    }
 	    return inter2droites2(a1,a2,b1,b2,a.subtype,b.subtype,contextptr);
@@ -6925,7 +8952,7 @@ namespace giac {
     if (b.type==_VECT) {
       if (b.subtype==_POLYEDRE__VECT)
 	return interpolyedre(*b._VECTptr,aa,contextptr);
-      int bs=b._VECTptr->size();
+      int bs=int(b._VECTptr->size());
       if (bs>2)
 	return interpolygone(*b._VECTptr,aa,contextptr);
       if (bs==2){
@@ -6937,19 +8964,32 @@ namespace giac {
     }
     if ( (ac && bc) || (asp && bsp) ){
       gen centre_a,rayon_a,centre_b,rayon_b;
-      centre_rayon(a,centre_a,rayon_a,false,contextptr);
-      centre_rayon(b,centre_b,rayon_b,false,contextptr);
-      return inter2cercles_or_spheres(centre_a,abs_norm2(rayon_a,contextptr),centre_b,abs_norm2(rayon_b,contextptr),ac,contextptr);
+      if (!centre_rayon(a,centre_a,rayon_a,false,contextptr) || !centre_rayon(b,centre_b,rayon_b,false,contextptr))
+	return vecteur(1,gensizeerr(contextptr));
+      vecteur res=inter2cercles_or_spheres(centre_a,abs_norm2(rayon_a,contextptr),centre_b,abs_norm2(rayon_b,contextptr),ac,contextptr);
+      return (ac && bc)?remove_not_in_arc(remove_not_in_arc(res,a,contextptr),b,contextptr):res;
     }
+    if (a.is_symb_of_sommet(at_curve) && bc)
+      return curveintercircle(a,b,true,contextptr);
+    if (b.is_symb_of_sommet(at_curve) && ac)
+      return curveintercircle(b,a,true,contextptr);
     // Now replace line and circles by curve
-    if ((a.type==_VECT) && (a._VECTptr->size()==2))
+    if ((a.type==_VECT) && (a._VECTptr->size()==2)){
+      if (b.is_symb_of_sommet(at_curve))
+	return curveintercircle(b,a,false,contextptr);
       a=line2curve(a);
-    if ((b.type==_VECT) && (b._VECTptr->size()==2))
+    }
+    if ((b.type==_VECT) && (b._VECTptr->size()==2)){
+      if (a.is_symb_of_sommet(at_curve))
+	return curveintercircle(a,b,false,contextptr);
       b=line2curve(b);
+    }
     if (ac)
       a=cercle2curve(a,contextptr);
     if (bc)
       b=cercle2curve(b,contextptr);
+    if (is_undef(a)||is_undef(b))
+      return vecteur(1,a+b);
     if (a.is_symb_of_sommet(at_hyperplan)){
       if (b.is_symb_of_sommet(at_hyperplan))
 	return interhyperplan(a,b,contextptr);
@@ -6961,34 +9001,65 @@ namespace giac {
       if (a.is_symb_of_sommet(at_hypersphere))
 	return interplansphere(b,a,contextptr);      
       b=hyperplan2hypersurface(b);
+      if (is_undef(b))
+	return vecteur(1,b);
     }
     if (asp)
       a=hypersphere2hypersurface(a);
+    if (is_undef(a))
+      return vecteur(1,a);
     if (bsp)
       b=hypersphere2hypersurface(b);
+    if (is_undef(b))
+      return vecteur(1,b);
     if (a.is_symb_of_sommet(at_hypersurface) && b.is_symb_of_sommet(at_curve))
       return interhypersurfacecurve(a,b,contextptr);
     if (b.is_symb_of_sommet(at_hypersurface) && a.is_symb_of_sommet(at_curve))
       return interhypersurfacecurve(b,a,contextptr);
     if (a.is_symb_of_sommet(at_hypersurface) && b.is_symb_of_sommet(at_hypersurface))
       return inter2hypersurface(a,b,contextptr);
+    vecteur res;
+    if (a.is_symb_of_sommet(at_equal) && b.is_symb_of_sommet(at_curve) && intercartesianparametric(a,b,res,contextptr))
+      return res;
+    if (b.is_symb_of_sommet(at_equal) && a.is_symb_of_sommet(at_curve) && intercartesianparametric(b,a,res,contextptr))
+      return res;
     if ( (a.type==_SYMB) && (a._SYMBptr->sommet==at_curve) && (b.type==_SYMB) && (b._SYMBptr->sommet==at_curve) ){ // curve inter curve
       gen fa,fb;
       if ((fa=a._SYMBptr->feuille).type!=_VECT || (fb=b._SYMBptr->feuille).type!=_VECT || fa._VECTptr->empty() || fb._VECTptr->empty() || fa._VECTptr->front().type!=_VECT || fb._VECTptr->front().type!=_VECT)
-	setsizeerr();
+	return vecteur(1,gensizeerr(contextptr));
       vecteur va=*fa._VECTptr->front()._VECTptr;
+      if (va.size()>=6 && intercartesianparametric(va[5],b,res,contextptr))
+	return res;
       vecteur vb=*fb._VECTptr->front()._VECTptr;
+      if (vb.size()>=6 && intercartesianparametric(vb[5],a,res,contextptr))
+	return res;
       if (va.size()<2 || vb.size()<2 || va[1].type!=_IDNT || vb[1].type!=_IDNT)
-	setsizeerr();
+	return vecteur(1,gensizeerr(contextptr));
+      gen m,tmin,tmax; double T=1e300;
+      if (find_curve_parametrization(ac?remove_at_pnt(aa):a,m,va[1],T,tmin,tmax,false,contextptr)){
+	return equationintercurve(m,va[1],b,vb[0],vb[1],contextptr);
+	// va[0]=m;
+      }
+      if (find_curve_parametrization(bc?remove_at_pnt(bb):b,m,vb[1],T,tmin,tmax,false,contextptr)){
+	return equationintercurve(m,vb[1],a,va[0],va[1],contextptr);
+	// vb[0]=m;
+      }
+      if (va[1]==vb[1]){
+	gen newvb(va[1].print(contextptr)+print_INT_(std::rand()),contextptr);
+	vb[0]=subst(vb[0],vb[1],newvb,true,contextptr);
+	vb[1]=newvb;
+      }
       gen xa=re(va[0],contextptr),ya=im(va[0],contextptr);
       rewrite_with_t_real(xa,va[1],contextptr);
       rewrite_with_t_real(ya,va[1],contextptr);
       gen xb=re(vb[0],contextptr),yb=im(vb[0],contextptr);
-      rewrite_with_t_real(xb,va[1],contextptr);
-      rewrite_with_t_real(yb,va[1],contextptr);
+      rewrite_with_t_real(xb,vb[1],contextptr);
+      rewrite_with_t_real(yb,vb[1],contextptr);
       gen eq=xa-xb;
       vecteur sol,res;
+#ifndef NO_STDEXCEPT
       try {
+#endif
 	sol=solve(eq,*va[1]._IDNTptr,0,contextptr); 
 	bool exchanged=sol.empty();
 	if (exchanged)
@@ -7004,16 +9075,18 @@ namespace giac {
 	  sol.push_back(symb_pnt(subst((exchanged?va:vb)[0],(exchanged?va:vb)[1],*it,false,contextptr),default_color(contextptr),contextptr));
 	}
 	return sol;
+#ifndef NO_STDEXCEPT
       }
-      catch (std::runtime_error & error){
-	return makevecteur(symbolic(at_inter,makevecteur(a,b)));
+      catch (std::runtime_error &){
+	return makevecteur(symbolic(at_inter,makesequence(a,b)));
       }
+#endif
     }
-    return makevecteur(symbolic(at_inter,makevecteur(a,b)));
+    return makevecteur(symbolic(at_inter,makesequence(a,b)));
   }
 
   // args=[curve, parameter] or element(curve)
-  gen tangent(const gen & args,GIAC_CONTEXT){
+  static gen tangent(const gen & args,GIAC_CONTEXT){
     gen arg=args;
     if (arg.type!=_VECT){
       // check if arg is an element of a curve
@@ -7023,12 +9096,54 @@ namespace giac {
 	  arg=(*arg._VECTptr)[1];
       }
     }
-    if (arg.type!=_VECT)
-      setsizeerr();
+    if (arg.type!=_VECT || arg._VECTptr->empty())
+      return gensizeerr(contextptr);
     vecteur & argv=*arg._VECTptr;
-    int s=argv.size()-1;
+    int s=int(argv.size())-1;
     vecteur result,parameqs;
     gen t=argv.back();
+    if (s==1 && argv[0].type==_SYMB && !argv[0].is_symb_of_sommet(at_pnt)){
+      vecteur s1,s2;
+      t=remove_at_pnt(t);
+      surd2pow(t,s1,s2,contextptr);
+      t=subst(t,s1,s2,false,contextptr);
+      gen argv0=remove_equal(argv[0]);
+      if (t.type!=_VECT){
+	// tangent to a 2-d curve given by an equation
+	gen xy(makevecteur(x__IDNT_e,y__IDNT_e));
+	gen der(derive(argv0,xy,contextptr));
+	gen tr,ti;
+	reim(t,tr,ti,contextptr);
+	gen tri(makevecteur(tr,ti));
+	if (is_zero(simplify(subst(argv0,xy,tri,false,contextptr),contextptr),contextptr)){
+	  der=subst(der,xy,tri,false,contextptr);
+	  if (der.type==_VECT && der._VECTptr->size()==2){
+	    if (is_zero(der,contextptr))
+	      return gensizeerr("Tangent at a singular point");
+	    return _droite((xy[0]-tri[0])*der[0]+(xy[1]-tri[1])*der[1],contextptr);
+	  }
+	}
+	if (der.type==_VECT && der._VECTptr->size()==2){
+	  gen droite=der._VECTptr->front()*(xy[0]-tr)+der._VECTptr->back()*(xy[1]-ti);
+	  vecteur sol=gsolve(makevecteur(droite,argv0),*xy._VECTptr,false,(approx_mode(contextptr)?1:0),contextptr);
+	  if (!is_undef(sol)){
+	    vecteur res;
+	    for (unsigned i=0;i<sol.size();++i){
+	      gen soli=normal(sol[i],contextptr);
+	      gen derp=subst(makevecteur(-der._VECTptr->back(),der._VECTptr->front()),xy,soli,false,contextptr);
+	      if (!is_zero(derp,contextptr))
+		res.push_back(_droite(makesequence(soli,derp),contextptr));
+	    }
+	    if (res.size()==1)
+	      return res.front();
+	    else
+	      return gen(res,_SEQ__VECT);
+	  }
+	}
+	return gensizeerr(gettext("Point is not on curve"));
+      }
+      return gensizeerr(gettext("2-d point expected"));
+    }
     for (int i=0;i<s;++i){
       gen curve=remove_at_pnt(argv[i]);
       if (curve.type==_VECT && !curve._VECTptr->empty() && curve._VECTptr->back().is_symb_of_sommet(at_pnt))
@@ -7042,33 +9157,39 @@ namespace giac {
       }
       if ( (curve.type==_SYMB) && (curve._SYMBptr->sommet==at_cercle || curve._SYMBptr->sommet==at_hypersphere)){
 	gen centre,rayon;
-	centre_rayon(curve,centre,rayon,false,contextptr);
-	rayon=ratnormal(rayon);
-	if ( t.type==_VECT || t.is_symb_of_sommet(at_pnt) || !is_zero(im(t,contextptr)) ){
+	if (!centre_rayon(curve,centre,rayon,false,contextptr))
+	  continue;
+	rayon=ratnormal(rayon,contextptr);
+	if ( t.type==_VECT || t.is_symb_of_sommet(at_pnt) || !is_zero(im(t,contextptr),contextptr) ){
 	  // tangent to cercle via point
 	  t=remove_at_pnt(t);
+	  if (t.type==_SYMB && equalposcomp(plot_sommets,t._SYMBptr->sommet))
+	    return gensizeerr(contextptr);
 	  gen OA=t-centre;
-	  gen rayonb2(normal(abs_norm2(OA,contextptr)-rayon*conj(rayon,contextptr),contextptr));
-	  if (is_zero(rayonb2)){
+	  gen rayon2=rayon*conj(rayon,contextptr);
+	  gen rayonb2(normal(abs_norm2(OA,contextptr)-rayon2,contextptr));
+	  if (is_zero(rayonb2/rayon2,contextptr)){
 	    if (OA.type==_VECT)
-	      result.push_back(_plan(makevecteur(OA,t),contextptr));
+	      result.push_back(_plan(makesequence(OA,t),contextptr));
 	    else
-	      result.push_back(_droite(makevecteur(t,t+im(OA,contextptr)-cst_i*re(OA,contextptr)),contextptr));
+	      result.push_back(_droite(makesequence(t,t+im(OA,contextptr)-cst_i*re(OA,contextptr)),contextptr));
 	    continue;
 	  }
 	  if (is_positive(-rayonb2,contextptr))
 	    continue;
 	  if (OA.type==_VECT)
-	    setsizeerr();
-	  vecteur v=inter2cercles_or_spheres(centre,rayon*conj(rayon,contextptr),t,rayonb2,true,contextptr); // inter(_cercle(makevecteur(symb_pnt(t,contextptr),sqrt(rayonb2)),contextptr),curve,contextptr);
+	    return gensizeerr(contextptr);
+	  vecteur v=inter2cercles_or_spheres(centre,rayon2,t,rayonb2,true,contextptr); // inter(_cercle(makevecteur(symb_pnt(t,contextptr),sqrt(rayonb2)),contextptr),curve,contextptr);
 	  if (!v.empty()){
-	    result.push_back(_droite(makevecteur(t,v.front()),contextptr));
-	    result.push_back(_droite(makevecteur(t,v.back()),contextptr));
+	    if (is_undef(v.front()))
+	      return v.front();
+	    result.push_back(_droite(makesequence(t,v.front()),contextptr));
+	    result.push_back(_droite(makesequence(t,v.back()),contextptr));
 	  }
 	}
 	else {
-	  t=centre+rayon*exp(cst_i*t,contextptr);
-	  result.push_back(_perpendiculaire(makevecteur(t,t,centre),contextptr));
+	  t=centre+abs(rayon,contextptr)*exp(cst_i*t,contextptr);
+	  result.push_back(_perpendiculaire(makesequence(t,t,centre),contextptr));
 	}
 	continue;
       }
@@ -7079,7 +9200,7 @@ namespace giac {
       if (curve.is_symb_of_sommet(at_hypersurface)){
 	gen & curvef=curve._SYMBptr->feuille;
 	if (curvef.type!=_VECT || curvef._VECTptr->size()<3)
-	  setsizeerr();
+	  return gensizeerr(contextptr);
 	vecteur curvev=*curvef._VECTptr;
 	gen eq(undef),vars;
 	if (curvev[1].type!=_VECT){
@@ -7091,75 +9212,157 @@ namespace giac {
 	  gen f=curvev[0];
 	  vars=curvev[1];
 	  gen fprime=derive(f,vars,contextptr);
-	  fprime=ratnormal(subst(fprime,vars,t,false,contextptr));
-	  t=ratnormal(subst(f,vars,t,false,contextptr));
+	  if (is_undef(fprime))
+	    return fprime;
+	  fprime=ratnormal(subst(fprime,vars,t,false,contextptr),contextptr);
+	  t=ratnormal(subst(f,vars,t,false,contextptr),contextptr);
 	  // make hyperplan by t with normal orthogonal to fprime
 	  if (!ckmatrix(fprime) || fprime._VECTptr->size()!=2)
-	    setsizeerr();
-	  vecteur n(cross(*fprime._VECTptr->front()._VECTptr,*fprime._VECTptr->back()._VECTptr));
-	  result.push_back( _plan(makevecteur(n,t),contextptr));
+	    return gensizeerr(contextptr);
+	  vecteur n(cross(*fprime._VECTptr->front()._VECTptr,*fprime._VECTptr->back()._VECTptr,contextptr));
+	  result.push_back(symbolic(at_hyperplan,makesequence(n,t)));
 	  continue;
 	}
 	if (is_undef(eq))
-	  setsizeerr("Hypersurface w/o equation not implemented");
+	  return gensizeerr(gettext("Hypersurface w/o equation not implemented"));
 	t=remove_at_pnt(t);
 	// Check that the point is on the hypersurface (with the equation)
 	gen res=simplify(subst(eq,vars,t,false,contextptr),contextptr);
-	if (!is_zero(res))
-	  setsizeerr("f(t)!=0:"+res.print(contextptr));
+	if (!is_zero(res,contextptr))
+	  return gensizeerr(gettext("f(t)!=0:")+res.print(contextptr));
 	gen fprime(derive(eq,vars,contextptr));
-	fprime=ratnormal(subst(fprime,vars,t,false,contextptr));
+	if (is_undef(fprime))
+	  return fprime;
+	fprime=ratnormal(subst(fprime,vars,t,false,contextptr),contextptr);
 	fprime=fprime/abs_norm(fprime,contextptr);
-	result.push_back(_plan(makevecteur(fprime,t),contextptr));
+	result.push_back(symbolic(at_hyperplan,makesequence(fprime,t)));
 	continue;
       }
       if ( (curve.type!=_SYMB) || (curve._SYMBptr->sommet!=at_curve))
-	setsizeerr();
+	return gensizeerr(contextptr);
       vecteur v=*curve._SYMBptr->feuille._VECTptr->front()._VECTptr;
-      gen direction(derive(v[0],*v[1]._IDNTptr,contextptr));
+      gen v06=v[0];
+      if (v.size()>6 && !is_undef(v[6]))
+	v06=v[6];
+      gen direction;
+      direction=derive(v06,*v[1]._IDNTptr,contextptr);
+      if (is_undef(direction))
+	return direction;
       if ( (t.type==_SYMB) && (t._SYMBptr->sommet==at_pnt)){
+	if (t._SYMBptr->feuille[1].type==_VECT){
+	  vecteur tv=*t._SYMBptr->feuille[1]._VECTptr;
+	  if (tv.size()>=2){
+	    gen M=tv[1];
+	    if (M.type==_VECT && M._VECTptr->size()==2){
+	      gen Mon=M._VECTptr->front();
+	      gen Mt=M._VECTptr->back();
+	      if (remove_at_pnt(Mon)==curve){
+		direction=subst(direction,v[1],Mt,false,contextptr);
+		M=t._SYMBptr->feuille[0]; // remove_at_pnt(t);
+		return _droite_segment(gen(makevecteur(M,M+direction),_SEQ__VECT),_LINE__VECT,vecteur(1,default_color(contextptr)),contextptr);
+	      }
+	    }
+	  }
+	}
 	gen M=remove_at_pnt(t);
-	gen xt(re(v[0],contextptr)),yt(im(v[0],contextptr)),xp(re(direction,contextptr)),yp(im(direction,contextptr));
+	if (M.is_symb_of_sommet(at_curve)) return gensizeerr(contextptr);
+	gen m,tmin,tmax;
+	double T=1;
+	if (v[1].type==_IDNT && find_curve_parametrization(curve,m,v[1],T,tmin,tmax,false,contextptr)){
+	  if (re(m,contextptr)==v[1]){
+	    gen r=re(M,contextptr);
+	    // check that M is on the curve? was disabled, re-enabled, if not don't draw anything
+	    if (
+		// true || is_zero(normal(M-subst(m,v[1],r,false,contextptr),contextptr))
+		is_zero(evalf(M-subst(m,v[1],r,false,contextptr),1,contextptr),contextptr)
+		){
+	      direction=subst(direction,v[1],r,false,contextptr);
+	      result.push_back(_droite(makevecteur(M,M+direction),contextptr));
+	      return result;
+	    }
+	    // not on the curve, if not polynomial return undef
+	    if (lvarx(m,v[1]).size()>=2){
+	      *logptr(contextptr) << "Point is not on curve" << endl;
+	      return undef;
+	    }
+	  }
+	  vecteur mv=rlvarx(m,v[1]);
+	  if (mv.empty() || (mv.size()==1 && mv.front()==v[1])){
+	    gen x(" x",contextptr),y(" y",contextptr);
+	    gen eq=rationalparam2equation(m,v[1],x,y,contextptr);
+	    if (is_undef(eq))
+	      return eq;
+	    // contact point N(x,y) must verify eq and M-N normal to diff(eq,x),diff(eq,y)
+	    gen Mx=re(M,contextptr),My=im(M,contextptr);
+	    gen eqx=derive(eq,x,contextptr),eqy=derive(eq,y,contextptr);
+	    if (is_undef(eqx) || is_undef(eqy))
+	      return eqx+eqy;
+	    gen eq2=(Mx-x)*eqx+(My-y)*eqy;
+	    vecteur sols=gsolve(makevecteur(eq,eq2),makevecteur(x,y),false,(approx_mode(contextptr)?1:0),contextptr);
+	    if (is_undef(sols))
+	      return sols;
+	    // build tangents
+	    vecteur res;
+	    const_iterateur it=sols.begin(),itend=sols.end();
+	    for (;it!=itend;++it){
+	      gen N=it->_VECTptr->front()+cst_i*it->_VECTptr->back();
+	      if (!is_zero(recursive_normal(M-N,contextptr),contextptr))
+		res.push_back(_droite(gen(makevecteur(M,N),_SEQ__VECT),contextptr));
+	      else {
+		gen dir=subst(eqy-cst_i*eqx,makevecteur(x,y),*it,false,contextptr);
+		res.push_back(_droite(gen(makevecteur(N,N+dir),_SEQ__VECT),contextptr));
+	      }
+	    }
+	    if (res.size()==1)
+	      return res.front();
+	    return res;
+	  }
+	} // end if (v[1].type==_IDNT ...)
+	gen xt(re(v06,contextptr)),yt(im(v06,contextptr)),xp(re(direction,contextptr)),yp(im(direction,contextptr));
 	gen var=v[1];
 	rewrite_with_t_real(xt,var,contextptr);
 	rewrite_with_t_real(yt,var,contextptr);
 	rewrite_with_t_real(xp,var,contextptr);
 	rewrite_with_t_real(yp,var,contextptr);
 	// for plotfunc, check if var=re(M)
-	if (is_zero(normal(subst(yt,var,re(M,contextptr),false,contextptr)-im(M,contextptr),contextptr)) &&
-	    is_zero(normal(subst(xt,var,re(M,contextptr),false,contextptr)-re(M,contextptr),contextptr)) ){
+	gen test1=recursive_normal(subst(yt,var,re(M,contextptr),false,contextptr)-im(M,contextptr),contextptr),test2=recursive_normal(subst(xt,var,re(M,contextptr),false,contextptr)-re(M,contextptr),contextptr);
+	if (is_zero(test1,contextptr) && is_zero(test2,contextptr)){
 	  direction=subst(direction,var,re(M,contextptr),false,contextptr);
 	  result.push_back(_droite(makevecteur(M,M+direction),contextptr));
 	  continue;
 	}
 	vecteur sol;
 	gen lambda=xp*(yt-im(M,contextptr))-yp*(xt-re(M,contextptr));
+#ifndef NO_STDEXCEPT
 	try {
+#endif
 	  // find t such that x'(t)*(M_y-y(t)) = y'(t)*(M_x-x(t))
 	  sol=solve( lambda,*var._IDNTptr,0,contextptr);
+#ifndef NO_STDEXCEPT
 	}
 	catch (std::runtime_error & error ){
 	  *logptr(contextptr) << error.what() << endl;
 	  sol.clear();
 	}
+#endif
 	iterateur it=sol.begin(),itend=sol.end();
 	for (;it!=itend;++it){
 	  if (is_undef(*it))
-	    setsizeerr("Unable to solve");
-	  gen Mt=subst(v[0],var,*it,false,contextptr); // point on the curve
-	  if (is_zero(normal(M-Mt,contextptr))){
+	    return gensizeerr(gettext("Unable to solve"));
+	  gen Mt=subst(v06,var,*it,false,contextptr); // point on the curve
+	  if (is_zero(normal(M-Mt,contextptr),contextptr)){
 	    direction=subst(direction,var,*it,false,contextptr);
-	    result.push_back(_droite(makevecteur(M,M+direction),contextptr));
+	    result.push_back(_droite(makesequence(M,M+direction),contextptr));
 	    continue;
 	  }
-	  result.push_back(_droite(makevecteur(M,Mt),contextptr));
+	  result.push_back(_droite(makesequence(M,Mt),contextptr));
 	}
 	continue;
       }
       else {
 	direction=subst(direction,v[1],t,false,contextptr);
-	gen point(subst(v[0],v[1],t,false,contextptr));
-	result.push_back(_droite(makevecteur(point,point+direction),contextptr));
+	gen point(subst(v06,v[1],t,false,contextptr));
+	result.push_back(_droite(makesequence(point,point+direction),contextptr));
 	continue;
       }
     }
@@ -7168,92 +9371,163 @@ namespace giac {
     return gen(result,_GROUP__VECT);
   }
   gen _tangent(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     vecteur attributs(1,default_color(contextptr));
     vecteur v(seq2vecteur(args));
     int s=read_attributs(v,attributs,contextptr);
     if (!s)
-      setdimerr();
+      return gendimerr(contextptr);
     if (s==1)
       return put_attributs(tangent(v.front(),contextptr),attributs,contextptr);
-    return put_attributs(tangent(gen(vecteur(v.begin(),v.begin()+s),args.subtype),contextptr),attributs,contextptr);
+    gen res=tangent(gen(vecteur(v.begin(),v.begin()+s),args.subtype),contextptr);
+    if (res.type==_VECT && res._VECTptr->size()==1)
+      res=res._VECTptr->front();
+    return put_attributs(res,attributs,contextptr);
   }
-  const string _tangent_s("tangent");
-  unary_function_eval __tangent(&giac::_tangent,_tangent_s);
-  unary_function_ptr at_tangent (&__tangent,0,true);
+  static const char _tangent_s []="tangent";
+  static define_unary_function_eval (__tangent,&giac::_tangent,_tangent_s);
+  define_unary_function_ptr5( at_tangent ,alias_at_tangent,&__tangent,0,true);
 
-  void foyers_a(const gen & args,gen & F1,gen & F2, gen & a,GIAC_CONTEXT){
+  static bool is_valid_point(const gen & g){
+    if (is_undef(g))
+      return false;
+    if (g.type==_VECT){
+      vecteur & v = *g._VECTptr;
+      int s=int(v.size());
+      if (s!=3)
+	return false;
+      if (v.front().type==_VECT)
+	return false;
+    }
+    return true;
+  }
+  static bool foyers_a(const gen & args,gen & F1,gen & F2, gen & a,GIAC_CONTEXT){
     gen FF=remove_at_pnt(args._VECTptr->front());
     if (FF.type==_VECT && FF._VECTptr->size()!=3){
       if (FF._VECTptr->size()!=2)
-	setsizeerr();
+	return false; // setsizeerr(contextptr);
       F1=FF._VECTptr->front();
       F2=FF._VECTptr->back();
     }
     else {
       if (args._VECTptr->size()!=3)
-	setsizeerr();
+	return false; // setsizeerr(contextptr);
       F1=FF;
       F2=remove_at_pnt((*args._VECTptr)[1]);
     }
     a=args._VECTptr->back();
-    a=get_point(a,0,contextptr);
-    F1=get_point(F1,0,contextptr);
-    F2=get_point(F2,0,contextptr);
+    a=remove_at_pnt(get_point(a,0,contextptr));
+    F1=remove_at_pnt(get_point(F1,0,contextptr));
+    F2=remove_at_pnt(get_point(F2,0,contextptr));
+    if (!is_valid_point(a) || !is_valid_point(F1) || !is_valid_point(F2))
+      return false;
+    return true;
   }
 
-  gen xy2eitheta(const gen & x,const gen & y,GIAC_CONTEXT){
-    if (is_zero(x))
+  static gen xy2eitheta(const gen & x,const gen & y,GIAC_CONTEXT){
+    if (is_zero(x,contextptr))
       return cst_i;
-    gen t=rdiv(y,x);
-    t=rdiv(plus_one+cst_i*t,sqrt(plus_one+t*t,contextptr));
+    gen t=rdiv(y,x,contextptr);
+    t=rdiv(plus_one+cst_i*t,sqrt(plus_one+t*t,contextptr),contextptr);
     if (!is_positive(x,contextptr)) 
       return -t;
     else
       return t;
   }
 
+  // cartesian ellipse or hyperbola equation from focus F1/F2 and square of a
+  static gen ellipse_hyperbole_equation(const gen & F1,const gen & F2,const gen & a2,GIAC_CONTEXT){
+    gen x1,x2,y1,y2,x(x__IDNT_e),y(y__IDNT_e);
+    if (F1.type==_VECT)
+      return undef;
+    reim(F1,x1,y1,contextptr);
+    reim(F2,x2,y2,contextptr);
+    gen diffMF2=(x2-x1)*(2*x-(x1+x2))+(y2-y1)*(2*y-(y1+y2));
+    gen MF2=pow(x-x1,2,contextptr)+pow(y-y1,2,contextptr);
+    gen eq=16*a2*a2+8*a2*diffMF2+pow(diffMF2,2)-16*a2*MF2;
+    return eq;
+  }
+
   gen _ellipse(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     ck_parameter_t(contextptr);
     if (args.type!=_VECT)
       return _plotimplicit(args,contextptr);
     vecteur attributs(1,default_color(contextptr));
     int s=read_attributs(*args._VECTptr,attributs,contextptr);
     if (!s)
-      setdimerr();
+      return gendimerr(contextptr);
     if (s==1)
       return _plotimplicit(args,contextptr);
     // args=[F,F',M] or [F,F',a] / FM+F'M=2*a
-    gen F1,F2,a,n;
+    gen F1,F2,M,a,a2,n;
     gen aorig=*(args._VECTptr->begin()+s-1);
-    foyers_a(vecteur(args._VECTptr->begin(),args._VECTptr->begin()+s),F1,F2,a,contextptr);
-    if ( aorig.is_symb_of_sommet(at_pnt) || a.type==_VECT || !is_zero(im(a,contextptr)) ){
-      a=get_point(remove_at_pnt(a),0,contextptr);
+    if (!foyers_a(vecteur(args._VECTptr->begin(),args._VECTptr->begin()+s),F1,F2,a,contextptr))
+      return gensizeerr(contextptr);
+    if ( aorig.is_symb_of_sommet(at_pnt) || a.type==_VECT || !is_zero(im(a,contextptr),contextptr) ){
+      M=a=remove_at_pnt(get_point(remove_at_pnt(a),0,contextptr));
+      if (is_undef(a)) return a;
       if (a.type==_VECT)
 	n=a;
-      a=rdiv(abs_norm(a-F1,contextptr)+abs_norm(a-F2,contextptr),plus_two);
+      a=rdiv(abs_norm(a-F1,contextptr)+abs_norm(a-F2,contextptr),plus_two,contextptr);
+      gen MF1=distance2(M,F1,contextptr),MF2=distance2(M,F2,contextptr);
+      a2=(MF1+MF2)/4+sqrt(MF1*MF2,contextptr)/2;
     }
+    else {
+      gen F1F2=F2-F1;
+      gen c=abs_norm(F1F2,contextptr)/2;
+      M=F1+(a/c+1)/2*F1F2;
+      a2=recursive_normal(a*a,contextptr);
+    }
+    gen eq=ellipse_hyperbole_equation(F1,F2,a2,contextptr);
+    gen parameq=conique_ratparam(eq,M,contextptr);
     gen F1F2=F2-F1;
-    gen O=rdiv(F1+F2,plus_two);
-    gen c2=rdiv(F1F2.squarenorm(contextptr),gen(4));
-    gen b=sqrt(a*a-c2,contextptr),res;
-    gen theta=t__IDNT_e;
+    gen O=rdiv(F1+F2,plus_two,contextptr);
+    gen c2=rdiv(F1F2.squarenorm(contextptr),gen(4),contextptr);
+    gen b=sqrt(a2-c2,contextptr),res;
+#if 0 // def GIAC_HAS_STO_38
+    gen theta=vx_var;
+#else
+    gen theta=identificateur("t"); // t__IDNT_e;
+#endif
+    gen theta_orig=theta;
+    if(!angle_radian(contextptr))
+      {
+	//grad
+	if(angle_degree(contextptr))
+	  theta=gen(180)/cst_pi*theta;
+	else
+	  theta = gen(200) / cst_pi*theta;
+      }
     if (n.type==_VECT){ // 3-d
       n=n-O;
-      n=cross(cross(F1F2,n),F1F2);
+      n=cross(cross(F1F2,n,contextptr),F1F2,contextptr);
       res=O+a*symb_cos(theta)*F1F2/abs_norm(F1F2,contextptr)+b*symb_sin(theta)*n/abs_norm(n,contextptr);
     }
     else { // 2-d
       gen xF1F2=re(F1F2,contextptr),yF1F2=im(F1F2,contextptr);
       gen eitheta(xy2eitheta(xF1F2,yF1F2,contextptr));
       res=eitheta*(a*symb_cos(theta)+b*cst_i*symb_sin(theta))+O;
+      gen r,i;
+      reim(res,r,i,contextptr);
+      res=makevecteur(r,i);
     }
-    return _paramplot(gen(makevecteur(res,symb_equal(t__IDNT_e,symb_interval(0,2*cst_pi)),symb_equal(_NSTEP,60),symb_equal(_USTEP,M_PI/30),symbolic(at_equal,makevecteur(_COLOR,attributs[0]))),_SEQ__VECT),contextptr);
+    gen ustep=_USTEP;
+    ustep.subtype=_INT_PLOT;
+    gen nstep=_NSTEP;
+    nstep.subtype=_INT_PLOT;
+#if 0 // def GIAC_HAS_STO_38
+    return _paramplot(gen(makevecteur(res,symb_equal(vx_var,symb_interval(0,2*cst_pi)),symb_equal(nstep,60),symb_equal(ustep,M_PI/30),symbolic(at_equal,makesequence(at_display,attributs[0])),eq,parameq),_SEQ__VECT),contextptr);
+#else
+    return _paramplot(gen(makevecteur(res,symb_equal(theta_orig,symb_interval(0,2*cst_pi)),symb_equal(nstep,120),symb_equal(ustep,M_PI/60),symbolic(at_equal,makesequence(at_display,attributs[0])),eq,parameq),_SEQ__VECT),contextptr);
+#endif
   }
-  const string _ellipse_s("ellipse");
-  unary_function_eval __ellipse(&giac::_ellipse,_ellipse_s);
-  unary_function_ptr at_ellipse (&__ellipse,0,true);
+  static const char _ellipse_s []="ellipse";
+  static define_unary_function_eval (__ellipse,&giac::_ellipse,_ellipse_s);
+  define_unary_function_ptr5( at_ellipse ,alias_at_ellipse,&__ellipse,0,true);
 
   gen _hyperbole(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     ck_parameter_t(contextptr);
     if (args.type!=_VECT)
       return _plotimplicit(args,contextptr);
@@ -7261,62 +9535,102 @@ namespace giac {
     vecteur attributs(1,default_color(contextptr));
     int s=read_attributs(*args._VECTptr,attributs,contextptr);
     if (!s)
-      setdimerr();
+      return gendimerr(contextptr);
     if (s==1)
       return _plotimplicit(args,contextptr);
-    gen F1,F2,a,n;
-    foyers_a(vecteur(args._VECTptr->begin(),args._VECTptr->begin()+s),F1,F2,a,contextptr);
-    if ( a.is_symb_of_sommet(at_pnt) || !is_zero(im(a,contextptr)) ){
-      a=get_point(remove_at_pnt(a),0,contextptr);
+    gen F1,F2,a,a2,n;
+    gen aorig=*(args._VECTptr->begin()+s-1);
+    gen M;
+    if (!foyers_a(vecteur(args._VECTptr->begin(),args._VECTptr->begin()+s),F1,F2,a,contextptr))
+      return gensizeerr(contextptr);
+    if ( aorig.is_symb_of_sommet(at_pnt) || a.type==_VECT || !is_zero(im(a,contextptr),contextptr) ){
+      M=a=remove_at_pnt(get_point(remove_at_pnt(a),0,contextptr));
+      if (is_undef(a)) return a;
       if (a.type==_VECT)
 	n=a;
-      a=rdiv(abs_norm(a-F1,contextptr)-abs_norm(a-F2,contextptr),plus_two);
+      a=rdiv(abs_norm(a-F1,contextptr)-abs_norm(a-F2,contextptr),plus_two,contextptr);
+      gen MF1=distance2(M,F1,contextptr),MF2=distance2(M,F2,contextptr);
+      a2=(MF1+MF2)/4-sqrt(MF1*MF2,contextptr)/2;
     }
+    else {
+      gen F1F2=F2-F1;
+      gen c=abs_norm(F1F2,contextptr)/2;
+      M=F1+(a/c+1)/2*F1F2;
+      a2=recursive_normal(a*a,contextptr);
+    }
+    gen eq=ellipse_hyperbole_equation(F1,F2,a2,contextptr);
+    gen parameq=conique_ratparam(eq,M,contextptr);
     gen F1F2=F2-F1;
-    gen O=rdiv(F1+F2,plus_two);
-    gen c2=rdiv(F1F2.squarenorm(contextptr),gen(4));
-    gen b=sqrt(c2-a*a,contextptr),res;
-    gen theta=t__IDNT_e;
+    gen O=rdiv(F1+F2,plus_two,contextptr);
+    gen c2=rdiv(F1F2.squarenorm(contextptr),gen(4),contextptr);
+    gen b=sqrt(c2-a2,contextptr),res,res1,res2;
+#if 0 // def GIAC_HAS_STO_38
+    gen theta=vx_var;
+#else
+    gen theta=identificateur("t"); // t__IDNT_e;
+#endif
     if (n.type==_VECT){
       n=n-O;
-      n=cross(cross(F1F2,n),F1F2);
-      res=a*cosh(theta,contextptr)*F1F2/abs_norm(F1F2,contextptr)+b*sinh(theta,contextptr)*n/abs_norm(n,contextptr);
+      n=cross(cross(F1F2,n,contextptr),F1F2,contextptr);
+      res1=a*cosh(theta,contextptr)*F1F2/abs_norm(F1F2,contextptr)+b*sinh(theta,contextptr)*n/abs_norm(n,contextptr);
+      res2=-a*cosh(theta,contextptr)*F1F2/abs_norm(F1F2,contextptr)+b*sinh(theta,contextptr)*n/abs_norm(n,contextptr);
     }
     else {
       gen xF1F2=re(F1F2,contextptr),yF1F2=im(F1F2,contextptr);
       gen eitheta(xy2eitheta(xF1F2,yF1F2,contextptr));
       res=eitheta*(a*cosh(theta,contextptr)+b*cst_i*sinh(theta,contextptr));
+      gen r,i;
+      reim(res+O,r,i,contextptr);
+      res1=makevecteur(r,i);
+      reim(-res+O,r,i,contextptr);
+      res2=makevecteur(r,i);
     }
-    return makevecteur(_paramplot(gen(makevecteur(res+O,symb_equal(t__IDNT_e,symb_interval(-3,3)),symb_equal(_NSTEP,60),symb_equal(_USTEP,0.1),symbolic(at_equal,makevecteur(_COLOR,attributs[0]))),_SEQ__VECT),contextptr),_paramplot(gen(makevecteur(-res+O,symb_equal(t__IDNT_e,symb_interval(-3,3)),symb_equal(_NSTEP,60),symb_equal(_USTEP,0.1),symbolic(at_equal,makevecteur(_COLOR,attributs[0]))),_SEQ__VECT),contextptr)); // should be -inf..inf
+    gen ustep=_USTEP;
+    ustep.subtype=_INT_PLOT;
+    gen nstep=_NSTEP;
+    nstep.subtype=_INT_PLOT;
+#if 0 // def GIAC_HAS_STO_38
+    return makevecteur(_paramplot(gen(makevecteur(res1,symb_equal(vx_var,symb_interval(-3,3)),symb_equal(nstep,60),symb_equal(ustep,0.1),symbolic(at_equal,makesequence(at_display,attributs[0])),eq),_SEQ__VECT),contextptr),_paramplot(gen(makevecteur(res2,symb_equal(vx_var,symb_interval(-3,3)),symb_equal(nstep,60),symb_equal(ustep,0.1),symbolic(at_equal,makesequence(at_display,attributs[0])),eq,parameq),_SEQ__VECT),contextptr)); // should be -inf..inf
+#else
+    return makevecteur(_paramplot(gen(makevecteur(res1,symb_equal(theta,symb_interval(-3,3)),symb_equal(nstep,60),symb_equal(ustep,0.1),symbolic(at_equal,makesequence(at_display,attributs[0])),eq,parameq),_SEQ__VECT),contextptr),_paramplot(gen(makevecteur(res2,symb_equal(theta,symb_interval(-3,3)),symb_equal(nstep,60),symb_equal(ustep,0.1),symbolic(at_equal,makesequence(at_display,attributs[0])),eq,parameq),_SEQ__VECT),contextptr)); // should be -inf..inf
+#endif
   }
-  const string _hyperbole_s("hyperbola");
-  unary_function_eval __hyperbole(&giac::_hyperbole,_hyperbole_s);
-  unary_function_ptr at_hyperbole (&__hyperbole,0,true);
+  static const char _hyperbole_s []="hyperbola";
+  static define_unary_function_eval (__hyperbole,&giac::_hyperbole,_hyperbole_s);
+  define_unary_function_ptr5( at_hyperbole ,alias_at_hyperbole,&__hyperbole,0,true);
 
   gen _parabole(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     ck_parameter_t(contextptr);
     vecteur attributs(1,default_color(contextptr));
-    // args=[O,F] symmetry axe=OF (t+i*t^2)/OF
+    // args=[F,O] symmetry axe=OF (t+i*t^2)/OF
     // or args=[0,c] symmetry axe=Oy y=c*x^2 (t+i*t^2)/c or args=c
     gen O,F,c,eitheta=plus_one;
     vecteur v=gen2vecteur(args);
     int s=read_attributs(v,attributs,contextptr);
     v=vecteur(v.begin(),v.begin()+s);
     if (!s)
-      setdimerr();
+      return gendimerr(contextptr);
     if (s==1)
       return _plotimplicit(args,contextptr);
     F=remove_at_pnt(v.front());
     O=v[1];
-    if ( O.is_symb_of_sommet(at_pnt) || !is_zero(im(O,contextptr)) ){
-      O=remove_at_pnt(O);
-      gen OF=F-O;
+    if ( O.is_symb_of_sommet(at_pnt) || !is_zero(im(O,contextptr),contextptr) ){
+      gen OF=remove_at_pnt(O);
+      if (OF.type==_VECT && OF._VECTptr->size()==2){
+	// find the projection of F over O
+	OF=projectionpoint(O,F,contextptr);
+	OF=(remove_at_pnt(OF)+F)/2;
+      }
+      O=OF;
+      OF=F-OF;
       c=abs_norm(OF,contextptr);
-      if (OF.type!=_VECT)
-	eitheta=xy2eitheta(im(OF,contextptr),-re(OF,contextptr),contextptr);
+      if (OF.type!=_VECT){
+	eitheta=(im(OF,contextptr)-cst_i*re(OF,contextptr))/c;
+      }
       else {
 	eitheta=remove_at_pnt(v[2])-O;
-	eitheta=cross(cross(OF,eitheta),OF);
+	eitheta=cross(cross(OF,eitheta,contextptr),OF,contextptr);
 	eitheta=eitheta/abs_norm(eitheta,contextptr);
       }
     }
@@ -7325,20 +9639,38 @@ namespace giac {
       O=F;
     }
     gen res;
-    gen theta=t__IDNT_e;
+#if 0 // def GIAC_HAS_STO_38
+    gen theta=vx_var;
+#else
+    gen theta=identificateur("t"); // t__IDNT_e;
+#endif
     if (eitheta.type==_VECT){
-      res=O+(F-O)/(4*c*abs_norm(F-O,contextptr))*pow(t__IDNT_e,2)+eitheta*t__IDNT_e;
+      res=O+(F-O)/(4*c*abs_norm(F-O,contextptr))*pow(theta,2)+eitheta*theta;
     }
-    else 
-      res=O+eitheta*t__IDNT_e*(1+cst_i*t__IDNT_e/4/c);
-    res= _paramplot(gen(makevecteur(res,symb_equal(t__IDNT_e,symb_interval(-4,4)),symb_equal(_NSTEP,60),symb_equal(_USTEP,0.15),symbolic(at_equal,makevecteur(_COLOR,attributs[0]))),_SEQ__VECT),contextptr);
+    else {
+      res=O+eitheta*theta*(1+cst_i*theta/4/c);
+      gen r,i;
+      reim(res,r,i,contextptr);
+      res=makevecteur(r,i);
+    }
+    gen ustep=_USTEP;
+    ustep.subtype=_INT_PLOT;
+    gen nstep=_NSTEP;
+    nstep.subtype=_INT_PLOT;
+#if 0 // def GIAC_HAS_STO_38
+    res= _paramplot(gen(makevecteur(res,symb_equal(vx_var,symb_interval(-12,12)),symb_equal(nstep,60),symb_equal(ustep,0.15),symbolic(at_equal,makesequence(at_display,attributs[0]))),_SEQ__VECT),contextptr);
+#else
+    res= _paramplot(gen(makevecteur(res,symb_equal(theta,symb_interval(-12,12)),symb_equal(nstep,60),symb_equal(ustep,0.15),symbolic(at_equal,makesequence(at_display,attributs[0]))),_SEQ__VECT),contextptr);
+#endif
     return res;
   }
-  const string _parabole_s("parabola");
-  unary_function_eval __parabole(&giac::_parabole,_parabole_s);
-  unary_function_ptr at_parabole (&__parabole,0,true);
+  static const char _parabole_s []="parabola";
+  static define_unary_function_eval (__parabole,&giac::_parabole,_parabole_s);
+  define_unary_function_ptr5( at_parabole ,alias_at_parabole,&__parabole,0,true);
 
   gen put_attributs(const gen & lieu_g,const vecteur & attributs,GIAC_CONTEXT){
+    if (is_undef(lieu_g))
+      return lieu_g;
     if (lieu_g.is_symb_of_sommet(at_program))
       return lieu_g;
     gen lieu_geo=remove_at_pnt(lieu_g);
@@ -7355,13 +9687,14 @@ namespace giac {
   }
 
   gen _conique(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type!=_VECT)
       return _plotimplicit(args,contextptr);
     vecteur attributs(1,default_color(contextptr));
     vecteur & v =*args._VECTptr;
     int s=read_attributs(v,attributs,contextptr);
     if (!s)
-      setdimerr();
+      return gendimerr(contextptr);
     if (s<=3)
       return _plotimplicit(args,contextptr);
     if (s==5){
@@ -7385,25 +9718,25 @@ namespace giac {
       vecteur base;
       if (me.type==_VECT)
 	base=mker(*me._VECTptr,contextptr);
-      if (base.empty() || base.front().type!=_VECT || base.front()._VECTptr->size()!=6)
-	setsizeerr("Bug in conique reducing "+gen(m).print(contextptr));
+      if (is_undef(base) || base.empty() || base.front().type!=_VECT || base.front()._VECTptr->size()!=6)
+	return gensizeerr(gettext("Bug in conique reducing ")+gen(m).print(contextptr));
       vecteur & res = *base.front()._VECTptr;
       identificateur x(" x"),y(" y");
       gen eq=res[0]*x*x+res[1]*x*y+res[2]*y*y+res[3]*x+res[4]*y+res[5];
       gen g;
-      if (equation2geo2d(eq,x,y,g,gnuplot_tmin,gnuplot_tmax,gnuplot_tstep,contextptr))
+      if (equation2geo2d(eq,x,y,g,gnuplot_tmin,gnuplot_tmax,gnuplot_tstep,w[0],3,contextptr))
 	return put_attributs(g,attributs,contextptr);
       else
-	setsizeerr("Bug in conique, equation "+eq.print(contextptr));	
+	return gensizeerr(gettext("Bug in conique, equation ")+eq.print(contextptr));	
     }
-    setdimerr();
-    return 0;
+    return gendimerr(contextptr);
   }
-  const string _conique_s("conic");
-  unary_function_eval __conique(&giac::_conique,_conique_s);
-  unary_function_ptr at_conique (&__conique,0,true);
+  static const char _conique_s []="conic";
+  static define_unary_function_eval (__conique,&giac::_conique,_conique_s);
+  define_unary_function_ptr5( at_conique ,alias_at_conique,&__conique,0,true);
 
   gen _legende(const gen & a,GIAC_CONTEXT){
+    if ( a.type==_STRNG && a.subtype==-1) return  a;
     gen args=a.eval(1,contextptr);
     if ( (a.type==_SYMB) && (args.type!=_VECT)){
       vecteur v;
@@ -7435,9 +9768,15 @@ namespace giac {
 	}
 	if (v[i].is_symb_of_sommet(at_equal)){
 	  gen & f = v[i]._SYMBptr->feuille;
-	  if (f.type==_VECT && f._VECTptr->size()==2 && f._VECTptr->back().type==_INT_){
+	  if (f.type==_VECT && f._VECTptr->size()==2){
+	    gen f2=evalf_double(f._VECTptr->back(),1,contextptr);
 	    if (f._VECTptr->front()==at_couleur || f._VECTptr->front()==at_display){
-	      couleur |= f._VECTptr->back().val;
+	      if (f2.type==_DOUBLE_)
+		couleur |= int(f2._DOUBLE_val);
+	      if (f2.type==_INT_)
+		couleur |= f2.val;
+	      if (f2.type==_FLOAT_)
+		couleur |= get_int(f2._FLOAT_val);
 	      continue;
 	    }
 	  }
@@ -7447,8 +9786,8 @@ namespace giac {
     }
     decimal_digits(contextptr)=save_digits;
     gen position=v[0];
-    if (position.type==_VECT)
-      return symb_pnt(symbolic(at_legende,makevecteur(position,string2gen(s,false),couleur)),couleur,contextptr);
+    if (position.type==_VECT && position._VECTptr->size()==2)
+      return symb_pnt(symbolic(at_legende,makesequence(position,string2gen(s,false),couleur)),couleur,contextptr);
     position=remove_at_pnt(v[0]);
     if (position.type==_SYMB) {
       if (position._SYMBptr->sommet==at_cercle)
@@ -7456,19 +9795,300 @@ namespace giac {
       else 
 	if (position._SYMBptr->sommet==at_curve){
 	  vecteur v(*position._SYMBptr->feuille._VECTptr->front()._VECTptr);
-	  position=subst(v[0],v[1],rdiv(v[2]+v[3],plus_two),false,contextptr);
+	  position=subst(v[0],v[1],rdiv(v[2]+v[3],plus_two,contextptr),false,contextptr);
 	}
     }
     if ( (position.type==_VECT) && (position._VECTptr->size()==2) ){
-      position=rdiv(position._VECTptr->front()+position._VECTptr->back(),plus_two);
+      position=rdiv(position._VECTptr->front()+position._VECTptr->back(),plus_two,contextptr);
     }
-    return symb_pnt_name(position+decal,couleur+_POINT_POINT,string2gen(s,false),contextptr);
+    gen sg=string2gen(s,false);
+    if (v.size()<2)
+      return symb_pnt_name(position+decal,couleur+_POINT_POINT,sg,contextptr);
+    else
+      return symb_pnt_name(position+decal,makevecteur(couleur+_POINT_POINT,v[1],sg),sg,contextptr);
   }
-  const string _legende_s("legend");
-  unary_function_eval __legende(&giac::_legende,_legende_s);
-  unary_function_ptr at_legende (&__legende,_QUOTE_ARGUMENTS,true);
+  static const char _legende_s []="legend";
+  static define_unary_function_eval_quoted (__legende,&giac::_legende,_legende_s);
+  define_unary_function_ptr5( at_legende ,alias_at_legende,&__legende,_QUOTE_ARGUMENTS,true);
+
+  static void add_names(std::string & ss,const gen & v0,const gen & v1,GIAC_CONTEXT){
+#ifdef GIAC_HAS_STO_38
+    if (v0.type==_IDNT && v1.type==_IDNT){
+      ss += v0._IDNTptr->id_name;
+      if (strlen(v1._IDNTptr->id_name)==2 && v1._IDNTptr->id_name[0]=='G')
+	ss += v1._IDNTptr->id_name[1];
+      else
+	ss += v1._IDNTptr->id_name;
+    }
+    else
+      ss += v0.print(contextptr)+v1.print(contextptr);
+#else
+    ss += v0.print(contextptr)+v1.print(contextptr);
+#endif
+  }
+
+  static void add_name(string & ss,const gen & v0,GIAC_CONTEXT){
+#ifdef GIAC_HAS_STO_38
+    if (v0.type==_IDNT && strlen(v0._IDNTptr->id_name)==2 && v0._IDNTptr->id_name[0]=='G')
+      ss += v0._IDNTptr->id_name[1];
+    else
+      ss += v0.print(contextptr);
+#else
+    ss += v0.print(contextptr);
+#endif
+  }
+
+  gen _distanceat(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    if ( args.type!=_VECT )
+      return gentypeerr(contextptr);
+    vecteur v = *args._VECTptr;
+    int s=int(v.size());
+    if (s<3)
+      return gentypeerr(contextptr);
+    gen l=sqrt(_longueur2(gen(makevecteur(eval(v[0],eval_level(contextptr),contextptr),eval(v[1],eval_level(contextptr),contextptr)),_SEQ__VECT),contextptr),contextptr);
+    int save_digits=decimal_digits(contextptr);
+    decimal_digits(contextptr)=3;
+    string ss(1,'"');
+    add_names(ss,v[0],v[1],contextptr);
+    ss +='=';
+    ss += l.print(contextptr);
+    ss +=' ';
+    ss +='"';
+    decimal_digits(contextptr)=save_digits;
+    l=string2gen(ss,false);
+    vecteur w=makevecteur(v[2],l);
+    for (int i=3; i<s;++i)
+      w.push_back(v[i]);
+    return _legende(gen(w,_SEQ__VECT),contextptr);
+  }
+  static const char _distanceat_s []="distanceat";
+  static define_unary_function_eval_quoted (__distanceat,&_distanceat,_distanceat_s);
+  define_unary_function_ptr5( at_distanceat ,alias_at_distanceat,&__distanceat,_QUOTE_ARGUMENTS,true);
+
+  gen _distanceatraw(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    if ( args.type!=_VECT )
+      return gentypeerr(contextptr);
+    vecteur v = *args._VECTptr;
+    int s=int(v.size());
+    if (s<3)
+      return gentypeerr(contextptr);
+    gen l=sqrt(_longueur2(gen(makevecteur(v[0],v[1]),_SEQ__VECT),contextptr),contextptr);
+    vecteur w=makevecteur(v[2],l);
+    for (int i=3; i<s;++i)
+      w.push_back(v[i]);
+    return _legende(gen(w,_SEQ__VECT),contextptr);
+  }
+  static const char _distanceatraw_s []="distanceatraw";
+  static define_unary_function_eval (__distanceatraw,&_distanceatraw,_distanceatraw_s);
+  define_unary_function_ptr5( at_distanceatraw ,alias_at_distanceatraw,&__distanceatraw,0,true);
+
+  gen _areaatraw(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    if ( args.type!=_VECT )
+      return gentypeerr(contextptr);
+    vecteur v = *args._VECTptr;
+    int s=int(v.size());
+    if (s<2)
+      return gentypeerr(contextptr);
+    gen l=_aire(v[0],contextptr);
+    vecteur w=makevecteur(v[1],l);
+    for (int i=2; i<s;++i)
+      w.push_back(v[i]);
+    return _legende(gen(w,_SEQ__VECT),contextptr);
+  }
+  static const char _areaatraw_s []="areaatraw";
+  static define_unary_function_eval (__areaatraw,&_areaatraw,_areaatraw_s);
+  define_unary_function_ptr5( at_areaatraw ,alias_at_areaatraw,&__areaatraw,0,true);
+
+  gen _areaat(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    if ( args.type!=_VECT )
+      return gentypeerr(contextptr);
+    vecteur v = *args._VECTptr;
+    int s=int(v.size());
+    if (s<2)
+      return gentypeerr(contextptr);
+    gen l=_aire(eval(v[0],eval_level(contextptr),contextptr),contextptr);
+    int save_digits=decimal_digits(contextptr);
+    decimal_digits(contextptr)=3;
+    string ss="\"a";
+    add_name(ss,v[0],contextptr);
+    ss +="="+l.print(contextptr)+" \"";
+    // string ss="◼"+v[0].print(contextptr)+"="+l.print(contextptr)+" ";
+    decimal_digits(contextptr)=save_digits;
+    l=string2gen(ss,false);
+    vecteur w=makevecteur(v[1],l);
+    for (int i=2; i<s;++i)
+      w.push_back(v[i]);
+    return _legende(gen(w,_SEQ__VECT),contextptr);
+  }
+  static const char _areaat_s []="areaat";
+  static define_unary_function_eval_quoted (__areaat,&_areaat,_areaat_s);
+  define_unary_function_ptr5( at_areaat ,alias_at_areaat,&__areaat,_QUOTE_ARGUMENTS,true);
+
+  gen _slopeatraw(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    if ( args.type!=_VECT )
+      return gentypeerr(contextptr);
+    vecteur v = *args._VECTptr;
+    int s=int(v.size());
+    if (s<2)
+      return gentypeerr(contextptr);
+    gen l=_slope(v[0],contextptr);
+    vecteur w=makevecteur(v[1],l);
+    for (int i=2; i<s;++i)
+      w.push_back(v[i]);
+    return _legende(gen(w,_SEQ__VECT),contextptr);
+  }
+  static const char _slopeatraw_s []="slopeatraw";
+  static define_unary_function_eval (__slopeatraw,&_slopeatraw,_slopeatraw_s);
+  define_unary_function_ptr5( at_slopeatraw ,alias_at_slopeatraw,&__slopeatraw,0,true);
+
+  gen _slopeat(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    if ( args.type!=_VECT )
+      return gentypeerr(contextptr);
+    vecteur v = *args._VECTptr;
+    int s=int(v.size());
+    if (s<2)
+      return gentypeerr(contextptr);
+    gen l=_slope(eval(v[0],eval_level(contextptr),contextptr),contextptr);
+    int save_digits=decimal_digits(contextptr);
+    decimal_digits(contextptr)=3;
+    // string ss="∡"+v[0].print(contextptr)+"="+l.print(contextptr)+" ";
+    string ss="\"s";
+    add_name(ss,v[0],contextptr);
+    ss += "="+l.print(contextptr)+" \"";
+    decimal_digits(contextptr)=save_digits;
+    l=string2gen(ss,false);
+    vecteur w=makevecteur(v[1],l);
+    for (int i=2; i<s;++i)
+      w.push_back(v[i]);
+    return _legende(gen(w,_SEQ__VECT),contextptr);
+  }
+  static const char _slopeat_s []="slopeat";
+  static define_unary_function_eval_quoted (__slopeat,&_slopeat,_slopeat_s);
+  define_unary_function_ptr5( at_slopeat ,alias_at_slopeat,&__slopeat,_QUOTE_ARGUMENTS,true);
+
+  gen _perimeterat(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    if ( args.type!=_VECT )
+      return gentypeerr(contextptr);
+    vecteur v = *args._VECTptr;
+    int s=int(v.size());
+    if (s<2)
+      return gentypeerr(contextptr);
+    gen l=_perimetre(eval(v[0],eval_level(contextptr),contextptr),contextptr);
+    int save_digits=decimal_digits(contextptr);
+    decimal_digits(contextptr)=3;
+    string ss="\"p";
+    add_name(ss,v[0],contextptr);
+    ss += "="+l.print(contextptr)+" \"";
+    // string ss="◻"+v[0].print(contextptr)+"="+l.print(contextptr)+" ";
+    decimal_digits(contextptr)=save_digits;
+    l=string2gen(ss,false);
+    vecteur w=makevecteur(v[1],l);
+    for (int i=2; i<s;++i)
+      w.push_back(v[i]);
+    return _legende(gen(w,_SEQ__VECT),contextptr);
+  }
+  static const char _perimeterat_s []="perimeterat";
+  static define_unary_function_eval_quoted (__perimeterat,&_perimeterat,_perimeterat_s);
+  define_unary_function_ptr5( at_perimeterat ,alias_at_perimeterat,&__perimeterat,_QUOTE_ARGUMENTS,true);
+
+  gen _perimeteratraw(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    if ( args.type!=_VECT )
+      return gentypeerr(contextptr);
+    vecteur v = *args._VECTptr;
+    int s = int(v.size());
+    if (s<2)
+      return gentypeerr(contextptr);
+    gen l=_perimetre(v[0],contextptr);
+    vecteur w=makevecteur(v[1],l);
+    for (int i=2; i<s;++i)
+      w.push_back(v[i]);
+    return _legende(gen(w,_SEQ__VECT),contextptr);
+  }
+  static const char _perimeteratraw_s []="perimeteratraw";
+  static define_unary_function_eval (__perimeteratraw,&_perimeteratraw,_perimeteratraw_s);
+  define_unary_function_ptr5( at_perimeteratraw ,alias_at_perimeteratraw,&__perimeteratraw,0,true);
+
+  gen _extract_measure(const gen & valeur,GIAC_CONTEXT){
+    if ( valeur.type==_STRNG && valeur.subtype==-1) return  valeur;
+    gen tmp=valeur;
+    if (valeur.is_symb_of_sommet(at_pnt)){
+      gen & valf = valeur._SYMBptr->feuille;
+      if (valf.type==_VECT){
+	vecteur & valv = *valf._VECTptr;
+	int s = int(valv.size());
+	if (s>1){
+	  gen valv1=valv[1];
+	  if (valv1.type==_VECT && valv1._VECTptr->size()>2){
+	    tmp=(*valv1._VECTptr)[1];
+	    while (tmp.type==_STRNG)
+	      tmp=gen(*tmp._STRNGptr,contextptr);
+	    if (tmp.is_symb_of_sommet(at_equal))
+	      tmp=tmp._SYMBptr->feuille._VECTptr->back();
+	  }
+	}
+      }
+    }
+    return tmp;
+  }
+  static const char _extract_measure_s []="extract_measure";
+  static define_unary_function_eval (__extract_measure,&_extract_measure,_extract_measure_s);
+  define_unary_function_ptr5( at_extract_measure ,alias_at_extract_measure,&__extract_measure,0,true);
+
+  gen _angleat(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    if ( args.type!=_VECT )
+      return gentypeerr(contextptr);
+    vecteur v = *args._VECTptr;
+    int s = int(v.size());
+    if (s<4)
+      return gentypeerr(contextptr);
+    gen l=_angle(gen(makevecteur(eval(v[0],eval_level(contextptr),contextptr),eval(v[1],eval_level(contextptr),contextptr),eval(v[2],eval_level(contextptr),contextptr)),_SEQ__VECT),contextptr);
+    int save_digits=decimal_digits(contextptr);
+    decimal_digits(contextptr)=3;
+    string ss="\"α";
+    add_name(ss,v[0],contextptr);
+    ss += "="+l.print(contextptr)+" \"";
+    // string ss="∡"+v[0].print(contextptr)+"="+l.print(contextptr)+" ";
+    decimal_digits(contextptr)=save_digits;
+    l=string2gen(ss,false);
+    vecteur w=makevecteur(v[3],l);
+    for (int i=4; i<s;++i)
+      w.push_back(v[i]);
+    return _legende(gen(w,_SEQ__VECT),contextptr);
+  }
+  static const char _angleat_s []="angleat";
+  static define_unary_function_eval_quoted (__angleat,&_angleat,_angleat_s);
+  define_unary_function_ptr5( at_angleat ,alias_at_angleat,&__angleat,_QUOTE_ARGUMENTS,true);
+
+  gen _angleatraw(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    if ( args.type!=_VECT )
+      return gentypeerr(contextptr);
+    vecteur v = *args._VECTptr;
+    int s = int(v.size());
+    if (s<4)
+      return gentypeerr(contextptr);
+    gen l=_angle(gen(makevecteur(v[0],v[1],v[2]),_SEQ__VECT),contextptr);
+    l=recursive_normal(l,contextptr);
+    vecteur w=makevecteur(v[3],l);
+    for (int i=4; i<s;++i)
+      w.push_back(v[i]);
+    return _legende(gen(w,_SEQ__VECT),contextptr);
+  }
+  static const char _angleatraw_s []="angleatraw";
+  static define_unary_function_eval (__angleatraw,&_angleatraw,_angleatraw_s);
+  define_unary_function_ptr5( at_angleatraw ,alias_at_angleatraw,&__angleatraw,0,true);
 
   gen _couleur(const gen & a,GIAC_CONTEXT){
+    if (is_undef(a)) return a;
     if (a.type==_INT_){
       int i=default_color(contextptr);
       default_color(a.val,contextptr);
@@ -7498,31 +10118,39 @@ namespace giac {
       __interactive.op(e,contextptr);    
     return e;
   }
-  const string _display_s("display");
-  unary_function_eval __display(&giac::_couleur,_display_s);
-  unary_function_ptr at_display (&__display,0,true);
+  static const char _display_s []="display";
+  static define_unary_function_eval_index (160,__display,&giac::_couleur,_display_s);
+  define_unary_function_ptr5( at_display ,alias_at_display,&__display,0,true);
 
-  const string _couleur_s("color");
-  unary_function_eval __couleur(&giac::_couleur,_couleur_s);
-  unary_function_ptr at_couleur (&__couleur,0,true);
+  static const char _couleur_s []="color";
+  static define_unary_function_eval (__couleur,&giac::_couleur,_couleur_s);
+  define_unary_function_ptr5( at_couleur ,alias_at_couleur,&__couleur,0,true);
 
   // innert instruction, used e.g. for a:=element(3..5)
   // returns parameter(a,3..5,4) and stores 4 in a
-  gen _parameter(const gen & args){
+  gen _parameter(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if ( (args.type!=_VECT) || (args._VECTptr->size()<4))
-      setsizeerr();
+      return gensizeerr(contextptr);
     return symbolic(at_parameter,args);
   }
-  const string _parameter_s("parameter");
-  unary_function_unary __parameter(&giac::_parameter,_parameter_s);
-  unary_function_ptr at_parameter (&__parameter,0,true);
+  static const char _parameter_s []="parameter";
+  static define_unary_function_eval (__parameter,&giac::_parameter,_parameter_s);
+  define_unary_function_ptr5( at_parameter ,alias_at_parameter,&__parameter,0,true);
 
   gen plotfield(const gen & xp,const gen & yp,const gen & x,const gen & y,double xmin,double xmax,double xstep,double ymin,double ymax,double ystep,double scaling,vecteur & attributs,bool normalize,const context * contextptr){
-#ifndef WIN32
+    if (xstep<=0 || ystep<=0)
+      return gensizeerr("Invalid xstep or ystep");
     bool old_iograph=io_graph(contextptr);
-    if (thread_eval_status(contextptr)!=1)
-      io_graph(false,contextptr);
+    if (old_iograph){
+#ifdef HAVE_LIBPTHREAD
+      pthread_mutex_lock(&interactive_mutex);
 #endif
+      io_graph(false,contextptr);
+#ifdef HAVE_LIBPTHREAD
+      pthread_mutex_unlock(&interactive_mutex);
+#endif
+    }
     vecteur xy_v;
     xy_v.push_back(x);
     xy_v.push_back(y);
@@ -7533,8 +10161,10 @@ namespace giac {
     if (xstep<ystep) minxstepystep=xstep; else minxstepystep=ystep;
     echelle=minxstepystep;
     for (double curx=xmin;curx<=xmax;curx+=scaling*xstep){
+      if (ctrl_c || interrupted) break;
       curxcury[0]=curx;
       for (double cury=ymin;cury<=ymax;cury+=scaling*ystep){
+	if (ctrl_c || interrupted) break;
 	curxcury[1]=cury;
 	xp_eval=subst(xp,xy,curxcury,false,contextptr).evalf2double(eval_level(contextptr),contextptr);
 	yp_eval=subst(yp,xy,curxcury,false,contextptr).evalf2double(eval_level(contextptr),contextptr);
@@ -7547,22 +10177,35 @@ namespace giac {
 	  else {
 	    origine=gen(curx)+cst_i*gen(cury);
 	  }
-	  res.push_back(pnt_attrib(gen(makevecteur(origine,origine+xp_eval*echelle+cst_i*yp_eval*echelle),is_one(xp)?_GROUP__VECT:_VECTOR__VECT),attributs,contextptr));
+	  // always return vectors now, before it was != in dimension 1
+	  res.push_back(pnt_attrib(gen(makevecteur(origine,origine+echelle*xp_eval+echelle*cst_i*yp_eval),
+				       //is_one(xp)?_GROUP__VECT:_VECTOR__VECT
+				       _VECTOR__VECT
+				       ),attributs,contextptr));
 	}
       }
     }
-#ifndef WIN32
-    io_graph(old_iograph,contextptr);
+    if (old_iograph){
+#ifdef HAVE_LIBPTHREAD
+      pthread_mutex_lock(&interactive_mutex);
 #endif
+      io_graph(true,contextptr);
+#ifdef HAVE_LIBPTHREAD
+      pthread_mutex_unlock(&interactive_mutex);
+#endif
+      iterateur it=res.begin(),itend=res.end();
+      for (;it!=itend;++it)
+	__interactive.op(*it,contextptr);
+    }
     return gen(res,_GROUP__VECT);
   }
 
-  void read_plotfield_args(const gen & args,gen & xp,gen & yp,gen & x,gen & y,double & xmin,double & xmax,double & xstep,double & ymin,double & ymax,double & ystep,vecteur & attributs,bool & normalize,GIAC_CONTEXT){
+  static bool read_plotfield_args(const gen & args,gen & xp,gen & yp,gen & x,gen & y,double & xmin,double & xmax,double & xstep,double & ymin,double & ymax,double & ystep,vecteur & attributs,bool & normalize,GIAC_CONTEXT){
     if (args.type!=_VECT || args._VECTptr->size()<2)
-      setsizeerr();
+      return false; // setsizeerr(contextptr);
     normalize=false;
     vecteur v(*args._VECTptr);
-    int s=v.size();
+    int s = int(v.size());
     for (int i=0;i<s;++i){
       if (v[i]==at_normalize){
 	normalize=true;
@@ -7574,10 +10217,10 @@ namespace giac {
     v=vecteur(args._VECTptr->begin(),args._VECTptr->begin()+s);
     switch (s){
     case 0: case 1:
-      setsizeerr();
+      return false; // setsizeerr(contextptr);
     case 2:
       if ( (v.back().type!=_VECT) || (v.back()._VECTptr->size()!=2) )
-	setsizeerr();
+	return false; // setsizeerr(contextptr);
       x=v.back()._VECTptr->front();
       y=v.back()._VECTptr->back();
       yp=equal2diff(v.front());
@@ -7595,7 +10238,7 @@ namespace giac {
       }
       else {
 	if (v[0]._VECTptr->size()!=2)
-	  setsizeerr();
+	  return false; // setsizeerr(contextptr);
 	xp=v[0]._VECTptr->front();
 	yp=v[0]._VECTptr->back();
       }
@@ -7615,31 +10258,34 @@ namespace giac {
     read_option(*args._VECTptr,xmin,xmax,ymin,ymax,gnuplot_zmin,gnuplot_zmax,tmp,nstep,jstep,kstep,contextptr);
     xstep=(xmax-xmin)/nstep;
     ystep=(ymax-ymin)/(jstep?jstep:nstep);
+    return true;
   }
   // args=[dx/dt,dy/dt,x,y] or [dy/dx,x,y]
   // or [ [dx/dt,dy/dt], [x,y] ] or [ dy/dx, [x,y]]
   gen _plotfield(const gen & args,const context * contextptr){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     vecteur attributs;
     gen xp,yp,x,y;
     double xmin,xmax,ymin,ymax,xstep,ystep;
     bool normalize;
-    read_plotfield_args(args,xp,yp,x,y,xmin,xmax,xstep,ymin,ymax,ystep,attributs,normalize,contextptr);
+    if (!read_plotfield_args(args,xp,yp,x,y,xmin,xmax,xstep,ymin,ymax,ystep,attributs,normalize,contextptr))
+      return gensizeerr(contextptr);
     double scaling=2;
     return plotfield(xp,yp,x,y,xmin,xmax,xstep/scaling,ymin,ymax,ystep/scaling,scaling,attributs,normalize,contextptr);
   }
-  const string _plotfield_s("plotfield");
-  unary_function_eval __plotfield(&giac::_plotfield,_plotfield_s);
-  unary_function_ptr at_plotfield (&__plotfield,0,true);
+  static const char _plotfield_s []="plotfield";
+  static define_unary_function_eval (__plotfield,&giac::_plotfield,_plotfield_s);
+  define_unary_function_ptr5( at_plotfield ,alias_at_plotfield,&__plotfield,0,true);
 
-  const string _fieldplot_s("fieldplot");
-  unary_function_eval __fieldplot(&giac::_plotfield,_fieldplot_s);
-  unary_function_ptr at_fieldplot (&__fieldplot,0,true);
+  static const char _fieldplot_s []="fieldplot";
+  static define_unary_function_eval (__fieldplot,&giac::_plotfield,_fieldplot_s);
+  define_unary_function_ptr5( at_fieldplot ,alias_at_fieldplot,&__fieldplot,0,true);
 
   // plot solution of y'=f(x,y) [x0,y0] in current plot range
   // OR [x,y]'=f(t,x,y) t0 x0 y0 in current plot range
   // args = dy/dx, [x, y], [x0, y0]
   // OR [dx/dt, dy/dt], [t, x, y], [t0, x0, y0]
-  gen plotode(const vecteur & w,GIAC_CONTEXT){
+  static gen plotode(const vecteur & w,GIAC_CONTEXT){
     vecteur v(w);
     bool curve=true;
     gen fp=v[0];
@@ -7647,13 +10293,15 @@ namespace giac {
       fp=makevecteur(plus_one,fp);
     gen vars=v[1];
     bool dim3=vars.type==_VECT && vars._VECTptr->size()==3;
+    if (abs_calc_mode(contextptr)==38)
+      dim3=false; // no 3-d rendering :-(
     gen init=remove_at_pnt(v[2]);
     if (init.type!=_VECT)
       init=makevecteur(re(init,contextptr),im(init,contextptr));
     gen t;
     int s;
-    if (vars.type!=_VECT || (s=vars._VECTptr->size())<2 ) 
-      setsizeerr();
+    if (vars.type != _VECT || (s = int(vars._VECTptr->size()))<2)
+      return gensizeerr(contextptr);
     if (s==3){
       t=vars._VECTptr->front();
       vars=makevecteur(vars[1],vars[2]);
@@ -7669,8 +10317,8 @@ namespace giac {
     }
     v[1]=vars;
     vecteur f=makevecteur(fp,(t.is_symb_of_sommet(at_equal)?t._SYMBptr->feuille._VECTptr->front():t),vars);
-    if (init.type!=_VECT || (s=init._VECTptr->size())<2 ) 
-      setsizeerr();
+    if (init.type != _VECT || (s = int(init._VECTptr->size()))<2)
+      return gensizeerr(contextptr);
     vecteur & initv=*init._VECTptr;
     gen t0=initv.front();
     gen x0=t0;
@@ -7684,14 +10332,14 @@ namespace giac {
     bool tminmax_defined,tstep_defined;
     read_tmintmaxtstep(v,t,3,tmin,tmax,tstep,tminmax_defined,tstep_defined,contextptr);
     if (tmin>0 || tmax<0 || tmin>tmax || tstep<=0)
-      setsizeerr("Time");
-    int maxstep=100;
+      return gensizeerr(gettext("Time"));
+    int maxstep=500;
     if (tminmax_defined && tstep_defined)
-      maxstep=2*int((tmax-tmin)/tstep)+1;
-    int vs=v.size();
+      maxstep=giacmax(maxstep,2*int((tmax-tmin)/tstep));
+    int vs=int(v.size());
     for (int i=3;i<vs;++i){
       if (readvar(v[i])==vars[0]){
-	if (readrange(v[i],gnuplot_xmin,gnuplot_xmax,v[i],ym[0],ym[1],contextptr)){
+	if (readrange(v[i],gnuplot_xmin,gnuplot_xmax,v[i],ym[0],yM[0],contextptr)){
 	  ymin=ym;
 	  ymax=yM;
 	  v.erase(v.begin()+i);
@@ -7699,7 +10347,7 @@ namespace giac {
 	}
       }
       if (readvar(v[i])==vars[1]){
-	if (readrange(v[i],gnuplot_xmin,gnuplot_xmax,v[i],yM[0],yM[1],contextptr)){
+	if (readrange(v[i],gnuplot_xmin,gnuplot_xmax,v[i],ym[1],yM[1],contextptr)){
 	  ymin=ym;
 	  ymax=yM;
 	  v.erase(v.begin()+i);
@@ -7712,12 +10360,14 @@ namespace giac {
     vecteur res1v,resv;
     if (tmin<0){
       gen res1=odesolve(t0,tmin,f,y0,tstep,curve,ymin,ymax,maxstep,contextptr);
+      if (is_undef(res1)) return res1;
       res1v=*res1._VECTptr;
       std::reverse(res1v.begin(),res1v.end());
     }
     res1v.push_back(makevecteur(t0,y0));
     if (tmax>0){
       gen res2=odesolve(t0,tmax,f,y0,tstep,curve,ymin,ymax,maxstep,contextptr);
+      if (is_undef(res2)) return res2;
       resv=mergevecteur(res1v,*res2._VECTptr);
     }
     else
@@ -7727,52 +10377,65 @@ namespace giac {
     vecteur res;
     res.reserve(itend-it);
     for (;it!=itend;++it){
+      if (it->type!=_VECT || it->_VECTptr->empty() || it->_VECTptr->back().type!=_VECT) 
+	continue;
+      vecteur tmp=*it->_VECTptr->back()._VECTptr;
+      if (tmp.size()!=2 || is_undef(tmp.front()) || is_undef(tmp.back()))
+	continue;
       if (dim3)
-	res.push_back(gen(makevecteur(it->_VECTptr->front(),it->_VECTptr->back()._VECTptr->front(),it->_VECTptr->back()._VECTptr->back()),_POINT__VECT));
+	res.push_back(gen(makevecteur(it->_VECTptr->front(),tmp.front(),tmp.back()),_POINT__VECT));
       else
-	res.push_back(it->_VECTptr->back()._VECTptr->front()+cst_i*it->_VECTptr->back()._VECTptr->back());
+	res.push_back(tmp.front()+cst_i*tmp.back());
     }
     return symb_pnt(gen(res,_GROUP__VECT),contextptr);
   }
   gen _plotode(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     vecteur attributs(1,default_color(contextptr));
     vecteur v(seq2vecteur(args));
     int s=read_attributs(v,attributs,contextptr);
     if (s<3)
-      setdimerr();
+      return gendimerr(contextptr);
     // v.erase(v.begin()+s,v.end());
     return put_attributs(plotode(v,contextptr),attributs,contextptr);
   }
-  const string _plotode_s("plotode");
-  unary_function_eval __plotode(&giac::_plotode,_plotode_s);
-  unary_function_ptr at_plotode (&__plotode,0,true);
+  static const char _plotode_s []="plotode";
+  static define_unary_function_eval (__plotode,&giac::_plotode,_plotode_s);
+  define_unary_function_ptr5( at_plotode ,alias_at_plotode,&__plotode,0,true);
 
-  const string _odeplot_s("odeplot");
-  unary_function_eval __odeplot(&giac::_plotode,_odeplot_s);
-  unary_function_ptr at_odeplot (&__odeplot,0,true);
+  static const char _odeplot_s []="odeplot";
+  static define_unary_function_eval (__odeplot,&giac::_plotode,_odeplot_s);
+  define_unary_function_ptr5( at_odeplot ,alias_at_odeplot,&__odeplot,0,true);
 
   // like plotode but the initial(s) condition(s) will be specified
   // by the user
   gen _interactive_plotode(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     vecteur attributs;
     gen xp,yp,x,y;
     double xmin,xmax,ymin,ymax,xstep,ystep;
     bool normalize;
-    read_plotfield_args(args,xp,yp,x,y,xmin,xmax,xstep,ymin,ymax,ystep,attributs,normalize,contextptr);
+    if (!read_plotfield_args(args,xp,yp,x,y,xmin,xmax,xstep,ymin,ymax,ystep,attributs,normalize,contextptr))
+      return gensizeerr(contextptr);
     // double scaling=3;
     vecteur res;
-#ifdef WIN32
+#if defined(WIN32) || !defined(HAVE_SIGNAL_H_OLD)
     res.push_back(_plotfield(args,contextptr));
 #else
-    if (thread_eval_status(contextptr)==1)
+    if (thread_eval_status(contextptr)==1){
       res.push_back(_plotfield(args,contextptr));
+      _DispG(0,contextptr);
+    }
     else
       res.push_back(_signal(_plotfield(args,contextptr),contextptr));
 #endif
     identificateur tt(" t");
     gen t(tt);
-    vecteur vars=makevecteur(tt,x,y);
+    vecteur vars=makevecteur(t,x,y);
+    // if (is_one(xp)) vars[0]=symb_equal(t,symb_interval(xmin,xmax));
     vecteur f(makevecteur(xp,yp));
+    gen xminmax=symb_equal(x,symb_interval(xmin,xmax));
+    gen yminmax=symb_equal(y,symb_interval(ymin,ymax));
     for (;;){
       gen localisation=__click.op(vecteur(0),contextptr).evalf_double(1,contextptr);
       double x0,y0;
@@ -7786,85 +10449,101 @@ namespace giac {
 	  y0=(localisation._CPLXptr+1)->_DOUBLE_val;
 	}
 	else {
-	  *logptr(contextptr) << "End interactive_plotode" << endl;
+	  *logptr(contextptr) << gettext("End interactive_plotode") << endl;
 	  break;
 	}
       }
-#ifdef WIN32
-      res.push_back(_plotode(gen(makevecteur(f,vars,makevecteur(0,x0,y0),at_plan),_SEQ__VECT),contextptr));
+#if defined(WIN32) || !defined(HAVE_SIGNAL_H_OLD)
+      res.push_back(_plotode(gen(makevecteur(f,vars,makevecteur(0,x0,y0),xminmax,yminmax,at_plan),_SEQ__VECT),contextptr));
 #else
-    if (thread_eval_status(contextptr)==1)
-      res.push_back(_plotode(gen(makevecteur(f,vars,makevecteur(0,x0,y0),at_plan),_SEQ__VECT),contextptr));
-    else
-      res.push_back(_signal(_plotode(gen(makevecteur(f,vars,makevecteur(0,x0,y0),at_plan),_SEQ__VECT),contextptr),contextptr));
+      if (thread_eval_status(contextptr)==1)
+	res.push_back(_plotode(gen(makevecteur(f,vars,makevecteur(0,x0,y0),xminmax,yminmax,at_plan),_SEQ__VECT),contextptr));
+      else
+	res.push_back(_signal(_plotode(gen(makevecteur(f,vars,makevecteur(0,x0,y0),xminmax,yminmax,at_plan),_SEQ__VECT),contextptr),contextptr));
 #endif
     }
     return res;
   }
-  const string _interactive_plotode_s("interactive_plotode");
-  unary_function_eval __interactive_plotode(&giac::_interactive_plotode,_interactive_plotode_s);
-  unary_function_ptr at_interactive_plotode (&__interactive_plotode,0,true);
+  static const char _interactive_plotode_s []="interactive_plotode";
+  static define_unary_function_eval (__interactive_plotode,&giac::_interactive_plotode,_interactive_plotode_s);
+  define_unary_function_ptr5( at_interactive_plotode ,alias_at_interactive_plotode,&__interactive_plotode,0,true);
 
-  const string _interactive_odeplot_s("interactive_odeplot");
-  unary_function_eval __interactive_odeplot(&giac::_interactive_plotode,_interactive_odeplot_s);
-  unary_function_ptr at_interactive_odeplot (&__interactive_odeplot,0,true);
+  static const char _interactive_odeplot_s []="interactive_odeplot";
+  static define_unary_function_eval (__interactive_odeplot,&giac::_interactive_plotode,_interactive_odeplot_s);
+  define_unary_function_ptr5( at_interactive_odeplot ,alias_at_interactive_odeplot,&__interactive_odeplot,0,true);
 
-  vecteur unarchive_VECT(istream & is,const vecteur & l,GIAC_CONTEXT){
+#ifndef NSPIRE
+  static vecteur unarchive_VECT(istream & is,GIAC_CONTEXT){
     vecteur v;
     int taille;
     is >> taille;
     v.reserve(taille);
     for (int i=0;i<taille;++i)
-      v.push_back(unarchive(is,l,contextptr));
+      v.push_back(unarchive(is,contextptr));
     return v;
   }
 
-  gen_map unarchive_MAP(istream & is,const vecteur & l,GIAC_CONTEXT){
+  static gen unarchive_MAP(istream & is,GIAC_CONTEXT){
+#if 1 // def NSPIRE
+    gen_map m;
+#else
     gen_map m(ptr_fun(islesscomplexthanf));
+#endif
     int taille;
     is >> taille;
     for (int i=0;i<taille;++i){
-      gen f=unarchive(is,l,contextptr);
-      gen s=unarchive(is,l,contextptr);
+      gen f=unarchive(is,contextptr);
+      gen s=unarchive(is,contextptr);
       m[f]=s;
     }
     return m;
   }
 
-  gen unarchive_FUNC(istream & is,const vecteur & l,GIAC_CONTEXT){
+  static gen unarchive_FUNC(istream & is,GIAC_CONTEXT){
     int op;
     is >> op;
-    unary_function_ptr u(at_plus);
+    unary_function_ptr u(*at_plus);
     if (op){
       if (op<0){
 	string s;
 	is >> s;
+	if (debug_infolevel>20)
+	  *logptr(contextptr) << s << endl;
 	// read function from lexer_functions
-	sym_tab::const_iterator i = lexer_functions().find(s);
+	std::pair<charptr_gen *,charptr_gen *> p= equal_range(builtin_lexer_functions_begin(),builtin_lexer_functions_end(),std::pair<const char *,gen>(s.c_str(),0),tri);
+	if (p.first!=p.second && p.first!=builtin_lexer_functions_end())
+	  return p.first->second;
+	map_charptr_gen::const_iterator i = lexer_functions().find(s.c_str());
 	if (i==lexer_functions().end()) // should be error
 	  return undef;
 	return i->second;
       }
-      u=archive_function_tab[op-1];
+      u=archive_function_tab()[op-1];
     }
     else {
       // read using the parser
       string s;
       is >> s;
       gen e;
+#ifndef NO_STDEXCEPT
       try {
+#endif
 	e=gen(s,contextptr);
+	if (is_undef(e))
+	  e=string2gen(s,false);
+#ifndef NO_STDEXCEPT
       }
-      catch (std::runtime_error & err){
+      catch (std::runtime_error & ){
 	e=string2gen(s,false);
       }
-      //cerr << s << " " <<e.type << endl;
+#endif
+      //CERR << s << " " <<e.type << endl;
       if (e.type!=_FUNC){
 	if ( (e.type!=_SYMB) ){
-	  cerr << "Unarchive error: "+e.print(contextptr) << endl;
+	  CERR << "Unarchive error: "+e.print(contextptr) << endl;
 	  return e;
 	}
-	if (e._SYMBptr->sommet.ptr->printsommet==printastifunction)
+	if (e._SYMBptr->sommet.ptr()->printsommet==printastifunction)
 	  return e._SYMBptr->sommet;
 	return e._SYMBptr->feuille;
       }
@@ -7873,38 +10552,21 @@ namespace giac {
     return u;
   }
 
-  symbolic unarchive_SYMB(istream & is,const vecteur & l,GIAC_CONTEXT){
-    gen e=unarchive_FUNC(is,l,contextptr);
-    gen f=unarchive(is,l,contextptr);
+  static symbolic unarchive_SYMB(istream & is,GIAC_CONTEXT){
+    gen e=unarchive_FUNC(is,contextptr);
+    gen f=unarchive(is,contextptr);
     if (e.type==_FUNC)
       return symbolic(*e._FUNCptr,f);
     return symb_of(e,f);
   }
 
-  gen unarchivedefault(istream & is,const vecteur & l,GIAC_CONTEXT){
+  static gen unarchivedefault(istream & is,GIAC_CONTEXT){
     string s;
     is >> s;
-    return gen(s,l,contextptr); 
+    return gen(s,contextptr); 
   }
 
-  gen unarchiveidnt(istream & is,const vecteur & l,int t,GIAC_CONTEXT){
-    char c;
-    is >> c;
-    string s;
-    s +=c;
-    for (int i=1;i<t;++i){
-      is.get(c);
-      s +=c;
-    }
-    gen res=find_or_make_symbol(s,contextptr); // gen(s,l,contextptr); 
-    if (res.type!=_IDNT){
-      string s1 ="~"+s;
-      res=find_or_make_symbol(s1,contextptr);
-    }
-    return res;
-  }
-
-  gen unarchivestring(istream & is,GIAC_CONTEXT){
+  static gen unarchivestring(istream & is,GIAC_CONTEXT){
     int l;
     is >> l;
     string s;
@@ -7921,7 +10583,47 @@ namespace giac {
     return string2gen(s,false);
   }
 
-  gen unarchivereal(istream & is,GIAC_CONTEXT){
+  /* old code: too slow for unarchive
+     gen unarchiveidnt(istream & is,const vecteur & l,int t,GIAC_CONTEXT){
+     char c;
+     is >> c;
+     string s;
+     s +=c;
+     for (int i=1;i<t;++i){
+     is.get(c);
+     s +=c;
+     }
+     gen res=gen(s,l,contextptr); 
+     if (res.type!=_IDNT && s[0]=='_')
+     res=find_or_make_symbol(s,false,contextptr);
+     if (res.type!=_IDNT){
+     string s1 ="~"+s;
+     res=gen(s1,l,contextptr); 
+     if (res.type!=_IDNT)
+     res=find_or_make_symbol(s,false,contextptr);
+     }
+     return res;
+     }
+  */
+
+  static gen unarchiveidnt(istream & is,int t,GIAC_CONTEXT){
+    char c;
+    is >> c;
+    string s;
+    s +=c;
+    for (int i=1;i<t;++i){
+      is.get(c);
+      s +=c;
+    }
+    gen res=find_or_make_symbol(s,false,contextptr); // gen(s,l,contextptr); 
+    if (res.type!=_IDNT){
+      string s1 ="~"+s;
+      res=find_or_make_symbol(s1,false,contextptr);
+    }
+    return res;
+  }
+
+  static gen unarchivereal(istream & is,GIAC_CONTEXT){
     unsigned int prec;
     is >> prec;
     string s;
@@ -7931,14 +10633,16 @@ namespace giac {
     return read_binary(s,prec);
   }
 
-  gen unarchive(istream & is,const vecteur & l,GIAC_CONTEXT){
+  gen unarchive(istream & is,GIAC_CONTEXT){
     if (is.eof())
-      settypeerr("End of stream");
+      return gentypeerr(gettext("End of stream"));
     int type,val;
     double d;
     char ch;
     gen a,b;
     is >> type;
+    if (is.eof())
+      return undef;
     switch (type){
     case _INT_:
       is >> val >> type;
@@ -7947,65 +10651,83 @@ namespace giac {
       return a;
     case _DOUBLE_:
       is.get(ch);
+#ifdef NSPIRE
+      is.get((char *)&d,sizeof(double));
+#else
       is.read((char *)&d,sizeof(double));
+#endif
       return d;
     case _CPLX:
-      a=unarchive(is,l,contextptr);
-      b=unarchive(is,l,contextptr);
+      a=unarchive(is,contextptr);
+      b=unarchive(is,contextptr);
       return a+cst_i*b;
     case _REAL:
       a=unarchivereal(is,contextptr);
       return a;
     case _FRAC:
-      a=unarchive(is,l,contextptr);
-      b=unarchive(is,l,contextptr);
+      a=unarchive(is,contextptr);
+      b=unarchive(is,contextptr);
+      if (is_undef(a) || is_undef(b))
+	return a+b;
       return fraction(a,b);
     case _VECT:
       is >> type;
-      return gen(unarchive_VECT(is,l,contextptr),type);
+      return gen(unarchive_VECT(is,contextptr),type);
     case _SYMB:
       is >> type;
-      a=unarchive_SYMB(is,l,contextptr);
-      a.subtype=type;
+      a=unarchive_SYMB(is,contextptr);
+      if (!is_undef(a))
+	a.subtype=type;
       return a;
     case _IDNT:
       is >> type;
-      return unarchiveidnt(is,l,type,contextptr);
+      return unarchiveidnt(is,type,contextptr);
     case _FUNC:
       is >> type;
-      a=unarchive_FUNC(is,l,contextptr);
+      a=unarchive_FUNC(is,contextptr);
       if (a.type==_FUNC)
 	return gen(*a._FUNCptr,type);
       return a;
     case _STRNG:
       return unarchivestring(is,contextptr);
     case _MOD:
-      a=unarchive(is,l,contextptr);
-      b=unarchive(is,l,contextptr);
+      a=unarchive(is,contextptr);
+      b=unarchive(is,contextptr);
+      if (is_undef(a) || is_undef(b))
+	return a+b;
       return makemodquoted(a,b);
     case _MAP:
-      return unarchive_MAP(is,l,contextptr);
+      return unarchive_MAP(is,contextptr);
     case _POINTER_:
       is >> type;
       if (type==_FL_WIDGET_POINTER && fl_widget_unarchive_function)
-	return fl_widget_unarchive_function(is,l);
+	return fl_widget_unarchive_function(is);
     default:
-      return unarchivedefault(is,l,contextptr);
+      return unarchivedefault(is,contextptr);
     }
   }
 
-  ostream & archive_FUNC(ostream & os,const unary_function_ptr & u,GIAC_CONTEXT){
-    if (has_special_syntax(u.ptr->s)){
-      os << -1 << " " << u.ptr->s << " ";
+  static ostream & archive_FUNC(ostream & os,const unary_function_ptr & u,GIAC_CONTEXT){
+    int i=archive_function_index(u); // equalposcomp(archive_function_tab,u);
+    if (!i && has_special_syntax(u.ptr()->s)){
+      os << "-1 " << u.ptr()->s << " ";
       return os;
     }
-    int i=equalposcomp(archive_function_tab,u);
     os << i << " ";
     if (!i){
       string s;
-      if (u.ptr->printsommet) 
-	s=(u.ptr->printsommet(zero,u.ptr->s,0));
-      int l=s.size();
+#ifndef NO_STDEXCEPT
+      try {
+#endif
+	if (u.ptr()->printsommet) 
+	  s=(u.ptr()->printsommet(zero,u.ptr()->s,0));
+#ifndef NO_STDEXCEPT
+      }
+      catch (std::runtime_error & ){
+	s=u.ptr()->s;
+      }
+#endif
+      int l = int(s.size());
       if ( (l>4) && (s.substr(l-3,3)=="(0)") )
 	os << s.substr(0,l-3) << " ";
       else
@@ -8014,7 +10736,7 @@ namespace giac {
     return os;
   }
 
-  ostream & archive_SYMB(ostream & os,const symbolic & s,GIAC_CONTEXT){
+  static ostream & archive_SYMB(ostream & os,const symbolic & s,GIAC_CONTEXT){
     unary_function_ptr u=s.sommet;
     gen f=s.feuille;
     archive_FUNC(os,u,contextptr);
@@ -8022,7 +10744,7 @@ namespace giac {
     return os;
   }
 
-  ostream & archive_VECT(ostream & os,const vecteur & v,GIAC_CONTEXT){
+  static ostream & archive_VECT(ostream & os,const vecteur & v,GIAC_CONTEXT){
     const_iterateur it=v.begin(),itend=v.end();
     os << itend-it << " ";
     for (;it!=itend;++it)
@@ -8030,7 +10752,7 @@ namespace giac {
     return os;
   }
 
-  ostream & archive_MAP(ostream & os,const gen_map & v,GIAC_CONTEXT){
+  static ostream & archive_MAP(ostream & os,const gen_map & v,GIAC_CONTEXT){
     gen_map::const_iterator it=v.begin(),itend=v.end();
     int i=0;
     for (;it!=itend;++it) 
@@ -8044,27 +10766,33 @@ namespace giac {
     return os;
   }
 
-  ostream & archive_IDNT(ostream & os,const identificateur & i,GIAC_CONTEXT){
+  static ostream & archive_IDNT(ostream & os,const identificateur & i,GIAC_CONTEXT){
     string s=i.print(contextptr);
     return os << s.size() << " " << s << " ";
   }
 
   ostream & archive(ostream & os,const gen & e,GIAC_CONTEXT){
-    switch (e.type){
+    unsigned et=e.type;
+    signed es=e.subtype;
+    switch (et){
     case _INT_:
-      return os << e.type << " " << e.val << " " << e.subtype << endl;
+      return os << et << " " << e.val << " " << es << endl;
     case _DOUBLE_:
       if (my_isinf(e._DOUBLE_val) || my_isnan(e._DOUBLE_val) )
 	return archive(os,gen(e.print(contextptr),contextptr),contextptr);
-      os << e.type << " ";
-      os.write((char *)&e._DOUBLE_val,sizeof(double));
+      os << et << " ";
+#ifdef DOUBLEVAL
+      os.write((char *)&(e._DOUBLE_val),sizeof(double));
+#else
+      os.write((char *)&e,sizeof(double));
+#endif
       return os << endl;
     case _CPLX:
-      os << e.type << " ";
+      os << et << " ";
       archive(os,*e._CPLXptr,contextptr);
       return archive(os,*(e._CPLXptr+1),contextptr);
     case _REAL:
-      os << e.type << " ";
+      os << et << " ";
 #ifdef HAVE_LIBMPFR
       os << mpfr_get_prec(e._REALptr->inf) << " ";
       return os << print_binary(*e._REALptr) << endl;
@@ -8073,69 +10801,52 @@ namespace giac {
       return os << e.print(contextptr) << endl ;
 #endif
     case _VECT:
-      os << e.type << " " << e.subtype << " " ;
+      os << et << " " << es << " " ;
       return archive_VECT(os,*e._VECTptr,contextptr);
     case _SYMB:
-      os << e.type << " "<< e.subtype << " ";
+      if (es==-1)
+	os << et << " -1 ";
+      else
+	os << et << " "<< es << " ";
       return archive_SYMB(os,*e._SYMBptr,contextptr);
     case _IDNT:
-      os << e.type << " ";
+      os << et << " ";
       return archive_IDNT(os,*e._IDNTptr,contextptr);
     case _FUNC:
-      os << e.type << " " << e.subtype << " ";
+      os << et << " " << es << " ";
       return archive_FUNC(os,*e._FUNCptr,contextptr);
     case _FRAC:
-      os << e.type << " ";
+      os << et << " ";
       archive(os,e._FRACptr->num,contextptr);
       return archive(os,e._FRACptr->den,contextptr);
     case _STRNG:
-      return os << e.type << " " << e._STRNGptr->size() << " |" << *e._STRNGptr << " ";
+      return os << et << " " << e._STRNGptr->size() << " |" << *e._STRNGptr << " ";
     case _MOD:
-      os << e.type << " ";
+      os << et << " ";
       archive(os,*e._MODptr,contextptr); 
       os << " ";
       archive(os,*(e._MODptr+1),contextptr);
       return os << " ";
     case _MAP:
-      os << e.type << " ";
+      os << et << " ";
       archive_MAP(os,*e._MAPptr,contextptr);
       return os << " ";
     case _POINTER_:
-      if (e.subtype==_FL_WIDGET_POINTER && fl_widget_archive_function)
+      if (es==_FL_WIDGET_POINTER && fl_widget_archive_function)
 	return fl_widget_archive_function(os,e._POINTER_val);
       else
 	return archive(os,string2gen("Done",false),contextptr);
+#ifndef NO_RTTI
+    case _USER:
+      {
+	if (galois_field * gf=dynamic_cast<galois_field *>(e._USERptr)){
+	  return os << et << "GF(" << gf->p << "," << gf->P << "," << gf->x << "," << gf->a << ")" << endl;
+	}
+      }
+#endif
     default:
-      return os << e.type << " " << e.print(contextptr) << endl;
+      return os << et << " " << e.print(contextptr) << endl;
     }
-  }
-
-  vecteur giac_current_status(bool save_history,GIAC_CONTEXT){
-    // cas and geo config
-    vecteur res(1,symbolic(at_cas_setup,cas_setup(contextptr)));
-    res.push_back(xyztrange(gnuplot_xmin,gnuplot_xmax,gnuplot_ymin,gnuplot_ymax,gnuplot_zmin,gnuplot_zmax,gnuplot_tmin,gnuplot_tmax,global_window_xmin,global_window_xmax,global_window_ymin,global_window_ymax,show_axes(contextptr),class_minimum,class_size,gnuplot_hidden3d));
-    // session
-    res.push_back(save_history?history_in(contextptr):vecteur(0));
-    res.push_back(save_history?history_out(contextptr):vecteur(0));
-    // user variables
-    if (contextptr && contextptr->tabptr){
-      sym_tab::const_iterator jt=contextptr->tabptr->begin(),jtend=contextptr->tabptr->end();
-      for (;jt!=jtend;++jt){
-	gen a=jt->second;
-	gen b=identificateur(jt->first);
-	res.push_back(symb_sto(a,b));
-      }
-    }
-    else {
-      sym_tab::const_iterator it=syms().begin(),itend=syms().end();
-      for (;it!=itend;++it){
-	gen id=it->second;
-	if (id.type==_IDNT && id._IDNTptr->value)
-	  res.push_back(symb_sto(*id._IDNTptr->value,id));
-      }
-    }
-    res.push_back(symbolic(at_xcas_mode,xcas_mode(contextptr)));
-    return res;
   }
 
   gen archive_session(bool save_history,ostream & os,GIAC_CONTEXT){
@@ -8147,142 +10858,199 @@ namespace giac {
 
   // Archive cas, geo setup, history_in(contextptr), history_out(contextptr), all variable values
   gen archive_session(bool save_history,const string & s,GIAC_CONTEXT){
+#ifdef GIAC_BINARY_ARCHIVE
+    FILE * f =fopen(s.c_str(),"w");
+    fprintf(f,"%s","giac binarch\n");
+    gen g(giac_current_status(save_history,contextptr));
+    return archive_save(f,g,contextptr)?1:0;
+#else
     ofstream os(s.c_str());
     return archive_session(save_history,os,contextptr);
+#endif
   }
 
   std::string archive_session(bool save_history,GIAC_CONTEXT){
+#ifdef HAVE_SSTREAM
     ostringstream os;
     archive_session(save_history,os,contextptr);
     return os.str();
+#else
+    return "Stringstream not available";
+#endif
   }
 
   // Unarchive a session from archive named s
   // Replace one level of history by replace
   // Return 0 if not successfull, or a vector of remaining gen in the archive
   gen unarchive_session(istream & is,int level, const gen & replace,GIAC_CONTEXT){
-#ifdef VISUALC
-    char * buf = new char[BUFFER_SIZE];
+#if defined BESTA_OS || defined VISUALC
+    char * buf = ( char * )alloca( BUFFER_SIZE );
 #else
     char buf[BUFFER_SIZE];
 #endif
     is.getline(buf,BUFFER_SIZE,'\n');
     string bufs(buf);
-#ifdef VISUALC
-    delete [] buf;
-#endif
     if (bufs!="giac archive")
-      return false;
-    gen g=unarchive(is,list_one_letter__IDNT,contextptr);
+      return 0;
+    gen g=unarchive(is,contextptr);
     if (!is)
-      return false;
-    int l;
-    if (g.type!=_VECT || (l=g._VECTptr->size())<4)
-      return false;
-    vecteur & v=*g._VECTptr;
-    if (v[2].type!=_VECT || v[3].type!=_VECT || v[2]._VECTptr->size()!=v[3]._VECTptr->size())
-      return false;
-#ifndef DONT_UNARCHIVE_HISTORY
-    history_in(contextptr)=*v[2]._VECTptr;
-    history_out(contextptr)=*v[3]._VECTptr;
-#ifndef GNUWINCE
-    protecteval(v[0],eval_level(contextptr),contextptr); 
-    protecteval(v[1],eval_level(contextptr),contextptr); 
-#endif
-#endif
-    // restore variables
-    for (int i=4;i<l;++i)
-      protecteval(v[i],eval_level(contextptr),contextptr); 
-    // eval replace if level>=0
-    if (level<0 || level>=l){
-      history_in(contextptr).push_back(replace);
-      history_out(contextptr).push_back(protecteval(replace,eval_level(contextptr),contextptr)); 
-    }
-    else {
-      history_in(contextptr)[level]=replace;
-      for (int i=level;i<l;++i)
-	history_out(contextptr)[i]=protecteval(history_in(contextptr)[i],eval_level(contextptr),contextptr); 
-    }
+      return 0;
+    if (!unarchive_session(g,level,replace,contextptr))
+      return 0;
     vecteur res;
     while (!is.eof()){
-      res.push_back(unarchive(is,list_one_letter__IDNT,contextptr));
+      res.push_back(unarchive(is,contextptr));
     }
     return res;
   }
 
   gen unarchive_session(const string & s,int level, const gen & replace,GIAC_CONTEXT){
+    FILE * f = fopen(s.c_str(),"r");
+    char * buf = new char[101];
+    fread(buf,sizeof(char),12,f);
+    buf[12]=0;
+    if (!strcmp(buf,"giac binarch")){
+      fread(buf,sizeof(char),1,f); // FIXME 2 for windows?
+      delete [] buf;
+      gen g=archive_restore(f,contextptr);
+      if (!unarchive_session(g,level,replace,contextptr))
+	return 0;
+      vecteur res;
+      while (!feof(f)){
+	res.push_back(archive_restore(f,contextptr));
+      }
+      return res;      
+    }
+    fclose(f);
+    delete [] buf;
+#ifdef NSPIRE
+    file is(s.c_str(),"r");
+    if (!is)
+      return false;
+#else
     ifstream is(s.c_str());
     if (!is)
       return false;
     return unarchive_session(is,level,replace,contextptr);
+#endif
   }
 
   gen unarchive_session_string(const std::string & s,int level, const gen & replace,GIAC_CONTEXT){
+#ifdef HAVE_SSTREAM
     istringstream is(s);
     if (!is)
       return false;
     return unarchive_session(is,level,replace,contextptr);
+#else
+    return gensizeerr("Stringstreams not available");
+#endif
   }
 
   gen _archive(const gen & args,GIAC_CONTEXT){
-    check_secure();
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    gen tmp=check_secure();
+    if (is_undef(tmp)) return tmp;
     if (args.type==_STRNG){ // archive session state
       return archive_session(true,*args._STRNGptr,contextptr);
     }
-    if ( (args.type!=_VECT) || (args._VECTptr->size()!=2))
-      setsizeerr();
+    int s;
+    if (args.type != _VECT || (s = int(args._VECTptr->size()))<2)
+      return gensizeerr(contextptr);
     gen a=args._VECTptr->front();
-    gen b=args._VECTptr->back();
+    gen b=(*args._VECTptr)[1];
     if (a.type!=_STRNG)
-      setsizeerr();
+      return gensizeerr(contextptr);
+    if (s==3){ // new binary archive format
+      FILE * f=fopen(a._STRNGptr->c_str(),"w");
+      if (!f)
+	return gensizeerr(gettext("Unable to open file ")+a.print(contextptr));
+      fprintf(f,"%s","-1  "); // header: type would be -1
+      if (!archive_save(f,b,contextptr))
+	return gensizeerr(gettext("Error writing ")+b.print(contextptr)+" in file "+a.print(contextptr));
+      fclose(f);
+      return b;
+    }
+#ifdef NSPIRE
+    return 0;
+#else
     ofstream os(a._STRNGptr->c_str());
     archive(os,b,contextptr);
     return b;
+#endif
   }
-  const string _archive_s("archive");
-  unary_function_eval __archive(&giac::_archive,_archive_s);
-  unary_function_ptr at_archive (&__archive,0,true);
+  static const char _archive_s []="archive";
+  static define_unary_function_eval (__archive,(const gen_op_context)giac::_archive,_archive_s);
+  define_unary_function_ptr5( at_archive ,alias_at_archive,&__archive,0,true);
 
   gen _unarchive(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type!=_STRNG)
-      setsizeerr();
+      return gensizeerr(contextptr);
+    FILE * f = fopen(args._STRNGptr->c_str(),"r");
+    if (!f)
+      return gensizeerr(gettext("Unable to read file"));
+    char * buf = new char[101];
+    fread(buf,sizeof(char),4,f);
+    if (buf[0]=='-' && buf[1]=='1' && buf[2]==' '){
+      delete [] buf;
+      gen res=archive_restore(f,contextptr);
+      return res;
+    }
+    fclose(f);
+#ifdef NSPIRE
+    return 0;
+#else
     ifstream is(args._STRNGptr->c_str());
-    return unarchive(is,list_one_letter__IDNT,contextptr);
+    is.getline(buf,100,'\n');
+    bool ar = (buf==string("giac archive") || buf==string("giac binarch"));
+    delete [] buf;
+    is.close();
+    if (ar)
+      return unarchive_session(*args._STRNGptr,-1,0,contextptr);
+    ifstream is0(args._STRNGptr->c_str());
+    return unarchive(is0,contextptr);
+#endif
   }
-  const string _unarchive_s("unarchive");
-  unary_function_eval __unarchive(&giac::_unarchive,_unarchive_s);
-  unary_function_ptr at_unarchive (&__unarchive,0,true);
+  static const char _unarchive_s []="unarchive";
+  static define_unary_function_eval (__unarchive,&giac::_unarchive,_unarchive_s);
+  define_unary_function_ptr5( at_unarchive ,alias_at_unarchive,&__unarchive,0,true);
+#endif // NSPIRE
 
-  void geo_setup(const vecteur & w,GIAC_CONTEXT){
+  bool geo_setup(const vecteur & w,GIAC_CONTEXT){
     if (w.size()<12)
-      setsizeerr();
+      return false; // setsizeerr(contextptr);
     if (w.size()>12) {
       gen g=w[12];
       g=_floor(g,0);
       if (g.type!=_INT_)
-	setsizeerr();
+	return false; // setsizeerr(contextptr);
       show_axes(g.val,contextptr);
     }
     if (w.size()>15) {
       gen g=w[15];
       g=_floor(g,0);
       if (g.type!=_INT_)
-	setsizeerr();
+	return false; // setsizeerr(contextptr);
+#ifdef WITH_GNUPLOT
       int i=g.val;
-      gnuplot_hidden3d=i %2;
+      gnuplot_hidden3d=(i %2)!=0;
       i =i/2;
-      gnuplot_pm3d=i%2;
+      gnuplot_pm3d=(i%2)!=0;
+#endif
     }
-    vecteur v=*evalf_double(w,1,contextptr)._VECTptr;
+    gen tmpw=evalf_double(w,1,contextptr);
+    if (tmpw.type!=_VECT)
+      return false;
+    vecteur v=*tmpw._VECTptr;
     if (v.size()>14) {
       if (v[13].type!=_DOUBLE_ || v[14].type!=_DOUBLE_)
-	setsizeerr();
+	return false; // setsizeerr(contextptr);
       class_minimum=v[13]._DOUBLE_val;
       class_size=v[14]._DOUBLE_val;
     }
     for (int i=0;i<12;++i){
       if (v[i].type!=_DOUBLE_)
-	setsizeerr();
+	return false; // setsizeerr(contextptr);
     }
     gnuplot_xmin=v[0]._DOUBLE_val;
     gnuplot_xmax=v[1]._DOUBLE_val;
@@ -8296,9 +11064,10 @@ namespace giac {
     global_window_xmax=v[9]._DOUBLE_val;
     global_window_ymin=v[10]._DOUBLE_val;
     global_window_ymax=v[11]._DOUBLE_val;
+    return true;
   }
 
-  gen xyztrange(double xmin,double xmax,double ymin,double ymax,double zmin,double zmax,double tmin,double tmax,double wxmin,double wxmax,double wymin, double wymax, int axes,double class_min,double class_size,bool gnuplot_hidden3d){
+  gen xyztrange(double xmin,double xmax,double ymin,double ymax,double zmin,double zmax,double tmin,double tmax,double wxmin,double wxmax,double wymin, double wymax, int axes,double class_min,double class_size,bool gnuplot_hidden3d,bool gnuplot_pm3d){
     vecteur v;
     v.push_back(xmin);
     v.push_back(xmax);
@@ -8319,10 +11088,13 @@ namespace giac {
     return symbolic(at_xyztrange,v);
   }
   gen _xyztrange(const gen & args,GIAC_CONTEXT){
+    if (interactive_op_tab && interactive_op_tab[8])
+      return interactive_op_tab[8](args,contextptr);
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type!=_VECT || args._VECTptr->size()<4)
-      setsizeerr();
+      return gensizeerr(contextptr);
     vecteur w=*args._VECTptr;
-    int s=w.size();
+    int s = int(w.size());
     if (s<12){
       if (s<5) w.push_back(gnuplot_zmin);
       if (s<6) w.push_back(gnuplot_zmax);
@@ -8333,17 +11105,27 @@ namespace giac {
       if (s<11) w.push_back(w[2]);
       if (s<12) w.push_back(w[3]);
     }
-    geo_setup(w,contextptr);
+    if (!geo_setup(w,contextptr))
+      return gensizeerr(contextptr);
+#ifdef HAVE_SIGNAL_H_OLD
     if (!child_id){
       _signal(symbolic(at_quote,symbolic(at_xyztrange,w)),contextptr);
     }
+#endif
     return args;
   }
-  const string _xyztrange_s("xyztrange");
-  unary_function_eval __xyztrange(&giac::_xyztrange,_xyztrange_s);
-  unary_function_ptr at_xyztrange (&__xyztrange,0,true);
+  static const char _xyztrange_s []="xyztrange";
+#ifdef RTOS_THREADX
+  static define_unary_function_eval(__xyztrange,&_xyztrange,_xyztrange_s);
+#else
+  unary_function_eval __xyztrange(0,&giac::_xyztrange,_xyztrange_s);
+#endif
+  //unary_function_ptr at_xyztrange_ (&__xyztrange,0,true);
+  //const unary_function_ptr * at_xyztrange=&at_xyztrange_;
+  define_unary_function_ptr5( at_xyztrange ,alias_at_xyztrange,&__xyztrange,0,true);
 
   gen _switch_axes(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type==_INT_)
       show_axes(args.val,contextptr);
     else {
@@ -8352,15 +11134,21 @@ namespace giac {
       else
 	show_axes(1,contextptr);
     }
-    return eval(xyztrange(gnuplot_xmin,gnuplot_xmax,gnuplot_ymin,gnuplot_ymax,gnuplot_zmin,gnuplot_zmax,gnuplot_tmin,gnuplot_tmax,global_window_xmin,global_window_xmax,global_window_ymin,global_window_ymax,show_axes(contextptr),class_minimum,class_size,gnuplot_hidden3d+2*gnuplot_pm3d),contextptr);
+    return eval(xyztrange(gnuplot_xmin,gnuplot_xmax,gnuplot_ymin,gnuplot_ymax,gnuplot_zmin,gnuplot_zmax,gnuplot_tmin,gnuplot_tmax,global_window_xmin,global_window_xmax,global_window_ymin,global_window_ymax,show_axes(contextptr),class_minimum,class_size,
+#ifdef WITH_GNUPLOT
+			  gnuplot_hidden3d,gnuplot_pm3d
+#else
+			  1,1
+#endif
+			  ),contextptr);
   }
-  const string _switch_axes_s("switch_axes");
-  unary_function_eval __switch_axes(&giac::_switch_axes,_switch_axes_s);
-  unary_function_ptr at_switch_axes (&__switch_axes,0,true);
+  static const char _switch_axes_s []="switch_axes";
+  static define_unary_function_eval (__switch_axes,&giac::_switch_axes,_switch_axes_s);
+  define_unary_function_ptr5( at_switch_axes ,alias_at_switch_axes,&__switch_axes,0,true);
 
   gen plotseq(const gen& f,const gen&x,double x0,double xmin,double xmax,int niter,const vecteur & attributs,const context * contextptr){
     if (xmin>xmax)
-      std::swap<double>(xmin,xmax);
+      giac::swapdouble(xmin,xmax);
     vecteur res(2*niter+1);
     res[0]=x0;
     int j=1;
@@ -8369,7 +11157,7 @@ namespace giac {
     for (int i=0;i<niter;++i){
       newx0=subst(f,x,x0,false,contextptr).evalf2double(eval_level(contextptr),contextptr);
       if (newx0.type!=_DOUBLE_)
-	setsizeerr("Bad iteration");
+	return gensizeerr(gettext("Bad iteration"));
       x1=newx0._DOUBLE_val;
       res[j]=gen(x0,x1);
       ++j;
@@ -8379,37 +11167,40 @@ namespace giac {
     }
     vecteur g(gen2vecteur(_plotfunc(gen(makevecteur(f,symb_equal(x,symb_interval(xmin,xmax))),_SEQ__VECT),contextptr)));
     g.push_back(pnt_attrib(gen(makevecteur(gen(gnuplot_xmin,gnuplot_xmin),gen(gnuplot_xmax,gnuplot_xmax)),_LINE__VECT),attributs,contextptr));
-    int color=FL_GREEN;
+#ifdef GIAC_HAS_STO_38
+    int color=FL_BLACK;
+#else
+    int color=FL_MAGENTA;
+#endif
     if (!attributs.empty())
       color = color | (attributs[0].val & 0xffff0000);
     g.push_back(symb_pnt(gen(res,_LINE__VECT),color,contextptr));
     g.push_back(symb_pnt(gen(makevecteur(gen(x0,x0),gen(x0)),_VECTOR__VECT), color | _DASH_LINE,contextptr));
     return g; // gen(g,_SEQ__VECT);
   }
-  // args=[expr,[var=]x0|[x0,xmin,xmax][,niter]]
-  gen _plotseq(const gen & args,const context * contextptr){
-    if (args.type!=_VECT)
-      return symbolic(at_plotseq,args);
-    vecteur & v=*args._VECTptr;
-    vecteur attributs(1,default_color(contextptr));
+  int find_plotseq_args(const gen & args,gen & expr,gen & x,double & x0d,double & xmin,double & xmax,int & niter,vecteur & attributs,GIAC_CONTEXT){
+    vecteur v=gen2vecteur(args);
+    attributs=vecteur(1,default_color(contextptr));
     int l=read_attributs(v,attributs,contextptr);
-    int niter=30;
-    double x0d;
-    gen x,x0;
+    if (l<2)
+      v.push_back(0);
+    expr=v[0];
+    niter=30;
+    gen x0;
     if (l>3){ // expr,var,x0,niter
       x=v[1];
       x0=v[2];
       if (v[3].type==_INT_)
 	niter=absint(v[3].val);
       else
-	setsizeerr("Bad iteration number");
+	return -2; // bad iteration
     }
     else {
       if (l>2){
 	if (v[2].type==_INT_)
 	  niter=absint(v[2].val);
 	else
-	  setsizeerr("Bad iteration number");
+	  return -2;
       }
       if ( (v[1].type==_SYMB) && (v[1]._SYMBptr->sommet==at_equal) ){
 	vecteur & w=*v[1]._SYMBptr->feuille._VECTptr;
@@ -8422,54 +11213,83 @@ namespace giac {
       }
     }
     x0=evalf_double(x0,eval_level(contextptr),contextptr);
-    double xmin=gnuplot_xmin,xmax=gnuplot_xmax;
+    xmin=gnuplot_xmin;xmax=gnuplot_xmax;
     if (x0.type==_VECT && x0._VECTptr->size()==3){
       vecteur & x0v=*x0._VECTptr;
       if (x0v[1].type!=_DOUBLE_ || x0v[2].type!=_DOUBLE_)
-	setsizeerr("Non numeric range value");
+	return -3; // gensizeerr(gettext("Non numeric range value"));
       xmin=x0v[1]._DOUBLE_val;
       xmax=x0v[2]._DOUBLE_val;
-      x0=x0v[0];
+      x0=remove_at_pnt(x0v[0]);
+      x0=re(x0,contextptr);
     }
     if (x0.type!=_DOUBLE_)
-      setsizeerr("Non numeric initial value");
+      return -4; // 
     x0d=x0._DOUBLE_val;
-    return plotseq(v[0],x,x0d,xmin,xmax,niter,attributs,contextptr);
+    return 0;
   }
-  const string _plotseq_s("plotseq");
-  unary_function_eval __plotseq(&giac::_plotseq,_plotseq_s);
-  unary_function_ptr at_plotseq (&__plotseq,0,true);
 
-  const string _graphe_suite_s("graphe_suite");
-  unary_function_eval __graphe_suite(&giac::_plotseq,_graphe_suite_s);
-  unary_function_ptr at_graphe_suite (&__graphe_suite,0,true);
+  // args=[expr,[var=]x0|[x0,xmin,xmax][,niter]]
+  gen _plotseq(const gen & args,const context * contextptr){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    gen expr,var;
+    double x0d,xmin,xmax;
+    int niter;
+    vecteur attributs;
+    if (find_plotseq_args(args,expr,var,x0d,xmin,xmax,niter,attributs,contextptr)<0)
+      return gentypeerr(contextptr);
+    return plotseq(expr,var,x0d,xmin,xmax,niter,attributs,contextptr);
+  }
+  static const char _plotseq_s []="plotseq";
+  static define_unary_function_eval (__plotseq,&giac::_plotseq,_plotseq_s);
+  define_unary_function_ptr5( at_plotseq ,alias_at_plotseq,&__plotseq,0,true);
 
-  const string _seqplot_s("seqplot");
-  unary_function_eval __seqplot(&giac::_plotseq,_seqplot_s);
-  unary_function_ptr at_seqplot (&__seqplot,0,true);
+  static const char _graphe_suite_s []="graphe_suite";
+  static define_unary_function_eval (__graphe_suite,&giac::_plotseq,_graphe_suite_s);
+  define_unary_function_ptr5( at_graphe_suite ,alias_at_graphe_suite,&__graphe_suite,0,true);
 
-  double l2norm(double x,double y){
+  static const char _seqplot_s []="seqplot";
+  static define_unary_function_eval (__seqplot,&giac::_plotseq,_seqplot_s);
+  define_unary_function_ptr5( at_seqplot ,alias_at_seqplot,&__seqplot,0,true);
+
+  static double l2norm(double x,double y){
     return std::sqrt(x*x+y*y);
   }
 
-  gen in_plotimplicit(const gen& f_orig,const gen&x,const gen & y,double xmin,double xmax,double ymin,double ymax,int nxstep,int nystep,double eps,const vecteur & attributs,const context * contextptr){
+  static bool get_sol(gen & sol,GIAC_CONTEXT){
+    if (is_undef(sol))
+      return false;
+    if (sol.type==_VECT && sol._VECTptr->size()==2)
+      sol=(sol[0]+sol[1])/2;
+    if (sol.type==_VECT && sol._VECTptr->size()==1)
+      sol=sol[0];
+    sol=evalf_double(sol,1,contextptr);
+    return sol.type==_DOUBLE_;
+  }
+  
+  // FIXME: this function is using absolute constants 0.1 and 0.2 for checking singular points, they should use better estimates depending on f_orig (search for dfxyabs2)
+  static gen in_plotimplicit(const gen& f_orig,const gen&x,const gen & y,double xmin,double xmax,double ymin,double ymax,int nxstep,int nystep,double eps,const vecteur & attributs,int ckgeo2d,const context * contextptr){
+#ifdef RTOS_THREADX
+    return undef;
+#else
     if (f_orig.type==_VECT){
       vecteur & v = *f_orig._VECTptr,w;
-      int vs=v.size();
+      int vs = int(v.size());
       for (int i=0;i<vs;++i){
-	w.push_back(in_plotimplicit(v[i],x,y,xmin,xmax,ymin,ymax,nxstep,nystep,eps,attributs,contextptr));
+	w.push_back(in_plotimplicit(v[i],x,y,xmin,xmax,ymin,ymax,nxstep,nystep,eps,attributs,ckgeo2d,contextptr));
       }
       return gen(w,_SEQ__VECT);
     }
-    if (f_orig.is_symb_of_sommet(at_inv) || (is_zero(derive(f_orig,x,contextptr)) && is_zero(derive(f_orig,y,contextptr))) )
+    if (f_orig.is_symb_of_sommet(at_inv) || (is_zero(derive(f_orig,x,contextptr),contextptr) && is_zero(derive(f_orig,y,contextptr),contextptr)) )
       return vecteur(0); // gen(vecteur(0),_SEQ__VECT);
     if (f_orig.is_symb_of_sommet(at_prod) && f_orig._SYMBptr->feuille.type==_VECT){
       vecteur res;
       vecteur & fv = *f_orig._SYMBptr->feuille._VECTptr;
-      int s=fv.size();
+      int s = int(fv.size());
       for (int i=0;i<s;++i){
-	gen tmp=in_plotimplicit(fv[i],x,y,xmin,xmax,ymin,ymax,nxstep,nystep,eps,attributs,contextptr);
-	res=mergevecteur(res,gen2vecteur(tmp));
+	gen tmp=in_plotimplicit(fv[i],x,y,xmin,xmax,ymin,ymax,nxstep,nystep,eps,attributs,ckgeo2d,contextptr);
+	if (!is_undef(tmp))
+	  res=mergevecteur(res,gen2vecteur(tmp));
       }
       return res; // gen(res,_SEQ__VECT);
     }
@@ -8479,27 +11299,31 @@ namespace giac {
 	gen arg=farg._VECTptr->front();
 	gen expo=farg._VECTptr->back();
 	if (ck_is_positive(expo,contextptr))
-	  return in_plotimplicit(farg,x,y,xmin,xmax,ymin,ymax,nxstep,nystep,eps,attributs,contextptr);
+	  return in_plotimplicit(farg,x,y,xmin,xmax,ymin,ymax,nxstep,nystep,eps,attributs,ckgeo2d,contextptr);
 	else
 	  return vecteur(0); // gen(vecteur(0),_SEQ__VECT);
       }
     }
     gen attribut=attributs.empty()?default_color(contextptr):attributs[0];
     gen lieu_geo;
-    if (equation2geo2d(f_orig,x,y,lieu_geo,gnuplot_tmin,gnuplot_tmax,gnuplot_tstep,contextptr))
+    if (ckgeo2d && equation2geo2d(f_orig,x,y,lieu_geo,gnuplot_tmin,gnuplot_tmax,gnuplot_tstep,undef,ckgeo2d,contextptr))
       return put_attributs(lieu_geo,attributs,contextptr);
     // make a lattice between gnuplot_xmin/gnuplot_xmax and ymin/ymax
     // find zeros of f inside each square and follow the branches
+    //bool is_regular=lop(f_orig,at_abs).empty() && lop(f_orig,at_sign).empty();
 #ifndef WIN32
     bool old_iograph=io_graph(contextptr);
     if (thread_eval_status(contextptr)!=1)
       io_graph(false,contextptr);
 #endif
+#ifdef HAVE_LIBGSL //
+    gsl_set_error_handler_off();
+#endif //
     if (!nystep){
       nxstep=int(std::sqrt(double(std::abs(nxstep))));
       nystep=nxstep;
     }
-    if (nxstep*nystep>100*100){
+    if (ulonglong(nxstep)*nystep>100*100){
       nxstep=100;
       nystep=100;
     }
@@ -8509,18 +11333,19 @@ namespace giac {
     vecteur xy(makevecteur(x,y)),locvar(makevecteur(xloc,yloc));
     gen f=quotesubst(f_orig,xy,locvar,contextptr).evalf(1,contextptr);
     gen dfx=derive(f_orig,x,contextptr),dfy=derive(f_orig,y,contextptr);
+    if (is_undef(dfx) || is_undef(dfy))
+      return dfx+dfy;
     vecteur localvar(makevecteur(xloc,yloc));
     context * newcontextptr=(context *) contextptr;
-    int protect=bind(makevecteur(xmin,ymin),localvar,newcontextptr);
+    int protect=giac::bind(makevecteur(xmin,ymin),localvar,newcontextptr);
     vector< vector<bool> > visited(nxstep+2,vector<bool>(nystep+2));
     // vector< vector<bool> > visited(nxstep+2,vector<bool>(nystep+2) );
     vector< vector<double> > 
       fxy(nxstep+1,vector<double>(nystep+1)),
       dfxorig(nxstep+1,vector<double>(nystep+1)),
       dfyorig(nxstep+1,vector<double>(nystep+1)),
-      dfxyorig_abs(nxstep+1,vector<double>(nystep+1)),
-      xorig(nxstep+1,vector<double>(nystep+1)),
-      yorig(nxstep+1,vector<double>(nystep+1));
+      dfxyorig_abs(nxstep+1,vector<double>(nystep+1));
+    vector< vector<double> > xorig(nxstep+1,vector<double>(nystep+1)),yorig(nxstep+1,vector<double>(nystep+1));
     gen gtmp;
     // initialize each cell to non visited
     local_sto_double(ymin,yloc,newcontextptr);
@@ -8529,6 +11354,7 @@ namespace giac {
       for (int j=0;j<=nystep+1;++j)
 	visited[i][j]=false;
     }
+    vecteur singular_points,singular_points_tangents,singular_points_directions;
     for (int i=0;i<=nxstep;++i){
       local_sto_double(ymin,yloc,newcontextptr);
       // yloc.localvalue->back()._DOUBLE_val = ymin;
@@ -8546,22 +11372,205 @@ namespace giac {
     }
     leave(protect,localvar,newcontextptr);
     double xx=xmin,yy=ymin,tmp,xcurrent,ycurrent;
+    vecteur xy1(xy);
+    lvar(f_orig,xy1); // check for an algebraic curve
+    if (xy1==xy){
+      // Polynomial singular points: solve([f_orig,dfx,dfy],xy)
+      singular_points=gsolve(*exact(makevecteur(f_orig,dfx,dfy),contextptr)._VECTptr,xy,false,(approx_mode(contextptr)?1:0),contextptr);
+      for (int k=0;k<int(singular_points.size());k++){
+	gen sp=singular_points[k];
+	gen spd=evalf_double(sp,1,contextptr);
+	if (sp.type!=_VECT || sp._VECTptr->size()!=2 || spd[0].type!=_DOUBLE_ || spd[1].type!=_DOUBLE_ )
+	  continue;
+	int i=int((spd[0]._DOUBLE_val-xmin)/xstep);
+	int j=int((spd[1]._DOUBLE_val-xmin)/xstep);
+	if (i>=nxstep || j>=nystep)
+	  continue;
+	for (int ii=i-1;ii<i+1;++ii){
+	  for (int jj=j-1;jj<j+1;++jj){
+	    if ( ii>=0 && ii<nxstep && jj>=0 && jj<nystep )
+	      visited[ii][jj]=true;
+	  }
+	}
+	// FIXME series does not work correctly
+	// example eq:=25*x^6*y^2-80*x^6*y+64*x^6-10*x^5*y^2+136*x^5*y-192*x^5+59*x^4*y^2+56*x^4*y+192*x^4-20*x^3*y^2-240*x^3*y-64*x^3+43*x^2*y^2+104*x^2*y-10*x*y^2+9*y^2; implicitplot(eq,x=0..2,y=-1..1,ystep=0.01);
+	if (has_op(sp,*at_rootof)) sp=spd; 
+	// find all tangents starting from sp
+	for (int order=2;order<10;++order){
+	  gen tays=series(subst(f_orig,xy,xy+sp,false,contextptr),xy,makevecteur(0,0),order,0,contextptr);
+	  if (!is_zero(tays,contextptr)){
+	    singular_points_tangents.clear();
+	    // non-zero homogeneous expansion
+	    // find roots of taylor expansion
+	    gen t(identificateur(" implicitplot"));
+	    tays=subst(tays,xy,makevecteur(1,t),false,contextptr);
+	    // search for a multiple root, if last_direction is near a multiple root
+	    // of even multiplicity change last_direction sign
+	    gen sqfftays=_quo(gen(makevecteur(tays,_gcd(gen(makevecteur(tays,derive(tays,t,contextptr)),_SEQ__VECT),contextptr),t),_SEQ__VECT),contextptr);
+	    gen r=_proot(gen(makevecteur(sqfftays,t),_SEQ__VECT),contextptr);
+#ifndef GIAC_HAS_STO_38
+	    *logptr(contextptr) << gettext("Near ") << sp << ", 1/epsilon^2*f(" << sp<< "+epsilon*[1,t])=" << subst(tays,t,t__IDNT_e,false,contextptr) << " roots " << r << endl;
+#endif
+	    if (r.type==_VECT){
+	      int total=0;
+	      for (unsigned kr=0;kr<r._VECTptr->size();++kr){
+		// find multiplicity
+		int mult=0;
+		gen quo,tmp=tays;
+		for (++total;;++mult,++total){
+		  quo=_quorem(gen(makevecteur(tmp,t-r[kr],t),_SEQ__VECT),contextptr);
+		  if (quo.type!=_VECT || quo._VECTptr->size()!=2 || !is_zero(quo._VECTptr->back(),contextptr))
+		    break;
+		  tmp=quo._VECTptr->front();
+		}
+		if (!is_zero(im(r[kr],contextptr),contextptr))
+		  continue;
+		// add 2 half-tangents with slope r[kr]
+		singular_points_tangents.push_back(makevecteur(i,j,spd,1,r[kr],mult));
+		singular_points_tangents.push_back(makevecteur(i,j,spd,-1,-r[kr],mult));
+	      } // end for kr
+	      // add vertical half-tangents if any
+	      if (total<order){
+		singular_points_tangents.push_back(makevecteur(i,j,spd,0,1,order-total));
+		singular_points_tangents.push_back(makevecteur(i,j,spd,0,-1,order-total));
+	      }
+	    } // end if (r.type==_VECT)
+	    // dirc contains affixes of directions
+	    vecteur dirc;
+	    for (unsigned k=0;k<singular_points_tangents.size();++k){
+	      gen tmp=singular_points_tangents[k];
+	      if (tmp.type==_VECT && tmp._VECTptr->size()>=6){
+		tmp=tmp[3]+cst_i*tmp[4];
+		dirc.push_back(tmp);
+	      }
+	    }
+	    for (int sing=0;sing<int(singular_points_tangents.size());++sing){
+	      // replace tangents by directions
+	      gen tmp=singular_points_tangents[sing];
+	      if (tmp.type==_VECT && tmp._VECTptr->size()>=6){
+		gen sp=(*tmp._VECTptr)[2];
+		gen lastsing=gen(sp[0],sp[1]);
+		double xcurrent=evalf_double(sp[0]+xstep/3*(*tmp._VECTptr)[3],1,contextptr)._DOUBLE_val;
+		double ycurrent=evalf_double(sp[1]+xstep/3*(*tmp._VECTptr)[4],1,contextptr)._DOUBLE_val;
+		// find solutions near half tangent (no more than mult)
+		if (is_greater(abs(tmp[4],contextptr),abs(tmp[3],contextptr),contextptr)){
+		  // search x
+		  gen fx=subst(f_orig,y,ycurrent,false,contextptr);
+		  int iszero=-1;
+		  vecteur v=bisection_solver(fx,x,xcurrent-xstep,xcurrent+xstep,iszero,contextptr);
+		  for (unsigned vi=0;vi<v.size();++vi){
+		    gen sol=v[vi];
+		    if (sol.type!=_DOUBLE_)
+		      continue;
+		    xcurrent=sol._DOUBLE_val;
+		    sol=gen(xcurrent,ycurrent);
+		    // check that sol-lastsing is in the same direction as tmp[3],tmp[4]
+		    gen curdir=(sol-lastsing),tmpdir=tmp[3]+cst_i*tmp[4];
+		    gen tst=abs(arg(curdir/tmpdir,contextptr),contextptr);
+		    unsigned dir_i=0;
+		    for (;dir_i<dirc.size();++dir_i){
+		      // if (diri==sing) continue;
+		      // if arg of quotient is larger in abs value than a quotient
+		      // with another direction, then this direction is invalid
+		      gen tst_i=abs(arg(curdir/dirc[dir_i],contextptr),contextptr);
+		      if (is_strictly_greater(tst,tst_i,contextptr))
+			break;
+		    }
+		    if (dir_i==dirc.size()){
+		      singular_points_directions.push_back(makevecteur(i,j,lastsing,sol));
+		    }
+		  }
+		}
+		else { // search y
+		  gen fy=subst(f_orig,x,xcurrent,false,contextptr);
+		  int iszero=-1;
+		  vecteur v=bisection_solver(fy,y,ycurrent-ystep,ycurrent+ystep,iszero,contextptr);
+		  for (unsigned vi=0;vi<v.size();++vi){
+		    gen sol=v[vi];
+		    if (sol.type!=_DOUBLE_)
+		      continue;
+		    ycurrent=sol._DOUBLE_val;
+		    sol=gen(xcurrent,ycurrent);
+		    // check that sol-lastsing is in the same direction as tmp[3],tmp[4]
+		    gen curdir=(sol-lastsing),tmpdir=tmp[3]+cst_i*tmp[4];
+		    gen tst=abs(arg(curdir/tmpdir,contextptr),contextptr);
+		    unsigned dir_i=0;
+		    for (;dir_i<dirc.size();++dir_i){
+		      // if (diri==sing) continue;
+		      // if arg of quotient is larger in abs value than a quotient
+		      // with another direction, then this direction is invalid
+		      gen tst_i=abs(arg(curdir/dirc[dir_i],contextptr),contextptr);
+		      if (is_strictly_greater(tst,tst_i,contextptr))
+			break;
+		    }
+		    if (dir_i==dirc.size()){
+		      singular_points_directions.push_back(makevecteur(i,j,lastsing,sol));
+		    }
+		  }
+		}
+	      }
+	    }
+	    break; // end the for loop on order
+	  } // end if !is_zero(tays,contextptr)
+	} // end loop on order
+      } // end if k<singular_points.size()
+#ifndef GIAC_HAS_STO_38
+      if (!singular_points.empty())
+	*logptr(contextptr) << gettext("Singular points directions: [cell_i, cell_j, singularity, next solution] ") << singular_points_directions << endl;
+#endif
+    }
     bool pathfound;
     vecteur res;
-    for (int i=0;i<=nxstep;++i,xx += xstep){
-      if (debug_infolevel)
-	cout << "// Implicitplot row " << i << endl;
-      yy = ymin;
-      for (int j=0;j<=nystep;++j,yy+=ystep){
+    int i=-1,j=nystep,sing=0;
+    gen lastsing;
+    bool was_not_singular;
+    for (;;){ 
+      pathfound=false;
+      vecteur chemin;
+      int iorig,jorig;
+      bool chemin_ok=true;
+      bool orig_sing=sing<int(singular_points_directions.size());
+      gen lastsingdir;
+      // First paths from singular points
+      if (orig_sing){
+	was_not_singular=false;
+	gen tmp=singular_points_directions[sing];
+	++sing;
+	lastsing=tmp[2];
+	chemin.push_back(lastsing);
+	xcurrent=evalf_double(re(tmp[3],contextptr),1,contextptr)._DOUBLE_val;
+	ycurrent=evalf_double(im(tmp[3],contextptr),1,contextptr)._DOUBLE_val;
+	lastsingdir=xcurrent+cst_i*ycurrent;
+	// set iorig,jorig
+	iorig=int((xcurrent-xmin)/xstep); // FIXME? +.5
+	jorig=int((ycurrent-ymin)/ystep); // 
+	if (xcurrent>=xmin && ycurrent>=ymin && xcurrent<=xmax && ycurrent<=ymax)
+	  pathfound=true;
+      }
+      else {
+	was_not_singular=true;
+	lastsingdir=undef;
+      }
+      if (!pathfound){
+	++j;
+	if (j>nystep){
+	  j=0;
+	  ++i;
+	  if (i>nxstep)
+	    break;
+	  if (debug_infolevel)
+	    COUT << "// Implicitplot row " << i << endl;
+	}
+	xx=xmin+i*xstep;
+	yy=ymin+j*ystep;
 	// If cell has been visited -> done
 	if ( visited[i][j] || ( 
-			       ( (!j && visited[i][j-1]) || visited[i][j+1]) && 
-			       ( (!i && visited[i+1][j]) || visited[i-1][j]) 
-			       ) )
+			       ( (j && visited[i][j-1]) || visited[i][j+1]) && 
+			       ( visited[i+1][j] || (i && visited[i-1][j])) 
+				) )
 	  continue;
 	// now look for annulation from below or left
 	tmp=j?fxy[i][j-1]*fxy[i][j]:1;
-	pathfound=false;
 	if (tmp<0) {
 	  pathfound=true;
 	  // find an horizontal solution
@@ -8569,7 +11578,10 @@ namespace giac {
 	  ycurrent=yy;
 	  gen fy=subst(f_orig,x,xcurrent,false,contextptr);
 	  gen sol=_fsolve(gen(makevecteur(fy,y,makevecteur(ycurrent-ystep,ycurrent),_BISECTION_SOLVER,100*eps),_SEQ__VECT),contextptr);
-	  ycurrent=(sol[0]+sol[1])._DOUBLE_val/2;
+	  if (!get_sol(sol,contextptr))
+	    pathfound=false;
+	  else
+	    ycurrent=sol._DOUBLE_val;
 	}
 	else {
 	  tmp=i?fxy[i-1][j]*fxy[i][j]:1;
@@ -8580,206 +11592,350 @@ namespace giac {
 	    ycurrent=yy;
 	    gen fx=subst(f_orig,y,ycurrent,false,contextptr);
 	    gen sol=_fsolve(gen(makevecteur(fx,x,makevecteur(xcurrent-xstep,xcurrent),_BISECTION_SOLVER,100*eps),_SEQ__VECT),contextptr);
-	    xcurrent=(sol[0]+sol[1])._DOUBLE_val/2;
+	    if (!get_sol(sol,contextptr))
+	      pathfound=false;
+	    else
+	      xcurrent=sol._DOUBLE_val;
 	  }
 	}
 	if (!pathfound)
 	  continue;
 	// Annulation found, let's add a path
-	int jorig=int((ycurrent-ymin)/ystep);
-	int iorig=int((xcurrent-xmin)/xstep);
+	jorig=int((ycurrent-ymin)/ystep);
+	iorig=int((xcurrent-xmin)/xstep);
+	if (xcurrent<xmin || ycurrent<ymin || xcurrent>xmax || ycurrent>ymax)
+	  continue;
 	if (visited[iorig][jorig] || (
-				      ( (!jorig && visited[iorig][jorig-1]) || visited[iorig][jorig+1])  && 
-				      ( (!iorig && visited[iorig-1][jorig]) ||visited[iorig+1][jorig] ) 
+				      ( (jorig?visited[iorig][jorig-1]:false) || visited[iorig][jorig+1])  && 
+				      ( (iorig?visited[iorig-1][jorig]:false) ||visited[iorig+1][jorig] ) 
 				      )
 	    )
 	  continue;
-	vecteur chemin(1,gen(xcurrent,ycurrent));
-	bool chemin_ok=true;
-	visited[iorig][jorig]=true;
-	int icur,jcur,oldi=iorig,oldj=jorig;
-	xorig[iorig][jorig]=xcurrent;
-	yorig[iorig][jorig]=ycurrent;
-	gtmp=subst(dfx,xy,makevecteur(xcurrent,ycurrent),false,contextptr).evalf2double(eval_level(contextptr),contextptr);
-	if (gtmp.type==_DOUBLE_)
-	  dfxorig[iorig][jorig]=gtmp._DOUBLE_val;
-	else
-	  dfxorig[iorig][jorig]=oldi?(fxy[oldi][oldj]-fxy[oldi-1][oldj])/xstep:(fxy[oldi+1][oldj]-fxy[oldi][oldj])/xstep;
-	gtmp=subst(dfy,xy,makevecteur(xcurrent,ycurrent),false,contextptr).evalf2double(eval_level(contextptr),contextptr);
-	if (gtmp.type==_DOUBLE_)
-	  dfyorig[iorig][jorig]=gtmp._DOUBLE_val;
-	else
-	  dfyorig[iorig][jorig]=oldj?(fxy[oldi][oldj]-fxy[oldi][oldj-1])/ystep:(fxy[oldi][oldj+1]-fxy[oldi][oldj])/ystep;
-	dfxyorig_abs[iorig][jorig]=l2norm(dfxorig[iorig][jorig],dfyorig[iorig][jorig]);
-	int sign;
+      } // end if (!pathfound)
+      chemin.push_back(gen(xcurrent,ycurrent));
+      visited[iorig][jorig]=true;
+      int icur,jcur,oldi=iorig,oldj=jorig;
+      xorig[iorig][jorig]=xcurrent;
+      yorig[iorig][jorig]=ycurrent;
+      gtmp=subst(dfx,xy,makevecteur(xcurrent,ycurrent),false,contextptr).evalf2double(eval_level(contextptr),contextptr);
+      if (gtmp.type==_DOUBLE_)
+	dfxorig[iorig][jorig]=gtmp._DOUBLE_val;
+      else
+	dfxorig[iorig][jorig]=oldi?(fxy[oldi][oldj]-fxy[oldi-1][oldj])/xstep:(fxy[oldi+1][oldj]-fxy[oldi][oldj])/xstep;
+      gtmp=subst(dfy,xy,makevecteur(xcurrent,ycurrent),false,contextptr).evalf2double(eval_level(contextptr),contextptr);
+      if (gtmp.type==_DOUBLE_)
+	dfyorig[iorig][jorig]=gtmp._DOUBLE_val;
+      else
+	dfyorig[iorig][jorig]=oldj?(fxy[oldi][oldj]-fxy[oldi][oldj-1])/ystep:(fxy[oldi][oldj+1]-fxy[oldi][oldj])/ystep;
+      dfxyorig_abs[iorig][jorig]=l2norm(dfxorig[iorig][jorig],dfyorig[iorig][jorig]);
+      int sign=1; // + for increasing y, - for decreasing y
+      if (chemin.size()==2){
+	gen tmp=chemin[1]-chemin[0],direction(dfyorig[iorig][jorig],-dfxorig[iorig][jorig]);
+	if (is_greater(abs(arg(tmp/direction,contextptr),contextptr),cst_pi_over_2,contextptr))
+	  sign=-1;
+      }
+      else {
 	if ( (dfyorig[iorig][jorig]<-100*eps*dfxyorig_abs[iorig][jorig]) ||
 	     ((dfyorig[iorig][jorig]<100*eps*dfxyorig_abs[iorig][jorig])&&
 	      (dfxorig[iorig][jorig]>0)) )
 	  sign=-1;
-	else
-	  sign=1;
-	gen last_direction=0;
-	bool change_sign=false;
-	for (int count=0;count<nxstep*nystep;){
-	  vecteur xycurrent(makevecteur(xcurrent,ycurrent));
-	  double dfxcurrent,dfycurrent;
-	  gtmp=subst(dfx,xy,xycurrent,false,contextptr).evalf2double(eval_level(contextptr),contextptr);
-	  bool use_newton=true;
-	  // bool use_newton=false; // FIXME?? Newton does not seem to work
-	  if (gtmp.type==_DOUBLE_)
-	    dfxcurrent=gtmp._DOUBLE_val;
-	  else {
-	    use_newton=false;
-	    dfxcurrent=oldi?(fxy[oldi][oldj]-fxy[oldi-1][oldj])/xstep:(fxy[oldi+1][oldj]-fxy[oldi][oldj])/xstep;
-	  }
-	  gtmp=subst(dfy,xy,xycurrent,false,contextptr).evalf2double(eval_level(contextptr),contextptr);
-	  if (gtmp.type==_DOUBLE_)
-	    dfycurrent=gtmp._DOUBLE_val;
-	  else {
-	    dfycurrent=oldj?(fxy[oldi][oldj]-fxy[oldi][oldj-1])/ystep:(fxy[oldi][oldj+1]-fxy[oldi][oldj])/ystep;
-	    use_newton=false;
-	  }
-	  if (sign==-1){
-	    dfxcurrent=-dfxcurrent;
-	    dfycurrent=-dfycurrent;
-	  }
-	  // (dfxcurrent,dfycurrent) is normal to the path
-	  // If it's near 0 we are near a singular point,
-	  // that we try to cross by using the same direction
-	  // Otherwise go to the next cell, and end if at original i,j
-	  // or at the border
-	  gen direction(dfycurrent,-dfxcurrent);
-	  double dfxycurrent_abs=l2norm(dfxcurrent,dfycurrent);
-	  if (dfxycurrent_abs<0.1){
-	    if (is_zero(last_direction))
-	      break;
-	    direction=last_direction;
-	    change_sign=true;
-	  }
-	  else {
-	    if (change_sign){
-	      sign=-sign;
-	      direction=-direction;
-	      change_sign=false;
-	    }
-	    direction=direction/dfxycurrent_abs;
-	    last_direction=direction;
-	  }
-	  double deltax=evalf_double(re(direction,contextptr),eval_level(contextptr),contextptr)._DOUBLE_val,deltay=evalf_double(im(direction,contextptr),eval_level(contextptr),contextptr)._DOUBLE_val;
-	  double thestep=ystep/2;
-	  if (xstep<ystep)
-	    thestep=xstep/2;
-	  xcurrent += thestep*deltax;
-	  ycurrent += thestep*deltay;
-	  gen sol;
-	  // Test for mostly horizontal tangeant
-	  if (fabs(deltay)<fabs(deltax)){
-	    gen fy=subst(f_orig,x,xcurrent,false,contextptr);
-	    if (use_newton){
-	      sol=_fsolve(gen(makevecteur(fy,y,ycurrent,_NEWTON_SOLVER),_SEQ__VECT),contextptr);
-	    }
-	    else {
-	      sol=_fsolve(gen(makevecteur(fy,y,makevecteur(ycurrent-ystep,ycurrent+ystep),_BISECTION_SOLVER,100*eps),_SEQ__VECT),contextptr);
-	      sol=(sol[0]+sol[1])/2;
-	    }
-	    if (sol.type==_DOUBLE_){
-	      if (fabs(ycurrent-sol._DOUBLE_val)>2*ystep){
-		chemin_ok=false;
-		break;
-	      }
-	      else
-		ycurrent=sol._DOUBLE_val;
-	    }
-	    else {
-	      *logptr(contextptr) << "Warning! Could not loop or reach boundaries " << fy << endl;
-	      break;
-	    }
-	  }
-	  else {
-	    // recompute solution
-	    gen fx=subst(f_orig,y,ycurrent,false,contextptr);
-	    if (use_newton){
-	      sol=_fsolve(gen(makevecteur(fx,x,xcurrent,_NEWTON_SOLVER),_SEQ__VECT),contextptr);
-	    }
-	    else {
-	      sol=_fsolve(gen(makevecteur(fx,x,makevecteur(xcurrent-xstep,xcurrent+xstep),_BISECTION_SOLVER,100*eps),_SEQ__VECT),contextptr);
-	      sol=(sol[0]+sol[1])/2;
-	    }
-	    if (sol.type==_DOUBLE_){
-	      if (fabs(xcurrent-sol._DOUBLE_val)>2*xstep){
-		chemin_ok=false;
-		break;
-	      }
-	      else
-		xcurrent=sol._DOUBLE_val;
-	    }
-	    else {
-	      *logptr(contextptr) << "Warning! Could not loop or reach boundaries " << fx << endl;
-	      break;
-	    }	    
-	  }
-	  chemin.push_back(gen(xcurrent,ycurrent));
-	  // check cell
-	  icur=int((xcurrent-xmin)/xstep);
-	  jcur=int((ycurrent-ymin)/ystep);
-	  if (icur<0 || icur>nxstep || jcur<0 || jcur>nystep )
-	    break;
-	  if ( (icur==oldi) && (jcur==oldj) ){
-	    ++count;
-	    continue;
-	  }
-	  if (visited[icur][jcur]){  
-	    if (0.1*dfxyorig_abs[icur][jcur]*dfxycurrent_abs>fabs(dfxcurrent*dfyorig[icur][jcur]-dfycurrent*dfxorig[icur][jcur])){
-	      if (count<2)
-		chemin_ok=false;
-	      else
-		// join to this point
-		chemin.push_back(gen(xorig[icur][jcur],yorig[icur][jcur]));
-	      break;
-	    }
-	  }
-	  else {
-	    visited[icur][jcur]=true;
-	    dfxorig[icur][jcur]=dfxcurrent;
-	    dfyorig[icur][jcur]=dfycurrent;
-	    xorig[icur][jcur]=xcurrent;
-	    yorig[icur][jcur]=ycurrent;
-	    if (debug_infolevel)
-	    *logptr(contextptr)	<< icur << " " << jcur << " " << xcurrent << " " << ycurrent <<endl;	  
-	    dfxyorig_abs[icur][jcur]=dfxycurrent_abs;
-	  }
-	  if (debug_infolevel)
-	    *logptr(contextptr) << "Implicitplot " << icur << " " << jcur << endl;	  
-	  oldi=icur;
-	  oldj=jcur;
-	}
-	if (chemin_ok)
-	  res.push_back(symb_pnt(gen(chemin,_GROUP__VECT),attribut,contextptr));
       }
-    }
+      gen last_direction=0;
+      bool change_sign=false;
+      for (int count=0;count<nxstep*nystep;){
+	vecteur xycurrent(makevecteur(xcurrent,ycurrent));
+	double dfxcurrent,dfycurrent;
+	gtmp=subst(dfx,xy,xycurrent,false,contextptr).evalf2double(eval_level(contextptr),contextptr);
+	//bool use_newton=is_regular;
+	bool use_newton=false; // FIXME?? Newton does not seem to work
+	if (gtmp.type==_DOUBLE_)
+	  dfxcurrent=gtmp._DOUBLE_val;
+	else {
+	  use_newton=false;
+	  dfxcurrent=oldi?(fxy[oldi][oldj]-fxy[oldi-1][oldj])/xstep:(fxy[oldi+1][oldj]-fxy[oldi][oldj])/xstep;
+	}
+	gtmp=subst(dfy,xy,xycurrent,false,contextptr).evalf2double(eval_level(contextptr),contextptr);
+	if (gtmp.type==_DOUBLE_)
+	  dfycurrent=gtmp._DOUBLE_val;
+	else {
+	  dfycurrent=oldj?(fxy[oldi][oldj]-fxy[oldi][oldj-1])/ystep:(fxy[oldi][oldj+1]-fxy[oldi][oldj])/ystep;
+	  use_newton=false;
+	}
+	if (sign==-1){
+	  dfxcurrent=-dfxcurrent;
+	  dfycurrent=-dfycurrent;
+	}
+	// (dfxcurrent,dfycurrent) is normal to the path
+	// If it's near 0 we are near a singular point,
+	// that we try to cross by using the same direction
+	// Otherwise go to the next cell, and end if at original i,j
+	// or at the border
+	gen direction(dfycurrent,-dfxcurrent);
+	double dfxycurrent_abs=l2norm(dfxcurrent,dfycurrent);
+	// Improve eval of derivative at target point
+	double dfxyabs2=dfxycurrent_abs;
+	gen newxy=undef;
+	if (was_not_singular){
+	  double pascoeff=std::min(xstep,ystep)/std::sqrt(dfycurrent*dfycurrent+dfxcurrent*dfxcurrent);
+	  gen pas=pascoeff*makevecteur(dfycurrent,-dfxcurrent);
+	  newxy=xycurrent+pas;
+	  gtmp=subst(dfx,xy,newxy,false,contextptr).evalf2double(eval_level(contextptr),contextptr);
+	  if (gtmp.type==_DOUBLE_){
+	    double d1=gtmp._DOUBLE_val;
+	    gtmp=subst(dfy,xy,newxy,false,contextptr).evalf2double(eval_level(contextptr),contextptr);
+	    if (gtmp.type==_DOUBLE_){
+	      dfxyabs2=std::sqrt(gtmp._DOUBLE_val*gtmp._DOUBLE_val+d1*d1);
+	    }
+	  }
+	}
+	if (was_not_singular && dfxyabs2<0.1 && !is_zero(last_direction,contextptr)){
+	  // perhaps near a singular point
+	  // compare precedent direction with singular_points_directions
+	  gen sp=undef;
+	  int k=0;
+	  for (;k<int(singular_points.size());k++){
+	    sp=singular_points[k];
+	    if (sp.type==_VECT && sp._VECTptr->size()==2 && is_greater(2*xstep,abs(sp[0]-newxy[0],contextptr),contextptr) && is_greater(2*ystep,abs(sp[1]-newxy[1],contextptr),contextptr))
+	      break;
+	  }
+	  if (k<int(singular_points.size())){
+	    chemin.push_back(evalf_double(sp[0]+cst_i*sp[1],1,contextptr));
+	    int pos=-1; 
+	    gen theta=7;
+	    // remove incoming direction from singular_points_direction
+	    for (k=0;k<int(singular_points_directions.size());++k){
+	      gen tmp=singular_points_directions[k];
+	      if (chemin.back()-tmp[2]!=0)
+		continue;
+	      // compare directions
+	      gen cur=abs(arg((tmp[2]-tmp[3])/last_direction,contextptr),contextptr);
+	      if (is_greater(theta,cur,contextptr)){
+		pos=k;
+		theta=cur;
+	      }
+	    }
+	    if (pos>=sing)
+	      singular_points_directions.erase(singular_points_directions.begin()+pos);
+	    else {
+#ifndef GIAC_HAS_STO_38
+	      *logptr(contextptr) << gettext("Bad branch, questionnable accuracy") << endl;
+#endif
+	    }
+	    break; // singular points were already done
+	  }
+	  else { 
+	    // FIXME: find a numerical singular point near this point 
+	    // Find all branches by solving the equation on a circle of small radius
+	    // centerd at the numerical singular point
+	    // Add them to singular_points_directions
+	  }
+	  // otherwise continue in the same direction
+	  direction=last_direction;
+	  change_sign=true;
+	}
+	else {
+	  if (dfxyabs2>=0.2)
+	    was_not_singular=true;
+	  if (change_sign){
+	    sign=-sign;
+	    direction=-direction;
+	    change_sign=false;
+	  }
+	  direction=direction/dfxycurrent_abs;
+	  last_direction=direction;
+	}
+	double deltax=evalf_double(re(direction,contextptr),eval_level(contextptr),contextptr)._DOUBLE_val,deltay=evalf_double(im(direction,contextptr),eval_level(contextptr),contextptr)._DOUBLE_val;
+	double thestep=ystep/2;
+	if (xstep<ystep)
+	  thestep=xstep/2;
+	xcurrent += thestep*deltax;
+	ycurrent += thestep*deltay;
+	gen sol,fy,fx;
+	// Test for mostly horizontal tangeant
+	if (fabs(deltay)<fabs(deltax)) {
+	  fy=subst(f_orig,x,xcurrent,false,contextptr);
+#if 0
+	  int iszero=-1;
+	  vecteur sol1=bisection_solver(fy,y,ycurrent-ystep,ycurrent+ystep,iszero,contextptr);
+	  if (!sol1.empty()){
+	    if (deltay<0){ // reorder sol1 if we have more than 1 sol (almost horizontal)
+	      reverse(sol1.begin(),sol1.end());
+	      for (unsigned k=0;k<sol1.size();--k){
+		if (sol1[k].type==_DOUBLE_)
+		  chemin.push_back(xcurrent+cst_i*sol1[k]);
+	      }
+	    }
+	    sol=sol1.back();
+	  }
+	  else
+	    sol=undef;
+#else
+	  if (is_positive(subst(fy,y,ycurrent-ystep,false,contextptr)*subst(fy,y,ycurrent+ystep,false,contextptr),contextptr) || use_newton){
+	    sol=_fsolve(gen(makevecteur(fy,y,ycurrent,_NEWTON_SOLVER),_SEQ__VECT),contextptr);
+	  }
+	  else {
+	    sol=_fsolve(gen(makevecteur(fy,y,makevecteur(ycurrent-ystep,ycurrent+ystep),_BISECTION_SOLVER,100*eps),_SEQ__VECT),contextptr);
+	    get_sol(sol,contextptr);
+	  }
+#endif
+	  if (sol.type==_DOUBLE_){
+	    if (fabs(ycurrent-sol._DOUBLE_val)>2*ystep){
+	      chemin_ok=false;
+	      break;
+	    }
+	    else
+	      ycurrent=sol._DOUBLE_val;
+	  }
+	  else {
+#ifndef GIAC_HAS_STO_38
+	    *logptr(contextptr) << gettext("Warning! Could not loop or reach boundaries ") << fy << endl;
+#endif
+	    break;
+	  }
+	}
+	else {
+	  // recompute solution
+	  fx=subst(f_orig,y,ycurrent,false,contextptr);
+#if 0
+	  int iszero=-1;
+	  vecteur sol1=bisection_solver(fx,x,xcurrent-xstep,xcurrent+xstep,iszero,contextptr);
+	  if (!sol1.empty()){
+	    if (deltax<0){ // reorder sol1 if we have more than 1 sol (almost horizontal)
+	      reverse(sol1.begin(),sol1.end());
+	      for (unsigned k=0;k<sol1.size();--k){
+		if (sol1[k].type==_DOUBLE_)
+		  chemin.push_back(sol1[k]+cst_i*ycurrent);
+	      }
+	    }
+	    sol=sol1.back();
+	  }
+	  else
+	    sol=undef;
+#else
+	  if (is_positive(subst(fx,x,xcurrent-xstep,false,contextptr)*subst(fx,x,xcurrent+xstep,false,contextptr),contextptr) || use_newton){
+	    sol=_fsolve(gen(makevecteur(fx,x,xcurrent,_NEWTON_SOLVER),_SEQ__VECT),contextptr);
+	  }
+	  else {
+	    sol=_fsolve(gen(makevecteur(fx,x,makevecteur(xcurrent-xstep,xcurrent+xstep),_BISECTION_SOLVER,100*eps),_SEQ__VECT),contextptr);
+	    get_sol(sol,contextptr);
+	  }
+#endif
+	  if (sol.type==_DOUBLE_){
+	    if (fabs(xcurrent-sol._DOUBLE_val)>2*xstep){
+	      chemin_ok=false;
+	      break;
+	    }
+	    else
+	      xcurrent=sol._DOUBLE_val;
+	  }
+	  else {
+#ifndef GIAC_HAS_STO_38
+	    *logptr(contextptr) << gettext("Warning! Could not loop or reach boundaries ") << fx << endl;
+#endif
+	    break;
+	  }	    
+	}
+	chemin.push_back(gen(xcurrent,ycurrent));
+	// check cell
+	icur=int((xcurrent-xmin)/xstep);
+	jcur=int((ycurrent-ymin)/ystep);
+	if (icur<0 || icur>nxstep || jcur<0 || jcur>nystep ){
+	  // try to reverse chemin
+	  if (chemin.empty() || orig_sing)
+	    break;
+	  gen orig=chemin.front();
+	  double x_orig=evalf_double(re(orig,contextptr),1,contextptr)._DOUBLE_val;
+	  double y_orig=evalf_double(im(orig,contextptr),1,contextptr)._DOUBLE_val;
+	  int i_orig=int((x_orig-xmin)/xstep);
+	  int j_orig=int((y_orig-ymin)/ystep);
+	  if (i_orig<0 || i_orig>nxstep || j_orig<0 || j_orig>nystep)
+	    break;
+	  // revert chemin and restart in reverse direction
+	  reverse(chemin.begin(),chemin.end());
+	  xcurrent=x_orig;
+	  ycurrent=y_orig;
+	  sign=-sign;
+	  continue;
+	}
+	if ( (icur==oldi) && (jcur==oldj) ){
+	  ++count;
+	  continue;
+	}
+	if (visited[icur][jcur]){  
+	  if (0.1*dfxyorig_abs[icur][jcur]*dfxycurrent_abs>fabs(dfxcurrent*dfyorig[icur][jcur]-dfycurrent*dfxorig[icur][jcur])){
+	    if (count<2)
+	      chemin_ok=false;
+	    else {
+	      // join to this point
+	      if (is_greater(xstep,abs(re(chemin.front()-xycurrent,contextptr),contextptr),contextptr) && is_greater(ystep,abs(im(chemin.front()-xycurrent,contextptr),contextptr),contextptr) )
+		chemin.push_back(chemin.front());
+	      else
+		chemin.push_back(gen(xorig[icur][jcur],yorig[icur][jcur]));
+	    }
+	    break;
+	  }
+	}
+	else {
+	  visited[icur][jcur]=true;
+	  dfxorig[icur][jcur]=dfxcurrent;
+	  dfyorig[icur][jcur]=dfycurrent;
+	  xorig[icur][jcur]=xcurrent;
+	  yorig[icur][jcur]=ycurrent;
+	  if (debug_infolevel)
+	    *logptr(contextptr)	<< icur << " " << jcur << " " << xcurrent << " " << ycurrent <<endl;	  
+	  dfxyorig_abs[icur][jcur]=dfxycurrent_abs;
+	}
+	if (debug_infolevel)
+	  *logptr(contextptr) << gettext("Implicitplot ") << icur << " " << jcur << endl;	  
+	oldi=icur;
+	oldj=jcur;
+      }
+      if (!chemin_ok){
+#ifndef GIAC_HAS_STO_38
+	*logptr(contextptr) << gettext("Warning! Could not loop or reach boundaries ") << endl;
+#endif
+      }
+      res.push_back(symb_pnt(gen(chemin,_GROUP__VECT),attribut,contextptr));
+    } // end for(;;)
 #ifndef WIN32
+#ifdef WITH_GNUPLOT
     if (child_id) plot_instructions.push_back(res);
+#endif
     io_graph(old_iograph,contextptr);
 #endif // WIN32
     return res; // gen(res,_SEQ__VECT);
-    return zero;
+    // return zero;
+#endif // RTOS_THREADX
   }
 
-  gen plotimplicit(const gen& f_orig,const gen&x,const gen & y,double xmin,double xmax,double ymin,double ymax,int nxstep,int nystep,double eps,const vecteur & attributs,bool unfactored,const context * contextptr){
+  gen plotimplicit(const gen& f_orig,const gen&x,const gen & y,double xmin,double xmax,double ymin,double ymax,int nxstep,int nystep,double eps,const vecteur & attributs,bool unfactored,const context * contextptr,int ckgeo2d){
     if ( (x.type!=_IDNT) || (y.type!=_IDNT) )
-      setsizeerr("Variables must be free");      
+      return gensizeerr(gettext("Variables must be free"));
+    bool cplx=complex_mode(contextptr);
+    if (cplx){
+      complex_mode(false,contextptr);
+      *logptr(contextptr) << gettext("Impliciplot: temporarily swtiching to real mode") << endl;
+    }
     // factorization without sqrt
+    if (!unfactored && has_num_coeff(f_orig))
+      unfactored=true;
     gen ff(unfactored?f_orig:factor(f_orig,false,contextptr));
-    return in_plotimplicit(ff,x,y,xmin,xmax,ymin,ymax,nxstep,nystep,eps,attributs,contextptr);
+    gen res=in_plotimplicit(ff,x,y,xmin,xmax,ymin,ymax,nxstep,nystep,eps,attributs,ckgeo2d,contextptr);
+    if (cplx)
+      complex_mode(true,contextptr);
+    return res;
   }
 
   gen _plotimplicit(const gen & args,const context * contextptr){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type!=_VECT)
-      return plotimplicit(remove_equal(args),vx_var,y__IDNT_e,gnuplot_xmin,gnuplot_xmax,gnuplot_ymin,gnuplot_ymax,gnuplot_pixels_per_eval,0,epsilon(contextptr),vecteur(1,default_color(contextptr)),false,contextptr);
+      return plotimplicit(remove_equal(args),vx_var,y__IDNT_e,gnuplot_xmin,gnuplot_xmax,gnuplot_ymin,gnuplot_ymax,20*gnuplot_pixels_per_eval,0,epsilon(contextptr),vecteur(1,default_color(contextptr)),false,contextptr,3);
     // vecteur v(plotpreprocess(args));
     vecteur v(*args._VECTptr);
     if (v.size()<2)
-      setsizeerr();
+      return gensizeerr(contextptr);
+    if (v[1].is_symb_of_sommet(at_equal) && v[1]._SYMBptr->feuille._VECTptr->front()==at_display)
+      v.insert(v.begin()+1,makevecteur(x__IDNT_e,y__IDNT_e));
     if ( v[1].type==_VECT) {
       if (v[1]._VECTptr->size()==2 ){
 	v.insert(v.begin()+2,v[1]._VECTptr->back());
@@ -8793,7 +11949,7 @@ namespace giac {
 	return _plotimplicit(v,contextptr);
       }
     }
-    int nstep=gnuplot_pixels_per_eval,jstep=0,kstep=0;
+    int nstep=20*gnuplot_pixels_per_eval,jstep=0,kstep=0;
     double xmin,xmax,ymin,ymax,zmin,zmax;
     vecteur attributs(1,default_color(contextptr));
     gen x,y,z;
@@ -8802,22 +11958,24 @@ namespace giac {
     bool dim3=v.size()>3;
     if (dim3)
       dim3=readrange(v[3],gnuplot_zmin,gnuplot_zmax,z,zmin,zmax,contextptr);
+    else
+      zmin=zmax=0.0;
     bool unfactored=false;
     read_option(v,xmin,xmax,ymin,ymax,zmin,zmax,attributs,nstep,jstep,kstep,unfactored,contextptr);
     if (dim3)
       return plotimplicit(remove_equal(v[0]),x,y,z,xmin,xmax,ymin,ymax,zmin,zmax,nstep,jstep,kstep,epsilon(contextptr),attributs,unfactored,contextptr);
     else
-      return plotimplicit(remove_equal(v[0]),x,y,xmin,xmax,ymin,ymax,nstep,jstep,epsilon(contextptr),attributs,unfactored,contextptr);
+      return plotimplicit(remove_equal(v[0]),x,y,xmin,xmax,ymin,ymax,nstep,jstep,epsilon(contextptr),attributs,unfactored,contextptr,3);
   }
-  const string _plotimplicit_s("plotimplicit");
-  unary_function_eval __plotimplicit(&giac::_plotimplicit,_plotimplicit_s);
-  unary_function_ptr at_plotimplicit (&__plotimplicit,0,true);
+  static const char _plotimplicit_s []="plotimplicit";
+  static define_unary_function_eval (__plotimplicit,&giac::_plotimplicit,_plotimplicit_s);
+  define_unary_function_ptr5( at_plotimplicit ,alias_at_plotimplicit,&__plotimplicit,0,true);
 
-  const string _implicitplot_s("implicitplot");
-  unary_function_eval __implicitplot(&giac::_plotimplicit,_implicitplot_s);
-  unary_function_ptr at_implicitplot (&__implicitplot,0,true);
+  static const char _implicitplot_s []="implicitplot";
+  static define_unary_function_eval (__implicitplot,&giac::_plotimplicit,_implicitplot_s);
+  define_unary_function_ptr5( at_implicitplot ,alias_at_implicitplot,&__implicitplot,0,true);
 
-  bool is_approx0(const gen & a,double dx,double dy){
+  static bool is_approx0(const gen & a,double dx,double dy){
     if (a.type==_CPLX) 
       return (fabs(a._CPLXptr->_DOUBLE_val) < 1e-6*dx) && (fabs((a._CPLXptr+1)->_DOUBLE_val) < 1e-6*dy);
     if (a.type==_REAL)
@@ -8825,8 +11983,13 @@ namespace giac {
     return is_zero(a);
   }
 
+#ifdef RTOS_THREADX
+  gen plotcontour(const gen & f0,bool contour,GIAC_CONTEXT){
+    return undef;
+  }
+#else
   // v is a list of polygon vertices, add [A,B] to it
-  void add_segment(vecteur & v,const gen & A,const gen & B,double dx,double dy){
+  static void add_segment(vecteur & v,const gen & A,const gen & B,double dx,double dy){
     if (is_approx0(A-B,dx,dy))
       return;
     iterateur it=v.begin(),itend=v.end();
@@ -8857,8 +12020,8 @@ namespace giac {
       v.push_back(makevecteur(A,B));
   }
 
-  void glue_components(vecteur & v,double dx,double dy){
-    int s=v.size();
+  static void glue_components(vecteur & v,double dx,double dy){
+    int s = int(v.size());
     for (int i=0;i<s-1;++i){
       gen & cur = v[i];
       for (int j=i+1;j<s;++j){
@@ -8880,7 +12043,7 @@ namespace giac {
     } // end for i
   }
 
-  void polygonify(vecteur & v,const vecteur & attributs,GIAC_CONTEXT){
+  static void polygonify(vecteur & v,const vecteur & attributs,GIAC_CONTEXT){
     iterateur it=v.begin(),itend=v.end();
     for (;it!=itend;++it){
       gen & tmp=*it;
@@ -8899,14 +12062,14 @@ namespace giac {
     // 2/2 
     // ++ __   +- + or \\   +- |
     // --      -+           +- |
-    int nz=lz.size();
+    int nz=int(lz.size());
     vector<double> Z;
     for (int k=0;k<nz;k++){
       gen zg=evalf_double(lz[k],eval_level(contextptr),contextptr);
       if (zg.type==_DOUBLE_)
 	Z.push_back(zg._DOUBLE_val);
     }
-    nz=Z.size();
+    nz=int(Z.size());
     vector<vecteur> res(nz);
     for (int i=0;i<imax-1;++i){
       double x=xmin+i*dx;
@@ -8983,8 +12146,8 @@ namespace giac {
       colors=vecteur(1,attr[0]);
     if (attr[1].type==_VECT)
       legendes=*attr[1]._VECTptr;
-    int legs=legendes.size();
-    int cols=colors.size();
+    int legs=int(legendes.size());
+    int cols=int(colors.size());
     for (int k=0;k<nz;++k){
       attr[0]=colors[k<cols?k:0];
       if (!contour && attr[0].type==_INT_)
@@ -8993,7 +12156,7 @@ namespace giac {
       glue_components(res[k],dx,dy);
       if (attr[0].type==_INT_ && (attr[0].val & _FILL_POLYGON)){
 	// now finsih gluing with the xmin/xmax/ymin/ymax border
-	int ncomp=res[k].size();
+	int ncomp=int(res[k].size());
 	for (int n=0;n<ncomp;n++){
 	  gen composante=res[k][n];
 	  // look if begin and end of composante is at border
@@ -9006,7 +12169,7 @@ namespace giac {
 	    // find the nearest point to xmin,ymin
 	    vecteur cv=*composante._VECTptr;
 	    gen xymin(xmin,ymin);
-	    int cs=cv.size(),pos=0;
+	    int cs=int(cv.size()),pos=0;
 	    gen dmin=abs(begin-xymin,contextptr);
 	    for (int i=1;i<cs;++i){
 	      gen dcur=abs(cv[i]-xymin,contextptr);
@@ -9161,8 +12324,8 @@ namespace giac {
 	      }
 	      if (fabs(e1x-e2x)<=1.1*dx && fabs(e1y-e2y)<=1.1*dy){
 		reverse(composante2._VECTptr->begin(),composante2._VECTptr->end());
-		std::swap<double>(b2x,e2x); 
-		std::swap<double>(b2y,e2y);
+		giac::swapdouble(b2x,e2x); 
+		giac::swapdouble(b2y,e2y);
 	      }
 	      if (fabs(e1x-b2x)<=1.1*dx && fabs(e1y-b2y)<=1.1*dy){
 		// found! glue res[k][n] with coins and res[k][m]
@@ -9196,7 +12359,7 @@ namespace giac {
     vecteur attributs(1,attribut);
     int s=read_attributs(v,attributs,contextptr);
     if (!s)
-      setsizeerr();
+      return gensizeerr(contextptr);
     gen f=v[0];
     double xmin=gnuplot_xmin,xmax=gnuplot_xmax; 
     double ymin=gnuplot_ymin,ymax=gnuplot_ymax;
@@ -9245,18 +12408,20 @@ namespace giac {
     }
     return plot_array(fij,imax,jmax,xmin,xmax,dx,ymin,ymax,dy,lz,attributs,contour,contextptr);
   }
+#endif
   gen _plotcontour(const gen & f0,GIAC_CONTEXT){
+    if ( f0.type==_STRNG && f0.subtype==-1) return  f0;
     return plotcontour(f0,true,contextptr);
   }
-  const string _plotcontour_s("plotcontour");
-  unary_function_eval __plotcontour(&giac::_plotcontour,_plotcontour_s);
-  unary_function_ptr at_plotcontour (&__plotcontour,_QUOTE_ARGUMENTS,true);
+  static const char _plotcontour_s []="plotcontour";
+  static define_unary_function_eval_quoted (__plotcontour,&giac::_plotcontour,_plotcontour_s);
+  define_unary_function_ptr5( at_plotcontour ,alias_at_plotcontour,&__plotcontour,_QUOTE_ARGUMENTS,true);
 
-  const string _contourplot_s("contourplot");
-  unary_function_eval __contourplot(&giac::_plotcontour,_contourplot_s);
-  unary_function_ptr at_contourplot (&__contourplot,_QUOTE_ARGUMENTS,true);
+  static const char _contourplot_s []="contourplot";
+  static define_unary_function_eval_quoted (__contourplot,&giac::_plotcontour,_contourplot_s);
+  define_unary_function_ptr5( at_contourplot ,alias_at_contourplot,&__contourplot,_QUOTE_ARGUMENTS,true);
 
-  gen inequation2equation(const gen & g){
+  static gen inequation2equation(const gen & g){
     if (g.type==_VECT){
       vecteur res;
       const_iterateur it=g._VECTptr->begin(),itend=g._VECTptr->end();
@@ -9277,9 +12442,10 @@ namespace giac {
   // if you want to draw or inequations, distribute and wrt to or
   // and make several plotinequation
   gen _plotinequation(const gen & f0,GIAC_CONTEXT){
+    if ( f0.type==_STRNG && f0.subtype==-1) return  f0;
     vecteur v(gen2vecteur(f0));
     if (v.empty())
-      setsizeerr();
+      return gensizeerr(contextptr);
     gen f=inequation2equation(v[0]);
     if (f.type==_VECT){
       f.subtype=_SEQ__VECT;
@@ -9288,24 +12454,55 @@ namespace giac {
     v[0]=f;
     return plotcontour(v,false,contextptr);
   }
-  const string _plotinequation_s("plotinequation");
-  unary_function_eval __plotinequation(&giac::_plotinequation,_plotinequation_s);
-  unary_function_ptr at_plotinequation (&__plotinequation,_QUOTE_ARGUMENTS,true);
+  static const char _plotinequation_s []="plotinequation";
+  static define_unary_function_eval_quoted (__plotinequation,&giac::_plotinequation,_plotinequation_s);
+  define_unary_function_ptr5( at_plotinequation ,alias_at_plotinequation,&__plotinequation,_QUOTE_ARGUMENTS,true);
 
-  const string _inequationplot_s("inequationplot");
-  unary_function_eval __inequationplot(&giac::_plotinequation,_inequationplot_s);
-  unary_function_ptr at_inequationplot (&__inequationplot,_QUOTE_ARGUMENTS,true);
+  static const char _inequationplot_s []="inequationplot";
+  static define_unary_function_eval_quoted (__inequationplot,&giac::_plotinequation,_inequationplot_s);
+  define_unary_function_ptr5( at_inequationplot ,alias_at_inequationplot,&__inequationplot,_QUOTE_ARGUMENTS,true);
 
   gen _inter_droite(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type!=_VECT)
-      settypeerr();
+      return gentypeerr(contextptr);
     vecteur attributs(1,default_color(contextptr));
     int s=read_attributs(*args._VECTptr,attributs,contextptr);
-    if (s!=2)
-      setdimerr();
+    if (s<2 || s>3)
+      return gendimerr(contextptr);
     gen res=_inter(gen(makevecteur(args._VECTptr->front(),(*args._VECTptr)[1]),_SEQ__VECT),contextptr);
     if (res.type==_VECT && !res._VECTptr->empty()){
-      res=res._VECTptr->front();
+      if (s==3){ // either a point (find nearest point in res) or a list (find 1st point not in list
+	vecteur v = *res._VECTptr;
+	gen other=(*args._VECTptr)[2];
+	if (other.type==_VECT){
+	  vecteur & w = *other._VECTptr;
+	  unsigned i,j,vs=unsigned(v.size()),ws=unsigned(w.size());
+	  for (i=0;i<vs;++i){
+	    for (j=0;j<ws;++j){
+	      if (is_zero(evalf(recursive_normal(distance2(other[j],v[i],contextptr),contextptr),1,contextptr),contextptr))
+		break;
+	    }
+	    if (j==ws){
+	      res=v[i];
+	      break;
+	    }
+	  }
+	}
+	else {
+	  unsigned i,vs=unsigned(v.size()); res=v[0];
+	  gen mind=distance2(other,res,contextptr),curd;
+	  for (i=1;i<vs;++i){
+	    curd=distance2(other,v[i],contextptr);
+	    if (is_strictly_greater(mind,curd,contextptr)){
+	      res=v[i];
+	      mind=curd;
+	    }
+	  }
+	}
+      }
+      else
+	res=res._VECTptr->front();
       if (res.is_symb_of_sommet(at_pnt) && res._SYMBptr->feuille.type==_VECT){
 	vecteur v = *res._SYMBptr->feuille._VECTptr;
 	if (v.size()>=2)
@@ -9318,26 +12515,214 @@ namespace giac {
     }
     return undef;
   }    
-  const string _inter_droite_s("line_inter");
-  unary_function_eval __inter_droite(&_inter_droite,_inter_droite_s);
-  unary_function_ptr at_inter_droite (&__inter_droite,0,true);
+  static const char _inter_droite_s []="line_inter";
+  static define_unary_function_eval (__inter_droite,&_inter_droite,_inter_droite_s);
+  define_unary_function_ptr5( at_inter_droite ,alias_at_inter_droite,&__inter_droite,0,true);
 
-  const string _inter_unique_s("single_inter");
-  unary_function_eval __inter_unique(&_inter_droite,_inter_unique_s);
-  unary_function_ptr at_inter_unique (&__inter_unique,0,true);
+  static const char _inter_unique_s []="single_inter";
+  static define_unary_function_eval (__inter_unique,&_inter_droite,_inter_unique_s);
+  define_unary_function_ptr5( at_inter_unique ,alias_at_inter_unique,&__inter_unique,0,true);
 
   gen _bitmap(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     return symb_pnt(symbolic(at_bitmap,args),0,contextptr);
   }
-  const string _bitmap_s("bitmap");
-  unary_function_eval __bitmap(&giac::_bitmap,_bitmap_s);
-  unary_function_ptr at_bitmap (&__bitmap,0,true);
+  static const char _bitmap_s []="bitmap";
+  static define_unary_function_eval (__bitmap,&giac::_bitmap,_bitmap_s);
+  define_unary_function_ptr5( at_bitmap ,alias_at_bitmap,&__bitmap,0,true);
 
-  gen _papier_pointe(const gen & args,GIAC_CONTEXT){
-    double deltax=1.0,deltay=1.0,angle=evalf_double(cst_pi/2,1,contextptr)._DOUBLE_val;
+  /*
+    gen papier_pointe_quadrillage(const gen & args,bool quadrillage,GIAC_CONTEXT){
+    double xmin=gnuplot_xmin,xmax=gnuplot_xmax,ymin=gnuplot_ymin,ymax=gnuplot_ymax;
+    double deltax=(xmax-xmin)/20,deltay=(ymax-ymin)/20,angle=evalf_double(cst_pi/2,1,contextptr)._DOUBLE_val;
+    vecteur attributs(1,default_color(contextptr));
+    if (args.type==_VECT){
+    vecteur & w=*args._VECTptr;
+    int s=w.size();
+    if (s>0){
+    gen tmp=evalf_double(w[0],1,contextptr);
+    if (tmp.type==_DOUBLE_)
+    deltax=fabs(tmp._DOUBLE_val);
+    }
+    if (s>1){
+    gen tmp=evalf_double(w[1],1,contextptr);
+    if (tmp.type==_DOUBLE_)
+    deltay=fabs(tmp._DOUBLE_val);
+    }
+    if (s>2){
+    gen tmp=evalf_double(w[2],1,contextptr);
+    if (tmp.type==_DOUBLE_){
+    angle=tmp._DOUBLE_val;
+    if (fabs(angle)<epsilon(contextptr))
+    return gensizeerr(contextptr);
+    }
+    }
+    int nstep=int((xmax-xmin)/deltax),kstep=int((ymax-ymin)/deltay);
+    gen x,y;
+    for (int i=0;i<s;++i){
+    if (w[i].is_symb_of_sommet(at_equal)){
+    if (w[i][1]==x__IDNT_e)
+    readrange(w[i],gnuplot_xmin,gnuplot_xmax,x,xmin,xmax,contextptr);
+    if (w[i][1]==y__IDNT_e)
+    readrange(w[i],gnuplot_xmin,gnuplot_xmax,y,ymin,ymax,contextptr);
+    }
+    }
+    read_option(w,xmin,xmax,ymin,ymax,attributs,nstep,kstep,contextptr);
+    if (!nstep)
+    nstep=20;
+    deltax=(xmax-xmin)/nstep;
+    if (!kstep)
+    kstep=20;
+    deltay=(ymax-ymin)/kstep;
+    }
+    deltax=(xmax-xmin)/std::floor(fabs((xmax-xmin)/deltax));
+    deltay=(ymax-ymin)/std::floor(fabs((ymax-ymin)/deltay));
+    if (!quadrillage){
+    int color=attributs[0].val;
+    color = (color & 0xffff )| (7<<25) | (1 << 19);
+    attributs[0]=color;
+    }
+    vecteur res;
+    double pente=std::max(fabs(std::tan(angle)),0.05);
+    if (quadrillage){
+    res.push_back(pnt_attrib(gen(makevecteur(xmin+cst_i*ymin,xmin+cst_i*ymax),_GROUP__VECT),attributs,contextptr));
+    res.push_back(pnt_attrib(gen(makevecteur(xmax+cst_i*ymin,xmax+cst_i*ymax),_GROUP__VECT),attributs,contextptr));
+    for (double y=ymin;y<=ymax+1e-12;y+=deltay){
+    res.push_back(pnt_attrib(gen(makevecteur(xmin+cst_i*y,xmax+cst_i*y),_GROUP__VECT),attributs,contextptr));
+    }
+    for (double x=xmin;x<=xmax+1e-12;x+=deltax){
+    // line (x,ymax) -> (xmin,y)
+    double y=ymax+pente*(xmin-x);
+    if (y>=ymin-1e-12)
+    res.push_back(pnt_attrib(gen(makevecteur(xmin+cst_i*y,x+cst_i*ymax),_GROUP__VECT),attributs,contextptr));
+    else
+    res.push_back(pnt_attrib(gen(makevecteur(x-(ymax-ymin)/pente+cst_i*ymin,x+cst_i*ymax),_GROUP__VECT),attributs,contextptr));	  
+    }
+    for (double y=ymax;y>ymin;y-=pente*deltax){
+    double x=xmax+(ymin-y)/pente;
+    if (x>=xmin)
+    res.push_back(pnt_attrib(gen(makevecteur(x+cst_i*ymin,xmax+cst_i*y),_GROUP__VECT),attributs,contextptr));
+    else { // xmin,y1 -> xmax,y
+    double y1=y+(xmin-xmax)*pente;
+    res.push_back(pnt_attrib(gen(makevecteur(xmin+cst_i*y1,xmax+cst_i*y),_GROUP__VECT),attributs,contextptr));
+    }
+    }
+    }
+    else {
+    for (double x=xmin;;x+=deltax){
+    double X=x;
+    double y=ymax;
+    if (X>=xmax+1e-12){
+    // find y for xmax 
+    y=ymax-(X-xmax)*pente;
+    if (y<ymin-1e-12)
+    break;
+    int ny=int(std::ceil((ymax-y)/deltay));
+    y=ymax-ny*deltay;
+    X=x-ny*deltay/pente;
+    }
+    // points of line (x,ymax) -> (xmin,y) or (x',ymin) with deltay
+    for (;y>=ymin-1e-12 && X>=xmin-1e-12;y-=deltay,X-=deltay/pente){
+    res.push_back(pnt_attrib(X+cst_i*y,attributs,contextptr));
+    }
+    }
+    }
+    return res; // gen(res,_SEQ__VECT);
+    }
+    gen _papier_pointe(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    return papier_pointe_quadrillage(args,false,contextptr);
+    }
+    static const char _papier_pointe_s []="dot_paper";
+    static define_unary_function_eval (__papier_pointe,&giac::_papier_pointe,_papier_pointe_s);
+    define_unary_function_ptr5( at_papier_pointe ,alias_at_papier_pointe,&__papier_pointe,0,true);
+
+    gen _papier_quadrille(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    return papier_pointe_quadrillage(args,true,contextptr);
+    }
+    static const char _papier_quadrille_s []="grid_paper";
+    static define_unary_function_eval (__papier_quadrille,&giac::_papier_quadrille,_papier_quadrille_s);
+    define_unary_function_ptr5( at_papier_quadrille ,alias_at_papier_quadrille,&__papier_quadrille,0,true);
+  */
+  // code slice written by R. De Graeve (2010)
+  void papier_lignes(vecteur & res,double xmin,double xmax,double ymin,double ymax,double angle,double deltax,double deltay,double pente,const vecteur & attributs,GIAC_CONTEXT){
+    res.push_back(pnt_attrib(gen(makevecteur(xmin+ymin*cst_i,xmin+ymax*cst_i),_GROUP__VECT),attributs,contextptr)); 
+    res.push_back(pnt_attrib(gen(makevecteur(xmax+ymax*cst_i,xmin+ymax*cst_i),_GROUP__VECT),attributs,contextptr));
+    res.push_back(pnt_attrib(gen(makevecteur(xmax+ymin*cst_i,xmax+ymax*cst_i),_GROUP__VECT),attributs,contextptr));
+    res.push_back(pnt_attrib(gen(makevecteur(xmax+ymin*cst_i,xmin+ymin*cst_i),_GROUP__VECT),attributs,contextptr));
+    //const double cst_pi;
+    double pi=evalf_double(cst_pi,1,contextptr)._DOUBLE_val;
+    if (angle==pi/2){
+      for (double x=xmin;x<=xmax;x+=deltax){
+	res.push_back(pnt_attrib(gen(makevecteur(x+ymin*cst_i,x+ymax*cst_i),_GROUP__VECT),attributs,contextptr));
+      }
+      //return res;
+    }
+    double Y=(ymax-ymin)/pente;
+    if (angle<pi/2){
+      double q=std::floor(Y/deltax+1e-12);
+      for (double x=xmin-q*deltax;x<=xmin;x+=deltax){
+	double Y1=pente*(xmax-x)+ymin;
+	double Y2=pente*(xmin-x)+ymin;
+	double X1=(ymax-ymin)/pente+x;
+	if (Y1<ymax){
+	  res.push_back(pnt_attrib(gen(makevecteur(xmin+Y2*cst_i,xmax+Y1*cst_i),_GROUP__VECT),attributs,contextptr));
+	}
+	if (X1<xmax){
+	  res.push_back(pnt_attrib(gen(makevecteur(xmin+Y2*cst_i,X1+ymax*cst_i),_GROUP__VECT),attributs,contextptr));
+	}
+      }
+      for (double x=xmin;x<=xmax;x+=deltax){
+	double Y1=pente*(xmax-x)+ymin;
+	// double Y2=pente*(xmin-x)+ymin;
+	double X1=(ymax-ymin)/pente+x;
+	if (Y1<ymax){
+	  res.push_back(pnt_attrib(gen(makevecteur(x+ymin*cst_i,xmax+Y1*cst_i),_GROUP__VECT),attributs,contextptr));
+	}
+	if (X1<xmax){
+	  res.push_back(pnt_attrib(gen(makevecteur(x+ymin*cst_i,X1+ymax*cst_i),_GROUP__VECT),attributs,contextptr));
+	}
+      }
+      //return res;
+    }
+    if (angle>pi/2){
+      double x=xmin;
+      while (x<=xmax){
+	double Y1=pente*(xmin-x)+ymin;
+	double X1=(ymax-ymin)/pente+x;
+	if (Y1<ymax){
+	  res.push_back(pnt_attrib(gen(makevecteur(x+ymin*cst_i,xmin+Y1*cst_i),_GROUP__VECT),attributs,contextptr));
+	}
+	if (X1>xmin){
+	  res.push_back(pnt_attrib(gen(makevecteur(x+ymin*cst_i,X1+ymax*cst_i),_GROUP__VECT),attributs,contextptr));
+	}
+	x=x+deltax;
+      }
+      double q=std::ceil(Y/deltax-1e-12);
+      while (x<=xmax-q*deltax){
+	double Y1=pente*(xmin-x)+ymin;
+	double Y2=pente*(xmax-x)+ymin;
+	double X1=(ymax-ymin)/pente+x;
+	if (Y1<ymax){
+	  res.push_back(pnt_attrib(gen(makevecteur(xmax+Y2*cst_i,xmin+Y1*cst_i),_GROUP__VECT),attributs,contextptr));
+	}
+	if (X1>xmin){
+	  res.push_back(pnt_attrib(gen(makevecteur(xmax+Y2*cst_i,X1+ymax*cst_i),_GROUP__VECT),attributs,contextptr));
+	}
+	x=x+deltax;
+      }
+      //return res;
+    }
+  }
+  
+  static gen Papier_pointe_quadrillage(const gen & args,int quadrillage,GIAC_CONTEXT){
+    double xmin=gnuplot_xmin,xmax=gnuplot_xmax,ymin=gnuplot_ymin,ymax=gnuplot_ymax;
+    double deltax=(xmax-xmin)/20,deltay=(ymax-ymin)/20,angle=evalf_double(cst_pi/2,1,contextptr)._DOUBLE_val;
+    vecteur attributs(1,default_color(contextptr));
     if (args.type==_VECT){
       vecteur & w=*args._VECTptr;
-      int s=w.size();
+      int s=int(w.size());
       if (s>0){
 	gen tmp=evalf_double(w[0],1,contextptr);
 	if (tmp.type==_DOUBLE_)
@@ -9345,66 +12730,149 @@ namespace giac {
       }
       if (s>1){
 	gen tmp=evalf_double(w[1],1,contextptr);
-	if (tmp.type==_DOUBLE_)
-	  deltay=fabs(tmp._DOUBLE_val);
+	if (tmp.type==_DOUBLE_){
+	  angle=tmp._DOUBLE_val;
+	  double pi=M_PI;
+	  angle=angle-std::floor(angle/pi)*pi;
+	  if (fabs(angle)<epsilon(contextptr) || fabs(pi-angle)<epsilon(contextptr))
+	    return gensizeerr(contextptr);
+	}
       }
       if (s>2){
 	gen tmp=evalf_double(w[2],1,contextptr);
-	if (tmp.type==_DOUBLE_){
-	  angle=tmp._DOUBLE_val;
-	  if (fabs(angle)<epsilon(contextptr))
-	    setsizeerr();
+	if (tmp.type==_DOUBLE_)
+	  deltay=fabs(tmp._DOUBLE_val);
+      }
+      //int nstep=int((xmax-xmin)/deltax),kstep=int((ymax-ymin)/deltay);
+      gen x,y;
+      for (int i=0;i<s;++i){
+	if (w[i].is_symb_of_sommet(at_equal)){
+	  if (w[i][1]==x__IDNT_e)
+	    readrange(w[i],gnuplot_xmin,gnuplot_xmax,x,xmin,xmax,contextptr);
+	  if (w[i][1]==y__IDNT_e)
+	    readrange(w[i],gnuplot_xmin,gnuplot_xmax,y,ymin,ymax,contextptr);
+	}
+      }
+      int n1,n2;
+      read_option(w,xmin,xmax,ymin,ymax,attributs,n1,n2,contextptr);
+      // if (!nstep)nstep=20;deltax=(xmax-xmin)/nstep;
+      //if (!kstep) kstep=20;deltay=(ymax-ymin)/kstep;
+    }
+
+    // deltax=(xmax-xmin)/std::floor(fabs((xmax-xmin)/deltax));
+    // deltay=(ymax-ymin)/std::floor(fabs((ymax-ymin)/deltay));
+    if (quadrillage==2){
+      int color=attributs[0].val;
+      color = (color & 0xffff )| (7<<25) | (1 << 19);
+      attributs[0]=color;
+    }
+    
+    vecteur res;
+
+    double pente=std::tan(angle);
+    
+    if (quadrillage==0 || quadrillage==1){
+      for (double y=ymin;y<=ymax;y+=deltay){
+	res.push_back(pnt_attrib(gen(makevecteur(xmin+y*cst_i,xmax+y*cst_i),_GROUP__VECT),attributs,contextptr));
+      }
+      //papier_lignes(res,xmin,xmax,ymin,ymax,0,deltax,deltay,pente,attributs,contextptr);
+      papier_lignes(res,xmin,xmax,ymin,ymax,angle,deltax,deltay,pente,attributs,contextptr);
+    }
+    if (quadrillage==1){
+      double u1=deltay/pente;
+      if (u1-deltax==0) {angle=M_PI/2;}
+      if (u1-deltax>0) {angle=std::atan(deltay/(u1-deltax)); }
+      if (u1-deltax<0) {angle=std::atan(deltay/(u1-deltax))+M_PI;}
+      papier_lignes(res,xmin,xmax,ymin,ymax,angle,deltax,deltay,std::tan(angle),attributs,contextptr);
+      
+    } // end if quadrillage== 1    
+    if (quadrillage==2) {
+      res.push_back(pnt_attrib(gen(makevecteur(xmin+ymin*cst_i,xmin+ymax*cst_i),_GROUP__VECT),attributs,contextptr)); 
+      res.push_back(pnt_attrib(gen(makevecteur(xmax+ymax*cst_i,xmin+ymax*cst_i),_GROUP__VECT),attributs,contextptr));
+      res.push_back(pnt_attrib(gen(makevecteur(xmax+ymin*cst_i,xmax+ymax*cst_i),_GROUP__VECT),attributs,contextptr));
+      res.push_back(pnt_attrib(gen(makevecteur(xmax+ymin*cst_i,xmin+ymin*cst_i),_GROUP__VECT),attributs,contextptr));
+      for (double y=ymin;y<=ymax;y+=deltay){
+	double X=(y-ymin)/pente;
+	int q=int(std::floor(X/deltax+1e-12));
+	for (double x=xmin-q*deltax+X;x<xmax;x+=deltax){
+	  res.push_back(pnt_attrib(x+y*cst_i,attributs,contextptr)); 
 	}
       }
     }
-    int save_color=default_color(contextptr);
-    default_color( (save_color & 0xffff )| (7<<25) | (1 << 19),contextptr);
-    vecteur res;
-    double y=deltay*std::sin(angle);
-    int jmin(int(gnuplot_ymin/y)),jmax(int(gnuplot_ymax/y));
-    for (int j=jmin;j<=jmax+1;++j){
-      double decal=j*std::cos(angle);
-      decal=decal-deltax*std::floor(decal/deltax);
-      for (int i=int(gnuplot_xmin/deltax)-1;i<gnuplot_xmax/deltax;++i){
-	res.push_back(_point(makevecteur(i*deltax+decal,j*y),contextptr));
-      }
+    if (quadrillage==3) {
+      papier_lignes(res,xmin,xmax,ymin,ymax,angle,deltax,deltay,pente,attributs,contextptr);
     }
-    default_color(save_color,contextptr);
     return res; // gen(res,_SEQ__VECT);
   }
-  const string _papier_pointe_s("dot_paper");
-  unary_function_eval __papier_pointe(&giac::_papier_pointe,_papier_pointe_s);
-  unary_function_ptr at_papier_pointe (&__papier_pointe,0,true);
+  gen _dot_paper(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    return Papier_pointe_quadrillage(args,2,contextptr);
+  }
+  //static const char _dot_paper_s []="papierp";
+  static const char _dot_paper_s[]="dot_paper";
+  static define_unary_function_eval (__dot_paper,&giac::_dot_paper,_dot_paper_s);
+  define_unary_function_ptr5( at_dot_paper ,alias_at_dot_paper,&__dot_paper,0,true);
+	
+  gen _grid_paper(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    return Papier_pointe_quadrillage(args,0,contextptr);
+  }
+  // static const char _grid_paper_s []="papierq";
+  static const char _grid_paper_s[]= "grid_paper";
+  static define_unary_function_eval (__grid_paper,&giac::_grid_paper,_grid_paper_s);
+  define_unary_function_ptr5( at_grid_paper ,alias_at_grid_paper,&__grid_paper,0,true);
+	
+  gen _triangle_paper(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    return Papier_pointe_quadrillage(args,1,contextptr);
+  }
+  // static const char _triangle_paper_s []="papiert";
+  const char _triangle_paper_s[] ="triangle_paper";
+  static define_unary_function_eval (__triangle_paper,&giac::_triangle_paper,_triangle_paper_s);
+  define_unary_function_ptr5( at_triangle_paper ,alias_at_triangle_paper,&__triangle_paper,0,true);
+	
+  gen _line_paper(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    return Papier_pointe_quadrillage(args,3,contextptr);
+  }
+  // static const char _line_paper_s []="papierl";
+  static const char _line_paper_s[]="line_paper";
+  static define_unary_function_eval (__line_paper,&giac::_line_paper,_line_paper_s);
+  define_unary_function_ptr5( at_line_paper ,alias_at_line_paper,&__line_paper,0,true);
+  // end of code slice written by R. De Graeve
 
   // inert function used to keep the attribute of a graphical object
-  gen _plot_style(const gen & args){
+  gen _plot_style(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     return symbolic(at_plot_style,args);
   }
-  const string _plot_style_s("plot_style");
-  unary_function_unary __plot_style(&giac::_plot_style,_plot_style_s);
-  unary_function_ptr at_plot_style (&__plot_style,0,true);
+  static const char _plot_style_s []="plot_style";
+  static define_unary_function_eval_index (114,__plot_style,&giac::_plot_style,_plot_style_s);
+  define_unary_function_ptr5( at_plot_style ,alias_at_plot_style,&__plot_style,0,true);
 
   // Returns the current dimensions of the picture 
   // and adjust plot_instructionsw/h
   gen _Pictsize(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     gen res=__interactive.op(symbolic(at_Pictsize,args),contextptr);
     /*
-    if (res.type==_VECT && res._VECTptr->size()==2){
+      if (res.type==_VECT && res._VECTptr->size()==2){
       plot_instructionsw=res._VECTptr->front().val;
       plot_instructionsh=res._VECTptr->back().val;
-    }
+      }
     */
     return res;
   }
-  const string _Pictsize_s("Pictsize");
-  unary_function_eval __Pictsize(&giac::_Pictsize,_Pictsize_s);
-  unary_function_ptr at_Pictsize (&__Pictsize,0,true);
+  static const char _Pictsize_s []="Pictsize";
+  static define_unary_function_eval (__Pictsize,&giac::_Pictsize,_Pictsize_s);
+  define_unary_function_ptr5( at_Pictsize ,alias_at_Pictsize,&__Pictsize,0,true);
 
 
   // FIXME 394 should be T_LOGO, 340 T_RETURN
   //#define T_LOGO 394
   //#define T_RETURN 340
   gen _DrawInv(const gen & g,const context * contextptr){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
     // return _symetrie(makevecteur(_droite(makevecteur(0,1+cst_i)),_plotfunc(g)));
     gen y(g),x(vx_var);
     if (g.type==_VECT && g.subtype==_SEQ__VECT && g._VECTptr->size()==2 ){
@@ -9414,53 +12882,291 @@ namespace giac {
     }
     return _plotparam(gen(makevecteur(y+cst_i*x,x,gnuplot_xmin,gnuplot_xmax),_SEQ__VECT),contextptr);
   }
-  const string _DrawInv_s("DrawInv");
-  unary_function_eval __DrawInv(&_DrawInv,_DrawInv_s,&printastifunction);
-  unary_function_ptr at_DrawInv (&__DrawInv,0,T_RETURN); 
+  static const char _DrawInv_s []="DrawInv";
+  static define_unary_function_eval2 (__DrawInv,&_DrawInv,_DrawInv_s,&printastifunction);
+  define_unary_function_ptr5( at_DrawInv ,alias_at_DrawInv,&__DrawInv,0,T_RETURN); 
 
   gen _Graph(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
     return _plotfunc(g,contextptr);
     // FIXME: add a mode
     // vecteur v(gen2vecteur(g));
     
   }
-  const string _Graph_s("Graph");
-  unary_function_eval __Graph(&_Graph,_Graph_s,&printastifunction);
-  unary_function_ptr at_Graph (&__Graph,0,T_RETURN);
+  static const char _Graph_s []="Graph";
+  static define_unary_function_eval2 (__Graph,&_Graph,_Graph_s,&printastifunction);
+  define_unary_function_ptr5( at_Graph ,alias_at_Graph,&__Graph,0,T_RETURN);
 
-  const string _DrawFunc_s("DrawFunc");
-  unary_function_eval __DrawFunc(&_plotfunc,_DrawFunc_s,&printastifunction);
-  unary_function_ptr at_DrawFunc (&__DrawFunc,0,T_RETURN);
+  static const char _DrawFunc_s []="DrawFunc";
+  static define_unary_function_eval2 (__DrawFunc,&_plotfunc,_DrawFunc_s,&printastifunction);
+  define_unary_function_ptr5( at_DrawFunc ,alias_at_DrawFunc,&__DrawFunc,0,T_RETURN);
 
-  const string _DrawPol_s("DrawPol");
-  unary_function_eval __DrawPol(&_plotpolar,_DrawPol_s,&printastifunction);
-  unary_function_ptr at_DrawPol (&__DrawPol,0,T_RETURN);
+  static const char _DrawPol_s []="DrawPol";
+  static define_unary_function_eval2 (__DrawPol,&_plotpolar,_DrawPol_s,&printastifunction);
+  define_unary_function_ptr5( at_DrawPol ,alias_at_DrawPol,&__DrawPol,0,T_RETURN);
 
-  const string _DrawParm_s("DrawParm");
-  unary_function_eval __DrawParm(&_plotparam,_DrawParm_s,&printastifunction);
-  unary_function_ptr at_DrawParm (&__DrawParm,0,T_RETURN);
+  static const char _DrawParm_s []="DrawParm";
+  static define_unary_function_eval2 (__DrawParm,&_plotparam,_DrawParm_s,&printastifunction);
+  define_unary_function_ptr5( at_DrawParm ,alias_at_DrawParm,&__DrawParm,0,T_RETURN);
 
-  gen _DrwCtour(const gen & g){
+  gen _DrwCtour(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
     // FIXME
     return undef;
   }
-  const string _DrwCtour_s("DrwCtour");
-  unary_function_eval __DrwCtour(&_plotcontour,_DrwCtour_s,&printastifunction);
-  unary_function_ptr at_DrwCtour (&__DrwCtour,0,T_RETURN);
+  static const char _DrwCtour_s []="DrwCtour";
+  static define_unary_function_eval2 (__DrwCtour,&_plotcontour,_DrwCtour_s,&printastifunction);
+  define_unary_function_ptr5( at_DrwCtour ,alias_at_DrwCtour,&__DrwCtour,0,T_RETURN);
 
+  // should be print_string?
+  std::string gen2string(const gen & g){
+    if (g.type==_STRNG)
+      return *g._STRNGptr;
+    else
+      return g.print(context0);
+  }
+
+#if defined RTOS_THREADX || defined NSPIRE
   logo_turtle vecteur2turtle(const vecteur & v){
-    int s=v.size();
+    return logo_turtle();
+  }
+
+  static int turtle_status(const logo_turtle & turtle){
+    return 0;
+  }
+
+  bool set_turtle_state(const vecteur & v,GIAC_CONTEXT){
+    return false;
+  }
+
+  gen turtle2gen(const logo_turtle & turtle){
+    return undef;
+  }
+
+  vecteur turtlevect2vecteur(const std::vector<logo_turtle> & v){
+    return 0;
+  }
+
+  std::vector<logo_turtle> vecteur2turtlevect(const vecteur & v){
+    return std::vector<logo_turtle>(0);
+  }
+
+  gen turtle_state(GIAC_CONTEXT){
+    return undef;
+  }
+
+  static gen update_turtle_state(bool clrstring,GIAC_CONTEXT){
+    return undef;
+  }
+
+  gen _avance(const gen & g,GIAC_CONTEXT){
+    return undef;
+  }
+  static const char _avance_s []="avance";
+  static define_unary_function_eval2 (__avance,&_avance,_avance_s,&printastifunction);
+  define_unary_function_ptr5( at_avance ,alias_at_avance,&__avance,0,T_LOGO);
+
+  gen _recule(const gen & g,GIAC_CONTEXT){
+    return undef;
+  }
+  static const char _recule_s []="recule";
+  static define_unary_function_eval2 (__recule,&_recule,_recule_s,&printastifunction);
+  define_unary_function_ptr5( at_recule ,alias_at_recule,&__recule,0,T_LOGO);
+
+  gen _position(const gen & g,GIAC_CONTEXT){
+    return undef;
+  }
+  static const char _position_s []="position";
+  static define_unary_function_eval2 (__position,&_position,_position_s,&printastifunction);
+  define_unary_function_ptr5( at_position ,alias_at_position,&__position,0,T_LOGO);
+
+  gen _cap(const gen & g,GIAC_CONTEXT){
+    return undef;
+  }
+  static const char _cap_s []="cap";
+  static define_unary_function_eval2 (__cap,&_cap,_cap_s,&printastifunction);
+  define_unary_function_ptr5( at_cap ,alias_at_cap,&__cap,0,T_LOGO);
+
+  gen _tourne_droite(const gen & g,GIAC_CONTEXT){
+    return undef;
+  }
+  static const char _tourne_droite_s []="tourne_droite";
+  static define_unary_function_eval2 (__tourne_droite,&_tourne_droite,_tourne_droite_s,&printastifunction);
+  define_unary_function_ptr5( at_tourne_droite ,alias_at_tourne_droite,&__tourne_droite,0,T_LOGO);
+
+  gen _tourne_gauche(const gen & g,GIAC_CONTEXT){
+    return undef;
+  }
+  static const char _tourne_gauche_s []="tourne_gauche";
+  static define_unary_function_eval2 (__tourne_gauche,&_tourne_gauche,_tourne_gauche_s,&printastifunction);
+  define_unary_function_ptr5( at_tourne_gauche ,alias_at_tourne_gauche,&__tourne_gauche,0,T_LOGO);
+
+  gen _leve_crayon(const gen & g,GIAC_CONTEXT){
+    return undef;
+  }
+  static const char _leve_crayon_s []="leve_crayon";
+  static define_unary_function_eval2 (__leve_crayon,&_leve_crayon,_leve_crayon_s,&printastifunction);
+  define_unary_function_ptr5( at_leve_crayon ,alias_at_leve_crayon,&__leve_crayon,0,T_LOGO);
+
+  gen _baisse_crayon(const gen & g,GIAC_CONTEXT){
+    return undef;
+  }
+  static const char _baisse_crayon_s []="baisse_crayon";
+  static define_unary_function_eval2 (__baisse_crayon,&_baisse_crayon,_baisse_crayon_s,&printastifunction);
+  define_unary_function_ptr5( at_baisse_crayon ,alias_at_baisse_crayon,&__baisse_crayon,0,T_LOGO);
+
+  gen _ecris(const gen & g,GIAC_CONTEXT){
+    return undef;
+  }
+  static const char _ecris_s []="ecris";
+  static define_unary_function_eval2 (__ecris,&_ecris,_ecris_s,&printastifunction);
+  define_unary_function_ptr5( at_ecris ,alias_at_ecris,&__ecris,0,T_LOGO);
+  gen _signe(const gen & g,GIAC_CONTEXT){
+    return undef;
+  }
+  static const char _signe_s []="signe";
+  static define_unary_function_eval2 (__signe,&_signe,_signe_s,&printastifunction);
+  define_unary_function_ptr5( at_signe ,alias_at_signe,&__signe,0,T_LOGO);
+
+  gen _saute(const gen & g,GIAC_CONTEXT){
+    return undef;
+  }
+  static const char _saute_s []="saute";
+  static define_unary_function_eval2 (__saute,&_saute,_saute_s,&printastifunction);
+  define_unary_function_ptr5( at_saute ,alias_at_saute,&__saute,0,T_LOGO);
+
+  gen _pas_de_cote(const gen & g,GIAC_CONTEXT){
+    return undef;
+  }
+  static const char _pas_de_cote_s []="pas_de_cote";
+  static define_unary_function_eval2 (__pas_de_cote,&_pas_de_cote,_pas_de_cote_s,&printastifunction);
+  define_unary_function_ptr5( at_pas_de_cote ,alias_at_pas_de_cote,&__pas_de_cote,0,T_LOGO);
+  gen _cache_tortue(const gen & g,GIAC_CONTEXT){
+    return undef;
+  }
+  static const char _cache_tortue_s []="cache_tortue";
+  static define_unary_function_eval2 (__cache_tortue,&_cache_tortue,_cache_tortue_s,&printastifunction);
+  define_unary_function_ptr5( at_cache_tortue ,alias_at_cache_tortue,&__cache_tortue,0,T_LOGO);
+
+  gen _montre_tortue(const gen & g,GIAC_CONTEXT){
+    return undef;
+  }
+  static const char _montre_tortue_s []="montre_tortue";
+  static define_unary_function_eval2 (__montre_tortue,&_montre_tortue,_montre_tortue_s,&printastifunction);
+  define_unary_function_ptr5( at_montre_tortue ,alias_at_montre_tortue,&__montre_tortue,0,T_LOGO);
+
+  gen _debut_enregistrement(const gen & g,GIAC_CONTEXT){
+    return undef;
+  }
+  static const char _debut_enregistrement_s []="debut_enregistrement";
+  static define_unary_function_eval2 (__debut_enregistrement,&_debut_enregistrement,_debut_enregistrement_s,&printastifunction);
+  define_unary_function_ptr5( at_debut_enregistrement ,alias_at_debut_enregistrement,&__debut_enregistrement,0,T_LOGO);
+
+  gen _fin_enregistrement(const gen & g,GIAC_CONTEXT){
+    return undef;
+  }
+  static const char _fin_enregistrement_s []="fin_enregistrement";
+  static define_unary_function_eval2 (__fin_enregistrement,&_fin_enregistrement,_fin_enregistrement_s,&printastifunction);
+  define_unary_function_ptr5( at_fin_enregistrement ,alias_at_fin_enregistrement,&__fin_enregistrement,0,T_LOGO);
+
+  gen _repete(const gen & g,GIAC_CONTEXT){
+    return undef;
+  }
+  static const char _repete_s []="repete";
+  static define_unary_function_eval2 (__repete,&_repete,_repete_s,&printastifunction);
+  define_unary_function_ptr5( at_repete ,alias_at_repete,&__repete,0,T_LOGO);
+
+  gen _crayon(const gen & g,GIAC_CONTEXT){
+    return undef;
+  }
+  static const char _crayon_s []="crayon";
+  static define_unary_function_eval2 (__crayon,&_crayon,_crayon_s,&printastifunction);
+  define_unary_function_ptr5( at_crayon ,alias_at_crayon,&__crayon,0,T_LOGO);
+
+  gen _efface(const gen & g,GIAC_CONTEXT){
+    return undef;
+  }
+  static const char _efface_s []="efface";
+  static define_unary_function_eval2 (__efface,&_efface,_efface_s,&printastifunction);
+  define_unary_function_ptr5( at_efface ,alias_at_efface,&__efface,0,T_LOGO);
+
+  gen _vers(const gen & g,GIAC_CONTEXT){
+    return undef;
+  }
+  static const char _vers_s []="vers";
+  static define_unary_function_eval2 (__vers,&_vers,_vers_s,&printastifunction);
+  define_unary_function_ptr5( at_vers ,alias_at_vers,&__vers,0,T_LOGO);
+
+  static int find_radius(const gen & g,int & r,int & theta2,bool & direct){
+    return 0;
+  }
+
+  static void turtle_move(int r,int theta2,GIAC_CONTEXT){
+  }
+
+  gen _disque(const gen & g,GIAC_CONTEXT){
+    return undef;
+  }
+  static const char _disque_s []="disque";
+  static define_unary_function_eval2 (__disque,&_disque,_disque_s,&printastifunction);
+  define_unary_function_ptr5( at_disque ,alias_at_disque,&__disque,0,T_LOGO);
+
+  gen _disque_centre(const gen & g,GIAC_CONTEXT){
+    return undef;
+  }
+  static const char _disque_centre_s []="disque_centre";
+  static define_unary_function_eval2 (__disque_centre,&_disque_centre,_disque_centre_s,&printastifunction);
+  define_unary_function_ptr5( at_disque_centre ,alias_at_disque_centre,&__disque_centre,0,T_LOGO);
+
+  gen _rond(const gen & g,GIAC_CONTEXT){
+    return undef;
+  }
+  static const char _rond_s []="rond";
+  static define_unary_function_eval2 (__rond,&_rond,_rond_s,&printastifunction);
+  define_unary_function_ptr5( at_rond ,alias_at_rond,&__rond,0,T_LOGO);
+
+  gen _polygone_rempli(const gen & g,GIAC_CONTEXT){
+    return undef;
+  }
+  static const char _polygone_rempli_s []="polygone_rempli";
+  static define_unary_function_eval2 (__polygone_rempli,&_polygone_rempli,_polygone_rempli_s,&printastifunction);
+  define_unary_function_ptr5( at_polygone_rempli ,alias_at_polygone_rempli,&__polygone_rempli,0,T_LOGO);
+
+  gen _rectangle_plein(const gen & g,GIAC_CONTEXT){
+    return undef;
+  }
+  static const char _rectangle_plein_s []="rectangle_plein";
+  static define_unary_function_eval2 (__rectangle_plein,&_rectangle_plein,_rectangle_plein_s,&printastifunction);
+  define_unary_function_ptr5( at_rectangle_plein ,alias_at_rectangle_plein,&__rectangle_plein,0,T_LOGO);
+
+  gen _triangle_plein(const gen & g,GIAC_CONTEXT){
+    return undef;
+  }
+  static const char _triangle_plein_s []="triangle_plein";
+  static define_unary_function_eval2 (__triangle_plein,&_triangle_plein,_triangle_plein_s,&printastifunction);
+  define_unary_function_ptr5( at_triangle_plein ,alias_at_triangle_plein,&__triangle_plein,0,T_LOGO);
+
+  gen _dessine_tortue(const gen & g,GIAC_CONTEXT){
+    return undef;
+  }
+  static const char _dessine_tortue_s []="dessine_tortue";
+  static define_unary_function_eval2 (__dessine_tortue,&_dessine_tortue,_dessine_tortue_s,&printastifunction);
+  define_unary_function_ptr5( at_dessine_tortue ,alias_at_dessine_tortue,&__dessine_tortue,0,T_LOGO);
+
+#else
+  logo_turtle vecteur2turtle(const vecteur & v){
+    int s=int(v.size());
     if (s>=5 && v[0].type==_DOUBLE_ && v[1].type==_DOUBLE_ && v[2].type==_DOUBLE_ && v[3].type==_INT_ && v[4].type==_INT_ ){
       logo_turtle t;
       t.x=v[0]._DOUBLE_val;
       t.y=v[1]._DOUBLE_val;
       t.theta=v[2]._DOUBLE_val;
       int i=v[3].val;
-      t.mark=i%2;
+      t.mark=(i%2)!=0;
       i=i >> 1;
-      t.visible=i%2;
+      t.visible=(i%2)!=0;
       i=i >> 1;
-      t.direct = i%2;
+      t.direct = (i%2)!=0;
       i=i >> 1;
       t.turtle_length = i & 0xff;
       i=i >> 8;
@@ -9472,11 +13178,13 @@ namespace giac {
 	t.s="";
       return t;
     }
-    setsizeerr();
+#ifndef NO_STDEXCEPT
+    setsizeerr(gettext("vecteur2turtle")); // FIXME
+#endif
     return logo_turtle();
   }
 
-  int turtle_status(const logo_turtle & turtle){
+  static int turtle_status(const logo_turtle & turtle){
     int status= (turtle.color << 11) | ( (turtle.turtle_length & 0xff) << 3) ;
     if (turtle.direct)
       status += 4;
@@ -9490,7 +13198,7 @@ namespace giac {
   bool set_turtle_state(const vecteur & v,GIAC_CONTEXT){
     if (v.size()>=2 && v[0].type==_DOUBLE_ && v[1].type==_DOUBLE_){
       vecteur w(v);
-      int s=w.size();
+      int s=int(w.size());
       if (s==2)
 	w.push_back(turtle(contextptr).theta);
       if (s<4)
@@ -9507,7 +13215,7 @@ namespace giac {
   }
 
   gen turtle2gen(const logo_turtle & turtle){
-    return makevecteur(turtle.x,turtle.y,turtle.theta,turtle_status(turtle),turtle.radius,string2gen(turtle.s,false));
+    return gen(makevecteur(turtle.x,turtle.y,turtle.theta,turtle_status(turtle),turtle.radius,string2gen(turtle.s,false)),_LOGO__VECT);
   }
 
   vecteur turtlevect2vecteur(const std::vector<logo_turtle> & v){
@@ -9533,7 +13241,7 @@ namespace giac {
     return turtle2gen(turtle(contextptr));
   }
 
-  gen update_turtle_state(bool clrstring,GIAC_CONTEXT){
+  static gen update_turtle_state(bool clrstring,GIAC_CONTEXT){
     if (clrstring)
       turtle(contextptr).s="";
     turtle(contextptr).theta = turtle(contextptr).theta - floor(turtle(contextptr).theta/360)*360;
@@ -9549,6 +13257,7 @@ namespace giac {
   }
 
   gen _avance(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
     // logo instruction
     double i;
     if (g.type!=_INT_){
@@ -9559,7 +13268,7 @@ namespace giac {
 	if (g1.type==_DOUBLE_)
 	  i=g1._DOUBLE_val;
 	else
-	  setsizeerr();
+	  return gensizeerr(contextptr);
       }
     }
     else
@@ -9569,34 +13278,29 @@ namespace giac {
     turtle(contextptr).radius = 0;
     return update_turtle_state(true,contextptr);
   }
-  const string _avance_s("avance");
-  unary_function_eval __avance(&_avance,_avance_s,&printastifunction);
-  unary_function_ptr at_avance (&__avance,0,T_LOGO);
+  static const char _avance_s []="avance";
+  static define_unary_function_eval2 (__avance,&_avance,_avance_s,&printastifunction);
+  define_unary_function_ptr5( at_avance ,alias_at_avance,&__avance,0,T_LOGO);
 
-  // should be print_string?
-  std::string gen2string(const gen & g){
-    if (g.type==_STRNG)
-      return *g._STRNGptr;
-    else
-      return g.print(context0);
-  }
   gen _recule(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
     // logo instruction
     if (g.type==_VECT)
       return _avance(-turtle(contextptr).turtle_length,contextptr);
     return _avance(-g,contextptr);
   }
-  const string _recule_s("recule");
-  unary_function_eval __recule(&_recule,_recule_s,&printastifunction);
-  unary_function_ptr at_recule (&__recule,0,T_LOGO);
+  static const char _recule_s []="recule";
+  static define_unary_function_eval2 (__recule,&_recule,_recule_s,&printastifunction);
+  define_unary_function_ptr5( at_recule ,alias_at_recule,&__recule,0,T_LOGO);
 
   gen _position(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
     // logo instruction
     if (g.type!=_VECT)
       return makevecteur(turtle(contextptr).x,turtle(contextptr).y);
-      // return turtle_state();
+    // return turtle_state();
     vecteur v = *g._VECTptr;
-    int s=v.size();
+    int s=int(v.size());
     if (!s)
       return makevecteur(turtle(contextptr).x,turtle(contextptr).y);
     v[0]=evalf_double(v[0],1,contextptr);
@@ -9608,11 +13312,12 @@ namespace giac {
       return update_turtle_state(true,contextptr);
     return zero;
   }
-  const string _position_s("position");
-  unary_function_eval __position(&_position,_position_s,&printastifunction);
-  unary_function_ptr at_position (&__position,0,T_LOGO);
+  static const char _position_s []="position";
+  static define_unary_function_eval2 (__position,&_position,_position_s,&printastifunction);
+  define_unary_function_ptr5( at_position ,alias_at_position,&__position,0,T_LOGO);
 
   gen _cap(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
     // logo instruction
     gen gg=evalf_double(g,1,contextptr);
     if (gg.type!=_DOUBLE_)
@@ -9621,11 +13326,12 @@ namespace giac {
     turtle(contextptr).radius = 0;
     return update_turtle_state(true,contextptr);
   }
-  const string _cap_s("cap");
-  unary_function_eval __cap(&_cap,_cap_s,&printastifunction);
-  unary_function_ptr at_cap (&__cap,0,T_LOGO);
+  static const char _cap_s []="cap";
+  static define_unary_function_eval2 (__cap,&_cap,_cap_s,&printastifunction);
+  define_unary_function_ptr5( at_cap ,alias_at_cap,&__cap,0,T_LOGO);
 
   gen _tourne_droite(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
     // logo instruction
     if (g.type!=_INT_){
       if (g.type==_VECT)
@@ -9635,7 +13341,7 @@ namespace giac {
 	if (g1.type==_DOUBLE_)
 	  turtle(contextptr).theta -= g1._DOUBLE_val;
 	else
-	  setsizeerr();
+	  return gensizeerr(contextptr);
       }
     }
     else
@@ -9643,11 +13349,12 @@ namespace giac {
     turtle(contextptr).radius = 0;
     return update_turtle_state(true,contextptr);
   }
-  const string _tourne_droite_s("tourne_droite");
-  unary_function_eval __tourne_droite(&_tourne_droite,_tourne_droite_s,&printastifunction);
-  unary_function_ptr at_tourne_droite (&__tourne_droite,0,T_LOGO);
+  static const char _tourne_droite_s []="tourne_droite";
+  static define_unary_function_eval2 (__tourne_droite,&_tourne_droite,_tourne_droite_s,&printastifunction);
+  define_unary_function_ptr5( at_tourne_droite ,alias_at_tourne_droite,&__tourne_droite,0,T_LOGO);
 
   gen _tourne_gauche(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
     // logo instruction
     if (g.type==_VECT){
       turtle(contextptr).theta += 90;
@@ -9656,36 +13363,39 @@ namespace giac {
     }
     return _tourne_droite(-g,contextptr);
   }
-  const string _tourne_gauche_s("tourne_gauche");
-  unary_function_eval __tourne_gauche(&_tourne_gauche,_tourne_gauche_s,&printastifunction);
-  unary_function_ptr at_tourne_gauche (&__tourne_gauche,0,T_LOGO);
+  static const char _tourne_gauche_s []="tourne_gauche";
+  static define_unary_function_eval2 (__tourne_gauche,&_tourne_gauche,_tourne_gauche_s,&printastifunction);
+  define_unary_function_ptr5( at_tourne_gauche ,alias_at_tourne_gauche,&__tourne_gauche,0,T_LOGO);
 
   gen _leve_crayon(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
     // logo instruction
     turtle(contextptr).mark = false;
     turtle(contextptr).radius = 0;
     return update_turtle_state(true,contextptr);
   }
-  const string _leve_crayon_s("leve_crayon");
-  unary_function_eval __leve_crayon(&_leve_crayon,_leve_crayon_s,&printastifunction);
-  unary_function_ptr at_leve_crayon (&__leve_crayon,0,T_LOGO);
+  static const char _leve_crayon_s []="leve_crayon";
+  static define_unary_function_eval2 (__leve_crayon,&_leve_crayon,_leve_crayon_s,&printastifunction);
+  define_unary_function_ptr5( at_leve_crayon ,alias_at_leve_crayon,&__leve_crayon,0,T_LOGO);
 
   gen _baisse_crayon(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
     // logo instruction
     turtle(contextptr).mark = true;
     turtle(contextptr).radius = 0;
     return update_turtle_state(true,contextptr);
   }
-  const string _baisse_crayon_s("baisse_crayon");
-  unary_function_eval __baisse_crayon(&_baisse_crayon,_baisse_crayon_s,&printastifunction);
-  unary_function_ptr at_baisse_crayon (&__baisse_crayon,0,T_LOGO);
+  static const char _baisse_crayon_s []="baisse_crayon";
+  static define_unary_function_eval2 (__baisse_crayon,&_baisse_crayon,_baisse_crayon_s,&printastifunction);
+  define_unary_function_ptr5( at_baisse_crayon ,alias_at_baisse_crayon,&__baisse_crayon,0,T_LOGO);
 
   gen _ecris(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
     // logo instruction
     turtle(contextptr).radius=14;
     if (g.type==_VECT){ 
       vecteur & v =*g._VECTptr;
-      int s=v.size();
+      int s=int(v.size());
       if (s==2 && v[1].type==_INT_){
 	turtle(contextptr).radius=absint(v[1].val);
 	turtle(contextptr).s=gen2string(v.front());
@@ -9705,107 +13415,124 @@ namespace giac {
     turtle(contextptr).s=gen2string(g);
     return update_turtle_state(false,contextptr);
   }
-  const string _ecris_s("ecris");
-  unary_function_eval __ecris(&_ecris,_ecris_s,&printastifunction);
-  unary_function_ptr at_ecris (&__ecris,0,T_LOGO);
+  static const char _ecris_s []="ecris";
+  static define_unary_function_eval2 (__ecris,&_ecris,_ecris_s,&printastifunction);
+  define_unary_function_ptr5( at_ecris ,alias_at_ecris,&__ecris,0,T_LOGO);
 
   gen _signe(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
     // logo instruction
     return _ecris(makevecteur(g,20,10,10),contextptr);
   }
-  const string _signe_s("signe");
-  unary_function_eval __signe(&_signe,_signe_s,&printastifunction);
-  unary_function_ptr at_signe (&__signe,0,T_LOGO);
-
-  const string _ramene_s("ramene");
-  unary_function_eval __ramene(&_read,_ramene_s,&printastifunction);
-  unary_function_ptr at_ramene (&__ramene,0,T_LOGO);
-
-  const string _sauve_s("sauve");
-  unary_function_eval __sauve(&_write,_sauve_s,&printastifunction);
-  unary_function_ptr at_sauve (&__sauve,0,T_LOGO);
+  static const char _signe_s []="signe";
+  static define_unary_function_eval2 (__signe,&_signe,_signe_s,&printastifunction);
+  define_unary_function_ptr5( at_signe ,alias_at_signe,&__signe,0,T_LOGO);
 
   gen _saute(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
     _leve_crayon(0,contextptr);
     _avance(g,contextptr);
     return _baisse_crayon(0,contextptr);
   }
-  const string _saute_s("saute");
-  unary_function_eval __saute(&_saute,_saute_s,&printastifunction);
-  unary_function_ptr at_saute (&__saute,0,T_LOGO);
+  static const char _saute_s []="saute";
+  static define_unary_function_eval2 (__saute,&_saute,_saute_s,&printastifunction);
+  define_unary_function_ptr5( at_saute ,alias_at_saute,&__saute,0,T_LOGO);
 
   gen _pas_de_cote(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
     _leve_crayon(0,contextptr);
     _tourne_droite(-90,contextptr);
     _avance(g,contextptr);
     _tourne_droite(90,contextptr);
     return _baisse_crayon(0,contextptr);
   }
-  const string _pas_de_cote_s("pas_de_cote");
-  unary_function_eval __pas_de_cote(&_pas_de_cote,_pas_de_cote_s,&printastifunction);
-  unary_function_ptr at_pas_de_cote (&__pas_de_cote,0,T_LOGO);
+  static const char _pas_de_cote_s []="pas_de_cote";
+  static define_unary_function_eval2 (__pas_de_cote,&_pas_de_cote,_pas_de_cote_s,&printastifunction);
+  define_unary_function_ptr5( at_pas_de_cote ,alias_at_pas_de_cote,&__pas_de_cote,0,T_LOGO);
 
   gen _cache_tortue(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
     // logo instruction
     turtle(contextptr).visible=false;
     turtle(contextptr).radius = 0;
     return update_turtle_state(true,contextptr);
   }
-  const string _cache_tortue_s("cache_tortue");
-  unary_function_eval __cache_tortue(&_cache_tortue,_cache_tortue_s,&printastifunction);
-  unary_function_ptr at_cache_tortue (&__cache_tortue,0,T_LOGO);
+  static const char _cache_tortue_s []="cache_tortue";
+  static define_unary_function_eval2 (__cache_tortue,&_cache_tortue,_cache_tortue_s,&printastifunction);
+  define_unary_function_ptr5( at_cache_tortue ,alias_at_cache_tortue,&__cache_tortue,0,T_LOGO);
 
   gen _montre_tortue(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
     // logo instruction
     turtle(contextptr).visible=true;
     turtle(contextptr).radius = 0;
     return update_turtle_state(true,contextptr);
   }
-  const string _montre_tortue_s("montre_tortue");
-  unary_function_eval __montre_tortue(&_montre_tortue,_montre_tortue_s,&printastifunction);
-  unary_function_ptr at_montre_tortue (&__montre_tortue,0,T_LOGO);
+  static const char _montre_tortue_s []="montre_tortue";
+  static define_unary_function_eval2 (__montre_tortue,&_montre_tortue,_montre_tortue_s,&printastifunction);
+  define_unary_function_ptr5( at_montre_tortue ,alias_at_montre_tortue,&__montre_tortue,0,T_LOGO);
 
-  gen _debut_enregistrement(const gen & g,GIAC_CONTEXT){
+  gen _debut_enregistrement(const gen & g0,GIAC_CONTEXT){
+    if ( g0.type==_STRNG && g0.subtype==-1) return  g0;
+    gen g(g0);
     // logo instruction
+    int nmax=10,n=0;
+    for (;n<nmax && g.type!=_SYMB && g.type!=_IDNT;n++){
+      g=__input.op(gen(makevecteur(string2gen(gettext("Give a name to the procedure, e.g. test"),false),identificateur(" logo_record_name")),_SEQ__VECT),contextptr);
+      if (g.type==_VECT && g._VECTptr->size()==2)
+	g=g._VECTptr->back();
+    }
     if (g.type!=_SYMB && g.type!=_IDNT)
-      setsizeerr("Donner le nom de la procedure sane guillements");
+      return gensizeerr(gettext("Give a name to thr procedure, e.g. \"test\""));
     return g;
   }
-  const string _debut_enregistrement_s("debut_enregistrement");
-  unary_function_eval __debut_enregistrement(&_debut_enregistrement,_debut_enregistrement_s,&printastifunction);
-  unary_function_ptr at_debut_enregistrement (&__debut_enregistrement,0,T_LOGO);
+  static const char _debut_enregistrement_s []="debut_enregistrement";
+  static define_unary_function_eval2 (__debut_enregistrement,&_debut_enregistrement,_debut_enregistrement_s,&printastifunction);
+  define_unary_function_ptr5( at_debut_enregistrement ,alias_at_debut_enregistrement,&__debut_enregistrement,0,T_LOGO);
 
-  gen _fin_enregistrement(const gen & g,GIAC_CONTEXT){
+  gen _fin_enregistrement(const gen & g0,GIAC_CONTEXT){
+    if ( g0.type==_STRNG && g0.subtype==-1) return  g0;
+    gen g(g0);
     // logo instruction
+    int nmax=10,n=0;
+    for (;n<nmax && g.type!=_STRNG;n++){
+      g=__input.op(gen(makevecteur(string2gen("Give a filename, e.g. \"test\"",false),identificateur(" logo_file_name")),_SEQ__VECT),contextptr);
+      if (g.type==_VECT && g._VECTptr->size()==2)
+	g=g._VECTptr->back();
+    }
     if (g.type!=_STRNG)
-      setsizeerr("Donner le nom de fichier");
+      return gensizeerr(gettext("Give a filename, e.g. \"test\""));
     // Search for debut_enregistrement in history_out(contextptr)
-    int s=history_in(contextptr).size(),i;
+    int s=int(history_in(contextptr).size()),i;
     for (i=s-1;i>=0;--i){
       if (history_in(contextptr)[i].is_symb_of_sommet(at_debut_enregistrement))
 	break;
     }
     if (i<0)
-      setsizeerr("Instruction debut_enregistrement non trouvee");
+      return gensizeerr(gettext("Instruction debut_enregistrement not found"));
     ofstream of(g._STRNGptr->c_str());
-    of << history_in(contextptr)[i]._SYMBptr->feuille << "():={" << endl;
+    if (i<int(history_out(contextptr).size()))
+      of << history_out(contextptr)[i] << "():={" << endl;
+    else
+      of << history_in(contextptr)[i]._SYMBptr->feuille << "():={" << endl;
     for (++i;i<s-1;++i)
       of << " " << history_in(contextptr)[i] << ";" << endl;
     of << "}" << endl;
     return _read(g,contextptr);
   }
-  const string _fin_enregistrement_s("fin_enregistrement");
-  unary_function_eval __fin_enregistrement(&_fin_enregistrement,_fin_enregistrement_s,&printastifunction);
-  unary_function_ptr at_fin_enregistrement (&__fin_enregistrement,0,T_LOGO);
+  static const char _fin_enregistrement_s []="fin_enregistrement";
+  static define_unary_function_eval2 (__fin_enregistrement,&_fin_enregistrement,_fin_enregistrement_s,&printastifunction);
+  define_unary_function_ptr5( at_fin_enregistrement ,alias_at_fin_enregistrement,&__fin_enregistrement,0,T_LOGO);
 
   gen _repete(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
     if (g.type!=_VECT || g._VECTptr->size()<2)
-      setsizeerr();
+      return gensizeerr(contextptr);
     // logo instruction
     vecteur v = *g._VECTptr;
     v[0]=eval(v[0],contextptr);
     if (v.front().type!=_INT_)
-      settypeerr();
+      return gentypeerr(contextptr);
     gen prog=vecteur(v.begin()+1,v.end());
     int i=absint(v.front().val);
     gen res;
@@ -9814,11 +13541,12 @@ namespace giac {
     }
     return res;
   }
-  const string _repete_s("repete");
-  unary_function_eval __repete(&_repete,_repete_s,&printastifunction);
-  unary_function_ptr at_repete (&__repete,_QUOTE_ARGUMENTS,T_RETURN);
+  static const char _repete_s []="repete";
+  static define_unary_function_eval2_quoted (__repete,&_repete,_repete_s,&printastifunction);
+  define_unary_function_ptr5( at_repete ,alias_at_repete,&__repete,_QUOTE_ARGUMENTS,T_RETURN);
 
   gen _crayon(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
     // logo instruction
     if (g.type!=_INT_){
       gen res=turtle(contextptr).color;
@@ -9829,13 +13557,14 @@ namespace giac {
     turtle(contextptr).radius = 0;
     return update_turtle_state(true,contextptr);
   }
-  const string _crayon_s("crayon");
-  unary_function_eval __crayon(&_crayon,_crayon_s,&printastifunction);
-  unary_function_ptr at_crayon (&__crayon,0,T_LOGO);
+  static const char _crayon_s []="crayon";
+  static define_unary_function_eval2 (__crayon,&_crayon,_crayon_s,&printastifunction);
+  define_unary_function_ptr5( at_crayon ,alias_at_crayon,&__crayon,0,T_LOGO);
 
   gen _efface(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
     if (g.type==_INT_){
-      _crayon(FL_WHITE,contextptr);
+      _crayon(int(FL_WHITE),contextptr);
       _recule(g,contextptr);
       return _crayon(0,contextptr);
     }
@@ -9844,28 +13573,28 @@ namespace giac {
     turtle_stack(contextptr).clear();
     return update_turtle_state(true,contextptr);
   }
-  const string _efface_s("efface");
-  unary_function_eval __efface(&_efface,_efface_s,&printastifunction);
-  unary_function_ptr at_efface (&__efface,0,T_LOGO);
+  static const char _efface_s []="efface";
+  static define_unary_function_eval2 (__efface,&_efface,_efface_s,&printastifunction);
+  define_unary_function_ptr5( at_efface ,alias_at_efface,&__efface,0,T_LOGO);
 
   gen _vers(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
     // logo instruction
     if (g.type!=_VECT || g._VECTptr->size()!=2)
-      setsizeerr();
+      return gensizeerr(contextptr);
     gen x=evalf_double(g._VECTptr->front(),1,contextptr),
       y=evalf_double(g._VECTptr->back(),1,contextptr);
     if (x.type!=_DOUBLE_ || y.type!=_DOUBLE_)
-      setsizeerr();
+      return gensizeerr(contextptr);
     double xv=x._DOUBLE_val,yv=y._DOUBLE_val,xt=turtle(contextptr).x,yt=turtle(contextptr).y;
     double theta=atan2(yv-yt,xv-xt);
     return _cap(theta*180/M_PI,contextptr);
   }
-  const string _vers_s("vers");
-  unary_function_eval __vers(&_vers,_vers_s,&printastifunction);
-  unary_function_ptr at_vers (&__vers,0,T_LOGO);
+  static const char _vers_s []="vers";
+  static define_unary_function_eval2 (__vers,&_vers,_vers_s,&printastifunction);
+  define_unary_function_ptr5( at_vers ,alias_at_vers,&__vers,0,T_LOGO);
 
-
-  int find_radius(const gen & g,int & r,int & theta2,bool & direct){
+  static int find_radius(const gen & g,int & r,int & theta2,bool & direct){
     int radius;
     direct=true;
     theta2 = 360 ;
@@ -9873,13 +13602,15 @@ namespace giac {
     if (g.type==_VECT && !g._VECTptr->empty()){
       vecteur & v = *g._VECTptr;
       if (v.size()<2)
-	setdimerr();
-      if (v[0].type==_DOUBLE_)
-	r=int(v[0]._DOUBLE_val+0.5);
-      else { 
-	if (v[0].type==_INT_)
-	  r = v[0].val;
-	else setsizeerr();
+	return RAND_MAX; // setdimerr(contextptr);
+      if (v[0].type==_INT_)
+	r=v[0].val;
+      else {
+	gen v0=evalf_double(v[0],1,context0);
+	if (v0.type==_DOUBLE_)
+	  r=int(v0._DOUBLE_val+0.5);
+	else 
+	  return RAND_MAX; // setsizeerr(contextptr);
       }
       if (r<0){
 	r=-r;
@@ -9891,7 +13622,7 @@ namespace giac {
       else { 
 	if (v[1].type==_INT_)
 	  theta1=v[1].val;
-	else setsizeerr();
+	else return RAND_MAX; // setsizeerr(contextptr);
       }
       while (theta1<0)
 	theta1 += 360;
@@ -9901,17 +13632,17 @@ namespace giac {
 	else {
 	  if (v[2].type==_INT_)
 	    theta2 = v[2].val;
-	  else setsizeerr();
+	  else return RAND_MAX; // setsizeerr(contextptr);
 	}
 	while (theta2<0)
 	  theta2 += 360;
-	radius = min(r,512) | (min(theta1,360) << 9) | (min(theta2,360) << 18 );
+	radius = giacmin(r,512) | (giacmin(theta1,360) << 9) | (giacmin(theta2,360) << 18 );
       }
       else {// angle 1=0
 	theta2 = theta1;
 	if (theta2<0)
 	  theta2 += 360;
-	radius = min(r,512) | (min(theta2,360) << 18 );
+	radius = giacmin(r,512) | (giacmin(theta2,360) << 18 );
       }
       return radius;
     }
@@ -9924,11 +13655,11 @@ namespace giac {
       radius = -radius;
       direct=false;
     }
-    radius = min(radius,512 )+(360 << 18) ; // 2nd angle = 360 degrees
+    radius = giacmin(radius,512 )+(360 << 18) ; // 2nd angle = 360 degrees
     return radius;
   }
 
-  void turtle_move(int r,int theta2,GIAC_CONTEXT){
+  static void turtle_move(int r,int theta2,GIAC_CONTEXT){
     double theta0;
     if (turtle(contextptr).direct)
       theta0=turtle(contextptr).theta-90;
@@ -9937,7 +13668,7 @@ namespace giac {
       theta2=-theta2;
     }
     turtle(contextptr).x += r*(std::cos(M_PI/180*(theta2+theta0))-std::cos(M_PI/180*theta0));
-    turtle(contextptr).y += r*(std::sin(M_PI/180*(theta2+theta0))-std::sin(M_PI/180*theta0));;
+    turtle(contextptr).y += r*(std::sin(M_PI/180*(theta2+theta0))-std::sin(M_PI/180*theta0));
     turtle(contextptr).theta = turtle(contextptr).theta+theta2 ;
     if (turtle(contextptr).theta<0)
       turtle(contextptr).theta += 360;
@@ -9946,30 +13677,40 @@ namespace giac {
   }
 
   gen _rond(const gen & g,GIAC_CONTEXT){
-    int r,theta2;
-    turtle(contextptr).radius=find_radius(g,r,theta2,turtle(contextptr).direct);
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
+    int r,theta2,tmpr;
+    tmpr=find_radius(g,r,theta2,turtle(contextptr).direct);
+    if (tmpr==RAND_MAX)
+      return gensizeerr(contextptr);
+    turtle(contextptr).radius=tmpr;
     turtle_move(r,theta2,contextptr);
     return update_turtle_state(true,contextptr);
   }
-  const string _rond_s("rond");
-  unary_function_eval __rond(&_rond,_rond_s,&printastifunction);
-  unary_function_ptr at_rond (&__rond,0,T_LOGO);
+  static const char _rond_s []="rond";
+  static define_unary_function_eval2 (__rond,&_rond,_rond_s,&printastifunction);
+  define_unary_function_ptr5( at_rond ,alias_at_rond,&__rond,0,T_LOGO);
 
   gen _disque(const gen & g,GIAC_CONTEXT){
-    int r,theta2;
-    turtle(contextptr).radius=find_radius(g,r,theta2,turtle(contextptr).direct);
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
+    int r,theta2,tmpr=find_radius(g,r,theta2,turtle(contextptr).direct);
+    if (tmpr==RAND_MAX)
+      return gensizeerr(contextptr);
+    turtle(contextptr).radius=tmpr;
     turtle_move(r,theta2,contextptr);
     turtle(contextptr).radius += 1 << 27;
     return update_turtle_state(true,contextptr);
   }
-  const string _disque_s("disque");
-  unary_function_eval __disque(&_disque,_disque_s,&printastifunction);
-  unary_function_ptr at_disque (&__disque,0,T_LOGO);
+  static const char _disque_s []="disque";
+  static define_unary_function_eval2 (__disque,&_disque,_disque_s,&printastifunction);
+  define_unary_function_ptr5( at_disque ,alias_at_disque,&__disque,0,T_LOGO);
 
   gen _disque_centre(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
     int r,theta2;
     bool direct;
     int radius=find_radius(g,r,theta2,direct);
+    if (radius==RAND_MAX)
+      return gensizeerr(contextptr);
     r=absint(r);
     _saute(r,contextptr);
     _tourne_gauche(direct?90:-90,contextptr);
@@ -9981,24 +13722,25 @@ namespace giac {
     _tourne_droite(direct?90:-90,contextptr);
     return _saute(-r,contextptr);
   }
-  const string _disque_centre_s("disque_centre");
-  unary_function_eval __disque_centre(&_disque_centre,_disque_centre_s,&printastifunction);
-  unary_function_ptr at_disque_centre (&__disque_centre,0,T_LOGO);
+  static const char _disque_centre_s []="disque_centre";
+  static define_unary_function_eval2 (__disque_centre,&_disque_centre,_disque_centre_s,&printastifunction);
+  define_unary_function_ptr5( at_disque_centre ,alias_at_disque_centre,&__disque_centre,0,T_LOGO);
 
   gen _polygone_rempli(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
     if (g.type==_INT_){
       turtle(contextptr).radius=-absint(g.val);
       if (turtle(contextptr).radius<-1)
 	return update_turtle_state(true,contextptr);
     }
-    setsizeerr("Argument entier >= 2");
-    return 0;
+    return gensizeerr(gettext("Integer argument >= 2"));
   }
-  const string _polygone_rempli_s("polygone_rempli");
-  unary_function_eval __polygone_rempli(&_polygone_rempli,_polygone_rempli_s,&printastifunction);
-  unary_function_ptr at_polygone_rempli (&__polygone_rempli,0,T_LOGO);
+  static const char _polygone_rempli_s []="polygone_rempli";
+  static define_unary_function_eval2 (__polygone_rempli,&_polygone_rempli,_polygone_rempli_s,&printastifunction);
+  define_unary_function_ptr5( at_polygone_rempli ,alias_at_polygone_rempli,&__polygone_rempli,0,T_LOGO);
 
   gen _rectangle_plein(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
     gen gx=g,gy=g;
     if (g.type==_VECT && g._VECTptr->size()==2){
       gx=g._VECTptr->front();
@@ -10012,11 +13754,12 @@ namespace giac {
     }
     return _polygone_rempli(-8,contextptr);
   }
-  const string _rectangle_plein_s("rectangle_plein");
-  unary_function_eval __rectangle_plein(&_rectangle_plein,_rectangle_plein_s,&printastifunction);
-  unary_function_ptr at_rectangle_plein (&__rectangle_plein,0,T_LOGO);
+  static const char _rectangle_plein_s []="rectangle_plein";
+  static define_unary_function_eval2 (__rectangle_plein,&_rectangle_plein,_rectangle_plein_s,&printastifunction);
+  define_unary_function_ptr5( at_rectangle_plein ,alias_at_rectangle_plein,&__rectangle_plein,0,T_LOGO);
 
   gen _triangle_plein(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
     gen gx=g,gy=g,gtheta=60;
     if (g.type==_VECT && g._VECTptr->size()>=2){
       vecteur & v=*g._VECTptr;
@@ -10040,17 +13783,18 @@ namespace giac {
     update_turtle_state(true,contextptr);
     return _polygone_rempli(-3,contextptr);
   }
-  const string _triangle_plein_s("triangle_plein");
-  unary_function_eval __triangle_plein(&_triangle_plein,_triangle_plein_s,&printastifunction);
-  unary_function_ptr at_triangle_plein (&__triangle_plein,0,T_LOGO);
+  static const char _triangle_plein_s []="triangle_plein";
+  static define_unary_function_eval2 (__triangle_plein,&_triangle_plein,_triangle_plein_s,&printastifunction);
+  define_unary_function_ptr5( at_triangle_plein ,alias_at_triangle_plein,&__triangle_plein,0,T_LOGO);
 
   gen _dessine_tortue(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
     // logo instruction
     /*
-    _triangle_plein(makevecteur(17,5));
-    _tourne_droite(90);
-    _triangle_plein(makevecteur(5,17));
-    return _tourne_droite(-90);
+      _triangle_plein(makevecteur(17,5));
+      _tourne_droite(90);
+      _triangle_plein(makevecteur(5,17));
+      return _tourne_droite(-90);
     */
     double save_x=turtle(contextptr).x,save_y=turtle(contextptr).y;
     _tourne_droite(90,contextptr);
@@ -10067,51 +13811,94 @@ namespace giac {
       return res;
     return _polygone_rempli(-9,contextptr);
   }
-  const string _dessine_tortue_s("dessine_tortue");
-  unary_function_eval __dessine_tortue(&_dessine_tortue,_dessine_tortue_s,&printastifunction);
-  unary_function_ptr at_dessine_tortue (&__dessine_tortue,0,T_LOGO);
+  static const char _dessine_tortue_s []="dessine_tortue";
+  static define_unary_function_eval2 (__dessine_tortue,&_dessine_tortue,_dessine_tortue_s,&printastifunction);
+  define_unary_function_ptr5( at_dessine_tortue ,alias_at_dessine_tortue,&__dessine_tortue,0,T_LOGO);
 
-  const string _hasard_s("hasard");
-  unary_function_eval __hasard(&_rand,_hasard_s,&printastifunction);
-  unary_function_ptr at_hasard (&__hasard,0,T_LOGO);
+  gen _turtle_stack(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
+    if (g==at_remove) turtle_stack(contextptr).clear();
+    std::vector<logo_turtle> v=turtle_stack(contextptr);
+    vecteur res;
+    for (int i=0;i<int(v.size());++i){
+      res.push_back(turtle2gen(v[i]));
+    }
+    return res;
+  }
+  static const char _turtle_stack_s []="turtle_stack";
+  static define_unary_function_eval2 (__turtle_stack,&_turtle_stack,_turtle_stack_s,&printastifunction);
+  define_unary_function_ptr5( at_turtle_stack ,alias_at_turtle_stack,&__turtle_stack,0,T_LOGO);
+
+#endif
+
+  static const char _ramene_s []="ramene";
+  static define_unary_function_eval2 (__ramene,&_read,_ramene_s,&printastifunction);
+  define_unary_function_ptr5( at_ramene ,alias_at_ramene,&__ramene,0,T_LOGO);
+
+  static const char _sauve_s []="sauve";
+  static define_unary_function_eval2_quoted (__sauve,&_write,_sauve_s,&printastifunction);
+  define_unary_function_ptr5( at_sauve ,alias_at_sauve,&__sauve,_QUOTE_ARGUMENTS,T_LOGO);
+
+
+  static const char _hasard_s []="hasard";
+  static define_unary_function_eval2 (__hasard,&giac::_RANDOM,_hasard_s,&printasRANDOM);
+  define_unary_function_ptr5( at_hasard ,alias_at_hasard,&__hasard,0,T_RETURN);
 
   /* A FAIRE:
      traduction latex
-   */
-
-
-  extern unary_function_ptr at_arc;
+  */
   gen _arc(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type!=_VECT)
       return symbolic(at_arc,args);
     vecteur & v=*args._VECTptr;
     vecteur attributs(1,default_color(contextptr));
     int s=read_attributs(v,attributs,contextptr);
     if (s<3)
-      setdimerr();
+      return gendimerr(contextptr);
     gen e=remove_at_pnt(eval(v[0],contextptr));
     gen f=remove_at_pnt(eval(v[1],contextptr));
     gen g=eval(v[2],contextptr);
-    if (evalf_double(g,eval_level(contextptr),contextptr).type!=_DOUBLE_)
-      setsizeerr();
-    gen c=normal((e+f)/2+cst_i*(f-e)/(2*tan(g/2,contextptr)),contextptr);
-    gen diametre=gen(makevecteur(2*c-e,e),_GROUP__VECT);
-    gen res=pnt_attrib(symbolic(at_cercle,gen(makevecteur(diametre,zero,g),_PNT__VECT)),attributs,contextptr);
+    gen c,diametre;
+    if (g.is_symb_of_sommet(at_pnt)){
+      g=remove_at_pnt(g);
+      if (est_aligne(e,f,g,contextptr))
+	return gensizeerr(gettext("Collinear points"));
+      gen tmp=_circonscrit(gen(makevecteur(e,f,g),_SEQ__VECT),contextptr),tmp2,r;
+      centre_rayon(tmp,c,r,false,contextptr);
+      tmp=arg((f-c)/(e-c),contextptr);
+      if (is_positive(tmp,contextptr))
+	tmp2=tmp-cst_two_pi;
+      else
+	tmp2=tmp+cst_two_pi;
+      r=arg((g-c)/(e-c),contextptr);
+      if (is_positive(tmp*r,contextptr)&& is_greater(tmp/r,1,contextptr))
+	g=tmp;
+      else
+	g=tmp2;
+    }
+    else {
+      if (evalf_double(g,eval_level(contextptr),contextptr).type!=_DOUBLE_)
+	return gensizeerr(contextptr);
+      c=normal((e+f)/2+cst_i*(f-e)/(2*tan(g/2,contextptr)),contextptr);
+    }
+    diametre=gen(makevecteur(2*c-e,e),_GROUP__VECT);
+    gen res=pnt_attrib(symbolic(at_cercle,gen((s==4 && v[3].type<_IDNT)?makevecteur(diametre,zero,g,v[3]):makevecteur(diametre,zero,g),_PNT__VECT)),attributs,contextptr);
     gen h=abs_norm(c-e,contextptr);
-    if (s==3)
+    if (s==3 || v[3].type<_IDNT)
       return res;
     vecteur w(1,res);
     w.push_back(eval(symb_sto(_point(c,contextptr),v[3]),contextptr));
     if (s>4)
       eval(symb_sto(h,v[4]),contextptr);
     return gen(w,_GROUP__VECT);
-   }
-  const string _arc_s("arc");
-  unary_function_eval __arc(&giac::_arc,_arc_s);
-  unary_function_ptr at_arc (&__arc,_QUOTE_ARGUMENTS,true);
+  }
+  static const char _arc_s []="arc";
+  static define_unary_function_eval_quoted (__arc,&giac::_arc,_arc_s);
+  define_unary_function_ptr5( at_arc ,alias_at_arc,&__arc,_QUOTE_ARGUMENTS,true);
 
-  typedef gen (* propriete)(const gen & g,GIAC_CONTEXT);
   gen _est(const gen & args,const propriete & f,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type!=_SYMB)
       return zero;
     gen g=args._SYMBptr->feuille;
@@ -10134,10 +13921,10 @@ namespace giac {
   int est_rect(const gen & a,const gen & b,const gen & c,const gen & d,GIAC_CONTEXT){
     gen e(a-b+c-d);
     gen f(dotvecteur(d-a,b-a,contextptr));
-    if (is_zero(simplify(e,contextptr)) && is_zero(simplify(f,contextptr))) {
+    if (is_zero(simplify(e,contextptr),contextptr) && is_zero(simplify(f,contextptr),contextptr)) {
       gen g(abs_norm2(a-b,contextptr));
       gen gg(abs_norm2(a-d,contextptr));
-      if (is_zero(simplify(g-gg,contextptr))) 
+      if (is_zero(simplify(g-gg,contextptr),contextptr)) 
 	return 2;
       return 1;
     }
@@ -10147,8 +13934,8 @@ namespace giac {
   int est_losange(const gen & a,const gen & b,const gen & c,const gen & d,GIAC_CONTEXT){
     gen e(a-b+c-d);
     gen f(dotvecteur(d-b,c-a,contextptr));
-    if (is_zero(simplify(e,contextptr)) && is_zero(simplify(f,contextptr))) {
-      if (is_zero(simplify(dotvecteur(d-a,b-a,contextptr),contextptr)))
+    if (is_zero(simplify(e,contextptr),contextptr) && is_zero(simplify(f,contextptr),contextptr)) {
+      if (is_zero(simplify(dotvecteur(d-a,b-a,contextptr),contextptr),contextptr))
 	return 2;
       return 1;
     }
@@ -10157,15 +13944,15 @@ namespace giac {
 
   int est_parallelogramme(const gen & a,const gen & b,const gen & c,const gen & d,GIAC_CONTEXT){
     gen e(a-b+c-d);
-    if (is_zero(simplify(e,contextptr))) {
+    if (is_zero(simplify(e,contextptr),contextptr)) {
       gen g(dotvecteur(d-b,c-a,contextptr));
       gen h(dotvecteur(d-a,b-a,contextptr));
-      if (is_zero(simplify(g,contextptr))){
-	if (is_zero(simplify(h,contextptr)))
+      if (is_zero(simplify(g,contextptr),contextptr)){
+	if (is_zero(simplify(h,contextptr),contextptr))
 	  return 4;
 	return 2;
       }
-      if (is_zero(simplify(h,contextptr))) return 3;
+      if (is_zero(simplify(h,contextptr),contextptr)) return 3;
       return 1;
     }
     return 0;
@@ -10175,16 +13962,16 @@ namespace giac {
     gen e(a-b+c-d);
     gen g(dotvecteur(d-b,c-a,contextptr));
     gen h(dotvecteur(d-a,b-a,contextptr));
-    return is_zero(simplify(e,contextptr)) && is_zero(simplify(g,contextptr)) && is_zero(simplify(h,contextptr));
+    return is_zero(simplify(e,contextptr),contextptr) && is_zero(simplify(g,contextptr),contextptr) && is_zero(simplify(h,contextptr),contextptr);
   }
 
   int est_isocele(const gen & a,const gen & b,const gen & c,GIAC_CONTEXT){
     gen d(abs_norm2(b-a,contextptr));
     gen f(abs_norm2(c-a,contextptr));
     gen e(abs_norm2(b-c,contextptr));
-    bool de=is_zero(simplify(d-e,contextptr));
-    bool ef=is_zero(simplify(f-e,contextptr));
-    bool fd=is_zero(simplify(f-d,contextptr));
+    bool de=is_zero(simplify(d-e,contextptr),contextptr);
+    bool ef=is_zero(simplify(f-e,contextptr),contextptr);
+    bool fd=is_zero(simplify(f-d,contextptr),contextptr);
     if (de && ef && fd)
       return 4;
     if (ef)
@@ -10200,23 +13987,24 @@ namespace giac {
     gen d(abs_norm2(b-a,contextptr));
     gen f(abs_norm2(c-a,contextptr));
     gen e(abs_norm2(b-c,contextptr));
-    return is_zero(simplify(d-f,contextptr)) && is_zero(simplify(e-f,contextptr));
+    return is_zero(simplify(d-f,contextptr),contextptr) && is_zero(simplify(e-f,contextptr),contextptr);
   }
 
   int est_trianglerect(const gen & a,const gen & b,const gen & c,GIAC_CONTEXT){
     gen d(dotvecteur(c-a,b-a,contextptr));
     gen e(dotvecteur(a-c,b-c,contextptr));
     gen f(dotvecteur(a-b,c-b,contextptr));
-    if (is_zero(simplify(d,contextptr)))
+    if (is_zero(simplify(d,contextptr),contextptr))
       return 1;
-    if (is_zero(simplify(e,contextptr)))
+    if (is_zero(simplify(e,contextptr),contextptr))
       return 3;
-    if (is_zero(simplify(f,contextptr)))
+    if (is_zero(simplify(f,contextptr),contextptr))
       return 2;
     return 0;
   }
   
   gen _est_isocele(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.is_symb_of_sommet(at_pnt))
       return _est(args,_est_isocele,contextptr);
     vecteur v=sommet(args);
@@ -10225,11 +14013,12 @@ namespace giac {
     }
     return symbolic(at_est_isocele,args);
   }
-  const string _est_isocele_s("is_isoceles");
-  unary_function_eval __est_isocele(&giac::_est_isocele,_est_isocele_s);
-  unary_function_ptr at_est_isocele (&__est_isocele,0,true);
+  static const char _est_isocele_s []="is_isosceles";
+  static define_unary_function_eval (__est_isocele,&giac::_est_isocele,_est_isocele_s);
+  define_unary_function_ptr5( at_est_isocele ,alias_at_est_isocele,&__est_isocele,0,true);
   
   gen _est_equilateral(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.is_symb_of_sommet(at_pnt))
       return _est(args,_est_equilateral,contextptr);
     vecteur v=sommet(args);
@@ -10238,11 +14027,12 @@ namespace giac {
     }
     return symbolic(at_est_equilateral,args);
   }
-  const string _est_equilateral_s("is_equilateral");
-  unary_function_eval __est_equilateral(&giac::_est_equilateral,_est_equilateral_s);
-  unary_function_ptr at_est_equilateral (&__est_equilateral,0,true);
+  static const char _est_equilateral_s []="is_equilateral";
+  static define_unary_function_eval (__est_equilateral,&giac::_est_equilateral,_est_equilateral_s);
+  define_unary_function_ptr5( at_est_equilateral ,alias_at_est_equilateral,&__est_equilateral,0,true);
   
   gen _est_parallelogramme(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.is_symb_of_sommet(at_pnt))
       return _est(args,_est_parallelogramme,contextptr);
     vecteur v=sommet(args);
@@ -10251,11 +14041,12 @@ namespace giac {
     }
     return symbolic(at_est_parallelogramme,args);
   }
-  const string _est_parallelogramme_s("is_parallelogram");
-  unary_function_eval __est_parallelogramme(&giac::_est_parallelogramme,_est_parallelogramme_s);
-  unary_function_ptr at_est_parallelogramme (&__est_parallelogramme,0,true);
+  static const char _est_parallelogramme_s []="is_parallelogram";
+  static define_unary_function_eval (__est_parallelogramme,&giac::_est_parallelogramme,_est_parallelogramme_s);
+  define_unary_function_ptr5( at_est_parallelogramme ,alias_at_est_parallelogramme,&__est_parallelogramme,0,true);
 
   gen _est_carre(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.is_symb_of_sommet(at_pnt))
       return _est(args,_est_carre,contextptr);
     vecteur v=sommet(args);
@@ -10264,11 +14055,12 @@ namespace giac {
     }
     return symbolic(at_est_carre,args);
   }
-  const string _est_carre_s("is_square");
-  unary_function_eval __est_carre(&giac::_est_carre,_est_carre_s);
-  unary_function_ptr at_est_carre (&__est_carre,0,true);
+  static const char _est_carre_s []="is_square";
+  static define_unary_function_eval (__est_carre,&giac::_est_carre,_est_carre_s);
+  define_unary_function_ptr5( at_est_carre ,alias_at_est_carre,&__est_carre,0,true);
 
   gen _est_losange(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.is_symb_of_sommet(at_pnt))
       return _est(args,_est_losange,contextptr);
     vecteur v=sommet(args);
@@ -10279,30 +14071,43 @@ namespace giac {
     }
     return symbolic(at_est_losange,args);
   }
-  const string _est_losange_s("is_rhombus");
-  unary_function_eval __est_losange(&giac::_est_losange,_est_losange_s);
-  unary_function_ptr at_est_losange (&__est_losange,0,true);
+  static const char _est_losange_s []="is_rhombus";
+  static define_unary_function_eval (__est_losange,&giac::_est_losange,_est_losange_s);
+  define_unary_function_ptr5( at_est_losange ,alias_at_est_losange,&__est_losange,0,true);
 
   gen _est_rectangle(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.is_symb_of_sommet(at_pnt))
       return _est(args,_est_rectangle,contextptr);
     vecteur v=sommet(args);
     if (v.back()==v.front())
       v.pop_back();
     if (v.size()==3){
-	return est_trianglerect(remove_at_pnt(v[0]),remove_at_pnt(v[1]),remove_at_pnt(v[2]),contextptr);
+      return est_trianglerect(remove_at_pnt(v[0]),remove_at_pnt(v[1]),remove_at_pnt(v[2]),contextptr);
     }
     if (v.size()==4){
       return est_rect(remove_at_pnt(v[0]),remove_at_pnt(v[1]),remove_at_pnt(v[2]),remove_at_pnt(v[3]),contextptr);
     }
     return symbolic(at_est_rectangle,args);
   }
-  const string _est_rectangle_s("is_rectangle");
-  unary_function_eval __est_rectangle(&giac::_est_rectangle,_est_rectangle_s);
-  unary_function_ptr at_est_rectangle (&__est_rectangle,0,true);
+  static const char _est_rectangle_s []="is_rectangle";
+  static define_unary_function_eval (__est_rectangle,&giac::_est_rectangle,_est_rectangle_s);
+  define_unary_function_ptr5( at_est_rectangle ,alias_at_est_rectangle,&__est_rectangle,0,true);
+
+  gen _is_3dpoint(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    gen g=remove_at_pnt(args);
+    g=(g.type==_VECT && g.subtype==_POINT__VECT && g._VECTptr->size()==3)?1:0;
+    g.subtype=_INT_BOOLEAN;
+    return g;
+  }
+  static const char _is_3dpoint_s []="is_3dpoint";
+  static define_unary_function_eval (__is_3dpoint,&giac::_is_3dpoint,_is_3dpoint_s);
+  define_unary_function_ptr5( at_is_3dpoint ,alias_at_is_3dpoint,&__is_3dpoint,0,true);
 
   //=(c-a)*(d-b)/((c-b)*(d-a))= birapport de 4 complexes ou points a,b,c,d
   gen _birapport(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if ((args.type==_VECT) && (args._VECTptr->size()==4)){
       vecteur v(*args._VECTptr);
       gen a(remove_at_pnt(v[0])),b(remove_at_pnt(v[1])),c(remove_at_pnt(v[2])),d(remove_at_pnt(v[3]));
@@ -10311,17 +14116,19 @@ namespace giac {
     }
     return symbolic(at_birapport,args);
   }
-  const string _birapport_s("cross_ratio");
-  unary_function_eval __birapport(&giac::_birapport,_birapport_s);
-  unary_function_ptr at_birapport (&__birapport,0,true);
+  static const char _birapport_s []="cross_ratio";
+  static define_unary_function_eval (__birapport,&giac::_birapport,_birapport_s);
+  define_unary_function_ptr5( at_birapport ,alias_at_birapport,&__birapport,0,true);
   //puissance d'1 point A/ cercle C=d2-R2 (d=distance de A au centre(C))
   //parametre C,point ou para du cercle et point
   gen _puissance(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type==_VECT) {
       vecteur v(*args._VECTptr);
       gen a,C;
       if (args._VECTptr->size()==3){
 	C=_cercle(makevecteur(v[0],v[1]),contextptr);
+	if (is_undef(C)) return C;
 	a=remove_at_pnt(v[2]);
       }
       else {
@@ -10330,30 +14137,31 @@ namespace giac {
 	  a=remove_at_pnt(v[1]);
 	}
 	else
-	  setsizeerr();
+	  return gensizeerr(contextptr);
       }
       gen c,R;
       if (!centre_rayon(C,c,R,false,contextptr))
-	setsizeerr();
-      gen res =ratnormal(abs_norm2(c-a,contextptr)-abs_norm2(R,contextptr));
+	return gensizeerr(contextptr);
+      gen res =ratnormal(abs_norm2(c-a,contextptr)-abs_norm2(R,contextptr),contextptr);
       return normal(res,contextptr);
     }
     return symbolic(at_puissance,args);
-    //setsizeerr();
+    //return gensizeerr(contextptr);
   }
-  const string _puissance_s("powerpc");
-  unary_function_eval __puissance(&giac::_puissance,_puissance_s);
-  unary_function_ptr at_puissance (&__puissance,0,true);
+  static const char _puissance_s []="powerpc";
+  static define_unary_function_eval (__puissance,&giac::_puissance,_puissance_s);
+  define_unary_function_ptr5( at_puissance ,alias_at_puissance,&__puissance,0,true);
 
   //axe radical de 2 cercles
   //parametres 2 cercles ou 4 parametres=param des 2 cercles
   gen _axe_radical(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type==_VECT) {
       vecteur v(*args._VECTptr);
       gen C1,C2;
       if (args._VECTptr->size()==4){
-	C1=_cercle(makevecteur(v[0],v[1]),contextptr);
-	C2=_cercle(makevecteur(v[2],v[3]),contextptr);
+	C1=_cercle(makesequence(v[0],v[1]),contextptr);
+	C2=_cercle(makesequence(v[2],v[3]),contextptr);
       }
       else {
 	if (args._VECTptr->size()==2){
@@ -10361,82 +14169,137 @@ namespace giac {
 	  C2=v[1];
 	}
 	else
-	  setsizeerr();
+	  return gensizeerr(contextptr);
       }
+      if (is_undef(C1)) return C1;
+      if (is_undef(C2)) return C2;
       gen c1,c2,R1,R2;
       if (!centre_rayon(C1,c1,R1,false,contextptr) ||
 	  !centre_rayon(C2,c2,R2,false,contextptr) )
-	setsizeerr();
-      if (is_zero(c1-c2))
-	setsizeerr("Circle centers are identical");
-      gen k =ratnormal((abs_norm2(R1,contextptr)-abs_norm2(R2,contextptr))/abs_norm2(c1-c2,contextptr));
-      gen H=ratnormal((c1+c2+k*(c2-c1))/2);
-      gen K=ratnormal(H+cst_i*(c2-c1)); // FIXME 3-d
-      return _droite(makevecteur(normal(H,contextptr),normal(K,contextptr)),contextptr);
+	return gensizeerr(contextptr);
+      if (is_zero(c1-c2,contextptr))
+	return gensizeerr(gettext("Circle centers are identical"));
+      gen k =ratnormal((abs_norm2(R1,contextptr)-abs_norm2(R2,contextptr))/abs_norm2(c1-c2,contextptr),contextptr);
+      gen H=ratnormal((c1+c2+k*(c2-c1))/2,contextptr);
+      gen K=ratnormal(H+cst_i*(c2-c1),contextptr); // FIXME 3-d
+      return _droite(makesequence(normal(H,contextptr),normal(K,contextptr)),contextptr);
     }
     return symbolic(at_axe_radical,args);
-    //setsizeerr();
+    //return gensizeerr(contextptr);
   }
-  const string _axe_radical_s("radical_axis");
-  unary_function_eval __axe_radical(&giac::_axe_radical,_axe_radical_s);
-  unary_function_ptr at_axe_radical (&__axe_radical,0,true);
+  static const char _axe_radical_s []="radical_axis";
+  static define_unary_function_eval (__axe_radical,&giac::_axe_radical,_axe_radical_s);
+  define_unary_function_ptr5( at_axe_radical ,alias_at_axe_radical,&__axe_radical,0,true);
+
+  gen equation_homogene(const gen & eq,GIAC_CONTEXT){
+    vecteur v(1,makevecteur(x__IDNT_e,y__IDNT_e,z__IDNT_e));
+    alg_lvar(eq,v);
+    gen v0=v.front();
+    if (v0.type!=_VECT || v0._VECTptr->size()<3 || v0[0]!=x__IDNT_e || v0[1]!=y__IDNT_e || v0[2]!=z__IDNT_e)
+      return gensizeerr(contextptr);
+    // check that nothing else depends on x/y
+    if (!is_zero(derive(v,x__IDNT_e,2,contextptr),contextptr) || 
+	!is_zero(derive(v,y__IDNT_e,2,contextptr),contextptr) )
+      return gensizeerr(contextptr);
+    // homogeneize
+    fraction feq(e2r(eq,v,contextptr));
+    if (feq.num.type!=_POLY)
+      return gensizeerr(contextptr);
+    polynome p=*feq.num._POLYptr;
+    // find total degree in x and y
+    vector< monomial<gen> >::iterator it=p.coord.begin(),itend=p.coord.end();
+    int xydeg=0,tmp;
+    for (;it!=itend;++it){
+      tmp=it->index[0]+it->index[1];
+      if (tmp>xydeg)
+	xydeg=tmp;
+    }
+    // adjust z degree
+    for (it=p.coord.begin();it!=itend;++it){
+      tmp=it->index[0]+it->index[1];
+      if (tmp<xydeg)
+	it->index[2]=xydeg-tmp; // note: in-place modif
+    }
+    return r2e(p,v,contextptr);
+  }
 
   //renvoie une droite=la polaire d'un point A/ cercle C
   //parametres C,A ou param du cercle et A
   gen _polaire(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type==_VECT) {
       vecteur v(*args._VECTptr);
       gen C,a;
       if (args._VECTptr->size()==3){
 	gen b0=v[0], b1=v[1];
 	if  ((b0.type!=_VECT)&& (b1.type!=_VECT)){
-	  C=_cercle(makevecteur(b0,b1),contextptr);
+	  C=_cercle(makesequence(b0,b1),contextptr);
+	  if (is_undef(C)) return C;
 	  a=remove_at_pnt(v[2]);
-	} else setsizeerr();}
+	} 
+	else 
+	  return gensizeerr(contextptr);
+      }
       else {
 	if (args._VECTptr->size()==2){
 	  C=v[0];
 	  a=remove_at_pnt(v[1]);
 	}
 	else
-	  setsizeerr();
+	  return gensizeerr(contextptr);
       }
+      if (a.is_symb_of_sommet(at_cercle) || a.is_symb_of_sommet(at_curve))
+	return gensizeerr(contextptr);
       gen c,R,a1,a2,p1,p2;
-      if (!centre_rayon(C,c,R,false,contextptr))
-	setsizeerr();
+      if (!centre_rayon(C,c,R,false,contextptr)){
+	gen eq=_equation(C,contextptr);
+	if (is_undef(eq)) return eq;
+	eq=equation_homogene(eq,contextptr);
+	if (is_undef(eq)) return eq;
+	gen x0=re(a,contextptr);
+	gen y0=im(a,contextptr);
+	// result is
+	// D:=x0*diff(p(x,y,z),x)+y0*diff(p(x,y,z),y)+1*diff(p(x,y,z),z)
+	gen res=x0*derive(eq,x__IDNT_e,contextptr)+y0*derive(eq,y__IDNT_e,contextptr)+derive(eq,z__IDNT_e,contextptr);
+	if (is_undef(res))
+	  return res;
+	return _droite(recursive_normal(subst(res,z__IDNT_e,1,false,contextptr),contextptr),contextptr);
+      }
       a1=re(a-c,contextptr);
       a2=im(a-c,contextptr);
-      if (a1==0 && a2==0) setsizeerr();
+      if (a1==0 && a2==0) return gensizeerr(contextptr);
       if (a1==0){
 	p1=c+cst_i*(R*conj(R,contextptr))/a2;
 	p2=1+c+cst_i*(R*conj(R,contextptr))/a2;
-	return _droite(makevecteur(normal(p1,contextptr),normal(p2,contextptr)),contextptr);
+	return _droite(makesequence(normal(p1,contextptr),normal(p2,contextptr)),contextptr);
       }
       if (a2==0){
 	p1=c+(R*conj(R,contextptr))/a1;
 	p2=c+cst_i+(R*conj(R,contextptr))/a1;
-	return _droite(makevecteur(normal(p1,contextptr),normal(p2,contextptr)),contextptr);
+	return _droite(makesequence(normal(p1,contextptr),normal(p2,contextptr)),contextptr);
       }
       p1=c+(R*conj(R,contextptr))/a1;
       p2=c+cst_i*(R*conj(R,contextptr))/a2;
-      return _droite(makevecteur(normal(p1,contextptr),normal(p2,contextptr)),contextptr);
+      return _droite(makesequence(normal(p1,contextptr),normal(p2,contextptr)),contextptr);
     }
     return symbolic(at_polaire,args);
-    //setsizeerr();
+    //return gensizeerr(contextptr);
   }
 
-  const string _polaire_s("polar");
-  unary_function_eval __polaire(&giac::_polaire,_polaire_s);
-  unary_function_ptr at_polaire (&__polaire,0,true);
+  static const char _polaire_s []="polar";
+  static define_unary_function_eval (__polaire,&giac::_polaire,_polaire_s);
+  define_unary_function_ptr5( at_polaire ,alias_at_polaire,&__polaire,0,true);
 
   //renvoie un point= le pole d'une droite D par rapport a un cercle C
   //parametres C,D  
   gen _pole(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type==_VECT) {
       vecteur v(*args._VECTptr);
       gen D,C;
       if (args._VECTptr->size()==3){
-	C=_cercle(makevecteur(v[0],v[1]),contextptr);
+	C=_cercle(makesequence(v[0],v[1]),contextptr);
+	if (is_undef(C)) return C;
 	D=remove_at_pnt(v[2]);
       }
       else {
@@ -10445,66 +14308,88 @@ namespace giac {
 	  D=remove_at_pnt(v[1]);
 	}
 	else
-	  setsizeerr();
+	  return gensizeerr(contextptr);
       }
       gen c,R,A1,A2,a1,a2,k;
-      if (!centre_rayon(C,c,R,false,contextptr))
-	setsizeerr();
+      if (!centre_rayon(C,c,R,false,contextptr)){
+	gen eq=_equation(C,contextptr);
+	eq=equation_homogene(eq,contextptr);
+	if (is_undef(eq)) return eq;
+	gen mat=qxa(eq,makevecteur(x__IDNT_e,y__IDNT_e,z__IDNT_e),contextptr);
+	if (!ckmatrix(mat))
+	  return gentypeerr(contextptr);
+	matrice M=*mat._VECTptr;
+	gen Ax=re(D[0],contextptr),Ay=im(D[0],contextptr);
+	gen Bx=re(D[1],contextptr),By=im(D[1],contextptr);
+	vecteur v=makevecteur(By-Ay,Ax-Bx,Bx*Ay-By*Ax);
+	matrice Minv=minv(M,contextptr);
+	if (is_undef(Minv)) return Minv;
+	vecteur w=multmatvecteur(Minv,v);
+	gen res=w[0]/w[2]+cst_i*w[1]/w[2];
+	res=recursive_normal(res,contextptr);
+	return symb_pnt(res,contextptr);
+	//return gensizeerr(contextptr);
+      }
       A1=D[0]-c;
       A2=D[1]-c;
       a1=im(A1-A2,contextptr);
       a2=re(A2-A1,contextptr);
       k=im(A1*conj(A2,contextptr),contextptr);
-      gen res =ratnormal(c+R*conj(R,contextptr)*(a1+cst_i*a2)/k);
+      gen res =ratnormal(c+R*conj(R,contextptr)*(a1+cst_i*a2)/k,contextptr);
       return symb_pnt(res,contextptr);
     }
     return  symbolic(at_pole,args);
-    //setsizeerr();
+    //return gensizeerr(contextptr);
   }
-  const string _pole_s("pole");
-  unary_function_eval __pole(&giac::_pole,_pole_s);
-  unary_function_ptr at_pole (&__pole,0,true);
+  static const char _pole_s []="pole";
+  static define_unary_function_eval (__pole,&giac::_pole,_pole_s);
+  define_unary_function_ptr5( at_pole ,alias_at_pole,&__pole,0,true);
 
   //renvoie un point (resp une droite) pole (resp polaire) de D/ cercle C
   //parametre C (ou param du cercle C), droite D (resp point D)   
   gen _polaire_reciproque(const gen & args,GIAC_CONTEXT){
-    gen a;
-    if (args.type==_VECT && !args._VECTptr->empty()) {
-      a=args._VECTptr->back();
-      if (a.type==_VECT){
-	const vecteur & v=*a._VECTptr;
-	const_iterateur it=v.begin(),itend=v.end();
-	vecteur argsbegin(*args._VECTptr),res;
-	int s=argsbegin.size();
-	res.reserve(s);
-	for (--s;it!=itend;++it){
-	  argsbegin[s]=*it;
-	  res.push_back(_polaire_reciproque(argsbegin,contextptr));
-	}
-	return gen(res,a.subtype);
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    vecteur w(gen2vecteur(args));
+    vecteur attributs(1,default_color(contextptr));
+    int s=read_attributs(w,attributs,contextptr);
+    if (w.empty() || s!=2)
+      return gensizeerr(gettext("reciprocation"));
+    gen c=w[0],a=w[1];
+    // if (a==c) return gensizeerr(gettext("reciprocation"));
+    if (a.type==_VECT){
+      const vecteur v=*a._VECTptr;
+      const_iterateur it=v.begin(),itend=v.end();
+      vecteur res;
+      for (;it!=itend;++it){
+	a=*it;
+	a=remove_at_pnt(a);
+	if (a.type==_VECT) 
+	  res.push_back(put_attributs(_pole(gen(makevecteur(c,a),_SEQ__VECT),contextptr),attributs,contextptr));
+	else
+	  res.push_back(put_attributs(_polaire(gen(makevecteur(c,a),_SEQ__VECT),contextptr),attributs,contextptr));
       }
-      a=remove_at_pnt(a);
-      if (a.type==_VECT) 
-	return _pole(args,contextptr);
-      return _polaire(args,contextptr);
+      return gen(res,a.subtype);
     }
-    return symbolic(at_polaire_reciproque,args);
-  }  
-  const string _polaire_reciproque_s("reciprocation");
-  unary_function_eval __polaire_reciproque(&giac::_polaire_reciproque,_polaire_reciproque_s);
-  unary_function_ptr at_polaire_reciproque (&__polaire_reciproque,0,true);
+    a=remove_at_pnt(a);
+    if (a.type==_VECT) 
+      return put_attributs(_pole(gen(makevecteur(c,a),_SEQ__VECT),contextptr),attributs,contextptr);
+    return put_attributs(_polaire(gen(makevecteur(c,a),_SEQ__VECT),contextptr),attributs,contextptr);
+  }
+  static const char _polaire_reciproque_s []="reciprocation";
+  static define_unary_function_eval (__polaire_reciproque,&giac::_polaire_reciproque,_polaire_reciproque_s);
+  define_unary_function_ptr5( at_polaire_reciproque ,alias_at_polaire_reciproque,&__polaire_reciproque,0,true);
 
   //teste si deux cercles C1 centre c1 rayon R1 et C2  centre c2 rayon R2
   //sont orthogonaux
   bool est_orthogonal(const gen & c1,const gen & R1,const gen & c2,const gen & R2,GIAC_CONTEXT){
     gen res =simplify(-abs_norm2(R1,contextptr)-abs_norm2(R2,contextptr)+abs_norm2(c1-c2,contextptr),contextptr);
-    return is_zero(res);
+    return is_zero(res,contextptr);
   }
 
   //teste si deux cercles C1 et C2 sont orthogonaux ou 
   //si 2 droites D1,D2 sont perpendiculaires
   //parametres C1, C2 (ou D1,D2 ou 2 vecteurs de 2 points),
-  gen est_orthogonal(const gen & args,bool perp,GIAC_CONTEXT){
+  static gen est_orthogonal(const gen & args,bool perp,GIAC_CONTEXT){
     if ( args.type==_VECT && args._VECTptr->size()==2){
       vecteur v(*args._VECTptr);
       gen a=remove_at_pnt(v[0]),b=remove_at_pnt(v[1]);
@@ -10514,20 +14399,20 @@ namespace giac {
 	if (ckmatrix(b) && b._VECTptr->size()==2)
 	  return est_parallele_vecteur(hyperplan_normal(a),*(b._VECTptr->back()-b._VECTptr->front())._VECTptr,contextptr);
 	if (b.is_symb_of_sommet(at_hyperplan))
-	  return is_zero(simplify(dotvecteur(hyperplan_normal(a),hyperplan_normal(b)),contextptr));
+	  return is_zero(simplify(dotvecteur(hyperplan_normal(a),hyperplan_normal(b)),contextptr),contextptr);
       }
       if (b.is_symb_of_sommet(at_hyperplan) && !a.is_symb_of_sommet(at_hyperplan))
-	return _est_orthogonal(makevecteur(b,a),contextptr);
+	return _est_orthogonal(makesequence(b,a),contextptr);
       if ( a.type!=_VECT && b.type!=_VECT){
 	//on a 2 cercles ou 2 spheres a et b
 	gen c1,c2,R1,R2;
 	if (!centre_rayon(a,c1,R1,false,contextptr) ||
 	    !centre_rayon(b,c2,R2,false,contextptr))
-	  setsizeerr();
+	  return gensizeerr(contextptr);
 	return est_orthogonal(c1,R1,c2,R2,contextptr);
       }
       if ( (a.type!=_VECT) || (a._VECTptr->size()!=2) || (b.type!=_VECT) || (b._VECTptr->size()!=2) )
-	setsizeerr();     
+	return gensizeerr(contextptr);     
       //on a 2 droites
       if (perp && a[0].type==_VECT && !est_coplanaire(a[0],a[1],b[0],b[1],contextptr))
 	return false;
@@ -10537,19 +14422,21 @@ namespace giac {
   }
   
   gen _est_orthogonal(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     return est_orthogonal(args,false,contextptr);
   }
 
-  const string _est_orthogonal_s("is_orthogonal");
-  unary_function_eval __est_orthogonal(&giac::_est_orthogonal,_est_orthogonal_s);
-  unary_function_ptr at_est_orthogonal (&__est_orthogonal,0,true);
+  static const char _est_orthogonal_s []="is_orthogonal";
+  static define_unary_function_eval (__est_orthogonal,&giac::_est_orthogonal,_est_orthogonal_s);
+  define_unary_function_ptr5( at_est_orthogonal ,alias_at_est_orthogonal,&__est_orthogonal,0,true);
   
   gen _est_perpendiculaire(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     return est_orthogonal(args,true,contextptr);
   }
-  const string _est_perpendiculaire_s("is_perpendicular");
-  unary_function_eval __est_perpendiculaire(&giac::_est_perpendiculaire,_est_perpendiculaire_s);
-  unary_function_ptr at_est_perpendiculaire (&__est_perpendiculaire,0,true);
+  static const char _est_perpendiculaire_s []="is_perpendicular";
+  static define_unary_function_eval (__est_perpendiculaire,&giac::_est_perpendiculaire,_est_perpendiculaire_s);
+  define_unary_function_ptr5( at_est_perpendiculaire ,alias_at_est_perpendiculaire,&__est_perpendiculaire,0,true);
 
 
   //teste si 2 points (resp 2 droites) sont conj /cercle C
@@ -10562,84 +14449,90 @@ namespace giac {
   //est_conjugue(D1,D2,D3,A) ou est_conjugue(D1,D2,A,D3)(D3=droite,A= point)
   //est_conjugue(D1,D2,D3,D4) (D3,D4= 2 droites)
   //est_conjugue(P1,P2,B,A) (P1,P2,B,A= 4 points)
-   gen _est_conjugue(const gen & args,GIAC_CONTEXT){
+  gen _est_conjugue(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if ( (args.type!=_VECT) || (args._VECTptr->size()<3))
       return symbolic(at_est_conjugue,args);
     gen a,b,c,d;
     vecteur v(*args._VECTptr);
     a=remove_at_pnt(v[0]);
     b=remove_at_pnt(v[1]);
-    int s=v.size();
+    int s=int(v.size());
     if (s==3) {
       c=remove_at_pnt(v[2]);
       //par rapport a un cercle
       if ((c.type!=_VECT) && (b.type!=_VECT)) // on a 2 points
-	return _est_orthogonal(makevecteur(v[0],_cercle(makevecteur(v[1],v[2]),contextptr)),contextptr);
+	return _est_orthogonal(makesequence(v[0],_cercle(makesequence(v[1],v[2]),contextptr)),contextptr);
       if (b.type==_VECT){
-	gen p=_pole(makevecteur(v[0],v[1]),contextptr);
+	gen p=_pole(makesequence(v[0],v[1]),contextptr);
+	if (is_undef(p)) return p;
 	if (c.type!=_VECT)
-	  return is_zero(c-remove_at_pnt(p));
+	  return is_zero(c-remove_at_pnt(p),contextptr);
 	return est_element(remove_at_pnt(p),c,contextptr);       
       }
       if ((c.type==_VECT) && (b.type!=_VECT)){
-	gen p=_pole(makevecteur(v[0],c),contextptr);
-	return is_zero(b-remove_at_pnt(p));
+	gen p=_pole(makesequence(v[0],c),contextptr);
+	if (is_undef(p)) return p;
+	return is_zero(b-remove_at_pnt(p),contextptr);
       }
-      setsizeerr();
+      return gensizeerr(contextptr);
     }
-      if (s==4 && a.type==_VECT && b.type==_VECT ){
-	gen dd=_conj_harmonique(makevecteur(v[0],v[1],v[2]),contextptr);
-	d= remove_at_pnt(v[3]);
-	dd=remove_at_pnt(dd);
-	if (d.type!=_VECT)
-	  return est_element(d,dd,contextptr);
-	return est_element(d[0],dd,contextptr) && est_element(d[1],dd,contextptr);    }
-      if (s==4 && (b.type!=_VECT) && (a.type!=_VECT)){ // on a /2 points
-	if ((c.type!=_VECT)&&(d.type!=_VECT))
-	  return _est_harmonique(args,contextptr);
-	setsizeerr();
-      }
-      return 0;
+    if (s==4 && a.type==_VECT && b.type==_VECT ){
+      gen dd=_conj_harmonique(makesequence(v[0],v[1],v[2]),contextptr);
+      if (is_undef(dd)) return dd;
+      d= remove_at_pnt(v[3]);
+      dd=remove_at_pnt(dd);
+      if (d.type!=_VECT)
+	return est_element(d,dd,contextptr);
+      return est_element(d[0],dd,contextptr) && est_element(d[1],dd,contextptr);    }
+    if (s==4 && (b.type!=_VECT) && (a.type!=_VECT)){ // on a /2 points
+      if ((c.type!=_VECT)&&(d.type!=_VECT))
+	return _est_harmonique(args,contextptr);
+      return gensizeerr(contextptr);
+    }
+    return 0;
   }
 
-  const string _est_conjugue_s("is_conjugate");
-  unary_function_eval __est_conjugue(&giac::_est_conjugue,_est_conjugue_s);
-  unary_function_ptr at_est_conjugue (&__est_conjugue,0,true);
+  static const char _est_conjugue_s []="is_conjugate";
+  static define_unary_function_eval (__est_conjugue,&giac::_est_conjugue,_est_conjugue_s);
+  define_unary_function_ptr5( at_est_conjugue ,alias_at_est_conjugue,&__est_conjugue,0,true);
 
   //teste si 4 points forment une division harmonique
   bool est_harmonique(const gen & a,const gen & b,const gen & c,const gen & d,GIAC_CONTEXT){
     if (est_aligne(a,b,c,contextptr) && est_aligne(a,b,d,contextptr)){
       gen e((c-a)/(c-b)+(d-a)/(d-b));
-      return is_zero(simplify(e,contextptr));
-    } else setsizeerr();
-    return 0;
+      return is_zero(simplify(e,contextptr),contextptr);
+    } else return false; // setsizeerr(contextptr);
+    // return 0;
   }
   gen _est_harmonique(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if ((args.type==_VECT) && (args._VECTptr->size()==4)){
       vecteur v(*args._VECTptr);
       return est_harmonique(remove_at_pnt(v[0]),remove_at_pnt(v[1]),remove_at_pnt(v[2]),remove_at_pnt(v[3]),contextptr);
     }
     return symbolic(at_est_harmonique,args);
   }
-  const string _est_harmonique_s("is_harmonic");
-  unary_function_eval __est_harmonique(&giac::_est_harmonique,_est_harmonique_s);
-  unary_function_ptr at_est_harmonique (&__est_harmonique,0,true);
+  static const char _est_harmonique_s []="is_harmonic";
+  static define_unary_function_eval (__est_harmonique,&giac::_est_harmonique,_est_harmonique_s);
+  define_unary_function_ptr5( at_est_harmonique ,alias_at_est_harmonique,&__est_harmonique,0,true);
 
   //conj_harmonique(D1,D2,A)= la droite des conjugues de A par rapport a D1,D2
   //conj_harmonique(D1,D2,D3)=D4 (D1,D2,D3,D4)=-1 (D1,D2,D3 concourantes ou //)
   //point D=conj_harmonique(A,B,C) est le point tel que (A,B,C,D)=-1
   gen _conj_harmonique(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type!=_VECT)
       return symbolic(at_conj_harmonique,args);
-    //setsizeerr();
+    //setsizeerr(contextptr);
     vecteur v(*args._VECTptr);
-    gen d1,d2,a,D3,p1,p2,b;;
+    gen d1,d2,a,D3,p1,p2,b;
     if (args._VECTptr->size()==3){
       bool est_point=false;
       d1=remove_at_pnt(v[0]);
       if (d1.type==_VECT){
 	if (d1._VECTptr->size()!=2)
-	  setsizeerr();
+	  return gensizeerr(contextptr);
 	d1=d1._VECTptr->back()-d1._VECTptr->front();
       }
       else
@@ -10647,84 +14540,87 @@ namespace giac {
       d2=remove_at_pnt(v[1]);
       if (d2.type==_VECT){
 	if (est_point || d2._VECTptr->size()!=2)
-	  setsizeerr();
+	  return gensizeerr(contextptr);
 	d2=d2._VECTptr->front()-d2._VECTptr->back();
       }
       else {
 	if (!est_point)
-	  setsizeerr();
+	  return gensizeerr(contextptr);
       }
       a=remove_at_pnt(v[2]);
       if (est_point){
 	if (a.type==_VECT)
-	  setsizeerr();
+	  return gensizeerr(contextptr);
 	gen e(im((a-d1)*conj(a-d2,contextptr),contextptr));
-	if (! is_zero(simplify(e,contextptr)))
+	if (! is_zero(simplify(e,contextptr),contextptr))
 	  //les points ne sont pas alignes
-	  setsizeerr();
+	  return gensizeerr(contextptr);
 	gen d=normal((d1*a+d2*a-2*d1*d2)/(2*a-d2-d1),contextptr);
 	return symb_pnt(d,contextptr);
       }
       if (est_parallele(d1,d2,contextptr)) {
 	if (a.type==_VECT){
 	  if (a._VECTptr->size()!=2)
-	    setsizeerr("conj_harmonique");
+	    return gensizeerr(gettext("conj_harmonique"));
 	  gen aa=a._VECTptr->front()-a._VECTptr->back();
 	  if (est_parallele(d1,aa,contextptr))
 	    a=a._VECTptr->front();
-	  else setsizeerr("conj_harmonique");
+	  else return gensizeerr(gettext("conj_harmonique"));
 	}
-	D3=_perpendiculaire(makevecteur(a,v[0]),contextptr);
+	D3=_perpendiculaire(makesequence(a,v[0]),contextptr);
 	vecteur w1(inter(D3,v[0],contextptr));
 	p1=remove_at_pnt(w1.front());
 	vecteur w2(inter(D3,v[1],contextptr));
 	p2=remove_at_pnt(w2.front());
-	b=_conj_harmonique(makevecteur(p1,p2,a),contextptr);
-	return _parallele(makevecteur(b,v[0]),contextptr);
+	b=_conj_harmonique(makesequence(p1,p2,a),contextptr);
+	return _parallele(makesequence(b,v[0]),contextptr);
       }
       else  {
 	vecteur w1(inter(v[0],v[1],0));
 	p1=remove_at_pnt(w1.front());
 	if (a.type==_VECT){
 	  if (a._VECTptr->size()!=2)
-	    setsizeerr("conj_harmonique");
+	    return gensizeerr(gettext("conj_harmonique"));
 	  a=a._VECTptr->front()-a._VECTptr->back();
 	  if (est_element(p1,v[2],contextptr))
-	    a=p1+a; else  setsizeerr();
+	    a=p1+a; else  return gensizeerr(contextptr);
 	}
-	D3=_parallele(makevecteur(a,v[0]),contextptr);
+	D3=_parallele(makesequence(a,v[0]),contextptr);
+	if (is_undef(D3)) return D3;
 	vecteur w2(inter(D3,v[1],0));
 	p2=remove_at_pnt(w2.front());
 	b=normal(2*p2-a,contextptr);
-	gen res=_droite(makevecteur(normal(p1,contextptr),b),contextptr);
+	gen res=_droite(makesequence(normal(p1,contextptr),b),contextptr);
 	return res;
       }
     }
-    else setsizeerr();
+    else return gensizeerr(contextptr);
     return 0;
   }
-  const string _conj_harmonique_s("harmonic_conjugate");
-  unary_function_eval __conj_harmonique(&giac::_conj_harmonique,_conj_harmonique_s);
-  unary_function_ptr at_conj_harmonique (&__conj_harmonique,0,true);
+  static const char _conj_harmonique_s []="harmonic_conjugate";
+  static define_unary_function_eval (__conj_harmonique,&giac::_conj_harmonique,_conj_harmonique_s);
+  define_unary_function_ptr5( at_conj_harmonique ,alias_at_conj_harmonique,&__conj_harmonique,0,true);
 
   //renvoie M point qui divise AB ds un rapport k(reel ou complexe)
   //mes alg(MA=k*MB) (z*a=k*(z-b)), parametres: A,B,k
   gen _point_div(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if ( (args.type!=_VECT) || (args._VECTptr->size()<3))
       return symbolic(at_point_div,args);
     vecteur v(*args._VECTptr);
     gen a=remove_at_pnt(eval(v[0],contextptr)),b=remove_at_pnt(eval(v[1],contextptr)),k=eval(v[2],contextptr);
-    //if (! is_zero(im(k,contextptr))) setsizeerr();
+    //if (! is_zero(im(k,contextptr),contextptr)) return gensizeerr(contextptr);
     gen c;
     k=normal(1-k,contextptr);
-    if (is_zero(k)) setsizeerr();
-      //{c=unsigned_inf;}
+    if (is_zero(k,contextptr)) return gensizeerr(contextptr);
+    //{c=unsigned_inf;}
     c=normal((a+(k-1)*b)/k,contextptr);
     return symb_pnt(c,contextptr);
   }
-  const string _point_div_s("division_point");
-  unary_function_eval __point_div(&giac::_point_div,_point_div_s);
-  unary_function_ptr at_point_div (&__point_div,0,true);
+  static const char _point_div_s []="division_point";
+  static define_unary_function_eval (__point_div,&giac::_point_div,_point_div_s);
+  define_unary_function_ptr5( at_point_div ,alias_at_point_div,&__point_div,0,true);
 
   //=1 si 3 cercles ont meme axe radical,2 si concentriques et 0 sinon
   int est_faisceau_cercle(const gen & c1,const gen & R1,const gen & c2,const gen & R2,const gen & c3,const gen & R3,GIAC_CONTEXT){
@@ -10734,13 +14630,13 @@ namespace giac {
       else 
 	return 0;
     } 
-      if (is_equal(makevecteur(c1,c3)))
-	return 0;
+    if (is_equal(makevecteur(c1,c3)))
+      return 0;
     //les centres sont distincts
     if (!est_aligne(c1,c2,c3,contextptr)) return 0;
     //les centres sont alignes
-    gen v=_axe_radical(makevecteur(_cercle(makevecteur(c1,R1),contextptr),_cercle(makevecteur(c2,R2),contextptr)),contextptr);
-    gen w=_axe_radical(makevecteur(_cercle(makevecteur(c1,R1),contextptr),_cercle(makevecteur(c3,R3),contextptr)),contextptr);
+    gen v=_axe_radical(makesequence(_cercle(makesequence(c1,R1),contextptr),_cercle(makesequence(c2,R2),contextptr)),contextptr);
+    gen w=_axe_radical(makesequence(_cercle(makesequence(c1,R1),contextptr),_cercle(makesequence(c3,R3),contextptr)),contextptr);
     v=remove_at_pnt(v);
     return est_element(v[0],w,contextptr) && est_element(v[1],w,contextptr);
   }
@@ -10749,31 +14645,32 @@ namespace giac {
   //renvoie 2 si concentriques 
   //renvoie 1 si les cercles ont meme axe radical et 0 sinon
   gen _est_faisceau_cercle(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     gen c1,R1;
     if (args.type!=_VECT){
       if (!centre_rayon(args,c1,R1,false,contextptr))
-	setsizeerr();
+	return gensizeerr(contextptr);
       return 3;
     }
-    int s=args._VECTptr->size();
+    int s=int(args._VECTptr->size());
     vecteur v(*args._VECTptr);
     if (s==1) {
       if (!centre_rayon(v[0],c1,R1,false,contextptr))
-	setsizeerr();
+	return gensizeerr(contextptr);
       return 3;
     }
     if (s>=2){
       gen c2,c3,R2,R3;
       if (!centre_rayon(v[0],c1,R1,false,contextptr) ||
 	  !centre_rayon(v[1],c2,R2,false,contextptr))
-	setsizeerr();
+	return gensizeerr(contextptr);
       c1=remove_at_pnt(c1);
       c2=remove_at_pnt(c2);
-      int res;
+      int res=0;
       int i=2;
       while (c1==c2 && R1==R2 && i<s){
 	if (!centre_rayon(v[i],c2,R2,false,contextptr))
-	  setsizeerr();
+	  return gensizeerr(contextptr);
 	c2=remove_at_pnt(c2);
 	i=i+1;
       }
@@ -10784,7 +14681,7 @@ namespace giac {
       }
       for (int j=i;j<s;j++){
 	if (!centre_rayon(v[j],c3,R3,false,contextptr))
-	  setsizeerr();
+	  return gensizeerr(contextptr);
 	res=est_faisceau_cercle(c1,R1,c2,R2,remove_at_pnt(c3),R3,contextptr);
 	if (res==0) return 0; 
       }
@@ -10792,15 +14689,15 @@ namespace giac {
     }
     return symbolic(at_est_faisceau_cercle,args);
   }
-  const string _est_faisceau_cercle_s("is_harmonic_circle_bundle");
-  unary_function_eval __est_faisceau_cercle(&giac::_est_faisceau_cercle,_est_faisceau_cercle_s);
-  unary_function_ptr at_est_faisceau_cercle (&__est_faisceau_cercle,0,true);
+  static const char _est_faisceau_cercle_s []="is_harmonic_circle_bundle";
+  static define_unary_function_eval (__est_faisceau_cercle,&giac::_est_faisceau_cercle,_est_faisceau_cercle_s);
+  define_unary_function_ptr5( at_est_faisceau_cercle ,alias_at_est_faisceau_cercle,&__est_faisceau_cercle,0,true);
   
   //renvoie 1 si les 2 droites sont confondues,2 si elles sont// 
   //et 0 sinon
-  int est_confondu_droite(const gen & a,const gen & b,GIAC_CONTEXT){
+  static int est_confondu_droite(const gen & a,const gen & b,GIAC_CONTEXT){
     gen d(im((a[0]-a[1])*conj(b[0]-b[1],contextptr),contextptr));
-    if (is_zero(simplify(d,contextptr))) {
+    if (is_zero(simplify(d,contextptr),contextptr)) {
       if (est_element(b[0],_droite(a,contextptr),contextptr))
 	return 1;
       else return 2;
@@ -10812,17 +14709,17 @@ namespace giac {
   int est_faisceau_droite(const gen & a,const gen & b,const gen & c,GIAC_CONTEXT){
     gen d(simplify(im((a[0]-a[1])*conj(b[0]-b[1],contextptr),contextptr),contextptr));
     gen e(simplify(im((a[0]-a[1])*conj(c[0]-c[1],contextptr),contextptr),contextptr));
-    if (is_zero(d)) {
-      if (is_zero(e))
+    if (is_zero(d,contextptr)) {
+      if (is_zero(e,contextptr))
 	return 2;
       else return 0;
     }
-    if (is_zero(e))
+    if (is_zero(e,contextptr))
       return 0;
     //les 3 droites ne sont pas paralleles
     gen v=inter(_droite(a,contextptr),_droite(b,contextptr),0);
     //gen w =inter(_droite(a,contextptr),_droite(c,contextptr),0);
-    if (est_element(v[0],_droite(c,contextptr),contextptr))
+    if (v.type==_VECT && !v._VECTptr->empty() && est_element(v[0],_droite(c,contextptr),contextptr))
       return 1;
     else return 0;
   }
@@ -10833,32 +14730,33 @@ namespace giac {
   //renvoie 1 si les droites sont concourantes en 1 meme point
   //renvoie 0 sinon
   gen _est_faisceau_droite(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     gen a;
     if (args.type!=_VECT){
       a=remove_at_pnt(args);
       if ((a.type!=_VECT) || (a._VECTptr->size()!=2))
-	setsizeerr();
+	return gensizeerr(contextptr);
       return 3; 
     }
-     int s=args._VECTptr->size();
-     vecteur v(*args._VECTptr);
-     if (s==1) {
-	a=remove_at_pnt(v[0]);
-	if (a.type==_VECT)
-	  setsizeerr();
-	return 3;
-      } 
-     if (s>=2){
+    int s=int(args._VECTptr->size());
+    vecteur v(*args._VECTptr);
+    if (s==1) {
+      a=remove_at_pnt(v[0]);
+      if (a.type==_VECT)
+	return gensizeerr(contextptr);
+      return 3;
+    } 
+    if (s>=2){
       a=remove_at_pnt(v[0]);
       gen b=remove_at_pnt(v[1]);
       if ((a.type!=_VECT) || (a._VECTptr->size()!=2) || (b.type!=_VECT) || (b._VECTptr->size()!=2))
-	setsizeerr(); 
+	return gensizeerr(contextptr); 
       int i=2;
       int res;
       while (est_confondu_droite(a,b,contextptr) && i<s){
 	b=remove_at_pnt(v[i]);
 	if ((b.type!=_VECT) || (b._VECTptr->size()!=2))
-	  setsizeerr(); 
+	  return gensizeerr(contextptr); 
 	i=i+1;
       }
       if (i==s){
@@ -10870,29 +14768,32 @@ namespace giac {
       for (int j=i;j<s;j++){
 	gen c=remove_at_pnt(v[j]);
 	if ((c.type!=_VECT) || (c._VECTptr->size()!=2)) 
-	  setsizeerr();
-       res=est_faisceau_droite(a,b,c,contextptr);
-       if (res==0) return 0; 
+	  return gensizeerr(contextptr);
+	res=est_faisceau_droite(a,b,c,contextptr);
+	if (res==0) return 0; 
       }
-	return res;
-      }
-      return symbolic(at_est_faisceau_droite,args);
+      return res;
+    }
+    return symbolic(at_est_faisceau_droite,args);
   }
-  const string _est_faisceau_droite_s("is_harmonic_line_bundle");
-  unary_function_eval __est_faisceau_droite(&giac::_est_faisceau_droite,_est_faisceau_droite_s);
-  unary_function_ptr at_est_faisceau_droite (&__est_faisceau_droite,0,true);
+  static const char _est_faisceau_droite_s []="is_harmonic_line_bundle";
+  static define_unary_function_eval (__est_faisceau_droite,&giac::_est_faisceau_droite,_est_faisceau_droite_s);
+  define_unary_function_ptr5( at_est_faisceau_droite ,alias_at_est_faisceau_droite,&__est_faisceau_droite,0,true);
 
   //div_harmonique(A,B,C,D) remplit D tel que (A,B,C,D)=-1 
   //div_harmonique(D1,D2,A,D) remplit D tel que (D1,D2,A,D)=-1 
   //div_harmonique(D1,D2,D3,D) remplit D tel que (D1,D2,D3,D)=-1
   //et dessine les 4 points ou les 3 droites + le point ou les 4 droites
   gen _div_harmonique(const gen & args,GIAC_CONTEXT){
-    if ( (args.type!=_VECT) || (args._VECTptr->size()<4))
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    if ( (args.type!=_VECT) || (args._VECTptr->size()<3))
       return symbolic(at_div_harmonique,args);
     vecteur v(*args._VECTptr);
     gen d;
-    gen v0=eval(v[0],contextptr),v1=eval(v[1],contextptr),v2=eval(v[2],contextptr);      
-    d=_conj_harmonique(makevecteur(v0,v1,v2),contextptr); 
+    gen v0=eval(v[0],contextptr),v1=eval(v[1],contextptr),v2=eval(v[2],contextptr);
+    d=_conj_harmonique(makesequence(v0,v1,v2),contextptr); 
+    if (v.size()==3 || is_undef(d)) 
+      return d;
     if (v0.is_symb_of_sommet(at_pnt))
       v0=symb_pnt(v0,default_color(contextptr),contextptr);
     if (v1.is_symb_of_sommet(at_pnt))
@@ -10902,17 +14803,18 @@ namespace giac {
     vecteur w=makevecteur(v0,v1,v2);
     w.push_back(eval(symb_sto(d,v[3]),contextptr));
     return gen(w,_GROUP__VECT);
-    setsizeerr("div-harmonique)");
+    // return gensizeerr(gettext("div_harmonique)"));
   }
-  const string _div_harmonique_s("harmonic_division");
-  unary_function_eval __div_harmonique(&giac::_div_harmonique,_div_harmonique_s);
-  unary_function_ptr at_div_harmonique (&__div_harmonique,_QUOTE_ARGUMENTS,true);
+  static const char _div_harmonique_s []="harmonic_division";
+  static define_unary_function_eval_quoted (__div_harmonique,&giac::_div_harmonique,_div_harmonique_s);
+  define_unary_function_ptr5( at_div_harmonique ,alias_at_div_harmonique,&__div_harmonique,_QUOTE_ARGUMENTS,true);
 
-    //enveloppe(y+x*tan(t)-2*sin(t),t)
-    //enveloppe(y+x*tan(t)-2*sin(t),[t])
-    //enveloppe(y+x*tan(t)-2*sin(t),[x,y,t])
+  //enveloppe(y+x*tan(t)-2*sin(t),t)
+  //enveloppe(y+x*tan(t)-2*sin(t),[t])
+  //enveloppe(y+x*tan(t)-2*sin(t),[x,y,t])
  
   gen _enveloppe(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if ( (args.type!=_VECT) || (args._VECTptr->size()<2))
       return symbolic(at_enveloppe,args);
     vecteur vargs(*args._VECTptr);
@@ -10924,34 +14826,36 @@ namespace giac {
     if (var.type!=_VECT){
       tvar=var;
       xvar=vx_var;
-      yvar=y__IDNT_e;;
+      yvar=y__IDNT_e;
     } else
       if (var._VECTptr->size()==1) {
 	tvar=var[0];
 	xvar=vx_var;
-	yvar=y__IDNT_e;;
+	yvar=y__IDNT_e;
       } else
 	if (var._VECTptr->size()==3){
 	  xvar=var[0];
 	  if (xvar.type!=_IDNT)
-	    settypeerr();
+	    return gentypeerr(contextptr);
 	  yvar=var[1];
 	  if (yvar.type!=_IDNT)
-	    settypeerr();
+	    return gentypeerr(contextptr);
 	  tvar=var[2];
 	} else {
-	  setsizeerr("enveloppe");
+	  return gensizeerr(gettext("enveloppe"));
 	}
     gen T;
     double tmin,tmax;
     readrange(tvar,gnuplot_tmin,gnuplot_tmax,T,tmin,tmax,contextptr);
     gen equder=derive(equ,T,contextptr);
+    if (is_undef(equder))
+      return equder;
     gen sol;
     sol=solve(makevecteur(equ,equder),makevecteur(xvar,yvar),0,contextptr);
     if (sol.type==_VECT){
       vecteur & v = *sol._VECTptr;
       vecteur res;
-      int s=v.size();
+      int s=int(v.size());
       for (int i=0;i<s;++i){
 	gen tmp=v[i];
 	if (tmp.type==_VECT && tmp._VECTptr->size()==2){
@@ -10969,14 +14873,15 @@ namespace giac {
       return res; // gen(res,_SEQ__VECT);
     }
     return sol;
- }
+  }
     
-  const string _enveloppe_s("envelope");
-  unary_function_eval __enveloppe(&giac::_enveloppe,_enveloppe_s);
-  unary_function_ptr at_enveloppe (&__enveloppe,0,true);
+  static const char _enveloppe_s []="envelope";
+  static define_unary_function_eval (__enveloppe,&giac::_enveloppe,_enveloppe_s);
+  define_unary_function_ptr5( at_enveloppe ,alias_at_enveloppe,&__enveloppe,0,true);
 
-  gen _gnuplot(const gen & args,GIAC_CONTEXT){
 #ifdef WITH_GNUPLOT
+  gen _gnuplot(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     vecteur v(gen2vecteur(args));
     int s=v.size();
     bool clrplot;
@@ -10988,50 +14893,51 @@ namespace giac {
     }
     win9x_gnuplot(stream);
     return 1;
-#else
-    return zero;
-#endif
   }
-  const string _gnuplot_s("gnuplot");
-  unary_function_eval __gnuplot(&giac::_gnuplot,_gnuplot_s);
-  unary_function_ptr at_gnuplot (&__gnuplot,0,true);
+  static const char _gnuplot_s []="gnuplot";
+  static define_unary_function_eval (__gnuplot,&giac::_gnuplot,_gnuplot_s);
+  define_unary_function_ptr5( at_gnuplot ,alias_at_gnuplot,&__gnuplot,0,true);
+#endif
 
   // 3-d functions that must be declared in plot.cc for plot_sommets definition
 
   // args=normal,point
   gen _hyperplan(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type!=_VECT || args._VECTptr->size()!=2)
-      setsizeerr();
+      return gensizeerr(contextptr);
     return symbolic(at_hyperplan,args);
   }
-  const string _hyperplan_s("hyperplan");
-  unary_function_eval __hyperplan(&giac::_hyperplan,_hyperplan_s);
-  unary_function_ptr at_hyperplan (&__hyperplan,0,true);
+  static const char _hyperplan_s []="hyperplan";
+  static define_unary_function_eval (__hyperplan,&giac::_hyperplan,_hyperplan_s);
+  define_unary_function_ptr5( at_hyperplan ,alias_at_hyperplan,&__hyperplan,0,true);
 
   // args=center,radius
   gen _hypersphere(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type!=_VECT || args._VECTptr->size()<2)
-      setsizeerr();
+      return gensizeerr(contextptr);
     return symbolic(at_hypersphere,args);
   }
-  const string _hypersphere_s("hypersphere");
-  unary_function_eval __hypersphere(&giac::_hypersphere,_hypersphere_s);
-  unary_function_ptr at_hypersphere (&__hypersphere,0,true);
+  static const char _hypersphere_s []="hypersphere";
+  static define_unary_function_eval (__hypersphere,&giac::_hypersphere,_hypersphere_s);
+  define_unary_function_ptr5( at_hypersphere ,alias_at_hypersphere,&__hypersphere,0,true);
 
   gen hypersurface(const gen & args,const gen & equation,const gen & vars){
-    return _hypersurface(gen(makevecteur(args,equation,vars),_GROUP__VECT));
+    return _hypersurface(gen(makevecteur(args,equation,vars),_GROUP__VECT),context0);
   }
   // Format of an hypersurface is
   // pnt_vect[ [parametric_point],[var1,var2],[min1,min2],[max1,max2],values ]
   // or pnt_vect[ undef,[x,y,z],[xmin,ymin,zmin], [xmax,ymax,zmax], values ]
   // cartesian equation
   // variables
-  gen _hypersurface(const gen & args){
+  gen _hypersurface(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     return symbolic(at_hypersurface,args);
   }
-  const string _hypersurface_s("hypersurface");
-  unary_function_unary __hypersurface(&giac::_hypersurface,_hypersurface_s);
-  unary_function_ptr at_hypersurface (&__hypersurface,0,true);
+  static const char _hypersurface_s []="hypersurface";
+  static define_unary_function_eval (__hypersurface,&giac::_hypersurface,_hypersurface_s);
+  define_unary_function_ptr5( at_hypersurface ,alias_at_hypersurface,&__hypersurface,0,true);
 
   // 0 text, 2 2d, 3 3d
   int graph_output_type(const giac::gen & g){
@@ -11045,19 +14951,20 @@ namespace giac {
     return 0;
   }
 
-  gen _animation(const gen & args){
+  gen _animation(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     return symbolic(at_animation,args);
   }
-  const string _animation_s("animation");
-  unary_function_unary __animation(&giac::_animation,_animation_s);
-  unary_function_ptr at_animation (&__animation,0,true);
+  static const char _animation_s []="animation";
+  static define_unary_function_eval (__animation,&giac::_animation,_animation_s);
+  define_unary_function_ptr5( at_animation ,alias_at_animation,&__animation,0,true);
 
   gen get_animation_pnt(const gen & g,int pos){
     gen & f =g._SYMBptr->feuille;
     gen fi=f;
     if (f.type==_VECT){
       vecteur v=*f._VECTptr;
-      int s=v.size();
+      int s=int(v.size());
       if (s){
 	if (v[0].type==_INT_){
 	  int n=absint(v[0].val);
@@ -11067,7 +14974,7 @@ namespace giac {
 	  if (s==2){ 
 	    if (v[1].type==_VECT){
 	      v=*v[1]._VECTptr;
-	      s=v.size();
+	      s=int(v.size());
 	    }
 	  }
 	  else {
@@ -11089,7 +14996,7 @@ namespace giac {
       gen & f =g._SYMBptr->feuille;
       if (f.type!=_VECT)
 	return 1;
-      return f._VECTptr->size();
+      return int(f._VECTptr->size());
     }
     if (g.type!=_VECT)
       return 0;
@@ -11103,12 +15010,309 @@ namespace giac {
     return res;
   }
 
-  unary_function_ptr plot_sommets[]={at_pnt,at_parameter,at_cercle,at_curve,at_animation,0};
-  unary_function_ptr not_point_sommets[]={at_cercle,at_curve,at_hyperplan,at_hypersphere,at_hypersurface,0};
-  unary_function_ptr notexprint_plot_sommets[]={at_funcplot,at_paramplot,at_polarplot,at_implicitplot,at_contourplot,at_odeplot,at_interactive_odeplot,at_fieldplot,at_seqplot,at_ellipse,at_hyperbole,at_parabole,0};
-  unary_function_ptr implicittex_plot_sommets[]={at_plot,at_plot3d,at_plotfunc,at_plotparam,at_plotpolar,at_plotimplicit,at_plotcontour,at_DrawInv,at_DrawFunc,at_DrawParm,at_DrawPol,at_DrwCtour,at_plotode,at_plotfield,at_interactive_plotode,at_plotseq,at_Graph,0};
-  unary_function_ptr point_sommet_tab_op[]={at_point,at_element,at_inter_unique,at_centre,at_isobarycentre,at_barycentre,0};
+  // 2-d unit_vector
+  gen _Ox_2d_unit_vector(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    vecteur v=makevecteur(_point(makevecteur(0,0),contextptr),_point(makevecteur(1,0),contextptr));
+    if (args.type==_VECT)
+      v=mergevecteur(v,*args._VECTptr);
+    else
+      v.push_back(args);
+    return _vector(gen(v,_SEQ__VECT),contextptr);
+  }
+  static const char _Ox_2d_unit_vector_s []="Ox_2d_unit_vector";
+  static define_unary_function_eval (__Ox_2d_unit_vector,&giac::_Ox_2d_unit_vector,_Ox_2d_unit_vector_s);
+  define_unary_function_ptr5( at_Ox_2d_unit_vector ,alias_at_Ox_2d_unit_vector,&__Ox_2d_unit_vector,0,true);
 
+  // 2-d unit_vector
+  gen _Oy_2d_unit_vector(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    vecteur v=makevecteur(_point(makevecteur(0,0),contextptr),_point(makevecteur(0,1),contextptr));
+    if (args.type==_VECT)
+      v=mergevecteur(v,*args._VECTptr);
+    else
+      v.push_back(args);
+    return _vector(gen(v,_SEQ__VECT),contextptr);
+  }
+  static const char _Oy_2d_unit_vector_s []="Oy_2d_unit_vector";
+  static define_unary_function_eval (__Oy_2d_unit_vector,&giac::_Oy_2d_unit_vector,_Oy_2d_unit_vector_s);
+  define_unary_function_ptr5( at_Oy_2d_unit_vector ,alias_at_Oy_2d_unit_vector,&__Oy_2d_unit_vector,0,true);
+
+  // 2-d frame
+  gen _frame_2d(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    vecteur v=makevecteur(_point(makevecteur(0,0),contextptr),_point(makevecteur(1,0),contextptr));
+    if (args.type==_VECT)
+      v=mergevecteur(v,*args._VECTptr);
+    else
+      v.push_back(args);
+    vecteur res(1,_vector(gen(v,_SEQ__VECT),contextptr));
+    v=makevecteur(_point(makevecteur(0,0),contextptr),_point(makevecteur(0,1),contextptr));
+    if (args.type==_VECT)
+      v=mergevecteur(v,*args._VECTptr);
+    else
+      v.push_back(args);
+    res.push_back(_vector(gen(v,_SEQ__VECT),contextptr));
+    return gen(res,_SEQ__VECT);
+  }
+  static const char _frame_2d_s []="frame_2d";
+  static define_unary_function_eval (__frame_2d,&giac::_frame_2d,_frame_2d_s);
+  define_unary_function_ptr5( at_frame_2d ,alias_at_frame_2d,&__frame_2d,0,true);
+
+  // 3-d unit_vector
+  gen _Ox_3d_unit_vector(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    vecteur v=makevecteur(_point(makevecteur(0,0,0),contextptr),_point(makevecteur(1,0,0),contextptr));
+    if (args.type==_VECT)
+      v=mergevecteur(v,*args._VECTptr);
+    else
+      v.push_back(args);
+    return _vector(gen(v,_SEQ__VECT),contextptr);
+  }
+  static const char _Ox_3d_unit_vector_s []="Ox_3d_unit_vector";
+  static define_unary_function_eval (__Ox_3d_unit_vector,&giac::_Ox_3d_unit_vector,_Ox_3d_unit_vector_s);
+  define_unary_function_ptr5( at_Ox_3d_unit_vector ,alias_at_Ox_3d_unit_vector,&__Ox_3d_unit_vector,0,true);
+
+  // 3-d unit_vector
+  gen _Oy_3d_unit_vector(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    vecteur v=makevecteur(_point(makevecteur(0,0,0),contextptr),_point(makevecteur(0,1,0),contextptr));
+    if (args.type==_VECT)
+      v=mergevecteur(v,*args._VECTptr);
+    else
+      v.push_back(args);
+    return _vector(gen(v,_SEQ__VECT),contextptr);
+  }
+  static const char _Oy_3d_unit_vector_s []="Oy_3d_unit_vector";
+  static define_unary_function_eval (__Oy_3d_unit_vector,&giac::_Oy_3d_unit_vector,_Oy_3d_unit_vector_s);
+  define_unary_function_ptr5( at_Oy_3d_unit_vector ,alias_at_Oy_3d_unit_vector,&__Oy_3d_unit_vector,0,true);
+
+  // 3-d unit_vector
+  gen _Oz_3d_unit_vector(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    vecteur v=makevecteur(_point(makevecteur(0,0,0),contextptr),_point(makevecteur(0,0,1),contextptr));
+    if (args.type==_VECT)
+      v=mergevecteur(v,*args._VECTptr);
+    else
+      v.push_back(args);
+    return _vector(gen(v,_SEQ__VECT),contextptr);
+  }
+  static const char _Oz_3d_unit_vector_s []="Oz_3d_unit_vector";
+  static define_unary_function_eval (__Oz_3d_unit_vector,&giac::_Oz_3d_unit_vector,_Oz_3d_unit_vector_s);
+  define_unary_function_ptr5( at_Oz_3d_unit_vector ,alias_at_Oz_3d_unit_vector,&__Oz_3d_unit_vector,0,true);
+
+  // 3-d frame
+  gen _frame_3d(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    vecteur v=makevecteur(_point(makevecteur(0,0,0),contextptr),_point(makevecteur(1,0,0),contextptr));
+    vecteur res(1,_demi_droite(gen(v,_SEQ__VECT),contextptr));
+    v.push_back(symb_equal(at_display,131073));
+    v.push_back(symb_equal(at_legende,string2gen("x",false)));
+    res.push_back(_vector(gen(v,_SEQ__VECT),contextptr));
+    v=makevecteur(_point(makevecteur(0,0,0),contextptr),_point(makevecteur(0,1,0),contextptr));
+    res.push_back(_demi_droite(gen(v,_SEQ__VECT),contextptr));
+    v.push_back(symb_equal(at_display,131074));
+    v.push_back(symb_equal(at_legende,string2gen("y",false)));
+    res.push_back(_vector(gen(v,_SEQ__VECT),contextptr));
+    v=makevecteur(_point(makevecteur(0,0,0),contextptr),_point(makevecteur(0,0,1),contextptr));
+    res.push_back(_demi_droite(gen(v,_SEQ__VECT),contextptr));
+    v.push_back(symb_equal(at_display,131076));
+    v.push_back(symb_equal(at_legende,string2gen("z",false)));
+    res.push_back(_vector(gen(v,_SEQ__VECT),contextptr));
+    return gen(res,_SEQ__VECT);
+  }
+  static const char _frame_3d_s []="frame_3d";
+  static define_unary_function_eval (__frame_3d,&giac::_frame_3d,_frame_3d_s);
+  define_unary_function_ptr5( at_frame_3d ,alias_at_frame_3d,&__frame_3d,0,true);
+
+  // moved from plot3d.cc for implicittex_plot_sommets_alias
+  gen _plot3d(const gen & g,const context * contextptr){
+    if ( g.type==_STRNG && g.subtype==-1) return  g;
+    if (g.type!=_VECT || g._VECTptr->size()<2)
+      return symbolic(at_plot3d,g);
+    vecteur v=*g._VECTptr;
+    if (v.size()<3)
+      v.push_back(v__IDNT_e);
+    vecteur attributs(1,default_color(contextptr));
+    int s=read_attributs(v,attributs,contextptr);
+    if (s<3)
+      return gendimerr(contextptr);
+    v=vecteur(v.begin(),v.begin()+s);
+    if (v[0].type==_VECT){
+      if (v[0]._VECTptr->size()!=3)
+	return gendimerr(contextptr);
+      double tmin,tmax,smin,smax;
+      if (v[1].is_symb_of_sommet(at_interval)){
+	if (!chk_double_interval(v[1],tmin,tmax,contextptr) || !chk_double_interval(v[2],smin,smax,contextptr))
+	  return gensizeerr(contextptr);
+	vecteur vars(makevecteur(s__IDNT_e,t__IDNT_e));
+	return plotparam3d(v[0](gen(vars,_SEQ__VECT),contextptr),vars,gnuplot_xmin,gnuplot_xmax,gnuplot_ymin,gnuplot_ymax,gnuplot_zmin,gnuplot_xmax,tmin,tmax,smin,smax,true,autoscale,attributs,gnuplot_tstep,gnuplot_tstep,undef,vecteur(0),contextptr);
+      }
+      else {
+	if (!readrange(v[1],gnuplot_tmin,gnuplot_tmax,v[1],tmin,tmax,contextptr) || !readrange(v[2],gnuplot_tmin,gnuplot_tmax,v[2],smin,smax,contextptr))
+	  return gensizeerr(contextptr);
+	return plotparam3d(v[0],makevecteur(v[1],v[2]),gnuplot_xmin,gnuplot_xmax,gnuplot_ymin,gnuplot_ymax,gnuplot_zmin,gnuplot_xmax,tmin,tmax,smin,smax,true,autoscale,attributs,gnuplot_tstep,gnuplot_tstep,undef,vecteur(0),contextptr);
+      }
+    }
+    else {
+      double xmin,xmax,ymin,ymax;
+      if (v[1].is_symb_of_sommet(at_interval)){
+	if (!chk_double_interval(v[1],xmin,xmax,contextptr) || !chk_double_interval(v[2],ymin,ymax,contextptr))
+	  return gensizeerr(contextptr);
+	gen vars(makevecteur(x__IDNT_e,y__IDNT_e),_SEQ__VECT);
+	return plotfunc(v[0](vars,contextptr),vars,attributs,false,xmin,xmax,ymin,ymax,gnuplot_zmin,gnuplot_zmax,gnuplot_pixels_per_eval,0,false,contextptr);
+      }
+      else {
+	if (!readrange(v[1],gnuplot_xmin,gnuplot_xmax,v[1],xmin,xmax,contextptr) || !readrange(v[2],gnuplot_ymin,gnuplot_ymax,v[2],ymin,ymax,contextptr))
+	  return gensizeerr(contextptr);
+	return plotfunc(v[0],makevecteur(v[1],v[2]),attributs,false,xmin,xmax,ymin,ymax,gnuplot_zmin,gnuplot_zmax,gnuplot_pixels_per_eval,0,false,contextptr);
+      }
+    }
+  }
+  static const char _plot3d_s []="plot3d";
+  static define_unary_function_eval (__plot3d,&_plot3d,_plot3d_s);
+  define_unary_function_ptr5( at_plot3d ,alias_at_plot3d,&__plot3d,0,true);
+
+  static const char _graphe3d_s []="graphe3d";
+  static define_unary_function_eval (__graphe3d,&_plot3d,_graphe3d_s);
+  define_unary_function_ptr5( at_graphe3d ,alias_at_graphe3d,&__graphe3d,0,true);
+
+  // moved from prog.cc, for nosplit_polygon_function_alias
+  gen _inter(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    vecteur attributs(1,default_color(contextptr));
+    vecteur v(seq2vecteur(args));
+    int s=read_attributs(v,attributs,contextptr);
+    if (s!=2 && s!=3)
+      return gendimerr(contextptr);
+    gen a=v[0],b=v[1];
+    vecteur ww=inter(a,b,contextptr); 
+    if (ww.size()==1 && ww.front().is_symb_of_sommet(at_inter)){
+      // try equations (for ggb)
+      if (a.is_symb_of_sommet(at_equal) ||b.is_symb_of_sommet(at_equal) ){
+	vecteur syst=makevecteur(remove_equal(a),remove_equal(b));
+	vecteur v=makevecteur(x__IDNT_e,y__IDNT_e);
+	vecteur sol=solve(syst,v,0,contextptr); 
+	iterateur it=sol.begin(),itend=sol.end();
+	for (;it!=itend;++it){
+	  *it=change_subtype(*it,_GGB__VECT);
+	}
+	return sol;
+      }
+      gen eq=a-b;
+      gen x=ggb_var(eq);
+      vecteur sol,res;
+#ifndef NO_STDEXCEPT
+      try {
+#endif
+	sol=solve(eq,*x._IDNTptr,0,contextptr); 
+	iterateur it=sol.begin(),itend=sol.end();
+	for (;it!=itend;++it){
+	  *it=gen(makevecteur(*it,normal(subst(a,x,*it,false,contextptr),contextptr)),_GGB__VECT);
+	}
+	return sol;
+#ifndef NO_STDEXCEPT
+      }
+      catch (std::runtime_error &){
+	return makevecteur(symbolic(at_inter,makesequence(a,b)));
+      }
+#endif
+    }
+    vecteur w=remove_multiples(ww);
+    if (s==3 && !w.empty()){
+      int ws=int(w.size());
+      a=w[0];
+      gen c=v[2];
+      gen d=distance2pp(a,c,contextptr);
+      for (int i=1;i<ws;++i){
+	gen dcur=distance2pp(w[i],c,contextptr);
+	if (is_strictly_greater(d,dcur,contextptr)){
+	  d=dcur;
+	  a=w[i];
+	}
+      }
+    }
+    else
+      a=gen(w,_GROUP__VECT);
+    return put_attributs(a,attributs,contextptr);
+  }
+  static const char _inter_s []="inter";
+  static define_unary_function_eval (__inter,&_inter,_inter_s);
+  define_unary_function_ptr5( at_inter ,alias_at_inter,&__inter,0,true);
+
+  gen _Bezier(const gen & args,GIAC_CONTEXT){
+    return symbolic(at_Bezier,args);
+  }
+  static const char _Bezier_s []="Bezier";
+  static define_unary_function_eval (__Bezier,&_Bezier,_Bezier_s);
+  define_unary_function_ptr5( at_Bezier ,alias_at_Bezier,&__Bezier,0,true);
+
+  gen _bezier(const gen & args,GIAC_CONTEXT){
+    if (is_undef(args)) return args;
+    vecteur v(gen2vecteur(args));
+    if (v.empty())
+      return gensizeerr(contextptr);
+    vecteur attributs(1,default_color(contextptr));
+    int s=read_attributs(v,attributs,contextptr);
+    bool parameq=false;
+    v=vecteur(v.begin(),v.begin()+s);
+    if (v.back().type==_FUNC){
+      parameq=true;
+      v.pop_back();
+    }
+    bool d3=false;
+    for (int i=0;i<s;++i){
+      if (!d3) d3=is3d(v[i]);
+      v[i]=remove_at_pnt(v[i]);
+    }
+    if (parameq){
+      gen peq=_parameq(gen(makevecteur(symbolic(at_Bezier,gen(v,_GROUP__VECT)),t__IDNT_e),_SEQ__VECT),contextptr);
+      if (d3)
+	return plotparam3d(peq,makevecteur(t__IDNT_e,v__IDNT_e),-1e300,1e300,-1e300,1e300,-1e300,1e300,0,1,0,1,false,true,attributs,0.01,0.01,undef,vecteur(0),contextptr);
+      return plotparam(peq,t__IDNT_e,attributs,false,-1e300,1e300,-1e300,1e300,0,1,0.01,undef,peq,contextptr);
+    }
+    return pnt_attrib(symbolic(at_Bezier,gen(v,_GROUP__VECT)),attributs,contextptr);
+  }
+  static const char _bezier_s []="bezier";
+  static define_unary_function_eval (__bezier,&_bezier,_bezier_s);
+  define_unary_function_ptr5( at_bezier ,alias_at_bezier,&__bezier,0,true);
+
+#if defined(GIAC_GENERIC_CONSTANTS) || (defined(VISUALC) && !defined(RTOS_THREADX)) || defined(__x86_64__)
+  unary_function_ptr plot_sommets[]={*at_pnt,*at_parameter,*at_cercle,*at_curve,*at_animation,0};
+  unary_function_ptr not_point_sommets[]={*at_cercle,*at_curve,*at_hyperplan,*at_hypersphere,*at_hypersurface,0};
+  unary_function_ptr notexprint_plot_sommets[]={*at_funcplot,*at_paramplot,*at_polarplot,*at_implicitplot,*at_contourplot,*at_odeplot,*at_interactive_odeplot,*at_fieldplot,*at_seqplot,*at_ellipse,*at_hyperbole,*at_parabole,0};
+  unary_function_ptr implicittex_plot_sommets[]={*at_plot,*at_plot3d,*at_plotfunc,*at_plotparam,*at_plotpolar,*at_plotimplicit,*at_plotcontour,*at_DrawInv,*at_DrawFunc,*at_DrawParm,*at_DrawPol,*at_DrwCtour,*at_plotode,*at_plotfield,*at_interactive_plotode,*at_plotseq,*at_Graph,0};
+  unary_function_ptr point_sommet_tab_op[]={*at_point,*at_element,*at_inter_unique,*at_centre,*at_isobarycentre,*at_barycentre,0};
+  unary_function_ptr nosplit_polygon_function[]={*at_inter_unique,*at_inter,*at_distanceat,*at_distanceatraw,*at_rotation,*at_projection,*at_symetrie,*at_polaire_reciproque,*at_areaat,*at_areaatraw,*at_perimeterat,*at_perimeteratraw,*at_slopeat,*at_slopeatraw,*at_tangent,*at_cercle,0}; 
+  unary_function_ptr measure_functions[]={*at_angleat,*at_angleatraw,*at_areaat,*at_areaatraw,*at_perimeterat,*at_perimeteratraw,*at_slopeat,*at_slopeatraw,*at_distanceat,*at_distanceatraw,0};
+  unary_function_ptr transformation_functions[]={*at_projection,*at_rotation,*at_translation,*at_homothetie,*at_similitude,*at_inversion,*at_symetrie,*at_polaire_reciproque,0};
+
+#else
+  const size_t plot_sommets_alias[]={(size_t)&__pnt,(size_t)&__parameter,(size_t)&__cercle,(size_t)&__curve,(size_t)&__animation,0};
+  const unary_function_ptr * const plot_sommets = (const unary_function_ptr *) plot_sommets_alias;
+
+  const size_t not_point_sommets_alias[]={(size_t)&__cercle,(size_t)&__curve,(size_t)&__hyperplan,(size_t)&__hypersphere,(size_t)&__hypersurface,0};
+  const unary_function_ptr * const not_point_sommets = (const unary_function_ptr *) plot_sommets_alias;
+
+  const size_t notexprint_plot_sommets_alias[]={(size_t)&__funcplot,(size_t)&__paramplot,(size_t)&__polarplot,(size_t)&__implicitplot,(size_t)&__contourplot,(size_t)&__odeplot,(size_t)&__interactive_odeplot,(size_t)&__fieldplot,(size_t)&__seqplot,(size_t)&__ellipse,(size_t)&__hyperbole,(size_t)&__parabole,0};
+  const unary_function_ptr * const notexprint_plot_sommets = (const unary_function_ptr *) notexprint_plot_sommets_alias;
+
+  const size_t implicittex_plot_sommets_alias[]={(size_t)&__plot,(size_t)&__plot3d,(size_t)&__plotfunc,(size_t)&__plotparam,(size_t)&__plotpolar,(size_t)&__plotimplicit,(size_t)&__plotcontour,(size_t)&__DrawInv,(size_t)&__DrawFunc,(size_t)&__DrawParm,(size_t)&__DrawPol,(size_t)&__DrwCtour,(size_t)&__plotode,(size_t)&__plotfield,(size_t)&__interactive_plotode,(size_t)&__plotseq,(size_t)&__Graph,0};
+  const unary_function_ptr * const implicittex_plot_sommets = (const unary_function_ptr *) implicittex_plot_sommets_alias;
+
+  const size_t point_sommet_tab_op_alias[]={(size_t)&__point,(size_t)&__element,(size_t)&__inter_unique,(size_t)&__centre,(size_t)&__isobarycentre,(size_t)&__barycentre,0};
+  const unary_function_ptr * const point_sommet_tab_op = (const unary_function_ptr *) point_sommet_tab_op_alias;
+
+  const size_t nosplit_polygon_function_alias[]={(size_t)&__inter_unique,(size_t)&__inter,(size_t)&__distanceatraw,(size_t)&__distanceat,(size_t)&__rotation,(size_t)&__projection,(size_t)&__symetrie,(size_t)&__polaire_reciproque,(size_t)&__areaat,(size_t)&__areaatraw,(size_t)&__perimeterat,(size_t)&__perimeteratraw,(size_t)&__slopeat,(size_t)&__slopeatraw,(size_t)&__tangent,(size_t)&__cercle,0};
+  const unary_function_ptr * const nosplit_polygon_function = (const unary_function_ptr *) nosplit_polygon_function_alias;
+
+  const size_t measure_functions_alias[]={(size_t)&__angleat,(size_t)&__angleatraw,(size_t)&__areaat,(size_t)&__areaatraw,(size_t)&__perimeterat,(size_t)&__perimeteratraw,(size_t)&__slopeat,(size_t)&__slopeatraw,(size_t)&__distanceat,(size_t)&__distanceatraw,0};
+  const unary_function_ptr * const measure_functions = (const unary_function_ptr *) measure_functions_alias;
+
+  const size_t transformation_functions_alias[]={(size_t)&__projection,(size_t)&__rotation,(size_t)&__translation,(size_t)&__homothetie,(size_t)&__similitude,(size_t)&__inversion,(size_t)&__symetrie,(size_t)&__polaire_reciproque,0};
+  const unary_function_ptr * const transformation_functions = (const unary_function_ptr *) transformation_functions_alias;
+#endif
 
 #ifndef NO_NAMESPACE_GIAC
 } // namespace giac

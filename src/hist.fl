@@ -1,80 +1,96 @@
 # data file for the Fltk User Interface Designer (fluid)
-version 1.0105 
+version 1.0300 
 i18n_type 1 
 i18n_include "giac/giacintl.h" 
 i18n_function gettext 
 header_name {.h} 
 code_name {.cxx}
-decl {\#include "Xcas1.h"} {public
+decl {\#include <algorithm>} {public local
 } 
 
-decl {\#include "Help1.h"} {public
+decl {\#include "Xcas1.h"} {public local
 } 
 
-decl {\#include <FL/fl_ask.H>} {public
+decl {\#include "Help1.h"} {public local
 } 
 
-decl {\#include <FL/Fl_Tooltip.H>} {public
+decl {\#include <FL/fl_ask.H>} {public local
 } 
 
-decl {\#include <FL/Fl_Bitmap.H>} {public
+decl {\#include <FL/Fl_Tooltip.H>} {public local
 } 
 
-decl {\#include <FL/fl_show_colormap.H>} {public
+decl {\#include <FL/Fl_Bitmap.H>} {public local
 } 
 
-decl {\#include <FL/gl.h>} {public
+decl {\#include <FL/fl_show_colormap.H>} {public local
 } 
 
-decl {\#include "Input.h"} {public
+decl {\#include <FL/gl.h>} {public local
 } 
 
-decl {\#include "Editeur.h"} {public
+decl {\#include "Input.h"} {public local
 } 
 
-decl {\#include "Equation.h"} {public
+decl {\#include "Editeur.h"} {public local
 } 
 
-decl {\#include "History.h"} {public
+decl {\#include "Equation.h"} {public local
 } 
 
-decl {\#include "Tableur.h"} {public
+decl {\#include "History.h"} {public local
 } 
 
-decl {\#include "Cfg.h"} {public
+decl {\#include "Tableur.h"} {public local
 } 
 
-decl {\#include <giac/giac.h>} {public
+decl {\#include "Cfg.h"} {public local
 } 
 
-decl {\#include <giac/misc.h>} {public
+decl {\#include <giac/giac.h>} {public local
+} 
+
+decl {\#include <giac/misc.h>} {public local
 } 
 
 declblock {\#ifdef FL_DEVICE} {open after {\#endif}
 } {
-  decl {\#include <FL/Fl_Printer.H>} {}
+  decl {\#include <FL/Fl_Printer.H>} {private local
+  }
 } 
 
-decl {/* */ namespace xcas { extern int printer_format; extern bool printer_landscape; void widget_ps_print(Fl_Widget * widget,const std::string & fname,bool eps,int pngpdf,bool preview); void widget_print(Fl_Widget * widget);}} {} 
+decl {/* */ namespace xcas { extern int printer_format; extern bool printer_landscape; void widget_ps_print(Fl_Widget * widget,const std::string & fname,bool eps,int pngpdf,bool preview,bool,bool ); void widget_print(Fl_Widget * widget);}} {private local
+} 
 
 declblock {\#ifdef HAVE_MALLOC_H} {open after {\#endif}
 } {
-  decl {\#include <malloc.h>} {}
+  decl {\#include <malloc.h>} {private local
+  }
 } 
 
-decl {char ** xcas_argv;} {} 
+decl {char ** xcas_argv;} {private local
+} 
 
-decl {int xcas_argc,xcas_user_level;} {} 
+decl {int xcas_argc,xcas_user_level,update_xcas=0;} {private local
+} 
 
-decl {giac::vecteur rpn_menu;} {} 
+decl {xcas::objet_bidon mon_objet_bidon;} {private local
+} 
 
-decl {giac::vecteur rpn_description;} {} 
+decl {giac::vecteur rpn_menu;} {private local
+} 
 
-decl {unsigned rpn_menu_page;} {} 
+decl {giac::vecteur rpn_description;} {private local
+} 
 
-decl {std::string rpn_menu_string[6],rpnn_menu_string[5],doc_prefix("doc/fr/"); bool rpn_menu_is_directory[6];} {} 
+decl {unsigned rpn_menu_page;} {private local
+} 
 
-decl {giac::vecteur home_menu, rpnn_menu[5];} {} 
+decl {std::string rpn_menu_string[6],rpnn_menu_string[5],doc_prefix("doc/fr/"); bool rpn_menu_is_directory[6];} {private local
+} 
+
+decl {giac::vecteur home_menu, rpnn_menu[5];} {private local
+} 
 
 Function {Xcas_alt_ctrl_cb(int i)} {return_type void
 } {
@@ -179,31 +195,39 @@ Function {latex_save_DispG(const char * filename)} {return_type void
 
 Function {a_propos()} {return_type void
 } {
-  code {std::string s("xcas "); s+=VERSION; s+=" (c) 2000-8, Bernard Parisse, Renee De Graeve\\n";
-  s += "http://www-fourier.ujf-grenoble.fr/~parisse/giac.html, ftp://ftp-fourier.ujf-grenoble.fr/xcas\\n";
-  s += "If you like xcas, please link your webpage to the above link to help other find it\\n";
+  code {std::string s("xcas "); s+=VERSION; s+=" (c) 2000-14, Bernard Parisse, Renee De Graeve\\n";
+  s += "http://www-fourier.ujf-grenoble.fr/~parisse/giac.html\\n";
+  s += "If you like Xcas, please link your webpage to the above link to help other find it\\n";
   s += "Software licensed under the GPL, General Public License version 3.0 or later\\nSee the file COPYING in this package for more details\\nOr browse http://www.gnu.org\\n";
   s += "French documentation (c) Renee de Graeve\\n";
   s += "This documentation is freely redistribuable for non commercial purpose\\n";
-  s += "Math ML support, xcas online: Jean-Pierre Branchard\\n";
-  s += "Java interface: Loic Le Coq\\n";
+  s += "Math ML support, Xcas online: Jean-Pierre Branchard\\n";
   s += "OpenOffice interface: Christophe Devalland, Serge Moutou\\n";
+  s += "Qcas interface: Loic Le Coq, Frederic Han\\n";
+  s += "Androcas interface: Thomas Luka\\n";
+  s += "SmartCAS interface: Nicolas Pujol\\n";
   s += "Tutorial (dxcas) with B. Ycart\\n";
-  s += "Spanish localization, J. Manrique Lopez\\n";
+  s += "Greek localization, Alkiviadis Akritas, Eugenia Kelepesi-Akritas, George Nasopoulos, Nikos Larisis\\n";
+  s += "Spanish localization, Xavier Vidaux, J. Manrique Lopez\\n";
   s += "Debian package: Carlos Enrique Carleos Artime\\n";
   s += "Mac OS X port thanks to Jean-Yves Avenard and IREM Grenoble\\n";
   s += "Tablor by Guillaume Connan, Pgiac by Jean-Michel Sarlat\\n";
-  s += "FreeBSD port and agreg tests by Frederic Han\\n";
+  s += "FreeBSD port, sage interface and agreg tests by Frederic Han\\n";
   s += "Windows port suggestions and tests by Mike Ady\\n";
+  s += "Thanks to the geogebra team, especially Zoltán Kovács, Michael Borcherds, Markus Hohenwater, Zbyněk Konečný\\n";
   s += "Xcas early testers: Christiane Serret (lycée de Crest),\\nMichèle Gandit (lycée international de Grenoble)\\nStephane Lejoly, Jean-Joel Bataille, Jean-Eric Visca, Thierry Xuereb\\nPaul Magnien, Denis Le Fur, Phil Pham\\nSébastien Celles, Gérard Vinel, Robert Rolland, Robert Sétif\\nJuan Antonio Martinez Rojas, Nicolas Rosillo (Spain)\\n";
   s += "Francois Maltey (Mupacs)\\nFrederic Faure, Emilien Kia, Andreas Thillosen (giac)\\n";
   s += "Francois Boisson (grace a lui xcas est utilisable a l'agregation de maths)\\n";
+  s += "Luc Briel, Georges Dubouloz, Emmanuel Gaunard, Laurent Hofer, Yvan Duron, Martin Deraux (bugs, suggestions)...\\n";
   s += "Uses GMP, (c) T. Granlund & al.\\n";
 \#ifdef HAVE_LIBMPFR
-  s += "Longfloat support by MPFR, G. Hanrot, P. Zimmermann, V. Lefevre & al. \\n";
+  s += "Longfloat support by MPFR, Guillaume Hanrot, Vincent Lefèvre, Patrick Pélissier, Philippe Théveny and Paul Zimmermann \\n";
+\#endif //
+\#ifdef HAVE_LIBMPFI
+  s += "Arithmetic interval support by MPFI, Fabrice Rouillier, Nathalie Revol, Sylvain Chevillard, Hong Diep Nguyen, Christoph Lauter and Philippe Théveny \\n";
 \#endif //
 \#ifdef HAVE_LIBCOCOA
-  s += "Groebner Basis F5 code by CoCoA, J. Abbott & al. \\n";
+  s += "Alternative Groebner Basis code by CoCoA, J. Abbott & al. \\n";
 \#endif
   s += "Interface using FLTK (c) Bill Spitzak et al\\n";
   s += "FLVW code (c)Larry Charlton and others\\n";
@@ -211,6 +235,10 @@ Function {a_propos()} {return_type void
 \#ifdef HAVE_LIBPARI
   s += "Contains PARI code (c) Henri Cohen & al.\\n";
 \#endif //
+\#ifdef HAVE_LIBLAPACK
+  s += "Contains LAPACK code (c) see http://www.netlib.org/lapack/\\n";
+  s += "Might also contain ATLAS code (c) see http://math-atlas.sourceforge.net/\\n";
+\#endif 
 \#ifdef HAVE_LIBGSL
   s += "Contains GSL code (c) Mark Galassi, James Theiler & al\\n";
 \#endif //
@@ -220,6 +248,7 @@ Function {a_propos()} {return_type void
   s += "Postscript output 2-d inspired by eukleides (c) Christian Obrecht\\n";
   s += "3-d exports from gl2ps, (c) 1999-2006 Christophe Geuzaine\\n";
   s += "Implicitplot3d code derived from Paul Bourke and Cory Gene Bloyd\\n";
+  s += "TinyMT code from Mutsuo Saito and Makoto Matsumoto\\n";
   Xcas_parse_error_output->value(s.c_str());
   Fl::focus(Xcas_parse_error_output);} {}
 } 
@@ -228,7 +257,8 @@ Function {rpn_button(xcas::No_Focus_Button * wid,int i)} {return_type void
 } {
   code {unsigned si=rpn_menu_page*6+i;
   giac::gen e;
-  const giac::context * contextptr = xcas::get_context(Fl::focus());
+  if (!(xcas::Xcas_input_focus)) return;
+  const giac::context * contextptr = xcas::get_context(xcas::Xcas_input_focus);
   if (rpn_menu.size()>si){
     e=rpn_menu[si];
     if ( (e.type==giac::_VECT) && (e._VECTptr->size()==2))
@@ -251,7 +281,7 @@ Function {rpn_button(xcas::No_Focus_Button * wid,int i)} {return_type void
   }
   catch (std::runtime_error & err) 
   { }
-  xcas::Equation * eqwptr=dynamic_cast<xcas::Equation *> (Fl::focus());
+  xcas::Equation * eqwptr=dynamic_cast<xcas::Equation *> (xcas::Xcas_input_focus);
   xcas::History_Pack * hp=get_history_pack(eqwptr);
   const giac::context * cptr=hp?hp->contextptr:0;
   if (eqwptr && e.is_symb_of_sommet(giac::at_program) ){
@@ -259,7 +289,7 @@ Function {rpn_button(xcas::No_Focus_Button * wid,int i)} {return_type void
      return;
   }
   if (e.type==giac::_FUNC){
-    xcas::help_output(e._FUNCptr->ptr->s,giac::language(contextptr));
+    xcas::help_output(e._FUNCptr->ptr()->s,giac::language(contextptr));
     if (eqwptr){
       eqwptr->parse_desactivate();
       if (eqwptr->output_equation){
@@ -270,14 +300,14 @@ Function {rpn_button(xcas::No_Focus_Button * wid,int i)} {return_type void
       return;
     }
     if (e.subtype)
-      xcas::in_Xcas_input_1arg(Fl::focus(),e._FUNCptr->ptr->s.c_str(),false);
+      xcas::in_Xcas_input_1arg(xcas::Xcas_input_focus,e._FUNCptr->ptr()->s,false);
     else
-      xcas::in_Xcas_input_1arg(Fl::focus(),(e._FUNCptr->ptr->s+" ").c_str(),false);
+      xcas::in_Xcas_input_1arg(xcas::Xcas_input_focus,(e._FUNCptr->ptr()->s+std::string(" ")).c_str(),false);
     return;
   } // end e.type==FUNC
   std::string s=e.print();
   if (!s.empty())
-    xcas::in_Xcas_input_char(Fl::focus(),s.c_str(),s[0]);} {}
+    xcas::in_Xcas_input_char(xcas::Xcas_input_focus,s.c_str(),s[0]);} {}
 } 
 
 Function {show_rpn_menu(unsigned i)} {return_type void
@@ -299,7 +329,7 @@ Function {show_rpn_menu(unsigned i)} {return_type void
       }
       else {
         if (e.type==giac::_FUNC)
-          s=e._FUNCptr->ptr->s;
+          s=e._FUNCptr->ptr()->s;
         else
           s=e.print();
         if (e.type==giac::_VECT)
@@ -377,13 +407,14 @@ Function {Xcas_change_labelsize(int i)} {return_type void
        Xcas_Script_Window->labelfont(Xcas_Main_Window_->labelfont());
        xcas::change_group_fontsize(Xcas_Script_Window,i);
     }
-    int n=xcas::styletable_n;
-    for (int k=0;k<n;++k)
-      xcas::styletable[k].size=i;
+    Fl_Menu_Bar * menu = dynamic_cast<Fl_Menu_Bar *>(Xcas_Main_Window_->child(0));
+    if (menu) 
+      menu->labelfont(Xcas_Main_Window_->labelfont());
+    xcas::change_group_fontsize(menu,i);
 //Xcas_History_font_output->value(giac::print_INT_(i).c_str());} {}
 } 
 
-Function {Xcas_widget_size(const giac::gen & g)} {return_type {giac::gen}
+Function {Xcas_widget_size(const giac::gen & g,const giac::context * cptr)} {return_type {giac::gen}
 } {
   code {int f=14,ff=0;
     int x=Xcas_Main_Window_->x(),y=Xcas_Main_Window_->y(),w=Xcas_Main_Window_->w(),h=Xcas_Main_Window_->h();
@@ -406,6 +437,14 @@ Function {Xcas_widget_size(const giac::gen & g)} {return_type {giac::gen}
 	 f=w[1].val;
         if (ws>1 && w[1].type==giac::_DOUBLE_)
 	 f=int(w[1]._DOUBLE_val);
+        if (ws>2 && w[2].type==giac::_INT_){
+         xcas::Flv_Table_Gen::def_rows=giac::absint(w[2].val);
+         Xcas_default_rows->value(giac::absint(w[2].val));
+        }
+        if (ws>3 && w[3].type==giac::_INT_){
+         xcas::Flv_Table_Gen::def_cols=giac::absint(w[3].val);
+         Xcas_default_cols->value(giac::absint(w[3].val));
+        }
       }
       if (s>1 && v[1].type==giac::_INT_)
 	x=v[1].val;
@@ -430,7 +469,12 @@ Function {Xcas_widget_size(const giac::gen & g)} {return_type {giac::gen}
       }
       if (s>6 && v[6].type==giac::_INT_){ // Arg 6 was used for number of windows, now for auto-help
         Xcas_automatic_help_browser->value(v[6].val % 2);
-        Xcas_automatic_completion_browser->value(v[6].val/2);
+        Xcas_automatic_completion_browser->value( (v[6].val/2) %2);
+        xcas::do_helpon=Xcas_automatic_completion_browser->value();
+        Xcas_tooltip_disabled->value( (v[6].val/4) %2);
+	Xcas_disable_try_parse_test_i->value(v[6].val/8);
+        Fl_Tooltip::enable(!Xcas_tooltip_disabled->value());
+        giac::try_parse_i(0)=giac::try_parse_i(xcas::get_context(xcas::Xcas_input_focus))=!Xcas_disable_try_parse_test_i->value();
       }
       if (s>7 && v[7].type==giac::_INT_){ // Arg 7 was used for showing bandeau
         if (v[7].val) Xcas_Messages->show(); else Xcas_Messages->hide();
@@ -454,6 +498,8 @@ Function {Xcas_widget_size(const giac::gen & g)} {return_type {giac::gen}
 	  xcas::Xcas_background_color=Fl_Color(int(w[10]._DOUBLE_val));
         xcas::set_colors(Xcas_Main_Window_);
       }
+      xcas::use_external_browser=false;
+      unsetenv("BROWSER");
       if (s>9 && v[9].type==giac::_STRNG){
 	std::string browser=*v[9]._STRNGptr;
 	if (browser.size()!=0 && browser!="builtin"){
@@ -462,15 +508,13 @@ Function {Xcas_widget_size(const giac::gen & g)} {return_type {giac::gen}
            xcas::use_external_browser=true;
 \#else
           if (!giac::check_file_path(browser))
-            fl_alert(("Error, browser "+browser+" not found").c_str());
+            fl_alert("%s",("Error, browser "+browser+" not found").c_str());
           else {
            setenv("BROWSER",browser.c_str(),1);
            xcas::use_external_browser=true;
           }
 \#endif
         }
-        else
-          xcas::use_external_browser=false;
       }
       if (s>10 ){ // User level
 	if (v[10].type==giac::_INT_)
@@ -483,20 +527,26 @@ Function {Xcas_widget_size(const giac::gen & g)} {return_type {giac::gen}
           case 1: ss=gettext("Program CAS"); break;
           case 2: ss=gettext("Spreadsheet"); break;
           case 3: ss=gettext("Geometry"); break;
-          case 8: ss=gettext("Tortue"); break;
+          case 8: ss=gettext("Turtle"); break;
         }
         Xcas_level_output->value(gettext(ss.c_str()));
       }
       if (s>11){ 
         if (v[11].type==giac::_INT_)
-          xcas::file_save_context=!v[11].val;
+          giac::step_infolevel(v[11].val,contextptr);
         if (v[11].type==giac::_DOUBLE_)
-          xcas::file_save_context=!v[12]._DOUBLE_val;
+          giac::step_infolevel(v[12]._DOUBLE_val,contextptr);
+        if (giac::step_infolevel(contextptr) && xcas::Xcas_DispG_Window) xcas::Xcas_DispG_Window->show();
       }     
       if (s>12 && v[12].type==giac::_STRNG){
 	std::string browser=*v[12]._STRNGptr;
 	if (browser.size()!=0)
 	  setenv("GIAC_PREVIEW",browser.c_str(),1);
+      }
+      if (s>13 && v[13].type==giac::_STRNG){
+	std::string browser=*v[13]._STRNGptr;
+	if (browser.size()!=0)
+	  setenv("http_proxy",browser.c_str(),1);
       }
     }
     else {
@@ -560,6 +610,9 @@ if (xcas_user_level==1){
 if (!w->pack->children()) 
   w->add_entry(-1);
 w->pack->clear_modified();
+std::cerr << Xcas_Main_Window_->labelfont() << std::endl;
+w->labelfont(Xcas_Main_Window_->labelfont());
+w->pack->labelfont(Xcas_Main_Window_->labelfont());
 xcas::change_group_fontsize(w,Xcas_Main_Window_->labelsize());
 Xcas_Main_Tab->add(w);
 Xcas_Main_Tab->value(Xcas_Main_Tab->child(Xcas_Main_Tab->children()-1));
@@ -584,6 +637,10 @@ if (!w->pack->insert_before(-1,true,mws)){
 }
 w->pack->clear_modified();
 w->pack->focus(0,true);
+std::cerr << Xcas_Main_Window_->labelfont() << std::endl;
+w->labelfont(Xcas_Main_Window_->labelfont());
+w->pack->labelfont(Xcas_Main_Window_->labelfont());
+xcas::add_recent_filename(*w->pack->url,true);
 xcas::change_group_fontsize(w,w->pack->labelsize());
 Xcas_Main_Tab->add(w);
 Xcas_Main_Tab->value(Xcas_Main_Tab->child(Xcas_Main_Tab->children()-1));
@@ -594,26 +651,8 @@ Xcas_Main_Tab->redraw();} {}
 Function {load_filename(const char * filename,bool modified)} {open
 } {
   code {Fl_Group * s = Xcas_Main_Tab;
-        Fl_Group::current(0);
-        xcas::History_Fold * w = new xcas::History_Fold(s->x()+2,s->y()+s->labelsize()+4,s->w()-4,s->h()-s->labelsize()-6,1);
-        w->end();
-        w->pack->contextptr = giac::clone_context(giac::context0);
-        w->pack->labelsize(s->labelsize());
-        w->pack->eval=xcas::Xcas_eval;
-        w->pack->_insert=xcas::Xcas_pack_insert;
-        w->pack->_select=xcas::Xcas_pack_select;  
-	w->pack->new_url(filename);
-        w->pack->insert_url(filename,-1);
-        w->labelfont(w->pack->labelfont());
-        xcas::change_group_fontsize(w,w->pack->labelsize());
-        if (!modified)
-          w->pack->clear_modified();
-        else {
-          w->autosave(true);  
-          if (w->pack->url){ delete w->pack->url; w->pack->url=0; }
-          w->label("Unnamed");
-        }
-        w->pack->focus(0,true);
+        xcas::History_Fold * w=xcas::load_history_fold(s->x()+2,s->y()+s->labelsize()+4,s->w()-4,s->h()-s->labelsize()-6,s->labelsize(),filename,modified);
+        // w->pack->focus(0,true);
         Xcas_Main_Tab->add(w); 
         Xcas_Main_Tab->value(Xcas_Main_Tab->child(Xcas_Main_Tab->children()-1));
         Xcas_resize_mainwindow();
@@ -663,23 +702,29 @@ Function {cb_Insert_Example(Fl_Widget * w , void*)} {} {
     }
     vfile.push_back(tmp);
     int i=1;
-    if (giac::is_file_available(vfile.front().c_str())){
-      i=fl_ask(("File "+std::string(m->text())+" exists. Overwrite?").c_str());
+    std::string filename=vfile.front();
+\#ifdef __APPLE__
+    std::string thepath="/tmp/";
+\#else
+    std::string thepath="";
+\#endif
+    if (giac::is_file_available((thepath+filename).c_str())){
+      i=fl_ask("%s",("File "+std::string(m->text())+" exists. Overwrite?").c_str());
     }
     if (i){
       ls=vfile.size();
       for (is=0;is<ls;++is){
         std::ifstream in((menu_buffer+vfile[is]).c_str());
-        std::ofstream out(vfile[is].c_str());
+        std::ofstream out((thepath+vfile[is]).c_str());
         i=xcas::stream_copy(in,out);
         in.close();
         out.close();
       }
     }
-    load_filename(vfile.front().c_str(),false);} {}
+    load_filename((thepath+filename).c_str(),false);} {}
 } 
 
-Function {cb_Insert_ItemName(Fl_Widget * w , void* ptr)} {} {
+Function {cb_Insert_ItemName(Fl_Widget * w , void*)} {} {
   code {static std::string menu_buffer;
     if (xcas::fl_handle_lock)
       return ;
@@ -689,7 +734,8 @@ Function {cb_Insert_ItemName(Fl_Widget * w , void* ptr)} {} {
     menu_buffer = m->text();
     int pos=menu_buffer.find(':');
     if (pos>0 && pos<menu_buffer.size()) menu_buffer=menu_buffer.substr(0,pos);
-    Fl_Widget * f = Fl::focus();
+    Fl_Widget * f = xcas::Xcas_input_focus;
+    if (!f) return;
     const giac::context * contextptr = xcas::get_context(f);
     giac::gen tmp(menu_buffer,contextptr);
     if (Xcas_automatic_help_browser->value())
@@ -712,9 +758,17 @@ Function {cb_Insert_ItemName(Fl_Widget * w , void* ptr)} {} {
     int remove;
     Fl_Widget * wid=f->window();
     if (!wid) wid=f;
-    if (Xcas_automatic_completion_browser->value())
-      xcas::handle_tab(menu_buffer,(*giac::vector_completions_ptr),2*wid->w()/3,2*wid->h()/3,remove,ans);
+    pos=menu_buffer.find('('); // detect a composite unit
+    if (menu_buffer.size()>1 && menu_buffer!="%0" && !(pos>0 && pos<menu_buffer.size()) && Xcas_automatic_completion_browser->value()){
+      if (!xcas::handle_tab(menu_buffer,(*giac::vector_completions_ptr()),2*wid->w()/3,2*wid->h()/3,remove,ans))
+       return;
+    }
     Fl::focus(f);
+      if (xcas::Xcas_Text_Editor * in =dynamic_cast<xcas::Xcas_Text_Editor *>(f)){
+	    in->buffer()->insert(in->insert_position(),ans.c_str());
+	    in->insert_position(in->insert_position()+ans.size());
+	  return;
+	}
     if (Fl_Input * in = dynamic_cast<Fl_Input *>(f))
       in->insert(ans.c_str());
     else {
@@ -735,14 +789,28 @@ Function {cb_Assistant_ItemName(Fl_Widget * wid , void* ptr)} {} {
     menu_buffer = m->text();
     int pos=menu_buffer.find(':');
     if (pos>0 && pos<menu_buffer.size()) menu_buffer=menu_buffer.substr(0,pos);
-    static std::string ans; 
+    static std::string ans;
+    ans = menu_buffer;
     int remove,ii;
-    Fl_Widget * w=Fl::focus();
+    Fl_Widget * w=xcas::Xcas_input_focus;
+    const giac::context * contextptr = xcas::get_context(w);
+    xcas::help_output(menu_buffer,giac::language(contextptr));
     Fl_Window * wd=wid->window();
-    if (
-	(ii=xcas::handle_tab(menu_buffer,(*giac::vector_completions_ptr),wd->w()/3,wd->h()/3,remove,ans)) ){ 
+    if (!Xcas_automatic_completion_browser->value())
+      ii=1;
+    else
+      ii=xcas::handle_tab(menu_buffer,(*giac::vector_completions_ptr()),wd->w()/3,wd->h()/3,remove,ans);
+    Fl::focus(w);
+    if (ii){ 
       if (ii==1)
 	ans = ans +"()";
+      if (xcas::Xcas_Text_Editor * in =dynamic_cast<xcas::Xcas_Text_Editor *>(w)){
+	  if (ii>=1){
+	    in->buffer()->insert(in->insert_position(),ans.c_str());
+	    in->insert_position(in->insert_position()+ans.size()-1);
+	  }
+	  return;
+	}
       Fl::e_text = (char * ) ans.c_str();
       Fl::e_length = ans.size();
       if (w){
@@ -751,36 +819,39 @@ Function {cb_Assistant_ItemName(Fl_Widget * wid , void* ptr)} {} {
 	  if (ii==1) in->position(in->position()-1);
 	}
       }
-    }} {}
+    }
+    else { if (w) w->redraw(); }} {}
 } 
 
 Function {load_autorecover_data()} {open
 } {
   code {\#ifdef WIN32
-    std::string configname=giac::xcasroot+giac::xcasrc;
+    std::string configname=giac::xcasroot()+giac::xcasrc();
 \#else
-    std::string configname=giac::home_directory()+giac::xcasrc;
+    std::string configname=giac::home_directory()+giac::xcasrc();
 \#endif //
    if (!giac::is_file_available(configname.c_str())){
-    Xcas_widget_size(giac::makevecteur(18,100,50,900,600,0,0,1));
+    Xcas_widget_size(giac::makevecteur(14,40,90,900,550,0,0,1),0);
     FILE * f =fopen(configname.c_str(),"w");
     if (f){
       fclose(f);
      // Xcas_Main_Window_->hide();
      int n=fl_choice(gettext("Choose start mode"),gettext("Maple"),gettext("Xcas"),gettext("Other")),mm=-1; // n==0 maple, 1 xcas, 2 other
      if (n==2){
-        mm=fl_choice(gettext("Choose start mode"),gettext("Tortue"),gettext("Spreadsheet"),gettext("Geometry"));
+        mm=fl_choice(gettext("Choose start mode"),gettext("Turtle"),gettext("Spreadsheet"),gettext("Geometry"));
         if (mm==0) mm=7;
      }
 \#ifdef IPAQ // default with bandeau
-     std::string configs="widget_size(12,1,1,300,240,1,0,1,";
+     std::string configs="widget_size(12,1,1,300,240,1,2,1,";
 \#else // ifndef IPAQ, 
-     std::string configs="widget_size(18,100,50,900,600,"+giac::print_INT_(n!=0)+",0,0,";
+     std::string configs="widget_size(14,40,90,900,550,"+giac::print_INT_(n!=0)+",2,0,";
 \#endif // IPAQ
      configs += '7';
      configs += ','; 
      configs += '"'; 
+// \#ifndef WIN32
      configs += Xcas_browser_name();
+// \#endif
      configs += '"' ; 
      configs += ','; // end BROWSER
      configs+=giac::print_INT_(mm+1);
@@ -794,13 +865,14 @@ Function {load_autorecover_data()} {open
      std::ofstream configfile(configname.c_str());
      configfile << configs << std::endl;
      configfile.close();
-     if (giac::language(giac::context0)==1)
-       xcas::system_browser(giac::browser_command(doc_prefix+"tutoriel/index.html").c_str());
-     else
-       xcas::system_browser(giac::browser_command(doc_prefix+"casinter/index.html").c_str());
-     // fl_alert(("Configuration written to "+configname + "\\nUse the Cfg menu to modify.\\nLaunching tutorial.").c_str());
-     // n=fl_ask(gettext("Launch tutorial?"));
-     // if (n==1)
+     // fl_alert("%s",("Configuration written to "+configname + "\\nUse the Cfg menu to modify.\\nLaunching tutorial.").c_str());
+     n=fl_ask("%s",gettext("Launch tutorial in browser?"));
+     if (n==1){
+       if (giac::language(giac::context0)==1)
+         giac::system_browser_command(doc_prefix+"tutoriel/index.html");
+       else
+         giac::system_browser_command(doc_prefix+"casinter/index.html");
+     }
      giac::protected_read_config(giac::context0); // read xcas.rc
      xcas::History_cb_Kill(Xcas_current_session(),0);
      make_history();
@@ -815,7 +887,7 @@ Function {load_autorecover_data()} {open
       strcpy(buf,xcas::autosave_folder.c_str());
     if ( autoload && has_autorecover_data(buf,v)){
       // Ask user: ignore or run file
-      int i=fl_ask(gettext("Auto-recovery files found. Load ?"),gettext("Yes"),gettext("No"));
+      int i=fl_ask("%s",gettext("Auto-recovery files found. Load ?"),gettext("Yes"),gettext("No"));
       if (i!=1)
 	return;
       xcas::geo_run=xcas::sheet_run=false;
@@ -824,13 +896,13 @@ Function {load_autorecover_data()} {open
         xcas::History_Fold * hf = dynamic_cast<xcas::History_Fold *>(Xcas_Main_Tab->child(0));
         if (hf && hf->pack && hf->pack->children() < 2 ) { hf->pack->close(""); Xcas_Main_Tab->remove(hf);}
       }
-      sort(v.begin(),v.end());
+      std::sort(v.begin(),v.end());
       int vs=v.size();
       for (int i=0;i<vs;++i){
         load_filename(v[i].s.c_str(),true);
         unlink(v[i].s.c_str());
       }
-      fl_message("Autorecover files have been loaded. Geometry and spreadsheet were not reevaled");
+      fl_message("%s",gettext("Autorecover files have been loaded. Geometry and spreadsheet were not reevaled"));
     }} {}
 } 
 
@@ -850,9 +922,12 @@ Function {Xcas_browser_name()} {return_type {std::string}
 } {
   code {\#ifdef __APPLE__ //
 return "open";
-\#endif // 
+\#endif // apple
 if (getenv("BROWSER"))
   return getenv("BROWSER");
+\#ifdef WIN32 //
+  return "cygstart.exe";
+\#endif // win32
 std::string tmp;
 tmp="/usr/bin/firefox";
 if (giac::is_file_available(tmp.c_str()))
@@ -873,9 +948,15 @@ return "";} {}
 
 Function {Xcas_load_general_setup()} {return_type void
 } {
-  code {//
-Xcas_down_compatibility->value(!xcas::file_save_context);
+  code {// xcas::file_save_context has been removed for xcas 1.1.3
+int ste=giac::step_infolevel(Xcas_get_context());
+Xcas_stepbystep->value(ste);
 Xcas_html_browser->value(Xcas_browser_name().c_str());
+static std::string proxy;
+if (getenv("http_proxy")){
+  proxy=getenv("http_proxy");
+  Xcas_proxy->value(proxy.c_str());
+}
 xcas::change_group_fontsize(Xcas_General_Setup,Xcas_Main_Window_->labelsize());
 Xcas_General_Setup->resize(20,20,3*Xcas_Main_Window_->w()/4,3*Xcas_Main_Window_->h()/4);
   Xcas_General_Setup->show();} {}
@@ -897,14 +978,14 @@ if (s.size()<2 && getenv("XCAS_ROOT"))
   s=getenv("XCAS_ROOT")+std::string("/");
 if (s.size()<2)
   s="";
-std::cerr << "Saving preferences in file " << s+giac::xcasrc << std::endl;
-std::ofstream of((s+giac::xcasrc).c_str());
+std::cerr << "Saving preferences in file " << s+giac::xcasrc() << std::endl;
+std::ofstream of((s+giac::xcasrc()).c_str());
 \#else
-std::ofstream of((giac::home_directory()+giac::xcasrc).c_str());
+std::ofstream of((giac::home_directory()+giac::xcasrc()).c_str());
 \#endif //
-   of << "widget_size([" << giac::print_INT_(Xcas_Main_Window_->labelfont()) << "," << giac::print_INT_(Xcas_Main_Window_->labelsize()) << "]," << Xcas_Main_Window_->x() << "," << Xcas_Main_Window_->y() << "," << Xcas_Main_Window_->w() << "," << Xcas_Main_Window_->h() << "," ;
+   of << "widget_size([" << giac::print_INT_(Xcas_Main_Window_->labelfont()) << "," << giac::print_INT_(Xcas_Main_Window_->labelsize()) << "," << giac::print_INT_(xcas::Flv_Table_Gen::def_rows) << "," << giac::print_INT_(xcas::Flv_Table_Gen::def_cols) << "]," << Xcas_Main_Window_->x() << "," << Xcas_Main_Window_->y() << "," << Xcas_Main_Window_->w() << "," << Xcas_Main_Window_->h() << "," ;
    of << Xcas_Keyboard_Group->visible()+2*Xcas_Bandeau_Keys->visible() <<",";
-   of << Xcas_automatic_help_browser->value()+2*Xcas_automatic_completion_browser->value();
+   of << Xcas_automatic_help_browser->value()+2*Xcas_automatic_completion_browser->value()+4*Xcas_tooltip_disabled->value() + 8*Xcas_disable_try_parse_test_i->value();
    of << "," << Xcas_Messages->visible() ;
    of << ",[" ; 
    of << giac::print_INT_(xcas::Xcas_input_color) << "," << giac::print_INT_(xcas::Xcas_input_background_color) << "," << giac::print_INT_(xcas::Xcas_comment_color) << "," << giac::print_INT_(xcas::Xcas_comment_background_color) << "," << giac::print_INT_(xcas::Xcas_log_color) << "," << giac::print_INT_(xcas::Xcas_log_background_color) << "," << giac::print_INT_(xcas::Xcas_equation_color) << "," << giac::print_INT_(xcas::Xcas_equation_background_color) << "," << giac::print_INT_(xcas::Xcas_editor_color) << "," << giac::print_INT_(xcas::Xcas_editor_background_color) << "," << giac::print_INT_(xcas::Xcas_background_color) ;
@@ -914,12 +995,19 @@ std::ofstream of((giac::home_directory()+giac::xcasrc).c_str());
    else
      of << "," << '"' << "builtin" << '"' ;
    of << "," << xcas_user_level ;
-   of << "," << int(Xcas_down_compatibility->value()) ;
+   of << "," << int(Xcas_stepbystep->value()) ;
    if (getenv("GIAC_PREVIEW"))
      of << "," << '"' << getenv("GIAC_PREVIEW") << '"' ;
+   else
+     of << "," << '"' << '"' ;
+   if (getenv("http_proxy"))
+     of << "," << '"' << getenv("http_proxy") << '"' ;
+   else
+     of << "," << '"' << '"' ;
    of << ");" << std::endl;
    of << giac::cas_setup_string(contextptr) << ";" << std::endl;
    of << giac::geo_setup_string() << ";" << std::endl;
+   of << "autosimplify(" << giac::unlocalize(giac::autosimplify(contextptr)) << ")";
    giac::vecteur vv(*giac::_lsmod(giac::zero,contextptr)._VECTptr);
    giac::const_iterateur it=vv.begin(),itend=vv.end();
    for (;it!=itend;++it)
@@ -930,173 +1018,198 @@ Function {Xcas_run(int argc,char ** argv)} {open
 } {
   Fl_Window Xcas_Main_Window_ {
     label {Xcas New Interface} open
-    xywh {248 112 775 615} type Single resizable visible
+    xywh {95 113 775 520} type Single resizable visible
   } {
     Fl_Menu_Bar Xcas_main_menu {open
       xywh {0 0 775 25}
     } {
-      submenu Xcas_file_menu {
+      Submenu Xcas_file_menu {
         label File
         xywh {0 0 100 20}
       } {
-        menuitem Xcas_new_session {
+        MenuItem Xcas_new_session {
           label {New session}
           callback {make_history();}
           xywh {0 0 100 20}
         }
-        menuitem Xcas_open_session {
+        Submenu Xcas_open {
           label Open
-          callback {load_history(0);}
-          xywh {10 10 100 20} shortcut 0x8006f
+          xywh {0 0 70 21}
+        } {
+          MenuItem Xcas_open_session {
+            label File
+            callback {load_history(0);}
+            xywh {15 15 100 20} shortcut 0x8006f
+          }
         }
-        menuitem Xcas_open_session {
+        MenuItem Xcas_open_recovery {
           label {Open (recovery mode)}
-          callback { xcas::recovery_mode=true; load_history(0); xcas::recovery_mode=false; }
-          xywh {10 10 100 20} shortcut 0x8006f
+          callback {xcas::recovery_mode=true; load_history(0); xcas::recovery_mode=false;}
+          xywh {10 10 100 20}
         }
-        submenu Xcas_Import {
-          label Import open
+        Submenu Xcas_Import {
+          label Import
           xywh {0 0 100 20}
         } {
-          menuitem Xcas_open_maple {
+          MenuItem Xcas_open_maple {
             label {maple worksheet}
             callback {load_history(1);}
             xywh {15 15 100 20}
           }
-          menuitem Xcas_open_ti89 {
+          MenuItem Xcas_open_ti89 {
             label {ti89 program}
             callback {load_history(3);}
             xywh {15 15 100 20}
           }
-          menuitem Xcas_open_v200 {
+          MenuItem Xcas_open_v200 {
             label {V200 program}
             callback {load_history(7);}
             xywh {15 15 100 20}
           }
         }
-        submenu Xcas_Insert {
-          label Insert open
+        Submenu Xcas_Clone {
+          label Clone
           xywh {0 0 100 20}
         } {
-          menuitem Xcas_Insert_Session {
+          MenuItem Xcas_CloneOffline {
+            label Offline
+            callback {std::string html5=giac::browser_command("doc/xcasfr.html\#"+xcas::widget_html5(Xcas_current_session())); std::cout << html5 << std::endl; system(html5.c_str());}
+            xywh {10 10 100 20}
+          }
+          MenuItem Xcas_CloneOnline {
+            label Online
+            callback {std::string html5="http://www-fourier.ujf-grenoble.fr/~parisse/xcasfr.html\#"+xcas::widget_html5(Xcas_current_session()); std::cout << html5 << std::endl; giac::system_browser_command(html5);}
+            xywh {10 10 100 20}
+          }
+        }
+        Submenu Xcas_Insert {
+          label Insert
+          xywh {0 0 100 20}
+        } {
+          MenuItem Xcas_Insert_Session {
             label {xcas session}
             callback {xcas::History_cb_Insert(Xcas_current_session(),0);}
             xywh {55 55 100 20}
           }
-          menuitem Xcas_Insert_Figure {
+          MenuItem Xcas_Insert_Figure {
             label figure
             callback {xcas::History_cb_Insert_Figure(Xcas_current_session(),0);}
             xywh {65 65 100 20}
           }
-          menuitem Xcas_Insert_Tableur {
+          MenuItem Xcas_Insert_Tableur {
             label spreadsheet
             callback {xcas::History_cb_Insert_Tableur(Xcas_current_session(),0);}
             xywh {75 75 100 20}
           }
-          menuitem Xcas_Insert_Program {
+          MenuItem Xcas_Insert_Program {
             label program
             callback {xcas::History_cb_Insert_Program(Xcas_current_session(),0);}
             xywh {85 85 100 20}
           }
         }
-        menuitem Xcas_save_current_session {
+        MenuItem Xcas_save_current_session {
           label Save
           callback {xcas::History_cb_Save(Xcas_current_session(),0);}
           xywh {20 20 100 20} shortcut 0x80073
         }
-        menuitem Xcas_save_current_session_as {
+        MenuItem Xcas_save_current_session_as {
           label {Save as}
           callback {xcas::History_cb_Save_as(Xcas_current_session(),0);}
           xywh {20 20 100 20}
         }
-        menuitem Xcas_save_all_sessions {
+        MenuItem Xcas_save_all_sessions {
           label {Save all}
           callback {Xcas_save_all(Xcas_Main_Tab);}
           xywh {10 10 100 20}
         }
-        submenu Xcas_Export {
-          label {Export as} open
+        Submenu Xcas_Export {
+          label {Export as}
           xywh {0 0 100 20}
         } {
-          menuitem Xcas_Export_Xcas {
+          MenuItem Xcas_Export_Xcas {
             label {xcas text}
             callback {xcas::History_cb_Save_as_xcas_text(Xcas_current_session(),0);}
             xywh {65 65 100 20}
           }
-          menuitem Xcas_Export_Maple {
+          MenuItem Xcas_Export_Maple {
             label {maple text}
             callback {xcas::History_cb_Save_as_maple_text(Xcas_current_session(),0);}
             xywh {75 75 100 20}
           }
-          menuitem Xcas_Export_Mupad {
+          MenuItem Xcas_Export_Mupad {
             label {mupad text}
             callback {xcas::History_cb_Save_as_mupad_text(Xcas_current_session(),0);}
             xywh {85 85 100 20}
           }
-          menuitem Xcas_Export_TI {
+          MenuItem Xcas_Export_TI {
             label {ti text}
             callback {xcas::History_cb_Save_as_ti_text(Xcas_current_session(),0);}
             xywh {95 95 100 20}
           }
         }
-        menuitem Xcas_Close {
+        MenuItem Xcas_Close {
           label Kill
           callback {xcas::History_cb_Kill(Xcas_current_session(),0);}
           xywh {45 45 100 20}
         }
-        menuitem Xcas_a_propos {
-          label About
-          callback {a_propos();   Xcas_Messages->show(); 
-  Xcas_resize_mainwindow();}
-          xywh {0 0 100 20}
-        }
-        submenu Xcas_Print {
-          label Print open
+        Submenu Xcas_Print {
+          label Print
           xywh {0 0 100 20}
         } {
-          menuitem Xcas_Print_Preview {
+          MenuItem Xcas_Print_Preview {
             label preview
             callback {xcas::History_cb_Preview(Xcas_current_session(),0);}
             xywh {95 95 100 20}
           }
-          menuitem Xcas_Print_Printer {
+          MenuItem Xcas_Print_Printer {
             label {to printer}
             callback {xcas::History_cb_Print(Xcas_current_session(),0);}
             xywh {105 105 100 20}
           }
-          menuitem Xcas_Print_Preview_Selected {
+          MenuItem Xcas_Print_Preview_Selected {
             label {preview selected levels}
             callback {xcas::History_cb_Preview_selected(Xcas_current_session(),0);}
             xywh {115 115 100 20}
           }
         }
-        submenu Xcas_Print_Latex {
-          label LaTeX open
+        Submenu Xcas_Print_Latex {
+          label LaTeX
           xywh {15 15 100 20}
         } {
-          menuitem Xcas_LaTeX_Print_Preview {
+          MenuItem Xcas_LaTeX_Print_Preview {
             label {latex preview}
             callback {xcas::History_cb_LaTeX_Preview(Xcas_current_session(),0);}
             xywh {110 110 100 20}
           }
-          menuitem Xcas_LaTeX_Print_Printer {
+          MenuItem Xcas_LaTeX_Print_Printer {
             label {latex print}
             callback {xcas::History_cb_LaTeX_Print(Xcas_current_session(),0);}
             xywh {120 120 100 20}
           }
-          menuitem Xcas_LaTeX_Print_Selection {
+          MenuItem Xcas_LaTeX_Print_Selection {
             label {latex print selection}
             callback {xcas::History_cb_LaTeX_Print_sel(Xcas_current_session(),0);}
             xywh {130 130 100 20}
           }
         }
-        menuitem Xcas_screen_capture {
+        MenuItem Xcas_screen_capture {
           label {Screen capture}
-          callback {xcas::widget_ps_print(Xcas_Main_Window_,"window",true,3,true);}
+          callback {xcas::widget_ps_print(Xcas_Main_Window_,"window",true,3,true,false,true);}
           xywh {10 10 100 20}
         }
-        menuitem Xcas_quit {
-          label Quit
+        MenuItem Xcas_do_nothing1 {
+          label {--- }
+          xywh {10 10 100 20}
+        }
+        MenuItem Xcas_create_links {
+          label {Create links (Mac OS)}
+          callback {\#ifdef __APPLE__
+system("/usr/X11/bin/xterm -fn 10x20 -e sudo /Applications/usr/bin/makelinks");
+\#endif}
+          xywh {30 30 100 20}
+        }
+        MenuItem Xcas_quit_update {
+          label {Quit and update Xcas}
           callback {Fl::remove_idle(xcas::Xcas_idle_function,0);
 if (!Xcas_save_all(Xcas_Main_Tab)){
   Fl::add_idle(xcas::Xcas_idle_function,0);
@@ -1111,59 +1224,77 @@ if (xcas::Xcas_help_window) xcas::Xcas_help_window->hide();
 Xcas_DispG_Window_->hide();
 if (xcas::Xcas_Debug_Window) xcas::Xcas_Debug_Window->hide();
 if (xcas::handle_tab_w)
-  xcas::handle_tab_w->hide();}
+  xcas::handle_tab_w->hide();
+update_xcas=1;}
+          xywh {20 20 100 20}
+        }
+        MenuItem Xcas_do_nothing2 {
+          label {--- }
+          xywh {10 10 100 20}
+        }
+        MenuItem Xcas_quit {
+          label Quit
+          callback {cb_Xcas_quit_update(0,0); 
+update_xcas=0;}
           xywh {10 10 100 20} shortcut 0x40071
         }
       }
-      submenu Xcas_Edit {
-        label Edit open
+      Submenu Xcas_Edit {
+        label Edit
         xywh {0 0 100 20}
       } {
-        menuitem Xcas_Execute_Worksheet {
+        MenuItem Xcas_Execute_Worksheet {
           label {Execute worksheet}
           callback {xcas::History_cb_Run_Worksheet(Xcas_current_session(),0);}
           xywh {140 140 100 20} shortcut 0x4ffc6
         }
-        menuitem Xcas_Execute_Below {
+        MenuItem Xcas_Execute_Below {
           label {Execute below}
           callback {xcas::History_cb_Run_Below(Xcas_current_session(),0);}
           xywh {150 150 100 20}
         }
-        menuitem Xcas_Remove_Answers {
-          label {Remove answers}
+        MenuItem Xcas_Remove_Answers {
+          label {Remove answers below}
           callback {xcas::cb_Rm_Answers(Xcas_current_session(),0);}
           xywh {160 160 100 20}
         }
-        menuitem Xcas_Undo {
+        MenuItem Xcas_Undo {
           label Undo
-          callback {if (xcas::get_history_pack(Fl::focus())) xcas::History_cb_Undo(Fl::focus(),0); else xcas::History_cb_Undo(Xcas_current_session(),0);}
+          callback {if (xcas::get_history_pack(xcas::Xcas_input_focus)) xcas::History_cb_Undo(xcas::Xcas_input_focus,0); else xcas::History_cb_Undo(Xcas_current_session(),0);}
           xywh {230 230 100 20} shortcut 0x4007a
         }
-        menuitem Xcas_Redo {
+        MenuItem Xcas_Redo {
           label Redo
-          callback {if (xcas::get_history_pack(Fl::focus())) xcas::History_cb_Redo(Fl::focus(),0); else xcas::History_cb_Redo(Xcas_current_session(),0);}
+          callback {if (xcas::get_history_pack(xcas::Xcas_input_focus)) xcas::History_cb_Redo(xcas::Xcas_input_focus,0); else xcas::History_cb_Redo(Xcas_current_session(),0);}
           xywh {240 240 100 20} shortcut 0x40079
         }
-        menuitem Xcas_Paste {
+        MenuItem Xcas_Paste {
           label Paste
           callback {xcas::cb_Paste(Xcas_current_session(),0);}
           xywh {180 180 100 20}
         }
-        menuitem Xcas_Delete {
+        MenuItem Xcas_Delete {
           label {Del selected levels}
           callback {xcas::cb_Delete(Xcas_current_session(),0);}
           xywh {190 190 100 20}
         }
-        menuitem Xcas_Tex_Selection {
+        MenuItem Xcas_Tex_Selection {
           label {selection -> LaTeX}
           callback {static std::string s; giac::gen g;
-    const giac::context * contextptr=xcas::get_context(Fl::focus());
+    const giac::context * contextptr=xcas::get_context(xcas::Xcas_input_focus);
   try {
-   if (xcas::Equation * ptr=dynamic_cast<xcas::Equation *> (Fl::focus()))
+   if (xcas::Xcas_Text_Editor * ptr=dynamic_cast<xcas::Xcas_Text_Editor *> (xcas::Xcas_input_focus)){
+     int a,b;
+     ptr->buffer()->selection_position(&a,&b);
+    char * ch=ptr->buffer()->text_range(a,b);
+    g=giac::gen(ch,contextptr);
+    free(ch);
+  }
+   if (xcas::Equation * ptr=dynamic_cast<xcas::Equation *> (xcas::Xcas_input_focus))
     g=ptr->get_selection();
-   if (xcas::Flv_Table_Gen * ptr=dynamic_cast<xcas::Flv_Table_Gen *> (Fl::focus()))
+   if (xcas::Flv_Table_Gen * ptr=dynamic_cast<xcas::Flv_Table_Gen *> (xcas::Xcas_input_focus))
     g=extractmatricefromsheet(ptr->selected);
-   if (Fl_Input_ * ptr=dynamic_cast<Fl_Input *>(Fl::focus())){
+   if (Fl_Input_ * ptr=dynamic_cast<Fl_Input *>(xcas::Xcas_input_focus)){
     int i=ptr->position(),j=ptr->mark();
     if (i>j) std::swap<int>(i,j);
     s=ptr->value();
@@ -1181,78 +1312,79 @@ Fl::copy(s.c_str(),ss,0);
 Fl::copy(s.c_str(),ss,1);}
           xywh {190 190 100 20} shortcut 0x40074
         }
-        menuitem Xcas_Add_Entry1 {
+        MenuItem Xcas_Add_Entry1 {
           label {New entry}
           callback {xcas::cb_New_Input(Xcas_current_session(),0);}
           xywh {60 60 100 20} shortcut 0x8006e
         }
-        menuitem Xcas_Add_Parameter {
+        MenuItem Xcas_Add_Parameter {
           label {New parameter}
           callback {std::string tmp,name;
 double tmin,tmax,tcur,tstep;
-Fl_Widget * wid = Fl::focus();
+Fl_Widget * wid = xcas::Xcas_input_focus;
 int pos;
 xcas::History_Pack * hp=xcas::get_history_pack(wid,pos);
-if (hp && xcas::figure_param_dialog(Fl::focus(),false,tmin,tmax,tcur,tstep,name,false,tmp)){
+if (hp && xcas::figure_param_dialog(xcas::Xcas_input_focus,false,tmin,tmax,tcur,tstep,name,false,tmp)){
  if (hp){
-    hp->add_entry(pos);
+   Fl_Widget * q=xcas::new_question_multiline_input(giac::giacmax(hp->w()-hp->_printlevel_w,1),hp->labelsize()+12);	
+    hp->add_entry(pos,q);
     hp->set_value(pos,tmp,true);
  }
-}} selected
+}}
           xywh {70 70 100 20} shortcut 0x40070
         }
-        menuitem Xcas_Insert_Newline {
+        MenuItem Xcas_Insert_Newline {
           label {Insert newline}
           callback {xcas::History_cb_Newline(Xcas_current_session(),0);}
           xywh {170 170 100 20}
         }
-        menuitem Xcas_Merge {
+        MenuItem Xcas_Merge {
           label {Merge selected levels}
           callback {xcas::History_cb_Merge(Xcas_current_session(),0);}
-          xywh {210 210 100 20} hide
+          xywh {210 210 100 20}
         }
-        menuitem Xcas_Add_HF {
+        MenuItem Xcas_Add_HF {
           label {New group}
           callback {xcas::History_cb_New_HF(Xcas_current_session(),0);}
           xywh {130 130 100 20}
         }
-        menuitem Xcas_Fold {
+        MenuItem Xcas_Fold {
           label {Group selected levels}
           callback {xcas::History_cb_Fold(Xcas_current_session(),0);}
           xywh {200 200 100 20}
         }
-        menuitem Xcas_Flatten {
+        MenuItem Xcas_Flatten {
           label {Degroup selected levels}
           callback {xcas::History_cb_Flatten(Xcas_current_session(),0);}
           xywh {220 220 100 20}
         }
       }
-      submenu Xcas_main_configuration {
+      Submenu Xcas_main_configuration {
         label Cfg
         xywh {0 0 100 20}
       } {
-        menuitem Xcas_cas_config_ {
+        MenuItem Xcas_cas_config_ {
           label {Cas configuration}
           callback {const giac::context * contextptr=Xcas_get_context();
 xcas::Xcas_load_cas_setup(contextptr);}
           xywh {20 20 100 20}
         }
-        menuitem Xcas_graph_config_ {
+        MenuItem Xcas_graph_config_ {
           label {Graph configuration}
           callback {const giac::context * contextptr=Xcas_get_context();
 xcas::Xcas_load_graph_setup(contextptr);}
           xywh {10 10 100 20}
         }
-        menuitem Xcas_general_config_ {
+        MenuItem Xcas_general_config_ {
           label {General configuration}
           callback {Xcas_load_general_setup();}
           xywh {20 20 100 20}
         }
-        submenu Xcas_config_program {
+        Submenu Xcas_config_program {
           label {Mode (syntax)}
           xywh {0 0 100 20}
         } {
-          menuitem Xcas_Set_Xcas0 {
+          MenuItem Xcas_Set_Xcas0 {
             label xcas
             callback {const giac::context * contextptr=Xcas_get_context();
 giac::xcas_mode(contextptr)=0;
@@ -1260,7 +1392,7 @@ xcas_user_level=0;
 Xcas_update_mode();}
             xywh {40 40 100 20}
           }
-          menuitem Xcas_Set_Maple0 {
+          MenuItem Xcas_Set_Maple0 {
             label maple
             callback {const giac::context * contextptr=Xcas_get_context();
 giac::xcas_mode(contextptr)=1;
@@ -1268,7 +1400,7 @@ xcas_user_level=0;
 Xcas_update_mode();}
             xywh {40 40 100 20}
           }
-          menuitem Xcas_Set_Mupad0 {
+          MenuItem Xcas_Set_Mupad0 {
             label mupad
             callback {const giac::context * contextptr=Xcas_get_context();
 giac::xcas_mode(contextptr)=2;
@@ -1276,7 +1408,7 @@ xcas_user_level=0;
 Xcas_update_mode();}
             xywh {40 40 100 20}
           }
-          menuitem Xcas_Set_TI0 {
+          MenuItem Xcas_Set_TI0 {
             label {ti89/92}
             callback {const giac::context * contextptr=Xcas_get_context();
 giac::xcas_mode(contextptr)=3;xcas_user_level=0;
@@ -1284,162 +1416,183 @@ Xcas_update_mode();}
             xywh {40 40 100 20}
           }
         }
-        submenu Xcas_show_something {
+        Submenu Xcas_show_something {
           label Show
           xywh {5 5 100 20}
         } {
-          menuitem Xcas_show_DispG {
+          MenuItem Xcas_show_DispG {
             label DispG
-            callback {Xcas_DispG_Window_->show(); Xcas_DispG_Cancel_->hide();}
-            xywh {45 45 100 20}
+            callback {Xcas_DispG_Window_->show(); 
+Xcas_DispG_Cancel_->hide();} selected
+            xywh {45 45 100 20} shortcut 0x80064
           }
-          menuitem Xcas_show_keyboard {
+          MenuItem Xcas_show_keyboard {
             label keyboard
             callback {Xcas_Keyboard_Group->show(); Xcas_resize_mainwindow();}
             xywh {30 30 100 20}
           }
-          menuitem Xcas_show_bandeau {
+          MenuItem Xcas_show_bandeau {
             label bandeau
             callback {Xcas_Bandeau_Keys->show(); Xcas_resize_mainwindow();}
             xywh {40 40 100 20}
           }
-          menuitem Xcas_show_msg {
+          MenuItem Xcas_show_msg {
             label msg
             callback {Xcas_Messages->show(); Xcas_resize_mainwindow();}
             xywh {45 45 100 20}
           }
-          menuitem Xcas_show_script_window {
+          MenuItem Xcas_show_script_window {
             label {Show script window}
             callback {Xcas_Script_Window->show();}
             xywh {20 20 100 20} hide
           }
         }
-        submenu Xcas_Hide_Something {
+        Submenu Xcas_Hide_Something {
           label Hide
           xywh {0 0 100 20}
         } {
-          menuitem Xcas_hide_DispG {
+          MenuItem Xcas_hide_DispG {
             label DispG
-            callback {Xcas_DispG_Window_->hide(); Xcas_DispG_Cancel_->hide();}
+            callback {Xcas_DispG_Window_->hide(); 
+Xcas_DispG_Cancel_->hide();}
             xywh {55 55 100 20}
           }
-          menuitem Xcas_hide_keyboard {
+          MenuItem Xcas_hide_keyboard {
             label keyboard
             callback {Xcas_Keyboard_Group->hide(); Xcas_resize_mainwindow();}
             xywh {25 25 100 20}
           }
-          menuitem Xcas_hide_bandeau {
+          MenuItem Xcas_hide_bandeau {
             label bandeau
             callback {Xcas_Bandeau_Keys->hide(); Xcas_resize_mainwindow();}
             xywh {40 40 100 20}
           }
-          menuitem Xcas_hide_msg {
+          MenuItem Xcas_hide_msg {
             label msg
             callback {Xcas_Messages->hide(); Xcas_resize_mainwindow();}
             xywh {45 45 100 20}
           }
         }
-        submenu Xcas_index_language {
+        Submenu Xcas_index_language {
           label {Index language}
           xywh {0 0 100 20}
         } {
-          menuitem Xcas_index_Francais {
+          MenuItem Xcas_index_Francais {
             label francais
             callback {const giac::context * contextptr=Xcas_get_context();
+// doc_prefix=giac::set_language(1,giac::context0);
 doc_prefix=giac::set_language(1,contextptr);
 giac::html_help_init("aide_cas",1);}
             xywh {0 0 100 20}
           }
-          menuitem Xcas_index_English {
+          MenuItem Xcas_index_English {
             label english
             callback {const giac::context * contextptr=Xcas_get_context();
+// doc_prefix=giac::set_language(2,giac::context0);
 doc_prefix=giac::set_language(2,contextptr);
 giac::html_help_init("aide_cas",1);}
             xywh {0 0 100 20}
           }
-          menuitem Xcas_index_Espanol {
+          MenuItem Xcas_index_Espanol {
             label espanol
             callback {const giac::context * contextptr=Xcas_get_context();
+// doc_prefix=giac::set_language(3,giac::context0);
 doc_prefix=giac::set_language(3,contextptr);
 giac::html_help_init("aide_cas",1);}
             xywh {0 0 100 20}
           }
+          MenuItem Xcas_index_Greek {
+            label greek
+            callback {const giac::context * contextptr=Xcas_get_context();
+// doc_prefix=giac::set_language(4,giac::context0);
+doc_prefix=giac::set_language(4,contextptr);
+giac::html_help_init("aide_cas",1);}
+            xywh {0 0 100 20}
+          }
+          MenuItem Xcas_index_Chinese {
+            label chinese
+            callback {const giac::context * contextptr=Xcas_get_context();
+// doc_prefix=giac::set_language(4,giac::context0);
+doc_prefix=giac::set_language(8,contextptr);
+giac::html_help_init("aide_cas",1);}
+            xywh {0 0 100 20}
+          }
         }
-        submenu Xcas_Colors {
+        Submenu Xcas_Colors {
           label Colors open
           xywh {0 0 100 20}
         } {
-          menuitem Xcas_background_color_item {
+          MenuItem Xcas_background_color_item {
             label {default background}
             callback {Fl_Color c=fl_show_colormap(xcas::Xcas_background_color);
 xcas::Xcas_background_color=c;
 xcas::set_colors(Xcas_Main_Window_);}
             xywh {10 10 100 20}
           }
-          menuitem Xcas_input_text_color {
+          MenuItem Xcas_input_text_color {
             label {input text}
             callback {Fl_Color c=fl_show_colormap(xcas::Xcas_input_color);
 xcas::Xcas_input_color=c;
 xcas::set_colors(Xcas_Main_Window_);}
             xywh {0 0 100 20}
           }
-          menuitem Xcas_input_text_background_color {
+          MenuItem Xcas_input_text_background_color {
             label {input background}
             callback {Fl_Color c=fl_show_colormap(xcas::Xcas_input_background_color);
 xcas::Xcas_input_background_color=c;
 xcas::set_colors(Xcas_Main_Window_);}
             xywh {0 0 100 20}
           }
-          menuitem Xcas_comment_color_item {
+          MenuItem Xcas_comment_color_item {
             label {comment text}
             callback {Fl_Color c=fl_show_colormap(xcas::Xcas_comment_color);
 xcas::Xcas_comment_color=c;
 xcas::set_colors(Xcas_Main_Window_);}
             xywh {0 0 100 20}
           }
-          menuitem Xcas_comment_background_color_item {
+          MenuItem Xcas_comment_background_color_item {
             label {comment background}
             callback {Fl_Color c=fl_show_colormap(xcas::Xcas_comment_background_color);
 xcas::Xcas_comment_background_color=c;
 xcas::set_colors(Xcas_Main_Window_);}
             xywh {0 0 100 20}
           }
-          menuitem Xcas_log_color_item {
+          MenuItem Xcas_log_color_item {
             label {log text}
             callback {Fl_Color c=fl_show_colormap(xcas::Xcas_log_color);
 xcas::Xcas_log_color=c;
 xcas::set_colors(Xcas_Main_Window_);}
             xywh {0 0 100 20}
           }
-          menuitem Xcas_log_background_color_item {
+          MenuItem Xcas_log_background_color_item {
             label {log background}
             callback {Fl_Color c=fl_show_colormap(xcas::Xcas_log_background_color);
 xcas::Xcas_log_background_color=c;
 xcas::set_colors(Xcas_Main_Window_);}
             xywh {0 0 100 20}
           }
-          menuitem Xcas_equation_color_item {
+          MenuItem Xcas_equation_color_item {
             label {equation text}
             callback {Fl_Color c=fl_show_colormap(xcas::Xcas_equation_color);
 xcas::Xcas_equation_color=c;
 xcas::set_colors(Xcas_Main_Window_);}
             xywh {0 0 100 20}
           }
-          menuitem Xcas_equation_background_color_item {
+          MenuItem Xcas_equation_background_color_item {
             label {equation background}
             callback {Fl_Color c=fl_show_colormap(xcas::Xcas_equation_background_color);
 xcas::Xcas_equation_background_color=c;
 xcas::set_colors(Xcas_Main_Window_);}
             xywh {0 0 100 20}
           }
-          menuitem Xcas_editor_color_item {
+          MenuItem Xcas_editor_color_item {
             label {editor text}
             callback {Fl_Color c=fl_show_colormap(xcas::Xcas_editor_color);
 xcas::Xcas_editor_color=c;
 xcas::set_colors(Xcas_Main_Window_);}
             xywh {0 0 100 20} hide
           }
-          menuitem Xcas_editor_background_color_item {
+          MenuItem Xcas_editor_background_color_item {
             label {editor background}
             callback {Fl_Color c=fl_show_colormap(xcas::Xcas_editor_background_color);
 xcas::Xcas_editor_background_color=c;
@@ -1447,7 +1600,7 @@ xcas::set_colors(Xcas_Main_Window_);}
             xywh {0 0 100 20} hide
           }
         }
-        menuitem Xcas_change_current_fontsize {
+        MenuItem Xcas_change_current_fontsize {
           label {Session font}
           callback {Fl_Widget * wid=Xcas_Main_Tab->value();
  if (wid){
@@ -1461,7 +1614,7 @@ xcas::set_colors(Xcas_Main_Window_);}
  }}
           xywh {0 0 100 20}
         }
-        menuitem Xcas_change_fontsize {
+        MenuItem Xcas_change_fontsize {
           label {All fonts}
           callback {Fl_Widget * wid=Xcas_Main_Window_;
  if (wid){
@@ -1476,7 +1629,7 @@ xcas::set_colors(Xcas_Main_Window_);}
  }}
           xywh {10 10 100 20}
         }
-        menuitem Xcas_browser {
+        MenuItem Xcas_browser {
           label browser
           callback {std::string s=Xcas_browser_name();
 const char * ch=fl_input(gettext("Enter new help browser program (empty line for builtin)"),s.c_str());
@@ -1490,23 +1643,23 @@ else
   xcas::use_external_browser=false;}
           xywh {5 5 100 20}
         }
-        menuitem Save_config {
+        MenuItem Save_config {
           label {Save configuration}
           callback {Xcas_save_config(Xcas_get_context());}
           xywh {10 10 100 20}
         }
       }
-      submenu Xcas_help_menu {
-        label Help
+      Submenu Xcas_help_menu {
+        label Help open
         xywh {0 0 100 20}
       } {
-        menuitem Xcas_help_index {
+        MenuItem Xcas_help_index {
           label Index
           callback {static std::string ans; 
    int remove,ii;
-   Fl_Widget * w=Fl::focus();
+   Fl_Widget * w=xcas::Xcas_input_focus;
    if (
-   (ii=xcas::handle_tab("",(*giac::vector_completions_ptr),Xcas_Main_Window_->w()/3,Xcas_Main_Window_->h()/3,remove,ans)) ){ 
+   (ii=xcas::handle_tab("",(*giac::vector_completions_ptr()),Xcas_Main_Window_->w()/3,Xcas_Main_Window_->h()/3,remove,ans)) ){ 
     if (ii==1)
       ans = ans +"()";
     Fl::e_text = (char * ) ans.c_str();
@@ -1520,15 +1673,15 @@ else
   }}
           xywh {0 0 100 20}
         }
-        menuitem Xcas_help_find {
+        MenuItem Xcas_help_find {
           label {Find word in HTML help}
           callback {xcas::help_fltk("");}
           xywh {10 10 100 20} shortcut 0xffc9
         }
-        menuitem Xcas_help_casinter {
+        MenuItem Xcas_help_casinter {
           label Interface
           callback {if (xcas::use_external_browser)
-           xcas::system_browser(giac::browser_command(doc_prefix+"casinter/index.html").c_str());
+           giac::system_browser_command(doc_prefix+"casinter/index.html");
         else {
          if (xcas::Xcas_help_window){
            xcas::Xcas_help_window->load((giac::giac_aide_dir()+doc_prefix+"casinter/index.html").c_str());
@@ -1537,15 +1690,20 @@ else
          }}
           xywh {10 10 100 20}
         }
-        submenu Xcas_help_manuals {
+        MenuItem Xcas_help_fiches {
+          label {Reference card, fiches}
+          callback {if (giac::language(Xcas_get_context())==1) giac::system_browser_command(giac::giac_aide_dir()+"doc/fr/troussesurvie_fr.pdf"); else giac::system_browser_command(giac::giac_aide_dir()+"doc/en/troussesurvie_en.pdf");}
+          xywh {25 25 100 20}
+        }
+        Submenu Xcas_help_manuals {
           label Manuals
           xywh {0 0 100 20}
         } {
-          menuitem Xcas_help_CASmenu {
+          MenuItem Xcas_help_CAS {
             label {CAS reference}
             callback {const giac::context * contextptr=Xcas_get_context();
 if (xcas::use_external_browser)
-           xcas::system_browser(giac::browser_command(doc_prefix+"cascmd_"+giac::find_lang_prefix(giac::language(contextptr))+"index.html").c_str());
+           giac::system_browser_command(doc_prefix+"cascmd_"+giac::find_lang_prefix(giac::language(contextptr))+"index.html");
         else {
          if (xcas::Xcas_help_window){
            xcas::Xcas_help_window->load((giac::giac_aide_dir()+doc_prefix+"cascmd_"+giac::find_lang_prefix(giac::language(contextptr))+"index.html").c_str());
@@ -1554,22 +1712,36 @@ if (xcas::use_external_browser)
          }}
             xywh {5 5 100 20}
           }
-          menuitem Xcas_help_algo {
-            label Algorithmes
+          MenuItem Xcas_help_algo {
+            label {Algorithmes (HTML)}
             callback {if (xcas::use_external_browser)
-           xcas::system_browser(giac::browser_command(doc_prefix+"algo.html").c_str());
+           giac::system_browser_command(doc_prefix+"algo.html");
         else {
-         if (xcas::Xcas_help_window){
-           xcas::Xcas_help_window->load((giac::giac_aide_dir()+doc_prefix+"algo.html").c_str());
-           xcas::Xcas_help_window->show();
+         if (xcas::Xcas_help_window){ //disabled because it crashes with builin browser
+           fl_message("%s",("Open with your browser "+giac::giac_aide_dir()+doc_prefix+"algo.html").c_str());
+           // xcas::Xcas_help_window->load((giac::giac_aide_dir()+doc_prefix+"algo.html").c_str());
+           // xcas::Xcas_help_window->show();
           }
          }}
             xywh {5 5 100 20}
           }
-          menuitem Xcas_help_Geo {
+          MenuItem Xcas_help_algo_pdf {
+            label {Algorithmes (PDF)}
+            callback {if (xcas::use_external_browser)
+           giac::system_browser_command(doc_prefix+"algo.pdf");
+        else {
+         if (xcas::Xcas_help_window){
+           fl_message("%s",("Open "+giac::giac_aide_dir()+doc_prefix+"algo.pdf").c_str());
+           // xcas::Xcas_help_window->load((giac::giac_aide_dir()+doc_prefix+"algo.pdf").c_str());
+           // xcas::Xcas_help_window->show();
+          }
+         }}
+            xywh {5 5 100 20}
+          }
+          MenuItem Xcas_help_Geo {
             label Geometry
             callback {if (xcas::use_external_browser)
-           xcas::system_browser(giac::browser_command(doc_prefix+"casgeo/index.html").c_str());
+           giac::system_browser_command(doc_prefix+"casgeo/index.html");
         else {
          if (xcas::Xcas_help_window){
            xcas::Xcas_help_window->load((giac::giac_aide_dir()+doc_prefix+"casgeo/index.html").c_str());
@@ -1578,10 +1750,10 @@ if (xcas::use_external_browser)
          }}
             xywh {5 5 100 20}
           }
-          menuitem Xcas_help_Prog {
+          MenuItem Xcas_help_Prog {
             label Programmation
             callback {if (xcas::use_external_browser)
-           xcas::system_browser(giac::browser_command(doc_prefix+"casrouge/index.html").c_str());
+           giac::system_browser_command(doc_prefix+"casrouge/index.html");
         else {
          if (xcas::Xcas_help_window){
            xcas::Xcas_help_window->load((giac::giac_aide_dir()+doc_prefix+"casrouge/index.html").c_str());
@@ -1590,10 +1762,10 @@ if (xcas::use_external_browser)
          }}
             xywh {5 5 100 20}
           }
-          menuitem Xcas_help_Tableur {
-            label Tableur
+          MenuItem Xcas_help_Tableur {
+            label Simulation
             callback {if (xcas::use_external_browser)
-           xcas::system_browser(giac::browser_command(doc_prefix+"cassim/index.html").c_str());
+           giac::system_browser_command(doc_prefix+"cassim/index.html");
         else {
          if (xcas::Xcas_help_window){
            xcas::Xcas_help_window->load((giac::giac_aide_dir()+doc_prefix+"cassim/index.html").c_str());
@@ -1602,10 +1774,10 @@ if (xcas::use_external_browser)
          }}
             xywh {15 15 100 20}
           }
-          menuitem Xcas_help_Tortue {
-            label Tortue
+          MenuItem Xcas_help_Tortue {
+            label Turtle
             callback {if (xcas::use_external_browser)
-           xcas::system_browser(giac::browser_command(doc_prefix+"castor/index.html").c_str());
+           giac::system_browser_command(doc_prefix+"castor/index.html");
         else {
          if (xcas::Xcas_help_window){
            xcas::Xcas_help_window->load((giac::giac_aide_dir()+doc_prefix+"castor/index.html").c_str());
@@ -1614,10 +1786,10 @@ if (xcas::use_external_browser)
          }}
             xywh {25 25 100 20}
           }
-          menuitem Xcas_help_Exercices {
+          MenuItem Xcas_help_Exercices {
             label Exercices
             callback {if (xcas::use_external_browser)
-           xcas::system_browser(giac::browser_command(doc_prefix+"casexo/index.html").c_str());
+           giac::system_browser_command(doc_prefix+"casexo/index.html");
         else {
          if (xcas::Xcas_help_window){
            xcas::Xcas_help_window->load((giac::giac_aide_dir()+doc_prefix+"casexo/index.html").c_str());
@@ -1626,10 +1798,10 @@ if (xcas::use_external_browser)
          }}
             xywh {25 25 100 20}
           }
-          menuitem Xcas_help_Amusement {
+          MenuItem Xcas_help_Amusement {
             label Amusement
             callback {if (xcas::use_external_browser)
-           xcas::system_browser(giac::browser_command(doc_prefix+"cascas/index.html").c_str());
+           giac::system_browser_command(doc_prefix+"cascas/index.html");
         else {
          if (xcas::Xcas_help_window){
            xcas::Xcas_help_window->load((giac::giac_aide_dir()+doc_prefix+"cascas/index.html").c_str());
@@ -1638,10 +1810,10 @@ if (xcas::use_external_browser)
          }}
             xywh {25 25 100 20}
           }
-          menuitem Xcas_help_PARI {
+          MenuItem Xcas_help_PARI {
             label {PARI-GP}
             callback {if (xcas::use_external_browser)
-           xcas::system_browser(giac::browser_command(giac::giac_aide_dir()+"doc/pari/index.html").c_str());
+           giac::system_browser_command(giac::giac_aide_dir()+"doc/pari/index.html");
         else {
          if (xcas::Xcas_help_window){
            xcas::Xcas_help_window->load((giac::giac_aide_dir()+"doc/pari/index.html").c_str());
@@ -1651,60 +1823,96 @@ if (xcas::use_external_browser)
             xywh {5 5 100 20}
           }
         }
-        submenu Xcas_help_internet {
+        Submenu Xcas_help_internet {
           label Internet open
           xywh {0 0 100 20}
         } {
-          menuitem Xcas_help_forum {
+          MenuItem Xcas_help_forum {
             label Forum
-            callback {xcas::system_browser((giac::browser_command("http://pcm1.e.ujf-grenoble.fr/XCAS")).c_str());}
+            callback {const giac::context * contextptr = xcas::get_context(xcas::Xcas_input_focus);
+ giac::system_browser_command(giac::language(contextptr)==4?"http://www.inf.uth.gr/xcas/":"http://xcas.e.ujf-grenoble.fr/XCAS");}
             xywh {15 15 100 20}
           }
-          menuitem Xcas_help_connan {
-            label {Site Lycee de G. Connan}
-            callback {xcas::system_browser((giac::browser_command("http://gconnan.free.fr/?page=33")).c_str());}
-            xywh {45 45 100 20}
-          }
-          menuitem Xcas_help_bacs {
-            label {Ressources bac S}
-            callback {xcas::system_browser((giac::browser_command("http://www-fourier.ujf-grenoble.fr/~parisse/irem.html\#bacs")).c_str());}
+          MenuItem Xcas_help_lycee_card {
+            label {Aide-memoire lycee}
+            callback {giac::system_browser_command("http://www-fourier.ujf-grenoble.fr/~parisse/irem/placlycee.pdf");}
             xywh {25 25 100 20}
           }
-          menuitem Xcas_help_agreg {
-            label {Ressources Agregation}
-            callback {xcas::system_browser((giac::browser_command("http://www-fourier.ujf-grenoble.fr/~parisse/agreg.html")).c_str());}
+          MenuItem Xcas_help_lycee {
+            label {Documents pedagogiques lycee}
+            callback {giac::system_browser_command("http://www-fourier.ujf-grenoble.fr/~parisse/irem.html");}
+            xywh {25 25 100 20}
+          }
+          MenuItem Xcas_help_algo_lycee {
+            label {Documents algorithmique}
+            callback {giac::system_browser_command("http://www-fourier.ujf-grenoble.fr/~parisse/algoxcas.html");}
+            xywh {25 25 100 20}
+          }
+          MenuItem Xcas_help_connan {
+            label {Site Lycee de G. Connan}
+            callback {giac::system_browser_command("http://gconnan.free.fr/?page=33");}
+            xywh {45 45 100 20}
+          }
+          MenuItem Xcas_help_alb {
+            label {Site Lycee de L. Briel}
+            callback {giac::system_browser_command("http://lycee-rodezlaroque.eap.entmip.fr/le-lycee/xcas/");}
+            xywh {45 45 100 20}
+          }
+          MenuItem Xcas_help_cheval {
+            label {Calcul formel au lycee, par D. Chevallier}
+            callback {giac::system_browser_command("http://courelectr.free.fr/Xcas/Xcas_calcul_formel_lycee.pdf");}
+            xywh {45 45 100 20}
+          }
+          MenuItem Xcas_help_han {
+            label {Site de F. Han}
+            callback {giac::system_browser_command("http://www.math.jussieu.fr/~han/xcas");}
+            xywh {45 45 100 20}
+          }
+          MenuItem Xcas_help_capes {
+            label {Ressources Capes}
+            callback {giac::system_browser_command("http://www-fourier.ujf-grenoble.fr/~parisse/capes.html");}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_load {
+          MenuItem Xcas_help_agreg {
+            label {Ressources Agregation externe}
+            callback {giac::system_browser_command("http://www-fourier.ujf-grenoble.fr/~parisse/agreg.html");}
+            xywh {35 35 100 20}
+          }
+          MenuItem Xcas_help_agregint {
+            label {Ressources Agregation interne}
+            callback {giac::system_browser_command("http://www-fourier.ujf-grenoble.fr/~parisse/agregint.html");}
+            xywh {35 35 100 20}
+          }
+          MenuItem Xcas_help_load {
             label {Update help}
             callback {\#ifdef WIN32
-  fl_message("Xcas will launch your browser to get the help archive giacshare.tgz.\\nAfter the download is completed, please unarchive casdoc.tgz\\nin the Xcas directory (c:Ês by default)");
- xcas::system_browser(giac::browser_command("http://www-fourier.ujf-grenoble.fr/~parisse/giac/casdoc.tgz").c_str());
+  fl_message("%s","Xcas will launch your browser to get the help archive giacshare.tgz.\\nAfter the download is completed, please unarchive casdoc.tgz\\nin the Xcas directory (c:Ês by default)");
+ giac::system_browser_command("http://www-fourier.ujf-grenoble.fr/~parisse/giac/casdoc.tgz");
  return;
 \#endif
-  std::string path=giac::xcasroot;
+  std::string path=giac::xcasroot();
  int s=path.size(),i=s-1;
  for (--i;i>0;--i){
    if (path[i]=='/')
      break;
  }
  path=path.substr(0,i+1)+"share";
- i=fl_ask(("Check that you can write over "+path+",\\ncheck that your Internet connection is ready\\nand check that wget, tar and gzip are installed.\\nProceed?").c_str());
+ i=fl_ask("%s",("Check that you can write over "+path+",\\ncheck that your Internet connection is ready\\nand check that wget, tar and gzip are installed.\\nProceed?").c_str());
   if (i){
-    fl_message(("Executing: mkdir /tmp ; cd /tmp && wget http://www-fourier.ujf-grenoble.fr/~parisse/giac/giacshare.tgz && cd "+path+" && tar xvfz /tmp/giacshare.tgz").c_str());
+    fl_message("%s",("Executing: mkdir /tmp ; cd /tmp && wget http://www-fourier.ujf-grenoble.fr/~parisse/giac/giacshare.tgz && cd "+path+" && tar xvfz /tmp/giacshare.tgz").c_str());
     system(("mkdir /tmp ; cd /tmp && wget http://www-fourier.ujf-grenoble.fr/~parisse/giac/giacshare.tgz && cd "+path+" && tar xvfz /tmp/giacshare.tgz").c_str());
   }}
             xywh {5 5 100 20}
           }
         }
-        submenu Xcas_help_start {
-          label {Start with CAS} open
+        Submenu Xcas_help_start {
+          label {Start with CAS}
           xywh {5 5 100 20}
         } {
-          menuitem Xcas_help_tutorial {
+          MenuItem Xcas_help_tutorial {
             label Tutorial
             callback {if (xcas::use_external_browser)
-           xcas::system_browser((giac::browser_command(doc_prefix+"tutoriel/index.html")).c_str());
+           giac::system_browser_command(doc_prefix+"tutoriel/index.html");
         else {
          if (xcas::Xcas_help_window){
            xcas::Xcas_help_window->load((giac::giac_aide_dir()+doc_prefix+"tutoriel/index.html").c_str());
@@ -1713,9 +1921,9 @@ if (xcas::use_external_browser)
          }}
             xywh {15 15 100 20}
           }
-          menuitem Xcas_help_solution {
+          MenuItem Xcas_help_solution {
             label solutions
-            callback {const char * ch=fl_input(gettext("Exercice number (from 1 to 25)?"));
+            callback {const char * ch=fl_input(gettext("Exercise number (from 1 to 25)?"));
 if (!ch) return;
 int i=atoi(ch);
 if (i>0 && i<26){
@@ -1733,317 +1941,533 @@ if (i>0 && i<26){
             xywh {5 5 100 20}
           }
         }
-        menuitem Xcas_help_make_index {
+        MenuItem Xcas_help_make_index {
           label {Rebuild help cache}
           callback {const giac::context * contextptr=Xcas_get_context();
 giac::html_help_init("aide_cas",language(contextptr),true,true);}
           xywh {10 10 100 20}
         }
+        MenuItem Xcas_a_propos {
+          label About
+          callback {a_propos();   Xcas_Messages->show(); 
+  Xcas_resize_mainwindow();}
+          xywh {5 5 100 20}
+        }
       }
-      submenu Xcas_help_CAS {
-        label CAS open
+      Submenu Xcas_help_CASmenu {
+        label Toolbox
         xywh {20 20 100 20}
       } {
-        menuitem Xcas_Add_Entry {
+        MenuItem Xcas_Add_Entry {
           label {New entry}
           callback {xcas::cb_New_Input(Xcas_current_session(),0);}
           xywh {50 50 100 20} shortcut 0x8006e
         }
-        menuitem Xcas_Add_Comment {
+        MenuItem Xcas_Add_Comment {
           label {New comment}
           callback {xcas::History_cb_New_Comment_Input(Xcas_current_session(),0);}
           xywh {40 40 100 20} shortcut 0x80063
         }
-        submenu Xcas_help_equations {
+        Submenu Xcas_help_equations {
           label Equations
           xywh {5 5 100 20}
         } {
-          menuitem Xcas_help_solve {
+          MenuItem Xcas_help_solve {
             label {solve: Solve equation or system}
             xywh {25 25 100 20}
           }
-          menuitem Xcas_help_fsolve {
+          MenuItem Xcas_help_fsolve {
             label {fsolve: Solve equation numerically}
             xywh {25 25 100 20}
           }
-          menuitem Xcas_help_proot {
+          MenuItem Xcas_help_proot {
             label {proot: Roots of a polynomial}
             xywh {25 25 100 20}
           }
-          menuitem Xcas_help_linsolve {
+          MenuItem Xcas_help_linsolve {
             label {linsolve: Solve linear system}
             xywh {25 25 100 20}
           }
-          menuitem Xcas_help_desolve {
+          MenuItem Xcas_help_desolve {
             label {desolve: Solve differential equation}
             xywh {25 25 100 20}
           }
+          MenuItem Xcas_help_odesolve {
+            label {odesolve: Solve differential equation (numeric)}
+            xywh {35 35 100 20}
+          }
+          MenuItem Xcas_help_rsolve {
+            label {rsolve: Solve recurrence equation}
+            xywh {45 45 100 20}
+          }
         }
-        submenu Xcas_help_calculus {
+        Submenu Xcas_help_calculus {
           label Calculus
           xywh {0 0 100 20}
         } {
-          menuitem Xcas_help_int {
+          MenuItem Xcas_help_int {
             label {int: Integration (definite/indefinite)}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_diff {
+          MenuItem Xcas_help_diff {
             label {diff: Derivative}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_limit {
+          MenuItem Xcas_help_limit {
             label {limit: Limit}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_series {
-            label {series: Taylor or asymptotic expansion}
+          MenuItem Xcas_help_ptayl {
+            label {ptayl: Taylor polynomial}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_sum {
+          MenuItem Xcas_help_series {
+            label {series: series expansion (with remainder)}
+            xywh {35 35 100 20}
+          }
+          MenuItem Xcas_help_sum {
             label {sum: Discrete summation}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_laplace {
+          MenuItem Xcas_help_laplace {
             label {laplace: Laplace transform}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_ilaplace {
+          MenuItem Xcas_help_ilaplace {
             label {ilaplace: invert Laplace transform}
             xywh {35 35 100 20}
           }
         }
-        submenu Xcas_help_Simplify {
+        Submenu Xcas_help_Simplify {
           label Simplify
           xywh {0 0 100 20}
         } {
-          menuitem Xcas_help_simplify {
+          MenuItem Xcas_help_simplify {
             label {simplify: Simplify expression}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_normal {
+          MenuItem Xcas_help_normal {
             label {normal: Simplify rational and algebraic expression}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_ratnormal {
+          MenuItem Xcas_help_ratnormal {
             label {ratnormal: Simplify rational expressions}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_factor {
+          MenuItem Xcas_help_factor {
             label {factor: Factorization}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_cfactor {
+          MenuItem Xcas_help_cfactor {
             label {cfactor: Factorization over C}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_partfrac {
+          MenuItem Xcas_help_partfrac {
             label {partfrac: Partial fraction decomposition}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_cpartfrac {
+          MenuItem Xcas_help_cpartfrac {
             label {cpartfrac: Partial fraction decomposition over C}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_sep1 {
+          MenuItem Xcas_help_sep1 {
             label {---}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_subst {
+          MenuItem Xcas_help_subst {
             label {subst: Substitution of variables by expressions}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_reorder {
+          MenuItem Xcas_help_reorder {
             label {reorder: Reorder expression wrt list of variables}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_sep2 {
+          MenuItem Xcas_help_sep2 {
             label {---}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_lin {
+          MenuItem Xcas_help_lin {
             label {lin: Linearization of exponentials}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_tlin {
+          MenuItem Xcas_help_tlin {
             label {tlin: Trigonometric linearization}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_texpand {
+          MenuItem Xcas_help_texpand {
             label {texpand: Expand transcendental expressions}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_lncollect {
+          MenuItem Xcas_help_lncollect {
             label {lncollect: Collect logarithms}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_exp2pow {
+          MenuItem Xcas_help_exp2pow {
             label {exp2pow: Convert exp(a*ln(b)) to b^a}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_exp2trig {
+          MenuItem Xcas_help_exp2trig {
             label {exp2trig: Convert complex exponentials to trig}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_trig2exp {
+          MenuItem Xcas_help_trig2exp {
             label {trig2exp: Convert trig to complex exponentials}
             xywh {35 35 100 20}
           }
         }
-        submenu Xcas_help_arit {
+        Submenu Xcas_help_arit {
           label Arithmetic
           xywh {0 0 100 20}
         } {
-          menuitem Xcas_help_isprime {
+          MenuItem Xcas_help_isprime {
             label {isprime: test if an integer is prime}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_ifactor {
+          MenuItem Xcas_help_ifactor {
             label {ifactor: factorize an integer}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_iquo {
+          MenuItem Xcas_help_iquo {
             label {iquo: quotient for integers}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_irem {
+          MenuItem Xcas_help_irem {
             label {irem: remainder for integers}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_iabcuv {
+          MenuItem Xcas_help_iabcuv {
             label {iabcuv: Solve a.u+b.v=c in Z}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_ichinrem {
+          MenuItem Xcas_help_ichinrem {
             label {ichinrem: Chinese remainder for integers}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_sep3 {
+          MenuItem Xcas_help_sep3 {
             label {---}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_gcd {
+          MenuItem Xcas_help_gcd {
             label {gcd: gcd of integers or polynomials}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_lcm {
+          MenuItem Xcas_help_lcm {
             label {lcm: lcm of integers or polynomials}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_powmod {
+          MenuItem Xcas_help_powmod {
             label {powmod: fast powering modulo}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_sep4 {
+          MenuItem Xcas_help_sep4 {
             label {---}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_quo {
+          MenuItem Xcas_help_quo {
             label {quo: quotient (poly. synthetic division)}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_rem {
+          MenuItem Xcas_help_rem {
             label {rem: remainder (poly. synthetic division)}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_abcuv {
+          MenuItem Xcas_help_abcuv {
             label {abcuv: Solve a.u+b.v=c for polynomials}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_chinrem {
+          MenuItem Xcas_help_chinrem {
             label {chinrem: Chinese remainder for polynomials}
             xywh {35 35 100 20}
           }
+          MenuItem Xcas_help_pourcent {
+            label {%: Z/pZ, p premier}
+            xywh {35 35 100 20}
+          }
+          MenuItem Xcas_help_GF {
+            label {GF: Corps fini non premier}
+            xywh {35 35 100 20}
+          }
         }
-        submenu Xcas_help_linal {
+        Submenu Xcas_help_linal {
           label {Linear algebra}
           xywh {0 0 100 20}
         } {
-          menuitem Xcas_help_matrix {
+          MenuItem Xcas_help_matrix {
             label {matrix: Create a matrix}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_tran {
+          MenuItem Xcas_help_tran {
             label {tran: Transpose a matrix}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_ker {
+          MenuItem Xcas_help_ker {
             label {ker: Kernel of a matrix}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_image {
+          MenuItem Xcas_help_image {
             label {image: Image of a matrix}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_inverse {
+          MenuItem Xcas_help_inverse {
             label {inv: Invert a matrix}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_det {
+          MenuItem Xcas_help_det {
             label {det: Determinant of a matrix}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_charpoly {
+          MenuItem Xcas_help_charpoly {
             label {charpoly: Characteristic polynomial}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_egv {
+          MenuItem Xcas_help_egv {
             label {egv: Eigenvectors of a matrix}
             xywh {35 35 100 20}
           }
-          menuitem Xcas_help_egvl {
+          MenuItem Xcas_help_egvl {
             label {egvl: Eigenvalues of a matrix}
             xywh {35 35 100 20}
           }
         }
-      }
-      submenu Xcas_help_tableur {
-        label Spreadsheet
-        xywh {40 40 100 20}
-      } {
-        menuitem Xcas_Add_Tableur {
-          label {New spreadsheet}
-          callback {xcas::History_cb_New_Tableur(Xcas_current_session(),0);}
-          xywh {70 70 100 20} shortcut 0x80074
+        Submenu Xcas_help_proba {
+          label Proba
+          xywh {0 0 100 20}
+        } {
+          MenuItem Xcas_help_binomial {
+            label {binomial: Binomial distribution}
+            xywh {35 35 100 20}
+          }
+          MenuItem Xcas_help_normald {
+            label {normald: Normal density}
+            xywh {35 35 100 20}
+          }
+          MenuItem Xcas_help_rand {
+            label {rand: random number}
+            xywh {50 50 100 20}
+          }
+          MenuItem Xcas_help_ranm {
+            label {ranm: random vector/matrix}
+            xywh {45 45 100 20}
+          }
+          MenuItem Xcas_help_randmarkov {
+            label {randmarkov: random Markov matrix or chain}
+            xywh {45 45 100 20}
+          }
+          MenuItem Xcas_help_markov {
+            label {markov: transition matrix decomposition}
+            xywh {35 35 100 20}
+          }
+          MenuItem Xcas_help_cdf {
+            label {cdf: cumulated distribution function}
+            xywh {35 35 100 20}
+          }
+          MenuItem Xcas_help_icdf {
+            label {icdf: inverse cumulated distributed function}
+            xywh {35 35 100 20}
+          }
+          MenuItem Xcas_proba_plot {
+            label {=== see also plots in Graph ====}
+            xywh {35 35 100 20}
+          }
+          Submenu {} {
+            label {Continuous (densities)} open
+            xywh {0 0 62 20}
+          } {
+            MenuItem Xcas_help_betad {
+              label {betad: Beta density}
+              xywh {45 45 100 20}
+            }
+            MenuItem Xcas_help_cauchy {
+              label {cauchyd: Cauchy density}
+              xywh {40 40 100 20}
+            }
+            MenuItem Xcas_help_chisquare {
+              label {chisquared: Chi 2 density}
+              xywh {50 50 100 20}
+            }
+            MenuItem Xcas_help_exponential {
+              label {exponentiald: Exponential density}
+              xywh {40 40 100 20}
+            }
+            MenuItem Xcas_help_fisher {
+              label {fisherd: Fisher-Snedecor density}
+              xywh {40 40 100 20}
+            }
+            MenuItem Xcas_help_gammad {
+              label {gammad: Gamma density}
+              xywh {40 40 100 20}
+            }
+            MenuItem Xcas_help_normald2 {
+              label {normald: Normal density}
+              xywh {45 45 100 20}
+            }
+            MenuItem Xcas_help_student {
+              label {studentd: Student density}
+              xywh {40 40 100 20}
+            }
+            MenuItem Xcas_help_uniform {
+              label {uniformd: Uniform density}
+              xywh {40 40 100 20}
+            }
+            MenuItem Xcas_help_weibull {
+              label {weibulld: Weibull density}
+              xywh {40 40 100 20}
+            }
+          }
+          Submenu {} {
+            label {Discrete distributions} open
+            xywh {0 0 62 20}
+          } {
+            MenuItem Xcas_help_binomial2 {
+              label {binomial: Binomial distribution}
+              xywh {45 45 100 20}
+            }
+            MenuItem Xcas_help_negbinomial {
+              label {negbinomial: Negative binomial distribution}
+              xywh {45 45 100 20}
+            }
+            MenuItem Xcas_help_geometric {
+              label {geometric: Geometric distribution}
+              xywh {40 40 100 20}
+            }
+            MenuItem Xcas_help_poisson {
+              label {poisson: poisson distribution}
+              xywh {40 40 100 20}
+            }
+          }
+          Submenu {} {
+            label Tests open
+            xywh {0 0 62 20}
+          } {
+            MenuItem Xcas_help_chisquare_icdf {
+              label {chisquared_icdf: Chi 2 inverse}
+              xywh {60 60 100 20}
+            }
+            MenuItem Xcas_help_chisquaret {
+              label {chisquaret: Chi 2 test}
+              xywh {50 50 100 20}
+            }
+            MenuItem Xcas_help_kolmogorovd {
+              label {kolmogorovd: K-Smirnov density}
+              xywh {45 45 100 20}
+            }
+            MenuItem Xcas_help_kolmogorovt {
+              label {kolmogorovt: K-Smirnov test}
+              xywh {45 45 100 20}
+            }
+            MenuItem Xcas_help_normald_icdf2 {
+              label {normald_icdf: Normal inverse}
+              xywh {60 60 100 20}
+            }
+            MenuItem Xcas_help_normalt {
+              label {normalt: Z-Test}
+              xywh {50 50 100 20}
+            }
+            MenuItem Xcas_help_studentd_icdf2 {
+              label {studentd_icdf: Student inverse}
+              xywh {60 60 100 20}
+            }
+            MenuItem Xcas_help_studentt {
+              label {studentt: T-Test}
+              xywh {50 50 100 20}
+            }
+            MenuItem Xcas_help_wilcoxont {
+              label {wilcoxont: Test}
+              xywh {50 50 100 20}
+            }
+          }
         }
       }
-      submenu Xcas_help_graph {
+      Submenu Xcas_help_expression {
+        label Expression
+        xywh {40 40 100 20}
+      } {
+        MenuItem Xcas_Add_Expression {
+          label {New expression}
+          callback {xcas::History_cb_New_Equation(Xcas_current_session(),0);}
+          xywh {125 125 100 20} shortcut 0x80065
+        }
+      }
+      Submenu Xcas_help_allcmds {
+        label Cmds
+        xywh {85 85 100 20}
+      } {
+        Submenu Xcas_help_constants {
+          label Constants open
+          xywh {15 15 100 20}
+        } {
+          MenuItem Xcas_help_i {
+            label {i: sqrt(-1)}
+            callback {int mode=giac::xcas_mode(Xcas_get_context()); if (mode==1 || mode==2) xcas::in_Xcas_input_char(xcas::Xcas_input_focus,"I",'I'); else xcas::in_Xcas_input_char(xcas::Xcas_input_focus,"i",'i');}
+            xywh {35 35 100 20}
+          }
+          MenuItem Xcas_help_e {
+            label {e: exp(1)}
+            callback {int mode=giac::xcas_mode(Xcas_get_context()); if (mode==1 || mode==2) xcas::in_Xcas_input_char(xcas::Xcas_input_focus,"exp(1)",'e'); else xcas::in_Xcas_input_char(xcas::Xcas_input_focus,"e",'e');}
+            xywh {35 35 100 20}
+          }
+        }
+      }
+      Submenu Xcas_help_prog {
+        label Prg
+        xywh {55 55 100 20}
+      } {
+        MenuItem Xcas_Add_Program {
+          label {New program}
+          callback {xcas::History_cb_New_Program(Xcas_current_session(),0);}
+          xywh {110 110 100 20} shortcut 0x80070
+        }
+        MenuItem Xcas_help_debug {
+          label {debug: debug a program}
+          xywh {65 65 100 20}
+        }
+      }
+      Submenu Xcas_help_graph {
         label Graphic
         xywh {40 40 100 20}
       } {
-        menuitem Xcas_help_attributs {
+        MenuItem Xcas_help_attributs {
           label Attributs
           callback {static int res=0;
 bool untranslate=false,approx=false,formel=false;
-Fl_Widget * w=Fl::focus();
+Fl_Widget * w=xcas::Xcas_input_focus;
 Fl_Input_ * i=dynamic_cast<Fl_Input_*>(w);
+xcas::Xcas_Text_Editor * ed=dynamic_cast<xcas::Xcas_Text_Editor *>(w);
 if (i && xcas::change_line_type(res,false,approx,"Attributs",false,formel,untranslate,false,
 Xcas_Main_Window_->labelsize())!=1){
   std::string s="display="+xcas::print_color(res);
   i->insert(s.c_str()); 
+  Fl::focus(i);
+}
+if (ed && xcas::change_line_type(res,false,approx,"Attributs",false,formel,untranslate,false,
+Xcas_Main_Window_->labelsize())!=1){
+  std::string s="display="+xcas::print_color(res);
+  ed->insert(s.c_str()); 
+  Fl::focus(ed);
 }}
-          xywh {65 65 100 20}
+          xywh {65 65 100 20} shortcut 0x8006b
         }
-        submenu Xcas_help_curves {
-          label Curves open
+        Submenu Xcas_help_curves {
+          label Curves
           xywh {10 10 100 20}
         } {
-          menuitem Xcas_help_plot {
+          MenuItem Xcas_help_plot {
             label {plotfunc: Plot a 1-var function}
             callback {int pos;
 std::string arg;
-xcas::History_Pack * f=xcas::get_history_pack(Fl::focus(),pos);
+xcas::History_Pack * f=xcas::get_history_pack(xcas::Xcas_input_focus,pos);
 if (f && tablefunc_dialog(f,arg,true,0,gettext("Graph of a function"))){
 	f->add_entry(pos);
-	arg="plotfunc(" +arg+")";
+	arg="plot(" +arg+")";
 	f->set_value(pos,arg,true);
       }}
             xywh {40 40 100 20}
           }
-          menuitem Xcas_help_plotparam2d {
+          MenuItem Xcas_help_plotparam2d {
             label {plotparam: Parametric 2-d curve}
             callback {int pos;
 std::string arg;
-xcas::History_Pack * f=xcas::get_history_pack(Fl::focus(),pos);
+xcas::History_Pack * f=xcas::get_history_pack(xcas::Xcas_input_focus,pos);
 if (f && plotparam_dialog(f,arg,0)){
 	f->add_entry(pos);
 	arg="plotparam(" +arg+")";
@@ -2051,11 +2475,11 @@ if (f && plotparam_dialog(f,arg,0)){
       }}
             xywh {40 40 100 20}
           }
-          menuitem Xcas_help_plotpolar {
+          MenuItem Xcas_help_plotpolar {
             label {plotpolar: Polar 2-d curve}
             callback {int pos;
 std::string arg;
-xcas::History_Pack * f=xcas::get_history_pack(Fl::focus(),pos);
+xcas::History_Pack * f=xcas::get_history_pack(xcas::Xcas_input_focus,pos);
 if (f && plotparam_dialog(f,arg,-1)){
 	f->add_entry(pos);
 	arg="plotpolar(" +arg+")";
@@ -2063,23 +2487,23 @@ if (f && plotparam_dialog(f,arg,-1)){
       }}
             xywh {40 40 100 20}
           }
-          menuitem Xcas_help_plotarea {
+          MenuItem Xcas_help_plotarea {
             label {plotarea: Area under curve}
             callback {int pos;
 std::string arg;
-xcas::History_Pack * f=xcas::get_history_pack(Fl::focus(),pos);
-if (f && tablefunc_dialog(f,arg,true,0,gettext("Area under curve"))){
+xcas::History_Pack * f=xcas::get_history_pack(xcas::Xcas_input_focus,pos);
+if (f && tablefunc_dialog(f,arg,true,2,gettext("Area under curve"))){
 	f->add_entry(pos);
 	arg="plotarea(" +arg+")";
 	f->set_value(pos,arg,true);
       }}
             xywh {40 40 100 20}
           }
-          menuitem Xcas_help_plotimplicit {
+          MenuItem Xcas_help_plotimplicit {
             label {plotimplicit: Implicit plot}
             callback {int pos;
 std::string arg;
-xcas::History_Pack * f=xcas::get_history_pack(Fl::focus(),pos);
+xcas::History_Pack * f=xcas::get_history_pack(xcas::Xcas_input_focus,pos);
 if (f && plotparam_dialog(f,arg,3)){
 	f->add_entry(pos);
 	arg="plotimplicit(" +arg+")";
@@ -2087,24 +2511,24 @@ if (f && plotparam_dialog(f,arg,3)){
       }}
             xywh {40 40 100 20}
           }
-          menuitem Xcas_help_plotcontour {
+          MenuItem Xcas_help_plotcontour {
             label {plotcontour: Level curves}
             xywh {40 40 100 20}
           }
-          menuitem Xcas_help_plotdensity {
+          MenuItem Xcas_help_plotdensity {
             label {plotdensity: 2-d z view as color}
             xywh {50 50 100 20}
           }
         }
-        submenu Xcas_help_graph_surfaces {
-          label Surfaces open
+        Submenu Xcas_help_graph_surfaces {
+          label Surfaces
           xywh {75 75 100 20}
         } {
-          menuitem Xcas_help_plot3d {
+          MenuItem Xcas_help_plot3d {
             label {plotfunc: Plot a 2-var function}
             callback {int pos;
 std::string arg;
-xcas::History_Pack * f=xcas::get_history_pack(Fl::focus(),pos);
+xcas::History_Pack * f=xcas::get_history_pack(xcas::Xcas_input_focus,pos);
 if (f && tablefunc_dialog(f,arg,true,1,gettext("Graph of a function"))){
 	f->add_entry(pos);
 	arg="plotfunc(" +arg+")";
@@ -2112,11 +2536,11 @@ if (f && tablefunc_dialog(f,arg,true,1,gettext("Graph of a function"))){
       }}
             xywh {45 45 100 20}
           }
-          menuitem Xcas_help_plotparam3d {
+          MenuItem Xcas_help_plotparam3d {
             label {plotparam: Parametric 3-d surface}
             callback {int pos;
 std::string arg;
-xcas::History_Pack * f=xcas::get_history_pack(Fl::focus(),pos);
+xcas::History_Pack * f=xcas::get_history_pack(xcas::Xcas_input_focus,pos);
 if (f && plotparam_dialog(f,arg,1)){
 	f->add_entry(pos);
 	arg="plotparam(" +arg+")";
@@ -2125,15 +2549,15 @@ if (f && plotparam_dialog(f,arg,1)){
             xywh {45 45 100 20}
           }
         }
-        submenu Xcas_help_graph_suite {
-          label Sequence open
+        Submenu Xcas_help_graph_suite {
+          label Sequence
           xywh {65 65 100 20}
         } {
-          menuitem Xcas_help_plotseq {
+          MenuItem Xcas_help_plotseq {
             label {plotseq: Recurrent sequence plot}
             callback {int pos;
 std::string arg,u0param;
-xcas::History_Pack * f=xcas::get_history_pack(Fl::focus(),pos);
+xcas::History_Pack * f=xcas::get_history_pack(xcas::Xcas_input_focus,pos);
 if (f && tableseq_dialog(f,arg,true,gettext("Graph of a recurrent sequence"),u0param)){
 	f->add_entry(pos);
 	arg=u0param+"; plotseq(" +arg+")";
@@ -2141,20 +2565,20 @@ if (f && tableseq_dialog(f,arg,true,gettext("Graph of a recurrent sequence"),u0p
       }}
             xywh {45 45 100 20}
           }
-          menuitem Xcas_help_plotlist {
+          MenuItem Xcas_help_plotlist {
             label {plotlist: plot a list of values}
             xywh {55 55 100 20}
           }
         }
-        submenu Xcas_help_graph_ode {
-          label Ode open
+        Submenu Xcas_help_graph_ode {
+          label Ode
           xywh {75 75 100 20}
         } {
-          menuitem Xcas_help_plotfield {
+          MenuItem Xcas_help_plotfield {
             label {plotfield: 2-d or 3-d field}
             callback {int pos;
 std::string arg;
-xcas::History_Pack * f=xcas::get_history_pack(Fl::focus(),pos);
+xcas::History_Pack * f=xcas::get_history_pack(xcas::Xcas_input_focus,pos);
 if (f && plotparam_dialog(f,arg,2)){
 	f->add_entry(pos);
 	arg="plotfield(" +arg+")";
@@ -2162,15 +2586,15 @@ if (f && plotparam_dialog(f,arg,2)){
       }}
             xywh {45 45 100 20}
           }
-          menuitem Xcas_help_plotode {
+          MenuItem Xcas_help_plotode {
             label {plotode: Diff. equation plot}
             xywh {45 45 100 20}
           }
-          menuitem Xcas_help_iplotode {
+          MenuItem Xcas_help_iplotode {
             label {interactive_odeplot: Interactive diff. equation plot}
             callback {int pos;
 std::string arg;
-xcas::History_Pack * f=xcas::get_history_pack(Fl::focus(),pos);
+xcas::History_Pack * f=xcas::get_history_pack(xcas::Xcas_input_focus,pos);
 if (f && plotparam_dialog(f,arg,2)){
 	f->add_entry(pos);
 	arg="interactive_plotode(" +arg+")";
@@ -2179,107 +2603,90 @@ if (f && plotparam_dialog(f,arg,2)){
             xywh {55 55 100 20}
           }
         }
-        submenu Xcas_help_graph_stats {
-          label Stats open
+        Submenu Xcas_help_graph_stats {
+          label {Proba Stats}
           xywh {65 65 100 20}
         } {
-          menuitem Xcas_help_camembert {
+          MenuItem Xcas_help_camembert {
             label {camembert: 1-d stats}
             xywh {55 55 100 20}
           }
-          menuitem Xcas_help_histogram {
+          MenuItem Xcas_help_baton {
+            label {bar_plot: bar plot}
+            xywh {65 65 100 20}
+          }
+          MenuItem Xcas_help_histogram {
             label {histogram: 1-d stats}
             xywh {65 65 100 20}
           }
-          menuitem Xcas_help_moustache {
+          MenuItem Xcas_help_plotstat {
+            label {plot: plot distribution law}
+            xywh {65 65 100 20}
+          }
+          MenuItem Xcas_help_plotcdf {
+            label {plotcdf: plot cumulated distribution function}
+            xywh {65 65 100 20}
+          }
+          MenuItem Xcas_help_moustache {
             label {moustache: 1-d stats}
             xywh {75 75 100 20}
           }
-          menuitem Xcas_help_scatterplot {
+          MenuItem Xcas_help_scatterplot {
             label {scatterplot: 2-d stats}
             xywh {85 85 100 20}
           }
-          menuitem Xcas_help_polygonscatterplot {
+          MenuItem Xcas_help_polygonplot {
+            label {polygonplot: 2-d stats}
+            xywh {95 95 100 20}
+          }
+          MenuItem Xcas_help_polygonscatterplot {
             label {polygonscatterplot: 2-d stats}
             xywh {95 95 100 20}
           }
-          menuitem Xcas_help_linear_regression_plot {
-            label {polygonscatterplot: 2-d stats}
+          MenuItem Xcas_help_linear_regression_plot {
+            label {linear_regressionplot: 2-d stats}
             xywh {95 95 100 20}
           }
         }
       }
-      submenu Xcas_help_geo {
+      Submenu Xcas_help_geo {
         label Geo
         xywh {40 40 100 20}
       } {
-        submenu Xcas_new_figure {
-          label {New figure}
-          xywh {65 65 100 20}
-        } {
-          menuitem Xcas_Add_Figure {
-            label {graph, geo2d}
-            callback {xcas::History_cb_New_Figure(Xcas_current_session(),0);}
-            xywh {75 75 100 20} shortcut 0x80067
-          }
-          menuitem Xcas_Add_Figure3d {
-            label {graph, geo3d}
-            callback {xcas::History_cb_New_Figure3d(Xcas_current_session(),0);}
-            xywh {85 85 100 20} shortcut 0x80068
-          }
-          menuitem Xcas_Add_Figurex {
-            label {geo2d exact}
-            callback {xcas::History_cb_New_Figurex(Xcas_current_session(),0);}
-            xywh {85 85 100 20}
-          }
-          menuitem Xcas_Add_Figure3dx {
-            label {geo3d exact}
-            callback {xcas::History_cb_New_Figure3dx(Xcas_current_session(),0);}
-            xywh {95 95 100 20}
-          }
+        MenuItem Xcas_Add_Figure {
+          label {New figure 2d}
+          callback {xcas::History_cb_New_Figure(Xcas_current_session(),0);}
+          xywh {75 75 100 20} shortcut 0x80067
+        }
+        MenuItem Xcas_Add_Figure3d {
+          label {New figure 3d}
+          callback {xcas::History_cb_New_Figure3d(Xcas_current_session(),0);}
+          xywh {85 85 100 20} shortcut 0x80068
         }
       }
-      submenu Xcas_help_prog {
-        label Prg
-        xywh {55 55 100 20}
-      } {
-        menuitem Xcas_Add_Program {
-          label {New program}
-          callback {xcas::History_cb_New_Program(Xcas_current_session(),0);}
-          xywh {110 110 100 20} shortcut 0x80070
-        }
-        menuitem Xcas_help_debug {
-          label {debug: debug a program}
-          xywh {65 65 100 20}
-        }
-      }
-      submenu Xcas_help_expression {
-        label Expression
+      Submenu Xcas_help_tableur {
+        label Spreadsheet
         xywh {30 30 100 20}
       } {
-        menuitem Xcas_Add_Expression {
-          label {New expression}
-          callback {xcas::History_cb_New_Equation(Xcas_current_session(),0);}
-          xywh {125 125 100 20} shortcut 0x80065
+        MenuItem Xcas_Add_Tableur {
+          label {New spreadsheet}
+          callback {xcas::History_cb_New_Tableur(Xcas_current_session(),0);}
+          xywh {60 60 100 20} shortcut 0x80074
         }
       }
-      submenu Xcas_help_allcmds {
-        label Cmds open
-        xywh {85 85 100 20}
-      } {}
-      submenu Xcas_help_phys {
+      Submenu Xcas_help_phys {
         label Phys open
-        xywh {100 100 100 20}
+        xywh {95 95 100 20}
       } {}
-      submenu Xcas_help_scolaire {
+      Submenu Xcas_help_scolaire {
         label Highschool open
         xywh {75 75 100 20}
       } {}
-      submenu Xcas_help_logo {
-        label Tortue
+      Submenu Xcas_help_tortue {
+        label Turtle
         xywh {65 65 100 20}
       } {
-        menuitem Xcas_Add_Logo {
+        MenuItem Xcas_Add_Logo {
           label {New turtle}
           callback {xcas::History_cb_New_Logo(Xcas_current_session(),0);}
           xywh {105 105 100 20} shortcut 0x80064
@@ -2503,8 +2910,8 @@ if (f && plotparam_dialog(f,arg,2)){
         }
         Fl_Button Xcas_Majuscule_key {
           label Maj
-          callback {if (Xcas_Majuscule_key->label()==std::string("min")){
-  Xcas_Majuscule_key->label("Maj");
+          callback {if (Xcas_Majuscule_key->label()==std::string(gettext("min"))){
+  Xcas_Majuscule_key->label(gettext("Maj"));
   Xcas_a_key->label("a");
   Xcas_b_key->label("b");
   Xcas_c_key->label("c");
@@ -2563,7 +2970,7 @@ if (Xcas_Greek_key->label()==std::string("A")){
 \#endif
 }
 else {
-  Xcas_Majuscule_key->label("min");
+  Xcas_Majuscule_key->label(gettext("min"));
   Xcas_a_key->label("A");
   Xcas_b_key->label("B");
   Xcas_c_key->label("C");
@@ -2631,24 +3038,23 @@ Xcas_Alpha_Keyboard->redraw();}
           class {xcas::No_Focus_Button}
         }
         Fl_Button Xcas_Pi_key {
-          label p
-          xywh {230 490 25 25} color 10 labelfont 12 labelsize 10
+          label {Π}
+          xywh {230 490 25 25} color 10 labelsize 10
           class {xcas::No_Focus_Button}
         }
         Fl_Button Xcas_Greek_key {
           label a
-          callback {
-\#ifdef _HAVE_FL_UTF8_HDR_
+          callback {\#ifdef _HAVE_FL_UTF8_HDR_
 if (Xcas_Greek_key->label()==std::string("α")){
   Xcas_Greek_key->label("A");
 }
 else {
   Xcas_Greek_key->label("α");
 }
-if (Xcas_Majuscule_key->label()==std::string("min"))
-  Xcas_Majuscule_key->label("Maj");
+if (Xcas_Majuscule_key->label()==std::string(gettext("min")))
+  Xcas_Majuscule_key->label(gettext("Maj"));
 else
-  Xcas_Majuscule_key->label("min");
+  Xcas_Majuscule_key->label(gettext("min"));
 cb_Xcas_Majuscule_key(0,0);
 \#else // _HAVE_FL_UTF8_HDR_
 if (Xcas_Greek_key->label()==std::string("a")){
@@ -2730,7 +3136,7 @@ Xcas_Alpha_Keyboard->redraw();}
           class {xcas::No_Focus_Button}
         }
       }
-      Fl_Group Xcas_Scientific_Keyboard {
+      Fl_Group Xcas_Scientific_Keyboard {open
         xywh {0 415 310 100}
       } {
         Fl_Group Lettre_keyboard {
@@ -2762,7 +3168,7 @@ Xcas_Alpha_Keyboard->redraw();}
         } {
           Fl_Button Xcas_Double_quote {
             label {"}
-            xywh {70 415 30 25} labelsize 10
+            tooltip {String delimiter} xywh {70 415 30 25} labelsize 10
             class {xcas::No_Focus_Button}
           }
           Fl_Button Xcas_Parentheses {
@@ -2772,17 +3178,17 @@ Xcas_Alpha_Keyboard->redraw();}
           }
           Fl_Button Xcas_Brackets {
             label {{}}
-            xywh {130 415 30 25} labelsize 10
+            tooltip {Bloc delimiter (set delimiter in maple compatible mode)} xywh {130 415 30 25} labelsize 10
             class {xcas::No_Focus_Button}
           }
           Fl_Button Xcas_Crochets {
             label {[]}
-            xywh {100 415 30 25} labelsize 10
+            tooltip {List, vector, matrix delimiter} xywh {100 415 30 25} labelsize 10
             class {xcas::No_Focus_Button}
           }
           Fl_Button Xcas_Quote {
             label {'}
-            xywh {50 415 20 25} labelsize 10
+            tooltip Quote xywh {50 415 20 25} labelsize 10
             class {xcas::No_Focus_Button}
           }
           Fl_Button Xcas_Virgule {
@@ -2797,7 +3203,7 @@ Xcas_Alpha_Keyboard->redraw();}
           }
           Fl_Button Xcas_Sto {
             label {:=}
-            xywh {70 440 30 25} labelsize 10
+            tooltip Assign xywh {70 440 30 25} labelsize 10
             class {xcas::No_Focus_Button}
           }
           Fl_Button Xcas_Keyboard_suchthat {
@@ -2816,137 +3222,174 @@ Xcas_Alpha_Keyboard->redraw();}
             class {xcas::No_Focus_Button}
           }
         }
-        Fl_Group Cst_keyboard {
+        Fl_Group Cst_keyboard {open
           xywh {190 415 60 50}
         } {
           Fl_Button Xcas_Cst_i {
             label i
             callback {const giac::context * contextptr=Xcas_get_context();
-Xcas_input_0arg(Xcas_Cst_i,giac::printi(contextptr).c_str());}
-            xywh {190 440 30 25} shortcut 0x69 labelsize 10
+Xcas_input_0arg(Xcas_Cst_i,giac::printi(contextptr));}
+            tooltip {Complex square root of -1} xywh {190 440 30 25} shortcut 0x69 labelsize 10
             class {xcas::No_Focus_Button}
           }
           Fl_Button Xcas_Cst_pi {
-            label π
+            label {π}
             callback {Xcas_input_0arg(Xcas_Cst_pi,"pi");}
-            xywh {220 415 30 25} labelfont 12 labelsize 10
+            tooltip {The pi number} xywh {220 415 30 25} labelsize 10
             class {xcas::No_Focus_Button}
           }
           Fl_Button Xcas_Keyboard_infinity {
             label oo
             callback {Xcas_input_0arg(Xcas_Keyboard_infinity,"+infinity");}
-            xywh {190 415 30 25} labelsize 10
+            tooltip {Infinity (unsigned)} xywh {190 415 30 25} labelsize 10
             class {xcas::No_Focus_Button}
           }
           Fl_Button Xcas_Racine_carree {
             label sqrt
-            callback {xcas::in_Xcas_input_1arg(Fl::focus(),"sqrt",true);}
-            xywh {220 440 30 25} labelsize 10
+            callback {xcas::in_Xcas_input_1arg(xcas::Xcas_input_focus,"sqrt",true);}
+            tooltip {Square root} xywh {220 440 30 25} labelsize 10 align 64
             class {xcas::No_Focus_Button}
           }
         }
-        Fl_Group Rewrite_keyboard {
+        Fl_Group Rewrite_keyboard {open
           xywh {0 465 60 50}
         } {
           Fl_Button Xcas_approx_key {
             label {~}
-            callback {xcas::in_Xcas_input_1arg(Fl::focus(),"approx",true);}
-            xywh {0 465 30 25} shortcut 0x80061 labelsize 10
+            callback {xcas::in_Xcas_input_1arg(xcas::Xcas_input_focus,"approx",true);}
+            tooltip Evalf xywh {0 465 15 25} shortcut 0x80061 labelsize 10
             class {xcas::No_Focus_Button}
           }
           Fl_Button Xcas_simplify_key {
             label simplify
-            callback {xcas::in_Xcas_input_1arg(Fl::focus(),"simplify",true);}
-            xywh {0 490 30 25} labelsize 10 align 84
+            callback {xcas::in_Xcas_input_1arg(xcas::Xcas_input_focus,"simplify",true);}
+            tooltip {simplify: Simplify expression} xywh {0 490 30 25} shortcut 0xc0073 labelsize 10 align 84
             class {xcas::No_Focus_Button}
           }
           Fl_Button Xcas_factor_key {
             label factor
-            callback {xcas::in_Xcas_input_1arg(Fl::focus(),"factor",true);}
-            xywh {30 465 30 25} shortcut 0x80066 labelsize 10 align 84
+            callback {xcas::in_Xcas_input_1arg(xcas::Xcas_input_focus,"factor",true);}
+            tooltip {factor: Factorization} xywh {30 465 30 25} shortcut 0x80066 labelsize 10 align 84
             class {xcas::No_Focus_Button}
           }
           Fl_Button Xcas_convert_key {
-            label convert
-            callback {xcas::in_Xcas_input_1arg(Fl::focus(),"convert",false);}
-            xywh {30 490 30 25} shortcut 0x80063 labelsize 10 align 84
+            label {=>}
+            callback {Xcas_input_0arg(Xcas_convert_key," => ");}
+            tooltip {Sto/Convert to} xywh {15 465 15 25} shortcut 0x80063 labelsize 10
             class {xcas::No_Focus_Button}
           }
+          Fl_Menu_Button Xcas_Prg_Menubutton {
+            label prg open
+            xywh {30 490 30 25} labelsize 10
+          } {
+            MenuItem Xcas_Prg_si {
+              label si
+              callback {Fl::e_text=(char *)" si alors sinon fsi; ";Fl::e_length=21; xcas::fl_handle(xcas::Xcas_input_focus);}
+              xywh {0 0 31 20} labelsize 10
+            }
+            MenuItem Xcas_Prg_pour {
+              label pour
+              callback {Fl::e_text=(char *)" pour de jusque faire  fpour; ";Fl::e_length=30; xcas::fl_handle(xcas::Xcas_input_focus);}
+              xywh {0 0 31 20} labelsize 10
+            }
+            MenuItem Xcas_Prg_tantque {
+              label tantque
+              callback {Fl::e_text=(char *)" tantque faire ftantque; ";Fl::e_length=25; xcas::fl_handle(xcas::Xcas_input_focus);}
+              xywh {0 0 31 20} labelsize 10
+            }
+            MenuItem Xcas_Prg_repeter {
+              label repeter
+              callback {Fl::e_text=(char *)" repeter jusqua ; ";Fl::e_length=18; xcas::fl_handle(xcas::Xcas_input_focus);}
+              xywh {0 0 31 20} labelsize 10
+            }
+            MenuItem Xcas_Prg_fonction {
+              label fonction
+              callback {Fl::e_text=(char *)"f(x,y):= { local ;  }";
+Fl::e_length=21; xcas::fl_handle(xcas::Xcas_input_focus);}
+              xywh {0 0 31 20} labelsize 10
+            }
+            MenuItem Xcas_Prg_return {
+              label return
+              callback {Fl::e_text=(char *)"return ;";
+Fl::e_length=8; xcas::fl_handle(xcas::Xcas_input_focus);}
+              xywh {0 0 31 20} labelsize 10
+            }
+          }
         }
-        Fl_Group Xcas_calculus_group {
+        Fl_Group Xcas_calculus_group {open
           xywh {60 465 40 50}
         } {
           Fl_Button Xcas_diff_key {
-            label D
-            callback {xcas::Xcas_input_arg(Xcas_diff_key,"diff");}
+            label {∂}
+            callback {if (calc_mode(Xcas_get_context())==38) xcas::Xcas_input_arg(Xcas_diff_key,"∂"); else xcas::Xcas_input_arg(Xcas_diff_key,"diff");}
             tooltip diff xywh {60 465 20 25} shortcut 0x80064 labelfont 10 labelsize 10
             class {xcas::No_Focus_Button}
           }
           Fl_Button Xcas_int_key {
-            label I
-            callback {xcas::Xcas_input_arg(Xcas_int_key,"integrate");}
+            label {∫}
+            callback {if (calc_mode(Xcas_get_context())==38) xcas::Xcas_input_arg(Xcas_int_key,"∫"); else xcas::Xcas_input_arg(Xcas_int_key,"integrate");}
             tooltip Integral xywh {80 465 20 25} shortcut 0x80069 labelfont 10 labelsize 12
             class {xcas::No_Focus_Button}
           }
           Fl_Button Xcas_sigma_key {
-            label S
-            callback {xcas::Xcas_input_arg(Xcas_sigma_key,"sum");}
-            tooltip Sum xywh {80 490 20 25} labelfont 12 labelsize 10 align 64
+            label {Σ}
+            callback {if (calc_mode(Xcas_get_context())==38) xcas::Xcas_input_arg(Xcas_sigma_key,"Σ"); else xcas::Xcas_input_arg(Xcas_sigma_key,"sum");}
+            tooltip Sum xywh {80 490 20 25} labelsize 10 align 64
             class {xcas::No_Focus_Button}
           }
           Fl_Button Xcas_limit_key {
-            label L
+            label lim
             callback {xcas::Xcas_input_arg(Xcas_limit_key,"limit");}
-            tooltip Limit xywh {60 490 20 25} shortcut 0x8006c labelfont 10 labelsize 10
+            tooltip Limit xywh {60 490 20 25} shortcut 0x8006c labelsize 10
             class {xcas::No_Focus_Button}
           }
         }
-        Fl_Group Transcendental {
+        Fl_Group Transcendental {open
           xywh {100 465 150 50}
         } {
-          Fl_Group Trig_keyboard {
+          Fl_Group Trig_keyboard {open
             xywh {100 465 150 25}
           } {
             Fl_Button Xcas_Sinus_button {
               label sin
-              xywh {115 465 35 25} labelsize 10
+              tooltip Sinus xywh {115 465 35 25} labelsize 10 align 64
               class {xcas::No_Focus_Button}
             }
             Fl_Button Xcas_Cosinus_button {
               label cos
-              xywh {165 465 35 25} labelsize 10
+              xywh {165 465 35 25} labelsize 10 align 64
               class {xcas::No_Focus_Button}
             }
             Fl_Button Xcas_Tangeant_button {
               label tan
-              xywh {215 465 35 25} labelsize 10
+              tooltip Tangent xywh {215 465 35 25} labelsize 10 align 64
               class {xcas::No_Focus_Button}
             }
             Fl_Button Xcas_Asinus_button {
               label a
               callback {Xcas_input_arg(Xcas_Asinus_button,"asin");}
-              xywh {100 465 15 25} color 29 labelsize 10 labelcolor 4
+              tooltip Arcsinus xywh {100 465 15 25} color 29 labelsize 10 labelcolor 4
               class {xcas::No_Focus_Button}
             }
             Fl_Button Xcas_Acosinus_button {
               label a
               callback {Xcas_input_arg(Xcas_Acosinus_button,"acos");}
-              xywh {150 465 15 25} color 29 labelsize 10 labelcolor 4
+              tooltip Arccosinus xywh {150 465 15 25} color 29 labelsize 10 labelcolor 4
               class {xcas::No_Focus_Button}
             }
             Fl_Button Xcas_Atangeant_button {
               label a
               callback {Xcas_input_arg(Xcas_Atangeant_button,"atan");}
-              xywh {200 465 15 25} color 29 labelsize 10 labelcolor 4
+              tooltip Arctangent xywh {200 465 15 25} color 29 labelsize 10 labelcolor 4
               class {xcas::No_Focus_Button}
             }
           }
-          Fl_Group Exp_keyboard {
+          Fl_Group Exp_keyboard {open
             xywh {100 490 150 25}
           } {
             Fl_Button Xcas_Exp_button {
               label exp
-              xywh {135 490 35 25} labelsize 10
+              tooltip Exponential xywh {135 490 35 25} labelsize 10 align 64
               class {xcas::No_Focus_Button}
             }
             Fl_Button Xcas_Dix_puissance {
@@ -2956,17 +3399,17 @@ Xcas_input_0arg(Xcas_Cst_i,giac::printi(contextptr).c_str());}
             }
             Fl_Button Xcas_Ln10_button {
               label log10
-              xywh {170 490 45 25} labelsize 10
+              tooltip {base 10 logarithm} xywh {170 490 45 25} labelsize 10 align 64
               class {xcas::No_Focus_Button}
             }
             Fl_Button Xcas_Ln_button {
               label ln
-              xywh {100 490 35 25} labelsize 10
+              tooltip {Natural logarithm} xywh {100 490 35 25} labelsize 10 align 64
               class {xcas::No_Focus_Button}
             }
           }
         }
-        Fl_Group Operations_keyboard {
+        Fl_Group Operations_keyboard {open
           xywh {250 415 60 100}
         } {
           Fl_Button Xcas_Plus {
@@ -2976,7 +3419,7 @@ Xcas_input_0arg(Xcas_Cst_i,giac::printi(contextptr).c_str());}
           }
           Fl_Button Xcas_Moins {
             label {-}
-            xywh {280 440 30 25} shortcut 0x2d
+            tooltip Subtract xywh {290 440 20 25} shortcut 0x2d
             class {xcas::No_Focus_Button}
           }
           Fl_Button Xcas_Fois {
@@ -2996,17 +3439,22 @@ Xcas_input_0arg(Xcas_Cst_i,giac::printi(contextptr).c_str());}
           }
           Fl_Button Xcas_C_mod {
             label {%}
-            xywh {250 490 30 25} labelsize 10
+            tooltip Modulo xywh {250 490 30 25} labelsize 10
             class {xcas::No_Focus_Button}
           }
           Fl_Button Xcas_Inverse_button {
             label inv
-            xywh {250 415 30 25} labelsize 10
+            tooltip Inverse xywh {250 415 30 25} labelsize 10 align 64
             class {xcas::No_Focus_Button}
           }
           Fl_Button Xcas_Neg_button {
             label neg
-            xywh {250 440 30 25} labelsize 10
+            tooltip Opposite xywh {270 440 20 25} labelsize 10 align 64
+            class {xcas::No_Focus_Button}
+          }
+          Fl_Button Xcas_Superieur {
+            label {>}
+            xywh {250 440 20 25} shortcut 0x2d
             class {xcas::No_Focus_Button}
           }
         }
@@ -3085,7 +3533,7 @@ static char petit_buffer[]="";
 Fl::e_length=0;
 Fl::e_text=petit_buffer;
 Fl::e_keysym=FL_Escape;
-xcas::fl_handle(Fl::focus());}
+xcas::fl_handle(xcas::Xcas_input_focus);}
           tooltip {Cancel (erase cmdline, stop interactive_plotode)} xywh {385 415 35 20} shortcut 0xff1b labelsize 10 align 64
           class {xcas::No_Focus_Button}
         }
@@ -3099,19 +3547,19 @@ else {
   Xcas_Alpha_Keyboard->show();
   Xcas_Scientific_Keyboard->hide();
 }}
-          tooltip {Show/Hide alphabetic keyboard} xywh {420 475 35 20} shortcut 0xff1b labelsize 10 labelcolor 4
+          tooltip {Show/Hide alphabetic keyboard} xywh {420 475 35 20} shortcut 0xff1b labelsize 10 labelcolor 4 align 64
           class {xcas::No_Focus_Button}
         }
         Fl_Button Xcas_Cmds {
           label cmds
           callback {Xcas_Keyboard_Switch(4);}
-          tooltip Control xywh {420 435 35 20} shortcut 0xff1b color 17 labelsize 10
+          tooltip {Show commands bandeau} xywh {420 435 35 20} shortcut 0xff1b color 17 labelsize 10 align 64
           class {xcas::No_Focus_Button}
         }
         Fl_Button Xcas_Msg {
           label msg
           callback {Xcas_Keyboard_Switch(2);}
-          tooltip Control xywh {420 455 35 20} shortcut 0xff1b color 17 labelsize 10
+          tooltip {Show messages} xywh {420 455 35 20} shortcut 0xff1b color 17 labelsize 10 align 64
           class {xcas::No_Focus_Button}
         }
         Fl_Button Xcas_b7 {
@@ -3119,7 +3567,7 @@ else {
           callback {xcas::alt_ctrl=4+Xcas_Alpha_Keyboard->visible();
   Xcas_Alpha_Keyboard->show();
   Xcas_Scientific_Keyboard->hide();}
-          tooltip Alt xywh {385 435 35 20} shortcut 0xff1b labelsize 10 align 64
+          tooltip {Set bit 7 for next key entry} xywh {385 435 35 20} shortcut 0xff1b labelsize 10 align 64
           class {xcas::No_Focus_Button}
         }
         Fl_Button Xcas_Ctrl {
@@ -3133,7 +3581,7 @@ else {
         Fl_Button Xcas_close_keyboard {
           label X
           callback {Xcas_Keyboard_Switch(1);}
-          xywh {420 415 35 20} color 17 labelsize 10
+          tooltip {Close keyboard} xywh {420 415 35 20} color 17 labelsize 10
           class {xcas::No_Focus_Button}
         }
         Fl_Button Xcas_main_del_button {
@@ -3143,8 +3591,8 @@ else {
       Fl::e_length=0;
       Fl::e_text=petit_buffer;
       Fl::e_keysym=FL_BackSpace;
-      xcas::fl_handle(Fl::focus());}
-          xywh {420 495 35 20} shortcut 0x40076 align 64
+      xcas::fl_handle(xcas::Xcas_input_focus);}
+          tooltip Backspace xywh {420 495 35 20} shortcut 0x40076 align 64
           class {xcas::No_Focus_Button}
         }
         Fl_Button Xcas_main_paste_button {
@@ -3160,7 +3608,7 @@ else {
       Fl::e_length=0;
       Fl::e_text=petit_buffer;
       Fl::e_keysym=FL_Enter;
-      xcas::fl_handle(Fl::focus());}
+      xcas::fl_handle(xcas::Xcas_input_focus);}
           xywh {385 495 35 20} shortcut 0x40076 color 167 labelcolor 49 align 64
           class {xcas::No_Focus_Button}
         }
@@ -3170,7 +3618,7 @@ else {
       xywh {0 515 455 30}
     } {
       Fl_Group Xcas_Bandeau_Keys_Group {
-        xywh {0 515 425 30}
+        xywh {0 515 420 30}
       } {
         Fl_Button Xcas_PREV_Key {
           label {<<}
@@ -3184,32 +3632,32 @@ show_rpn_menu(rpn_menu_page);}
         }
         Fl_Button Xcas_F1_Key {
           callback {rpn_button(Xcas_F1_Key,0);}
-          xywh {65 515 45 30} shortcut 0xffbe color 8 labelcolor 0 align 64
+          xywh {65 515 45 30} shortcut 0xffbe color 8 align 64
           class {xcas::No_Focus_Button}
         }
         Fl_Button Xcas_F2_Key {
           callback {rpn_button(Xcas_F2_Key,1);}
-          xywh {110 515 45 30} shortcut 0xffbf color 8 labelcolor 0 align 64
+          xywh {110 515 45 30} shortcut 0xffbf color 8 align 64
           class {xcas::No_Focus_Button}
         }
         Fl_Button Xcas_F3_Key {
           callback {rpn_button(Xcas_F3_Key,2);}
-          xywh {155 515 45 30} shortcut 0xffc0 color 8 labelcolor 0 align 64
+          xywh {155 515 45 30} shortcut 0xffc0 color 8 align 64
           class {xcas::No_Focus_Button}
         }
         Fl_Button Xcas_F4_Key {
           callback {rpn_button(Xcas_F4_Key,3);}
-          xywh {200 515 45 30} shortcut 0xffc1 color 8 labelcolor 0 align 64
+          xywh {200 515 45 30} shortcut 0xffc1 color 8 align 64
           class {xcas::No_Focus_Button}
         }
         Fl_Button Xcas_F5_Key {
           callback {rpn_button(Xcas_F5_Key,4);}
-          xywh {245 515 45 30} shortcut 0xffc2 color 8 labelcolor 0 align 64
+          xywh {245 515 45 30} shortcut 0xffc2 color 8 align 64
           class {xcas::No_Focus_Button}
         }
         Fl_Button Xcas_F6_Key {
           callback {rpn_button(Xcas_F6_Key,5);}
-          xywh {290 515 45 30} shortcut 0xffc3 color 8 labelcolor 0 align 64
+          xywh {290 515 45 30} shortcut 0xffc3 color 8 align 64
           class {xcas::No_Focus_Button}
         }
         Fl_Button Xcas_NXT_Key {
@@ -3229,7 +3677,7 @@ show_rpn_menu(rpn_menu_page);}
     rpn_menu=*e._VECTptr;
     show_rpn_menu(0);
   }}
-          tooltip {Custom menu} xywh {390 515 35 30} shortcut 0xffc8 color 7 labelcolor 4 align 64
+          tooltip {Custom menu} xywh {390 515 30 30} shortcut 0xffc8 color 7 labelcolor 4 align 64
           class {xcas::No_Focus_Button}
         }
         Fl_Button Xcas_VAR_Key {
@@ -3252,7 +3700,7 @@ show_rpn_menu(0);}
       Fl_Button Xcas_close_bandeau {
         label X
         callback {Xcas_Keyboard_Switch(4);}
-        xywh {425 515 30 30} color 17 labelsize 10
+        xywh {420 515 35 30} color 17 labelsize 10
         class {xcas::No_Focus_Button}
       }
     }
@@ -3263,7 +3711,7 @@ show_rpn_menu(0);}
         xywh {0 545 755 45}
       } {
         Fl_Output Xcas_parse_error_output {
-          tooltip Messages xywh {0 545 755 45} type Multiline labelfont 2 labelcolor 0
+          tooltip Messages xywh {0 545 755 45} type Multiline labelfont 2
           class {xcas::Enlargable_Multiline_Output}
         }
       }
@@ -3278,42 +3726,42 @@ Xcas_resize_mainwindow();}
   }
   Fl_Window Xcas_General_Setup {
     label {Xcas General Setup} open
-    xywh {308 452 305 315} type Double resizable visible
+    xywh {349 164 305 345} type Double hide resizable
   } {
     Fl_Menu_Button Xcas_Level {
-      label Level open
+      label Level
       tooltip {Choose user level (from tortue to university)} xywh {170 15 130 25} align 64 when 3
     } {
-      menuitem Xcas_CAS_level {
+      MenuItem Xcas_CAS_level {
         label CAS
         callback {xcas_user_level=0;
 Xcas_update_mode();
 Xcas_level_output->value("University");}
         xywh {15 15 100 20}
       }
-      menuitem Xcas_Prg_CAS_level {
+      MenuItem Xcas_Prog_level {
         label {Program CAS}
         callback {xcas_user_level=1;
 Xcas_update_mode();
 Xcas_level_output->value(gettext("CAS"));}
         xywh {25 25 100 20}
       }
-      menuitem Xcas_Tableur_level {
-        label Tableur
+      MenuItem Xcas_Tableur_level {
+        label Spreadsheet
         callback {xcas_user_level=2;
 Xcas_update_mode();
 Xcas_level_output->value(gettext("Tableur"));}
         xywh {35 35 100 20}
       }
-      menuitem Xcas_Geometry_level {
+      MenuItem Xcas_Geometry_level {
         label Geometry
         callback {xcas_user_level=3;
 Xcas_update_mode();
 Xcas_level_output->value(gettext("Geometry"));}
         xywh {45 45 100 20}
       }
-      menuitem Xcas_Tortue_level {
-        label Tortue
+      MenuItem Xcas_Tortue_level {
+        label Turtle
         callback {xcas_user_level=8;
 Xcas_update_mode();
 Xcas_level_output->value("Tortue");}
@@ -3331,11 +3779,12 @@ Xcas_level_output->value("Tortue");}
     Fl_Input Xcas_html_browser {
       label browser
       callback {const char * ch =Xcas_html_browser->value();
+                 xcas::use_external_browser=false;
+                unsetenv("BROWSER");
                  if (strlen(ch) && strcmp(ch,"builtin")){
                    setenv("BROWSER",ch,1);
                    xcas::use_external_browser=true;
-                  }
-                 else xcas::use_external_browser=false;}
+                  }}
       xywh {100 75 195 25} align 68 when 8
     }
     Fl_Value_Input Xcas_default_rows {
@@ -3346,27 +3795,34 @@ Xcas_level_output->value("Tortue");}
     Fl_Value_Input Xcas_default_cols {
       label cols
       callback {xcas::Flv_Table_Gen::def_cols=int(Xcas_default_cols->value());}
-      tooltip {Number of columns for new->spreadsheet} xywh {245 210 55 30} align 68 maximum 100 step 1 value 6
+      tooltip {Number of columns for new->spreadsheet} xywh {245 210 55 30} align 68 maximum 100 step 1 value 10
     }
     Fl_Return_Button Xcas_general_setup_save {
       label Save
       callback {Xcas_General_Setup->hide();
+const char * ch =Xcas_html_browser->value();
+                 xcas::use_external_browser=false;
+                unsetenv("BROWSER");
+                 if (strlen(ch) && strcmp(ch,"builtin")){
+                   setenv("BROWSER",ch,1);
+                   xcas::use_external_browser=true;
+                  }
 Xcas_save_config(Xcas_get_context());}
-      tooltip {Close window and save as default configuration} xywh {15 285 125 25} align 64
+      tooltip {Close window and save as default configuration} xywh {15 315 125 25} align 64
     }
     Fl_Button Xcas_general_setup_close {
       label Close
       callback {Xcas_General_Setup->hide();}
-      xywh {175 285 125 25} shortcut 0xff1b align 64
+      xywh {175 315 125 25} shortcut 0xff1b align 64
     }
     Fl_Group Print_config {open
-      xywh {5 145 170 130}
+      xywh {5 145 295 165}
     } {
       Fl_Menu_Button Xcas_Page_format {
         label {Print format}
         tooltip {Printer page format} xywh {10 145 165 30} align 64 when 3 textsize 10
       } {
-        menuitem Xcas_Page_A4 {
+        MenuItem Xcas_Page_A4 {
           label A4
           callback {\#ifdef FL_DEVICE
 xcas::printer_format=Fl_Printer::A4;
@@ -3374,7 +3830,7 @@ xcas::printer_format=Fl_Printer::A4;
 Xcas_Page_Format_Output->value("A4");}
           xywh {35 35 100 20}
         }
-        menuitem Xcas_Page_A5 {
+        MenuItem Xcas_Page_A5 {
           label A5
           callback {\#ifdef FL_DEVICE
 xcas::printer_format=Fl_Printer::A5;
@@ -3382,7 +3838,7 @@ xcas::printer_format=Fl_Printer::A5;
 Xcas_Page_Format_Output->value("A5");}
           xywh {35 35 100 20}
         }
-        menuitem Xcas_Page_A3 {
+        MenuItem Xcas_Page_A3 {
           label A3
           callback {\#ifdef FL_DEVICE
 xcas::printer_format=Fl_Printer::A5;
@@ -3390,7 +3846,7 @@ xcas::printer_format=Fl_Printer::A5;
 Xcas_Page_Format_Output->value("A3");}
           xywh {45 45 100 20}
         }
-        menuitem Xcas_Page_LETTER {
+        MenuItem Xcas_Page_LETTER {
           label LETTER
           callback {\#ifdef FL_DEVICE
 xcas::printer_format=Fl_Printer::LETTER;
@@ -3398,7 +3854,7 @@ xcas::printer_format=Fl_Printer::LETTER;
 Xcas_Page_Format_Output->value("LETTER");}
           xywh {55 55 100 20}
         }
-        menuitem Xcas_Page_ENVELOPE {
+        MenuItem Xcas_Page_ENVELOPE {
           label ENVELOPE
           callback {\#ifdef FL_DEVICE
 xcas::printer_format=Fl_Printer::ENVELOPE;
@@ -3421,6 +3877,11 @@ Xcas_Page_Format_Output->value("8");}
         callback {setenv("GIAC_PREVIEW",Xcas_ps_preview->value(),1);}
         tooltip {Postscript previewer program (put no for no preview)} xywh {70 245 105 30} align 68
       }
+      Fl_Input Xcas_proxy {
+        label Proxy
+        callback {setenv("http_proxy",Xcas_proxy->value(),1);}
+        tooltip {Proxy server for update, e.g. http://cache.domain:3128} xywh {70 280 230 30} align 68
+      }
     }
     Fl_Button Xcas_All_Fonts {
       label Font
@@ -3429,50 +3890,62 @@ Xcas_Page_Format_Output->value("8");}
     }
     Fl_Check_Button Xcas_automatic_completion_browser {
       label {Auto index help}
+      callback {xcas::do_helpon=Xcas_automatic_completion_browser->value();}
       tooltip {Selecting a menu item displays short index help} xywh {180 105 125 25} down_box DOWN_BOX align 84
     }
-    Fl_Check_Button Xcas_down_compatibility {
-      label {Xcas < 0.8.1 compatible}
-      callback {xcas::file_save_context=!Xcas_down_compatibility->value();}
+    Fl_Check_Button Xcas_stepbystep {
+      label {Step by step}
+      callback {giac::step_infolevel(Xcas_get_context())=Xcas_stepbystep->value();}
       tooltip {If not checked, save context information, incompatible with Xcas < 0.8.1} xywh {180 245 125 25} down_box DOWN_BOX align 84
+    }
+    Fl_Check_Button Xcas_tooltip_disabled {
+      label {Disable tooltips}
+      callback {Fl_Tooltip::enable(!Xcas_tooltip_disabled->value());}
+      tooltip {Check box to disable tooltips} xywh {180 145 125 25} down_box DOWN_BOX align 84
+    }
+    Fl_Check_Button Xcas_disable_try_parse_test_i {
+      label {Disable test i}
+      callback {giac::try_parse_i(0)=giac::try_parse_i(xcas::get_context(xcas::Xcas_input_focus))=!Xcas_disable_try_parse_test_i->value();}
+      tooltip {Check to disable replacement of i inside loop by a variable} xywh {15 45 110 20} down_box DOWN_BOX align 84
     }
   }
   Fl_Window Xcas_Script_Window {
     label {Xcas Script Window}
-    xywh {227 317 540 345} type Double resizable visible
+    xywh {483 87 540 345} type Double resizable visible
   } {}
   Fl_Window Xcas_DispG_Window_ {
-    label {Xcas DispG Window}
-    xywh {140 136 540 350} type Double resizable visible
+    label {Xcas DispG Window} open
+    xywh {483 123 540 550} type Double resizable
+    class {xcas::DispG_Window} visible
   } {
     Fl_Menu_Bar Xcas_DispG_Menu {
       xywh {0 0 95 25} align 64
     } {
-      submenu {} {
+      Submenu {} {
         label Print open
         xywh {0 0 100 20}
       } {
-        menuitem {} {
+        MenuItem {} {
           label preview
-          callback {xcas::widget_ps_print(Xcas_DispG_,"DispG",true,3,true);}
+          callback {xcas::widget_ps_print(Xcas_DispG_,"DispG",true,3,true,true,true);}
           xywh {0 0 100 20}
         }
-        menuitem {} {
+        MenuItem {} {
           label print
           callback {xcas::widget_print(Xcas_DispG_);}
           xywh {0 0 100 20}
         }
-        menuitem {} {
+        MenuItem {} {
           label {latex preview}
           callback {latex_save_DispG("DispG.tex"); xcas::xdvi("DispG.tex")}
           xywh {0 0 100 20}
         }
-        menuitem {} {
+        MenuItem {} {
           label {latex print}
           callback {latex_save_DispG("DispG.tex"); xcas::dvips("DispG.tex")}
           xywh {0 0 100 20}
         }
-        menuitem {} {
+        MenuItem {} {
           label close
           callback {Xcas_DispG_Window_->hide();}
           xywh {0 0 100 20}
@@ -3480,22 +3953,35 @@ Xcas_Page_Format_Output->value("8");}
       }
     }
     Fl_Button Xcas_DispG_Cancel_ {
-      label {Click in graph or here to cancel}
+      label {Click or Cancel}
       callback {Xcas_DispG_->waiting_click=false;Xcas_DispG_->waiting_click_value=giac::undef;}
-      xywh {95 0 445 25} align 64
+      tooltip {Click in graph or here to cancel} xywh {220 0 365 25} align 64
     }
     Fl_Tile Xcas_DispG_Tile {open
-      xywh {0 25 545 325}
+      xywh {0 25 545 550}
     } {
       Fl_Box Xcas_DispG_ {
         label label
-        xywh {0 25 545 325} labeltype NO_LABEL resizable
+        xywh {0 25 545 320} labeltype NO_LABEL
         class {xcas::Graph2d}
       }
+      Fl_Box Xcas_PrintG_ {
+        label label
+        xywh {0 345 545 205} labeltype NO_LABEL resizable
+        class {xcas::Equation}
+      }
+    }
+    Fl_Button Xcas_DispG_ClrGraph {
+      label Clear
+      callback {Xcas_DispG_->clear(0); Xcas_PrintG_->set_data(giac::gen(giac::makevecteur(giac::string2gen("",false),giac::string2gen("Step by step console",false)),giac::_HIST__VECT));}
+      tooltip {Clear DispG graphic} xywh {95 0 125 25} align 64
     }
   }
   code {xcas::Xcas_Main_Window=Xcas_Main_Window_;
 xcas::Xcas_DispG=Xcas_DispG_;
+giac::my_gprintf=xcas::xcas_gprintf;
+Xcas_PrintG_->modifiable=false;
+xcas::Xcas_PrintG=Xcas_PrintG_;
 xcas::Xcas_DispG_Window=Xcas_DispG_Window_;
 xcas::Xcas_DispG_Cancel=Xcas_DispG_Cancel_;
 xcas::Xcas_Cancel=0;
@@ -3551,6 +4037,7 @@ Xcas_Equal_key->callback((Fl_Callback *)xcas::Xcas_input_char);
 Xcas_Guillemet_key->callback((Fl_Callback *)xcas::Xcas_input_char);
 Xcas_Souligne_key->callback((Fl_Callback *)xcas::Xcas_input_char);
 Xcas_Diese_key->callback((Fl_Callback *)xcas::Xcas_input_char);
+Xcas_Pi_key->callback((Fl_Callback *)xcas::Xcas_input_char);
 Xcas_Alpha_virgule_key->callback((Fl_Callback *)xcas::Xcas_input_char);
 Xcas_Alpha_point_virgule_key->callback((Fl_Callback *)xcas::Xcas_input_char);
 Xcas_Alpha_quote_key->callback((Fl_Callback *)xcas::Xcas_input_char);
@@ -3593,31 +4080,34 @@ Xcas_help_fsolve->callback(cb_Assistant_ItemName);
 Xcas_help_proot->callback(cb_Assistant_ItemName);
 Xcas_help_linsolve->callback(cb_Assistant_ItemName);
 Xcas_help_desolve->callback(cb_Assistant_ItemName);
+Xcas_help_odesolve->callback(cb_Assistant_ItemName);
+Xcas_help_rsolve->callback(cb_Assistant_ItemName);
 Xcas_help_int->callback(cb_Assistant_ItemName);
 Xcas_help_diff->callback(cb_Assistant_ItemName);
 Xcas_help_limit->callback(cb_Assistant_ItemName);
+Xcas_help_ptayl->callback(cb_Assistant_ItemName);
 Xcas_help_series->callback(cb_Assistant_ItemName);
 Xcas_help_sum->callback(cb_Assistant_ItemName);
 Xcas_help_laplace->callback(cb_Assistant_ItemName);
 Xcas_help_ilaplace->callback(cb_Assistant_ItemName);
-Xcas_help_simplify->callback(cb_Assistant_ItemName);
-Xcas_help_normal->callback(cb_Assistant_ItemName);
-Xcas_help_ratnormal->callback(cb_Assistant_ItemName);
-Xcas_help_factor->callback(cb_Assistant_ItemName);
-Xcas_help_cfactor->callback(cb_Assistant_ItemName);
-Xcas_help_partfrac->callback(cb_Assistant_ItemName);
-Xcas_help_cpartfrac->callback(cb_Assistant_ItemName);
+Xcas_help_simplify->callback(cb_Insert_ItemName);
+Xcas_help_normal->callback(cb_Insert_ItemName);
+Xcas_help_ratnormal->callback(cb_Insert_ItemName);
+Xcas_help_factor->callback(cb_Insert_ItemName);
+Xcas_help_cfactor->callback(cb_Insert_ItemName);
+Xcas_help_partfrac->callback(cb_Insert_ItemName);
+Xcas_help_cpartfrac->callback(cb_Insert_ItemName);
 Xcas_help_subst->callback(cb_Assistant_ItemName);
 Xcas_help_reorder->callback(cb_Assistant_ItemName);
-Xcas_help_lin->callback(cb_Assistant_ItemName);
-Xcas_help_tlin->callback(cb_Assistant_ItemName);
-Xcas_help_texpand->callback(cb_Assistant_ItemName);
-Xcas_help_exp2trig->callback(cb_Assistant_ItemName);
-Xcas_help_trig2exp->callback(cb_Assistant_ItemName);
-Xcas_help_exp2pow->callback(cb_Assistant_ItemName);
-Xcas_help_lncollect->callback(cb_Assistant_ItemName);
+Xcas_help_lin->callback(cb_Insert_ItemName);
+Xcas_help_tlin->callback(cb_Insert_ItemName);
+Xcas_help_texpand->callback(cb_Insert_ItemName);
+Xcas_help_exp2trig->callback(cb_Insert_ItemName);
+Xcas_help_trig2exp->callback(cb_Insert_ItemName);
+Xcas_help_exp2pow->callback(cb_Insert_ItemName);
+Xcas_help_lncollect->callback(cb_Insert_ItemName);
 Xcas_help_isprime->callback(cb_Assistant_ItemName);
-Xcas_help_ifactor->callback(cb_Assistant_ItemName);
+Xcas_help_ifactor->callback(cb_Insert_ItemName);
 Xcas_help_iquo->callback(cb_Assistant_ItemName);
 Xcas_help_irem->callback(cb_Assistant_ItemName);
 Xcas_help_iabcuv->callback(cb_Assistant_ItemName);
@@ -3629,8 +4119,23 @@ Xcas_help_quo->callback(cb_Assistant_ItemName);
 Xcas_help_rem->callback(cb_Assistant_ItemName);
 Xcas_help_abcuv->callback(cb_Assistant_ItemName);
 Xcas_help_chinrem->callback(cb_Assistant_ItemName);
+Xcas_help_pourcent->callback(cb_Assistant_ItemName);
+Xcas_help_GF->callback(cb_Assistant_ItemName);
 Xcas_help_plotcontour->callback(cb_Assistant_ItemName);
+Xcas_help_plotdensity->callback(cb_Assistant_ItemName);
 Xcas_help_plotode->callback(cb_Assistant_ItemName);
+//Xcas_help_iplotode->callback(cb_Assistant_ItemName);
+Xcas_help_plotlist->callback(cb_Assistant_ItemName);
+Xcas_help_scatterplot->callback(cb_Assistant_ItemName);
+Xcas_help_polygonscatterplot->callback(cb_Assistant_ItemName);
+Xcas_help_linear_regression_plot->callback(cb_Assistant_ItemName);
+Xcas_help_moustache->callback(cb_Assistant_ItemName);
+Xcas_help_histogram->callback(cb_Assistant_ItemName);
+Xcas_help_plotstat->callback(cb_Assistant_ItemName);
+Xcas_help_plotcdf->callback(cb_Assistant_ItemName);
+Xcas_help_baton->callback(cb_Assistant_ItemName);
+Xcas_help_camembert->callback(cb_Assistant_ItemName);
+Xcas_help_debug->callback(cb_Assistant_ItemName);
 Xcas_help_matrix->callback(cb_Assistant_ItemName);
 Xcas_help_tran->callback(cb_Assistant_ItemName);
 Xcas_help_ker->callback(cb_Assistant_ItemName);
@@ -3640,6 +4145,38 @@ Xcas_help_det->callback(cb_Assistant_ItemName);
 Xcas_help_charpoly->callback(cb_Assistant_ItemName);
 Xcas_help_egv->callback(cb_Assistant_ItemName);
 Xcas_help_egvl->callback(cb_Assistant_ItemName);
+Xcas_help_rand->callback(cb_Assistant_ItemName);
+Xcas_help_ranm->callback(cb_Assistant_ItemName);
+Xcas_help_markov->callback(cb_Assistant_ItemName);
+Xcas_help_randmarkov->callback(cb_Assistant_ItemName);
+Xcas_help_cdf->callback(cb_Assistant_ItemName);
+Xcas_help_icdf->callback(cb_Assistant_ItemName);
+Xcas_help_binomial->callback(cb_Assistant_ItemName);
+Xcas_help_binomial2->callback(cb_Assistant_ItemName);
+Xcas_help_negbinomial->callback(cb_Assistant_ItemName);
+Xcas_help_normald->callback(cb_Assistant_ItemName);
+Xcas_help_normald_icdf2->callback(cb_Assistant_ItemName);
+Xcas_help_normalt->callback(cb_Assistant_ItemName);
+Xcas_help_studentd_icdf2->callback(cb_Assistant_ItemName);
+Xcas_help_studentt->callback(cb_Assistant_ItemName);
+Xcas_help_wilcoxont->callback(cb_Assistant_ItemName);
+Xcas_help_normald2->callback(cb_Assistant_ItemName);
+Xcas_help_poisson->callback(cb_Assistant_ItemName);
+Xcas_help_student->callback(cb_Assistant_ItemName);
+Xcas_help_fisher->callback(cb_Assistant_ItemName);
+Xcas_help_geometric->callback(cb_Assistant_ItemName);
+Xcas_help_exponential->callback(cb_Assistant_ItemName);
+Xcas_help_uniform->callback(cb_Assistant_ItemName);
+Xcas_help_chisquare->callback(cb_Assistant_ItemName);
+Xcas_help_chisquare_icdf->callback(cb_Assistant_ItemName);
+Xcas_help_chisquaret->callback(cb_Assistant_ItemName);
+Xcas_help_kolmogorovd->callback(cb_Assistant_ItemName);
+Xcas_help_kolmogorovt->callback(cb_Assistant_ItemName);
+Xcas_help_cauchy->callback(cb_Assistant_ItemName);
+Xcas_help_weibull->callback(cb_Assistant_ItemName);
+Xcas_help_gammad->callback(cb_Assistant_ItemName);
+Xcas_help_betad->callback(cb_Assistant_ItemName);
+
 Xcas_help_debug->callback(cb_Assistant_ItemName);
 
 \#ifdef IPAQ
@@ -3653,7 +4190,15 @@ Xcas_Keyboard_infinity->label("¥");
 Xcas_Keyboard_infinity->labelfont(FL_SYMBOL);
 \#endif
 \#endif
-\#ifndef _HAVE_FL_UTF8_HDR_
+\#ifdef _HAVE_FL_UTF8_HDR_
+Xcas_Greek_key->label("α");
+Xcas_Greek_key->labelfont(FL_HELVETICA);
+// Xcas_Neg_button->label("-");
+Xcas_Neg_button->label("-");
+// Xcas_Neg_button->label("−");
+Xcas_Neg_button->callback((Fl_Callback* )xcas::Xcas_input_1arg);
+Xcas_Superieur->callback((Fl_Callback* )xcas::Xcas_binary_op);
+\#else
 Xcas_Racine_carree->label("Ö");
 Xcas_Racine_carree->labelfont(FL_SYMBOL);
 Xcas_approx_key->label("»");
@@ -3732,6 +4277,8 @@ giac::MAX_PRINTABLE_ZINT=3200;
 //fl_widget_texprint_function=&fltk_fl_widget_texprint_function;
 //fl_widget_updatepict_function=&fltk_fl_widget_updatepict_function;
 giac::protected_read_config(giac::context0); // read xcas.rc
+xcas::read_recent_filenames(Xcas_main_menu); 
+xcas::Xcas_load_filename=load_filename;
 giac::secure_run=false;
 xcas::interrupt_button=true;
 xcas::Keyboard_Switch=Xcas_Keyboard_Switch;
@@ -3758,8 +4305,19 @@ fl_font(FL_HELVETICA,Xcas_Main_Window_->labelsize());
 a_propos();
 show_rpn_menu(0);
 if (argc>argstart){
-  for (int i=argstart;i<argc;++i)
+  bool link=false;
+  if (!strcmp(argv[argstart],"--online")){
+    link=true; ++argstart; 
+  }
+  for (int i=argstart;i<argc;++i){
     load_filename(argv[i],false);
+    if (link){
+      std::string html5="http://www-fourier.ujf-grenoble.fr/~parisse/xcasfr.html\#"+xcas::widget_html5(Xcas_current_session()); std::cout << html5 << std::endl; giac::system_browser_command(html5);
+    }
+  }
+  if (link){
+    return 0;
+  }
 }
 else make_history();
   bool running=true;
@@ -3769,12 +4327,15 @@ else make_history();
     }
     running=!Xcas_save_all(Xcas_Main_Tab);
     if (running) Xcas_Main_Window_->show();
-  }} {}
+  }
+  return 0;} {}
 } 
 
 Function {main(int argc,char ** argv)} {open return_type int
 } {
-  code {if (getenv("XCAS_AUTOSAVE_FOLDER")){
+  code {if (argc==2 && strlen(argv[1])==0)
+  argc=1;
+if (getenv("XCAS_AUTOSAVE_FOLDER")){
   xcas::autosave_folder=getenv("XCAS_AUTOSAVE_FOLDER");
   if (!xcas::autosave_folder.empty() && xcas::autosave_folder[xcas::autosave_folder.size()-1]!='/')
     xcas::autosave_folder += '/';
@@ -3783,7 +4344,7 @@ Function {main(int argc,char ** argv)} {open return_type int
 static std::string arg0;
 if (!getenv("XCAS_ROOT")){
 \#ifdef __APPLE__
-  setenv("XCAS_ROOT","/usr/local/bin",1);
+  setenv("XCAS_ROOT","/Applications/usr/bin/",1);
 \#else
   arg0=xcas::unix_path(argv[0]);
   int s=arg0.size(),i;
@@ -3805,7 +4366,9 @@ xcas_argc=argc; xcas_argv=argv;
 \#ifdef HAVE_LIBPTHREAD //
 Fl::lock(); 
 \#ifdef __APPLE__
-chdir(giac::home_directory().c_str());
+//chdir(giac::home_directory().c_str());
+if (xcas::autosave_folder.empty())
+xcas::autosave_folder=giac::home_directory();
 //Fl::unlock();
 \#endif
 \#endif //
@@ -3813,5 +4376,36 @@ Fl::gl_visual(FL_RGB | FL_DEPTH | FL_ACCUM | FL_ALPHA);
 xcas::fonts_available=Fl::set_fonts(0);
 fl_register_images();
 Xcas_run(argc,argv);
-giac::kill_gnuplot();} {}
+\#ifdef WITH_GNUPLOT
+giac::kill_gnuplot();
+\#endif
+if (update_xcas){
+\#ifdef WIN32
+// chdir(getenv("XCAS_ROOT"));
+// system("./bash.exe update.sh &");
+fl_message("%s",gettext("Please close this window and run update.bat in the Xcas installation directory"));
+\#else
+\#ifdef __APPLE__
+system("cd ~ && rm -f ~/Desktop/xcas_osx6.dmg.gz && open http://www-fourier.ujf-grenoble.fr/~parisse/giac/xcas_osx6.dmg.gz &");
+\#else
+if (giac::is_file_available("/usr/bin/xcas")){
+  if (giac::is_file_available("/usr/bin/apt-get"))
+    system("xterm -e 'sudo apt-get update ; sudo apt-get install giac'");
+  else
+\#ifdef __x86_64__ 
+    system("xterm -e 'rm -f giac64.rpm && wget http://www-fourier.ujf-grenoble.fr/~parisse/giac/giac64.rpm && sudo rpm -e giac && sudo rpm -U gia64c.rpm'");    
+\#else
+    system("xterm -e 'rm -f giac32.rpm && wget http://www-fourier.ujf-grenoble.fr/~parisse/giac/giac32.rpm && sudo rpm -e giac && sudo rpm -U giac32.rpm'");    
+\#endif
+}
+else {
+  if (giac::is_file_available("/usr/local/bin/xcas")){
+    system("cd /tmp && wget http://www-fourier.ujf-grenoble.fr/~parisse/giac/xcas.tgz && cd /usr/local && xterm -e 'sudo tar xvfz tmp/xcas.tgz' &");
+  }
+  else
+    fl_alert("%s","Update implemented only for debian/rpm packages");
+}
+\#endif // __APPLE__
+\#endif // __WIN32__
+}} {}
 } 

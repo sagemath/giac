@@ -21,12 +21,18 @@
 // Library General Public License for more details.
 //
 // You should have received a copy of the GNU Library General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+// License along with this library. If not, see <http://www.gnu.org/licenses/>.
 // USA.
 //	======================================================================
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#ifndef IN_GIAC
 #include <giac/first.h>
+#else
+#include "first.h"
+#endif
 #ifdef HAVE_LIBFLTK
 
 #ifndef FLVE_COMBO_H
@@ -92,6 +98,12 @@ private:
 	int vcurrent;													//	Current item index
 };
 
+class public_input:public Fl_Input {
+ public:
+  void draw(){ Fl_Input::draw();};
+  public_input(int x,int y,int w,int h,const char * ch= 0):Fl_Input(x,y,w,h,ch){};
+  
+};
 
 class Flve_Combo : public Fl_Widget
 {
@@ -129,7 +141,7 @@ protected:
 	int vdisplay_rows;
 	int handle(int event);
 	void draw(void);
-	Fl_Input *input;
+	public_input *input;
 };
 #endif
 

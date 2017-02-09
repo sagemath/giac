@@ -1,7 +1,7 @@
-// -*- mode:C++ ; compile-command: "g++-3.4 -I. -I.. -I../include -I../../giac/include -g -c Graph.cc" -*-
+// -*- mode:C++ ; compile-command: "g++ -DHAVE_CONFIG_H -I. -I.. -I../include -I../../giac/include -g -c Graph.cc -DHAVE_CONFIG_H -DIN_GIAC" -*-
 #include "Graph.h"
 /*
- *  Copyright (C) 2000 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
+ *  Copyright (C) 2000,2014 B. Parisse, Institut Fourier, 38402 St Martin d'Heres
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -14,23 +14,26 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 #ifdef HAVE_LIBFLTK
 #include <FL/fl_ask.H>
 #include <FL/fl_ask.H>
 #include <FL/Fl.H>
-#include <FL/Fl_File_Chooser.H>
 #include <FL/Fl_Value_Input.H>
 #include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Check_Button.H>
 #include <FL/fl_show_colormap.H>
 #include <FL/Fl_Tiled_Image.H>
+#include <FL/Fl_Image.H>
+#include <FL/Fl_Shared_Image.H>
 #include <fstream>
-#include <vector>
+#include "vector.h"
 #include <algorithm>
 #include <fcntl.h>
 #include <cmath>
@@ -38,8 +41,15 @@
 #include <stdio.h>
 #include <dirent.h>
 #include <sys/stat.h> // auto-recovery function
-#include <giac/path.h>
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
+#include "path.h"
+#ifndef IN_GIAC
 #include <giac/plot.h>
+#else
+#include "plot.h"
+#endif
 #include "Equation.h"
 #include "Editeur.h"
 #include "Xcas1.h"
@@ -47,6 +57,9 @@
 #include "Graph3d.h"
 #include <FL/gl.h>
 #include "Tableur.h"
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 using namespace std;
 using namespace giac;
@@ -56,7 +69,13 @@ using namespace giac;
 namespace xcas {
 #endif // ndef NO_NAMESPACE_XCAS
 
+  bool do_helpon=true;
+
   std::map<std::string,std::pair<Fl_Image *,Fl_Image *> *> texture2d_cache;
+
+  static double pow10(double d){
+    return std::pow(10.,d);
+  }
 
   void get_texture2d(const string & s,std::pair<Fl_Image *,Fl_Image *> * & texture){
     texture=0;
@@ -67,7 +86,10 @@ namespace xcas {
       // texture->uncache();
     }
     else {
-      texture=new std::pair<Fl_Image *,Fl_Image*>(Fl_Shared_Image::get(s.c_str()),0);
+      Fl_Shared_Image * ptr =Fl_Shared_Image::get(s.c_str());
+      if (ptr) 
+	ptr->reload();
+      texture=new std::pair<Fl_Image *,Fl_Image*>(ptr,0);
       texture2d_cache[s]=texture;
     }
   }
@@ -101,9 +123,11 @@ namespace xcas {
     if (color>=0x100 && color<0x17e){
       int r,g,b;
       arc_en_ciel(color-0x100,r,g,b);
+#ifdef HAVE_LIBFLTK_GL
       if (dim3)
 	glColor3f(r/255.,g/255.,b/255.);
       else
+#endif
 	fl_color(r,g,b);
     }
     else {
@@ -191,22 +215,83 @@ namespace xcas {
     return os << q.w << "+" << q.x << "i+" << q.y << "j+" << q.z << "k";
   }
 
-  // Locales initialization, should be done before history.o is loaded
+  bool readrgb(const string & s,int W,int H,gen & res){
+    Fl_Image * image=Fl_Shared_Image::get(s.c_str());
+    if (image && W && H)
+      image=image->copy(W,H);
+    if (!image || image->count()!=1)
+      return false;
+    const char * data = image->data()[0];
+    unsigned ih=image->h(),iw=image->w(),id=image->d();
+    gen tmpr=vecteur(ih),tmpg=vecteur(ih),tmpb=vecteur(ih),tmpa=vecteur(ih);
+    // alpha is returned before blue because red==1, green==2, blue==4
+    res=gen(makevecteur(makevecteur(4,int(ih),int(iw)),tmpr,tmpg,tmpa,tmpb),_RGBA__VECT);
+    vecteur & vr=*tmpr._VECTptr;
+    vecteur & vg=*tmpg._VECTptr;
+    vecteur & vb=*tmpb._VECTptr;
+    vecteur & va=*tmpa._VECTptr;
+    unsigned l=0;
+    for (unsigned i=0;i<ih;++i){
+      if (debug_infolevel)
+	cerr << "readrgb, reading row " << i << endl;
+      vr[i]=vecteur(iw);
+      vg[i]=vecteur(iw);
+      vb[i]=vecteur(iw);
+      va[i]=vecteur(iw,255);
+      vecteur & wr = *vr[i]._VECTptr;
+      vecteur & wg = *vg[i]._VECTptr;
+      vecteur & wb = *vb[i]._VECTptr;
+      vecteur & wa = *va[i]._VECTptr;
+      for (unsigned j=0;j<iw;++j){
+	for (unsigned k=0;k<id;++k,++l){
+	  unsigned u=data[l] & 0xff;
+	  switch(k){
+	  case 0:
+	    wr[j]=int(u);
+	    break;
+	  case 1:
+	    wg[j]=int(u);
+	    break;
+	  case 2:
+	    wb[j]=int(u);
+	    break;
+	  case 3:
+	    wa[j]=int(u);
+	    break;
+	  }
+	}
+      }      
+    }
+    return true;
+  }
+
+  objet_bidon::objet_bidon(){
+    // localization code and pointer to RGB image reader
+    if (!giac::readrgb_ptr){
+      giac::readrgb_ptr=readrgb;
 #ifdef HAVE_LC_MESSAGES
-  std::string xcas_locale(getenv("XCAS_LOCALE")?getenv("XCAS_LOCALE"):giac_locale_location);
-  class objet_bidon{
-  public:
-    objet_bidon(){
-      // localization code
-      cerr << "// Using locale " << xcas_locale << endl;
-      cerr << "// " << setlocale (LC_MESSAGES, "") << endl;
-      cerr << "// " << bindtextdomain (PACKAGE, xcas_locale.c_str()) << endl;
+      xcas_locale()=getenv("XCAS_LOCALE")?getenv("XCAS_LOCALE"):giac_locale_location;	
+      cerr << "// Using locale " << xcas_locale() << endl;
+      const char * ptr=setlocale (LC_MESSAGES, "");
+      if (ptr)
+	cerr << "// " << ptr << endl;
+      else
+	cerr << "// setlocale returns 0" << endl;
+#if defined(HAVE_GETTEXT) 
+      cerr << "// " << bindtextdomain (PACKAGE, xcas_locale().c_str()) << endl;
       cerr << "// " << textdomain (PACKAGE) << endl;
       cerr << "// " << bind_textdomain_codeset (PACKAGE, "UTF-8") << endl;
-    };
-  };
-  objet_bidon mon_objet_bidon;
 #endif
+#endif
+    }
+  };
+
+  std::string & xcas_locale(){
+    static string * ans = new string;
+    return * ans;
+  }
+  objet_bidon mon_objet_bidon;
+  // objet_bidon * mon_objet_bidon_ptr=new objet_bidon;
 
   // New buttons/menus: 
   // row1: z+   up_y  up_z
@@ -280,7 +365,7 @@ namespace xcas {
 	mp->graphic->paused=!mp->graphic->paused;
 	break;
       case 13:
-	mp->graphic->autoscale();
+	mp->graphic->autoscale(false);
 	break;
       }
       if (Fl_Widget * g=dynamic_cast<Graph2d *>(mp->graphic))
@@ -307,11 +392,26 @@ namespace xcas {
 	}
 	if (optname.type==_INT_ && optname.subtype == _INT_PLOT){ 
 	  if (optname.val==_GL_TEXTURE){
-	    if (optvalue.type==_STRNG){
+	    if (optvalue.type==_VECT && optvalue._VECTptr->size()==2 && optvalue._VECTptr->front().type==_STRNG && is_undef(optvalue._VECTptr->back())){
+	      // reload cached image
+	      optvalue=optvalue._VECTptr->front();
+	      std::map<std::string,std::pair<Fl_Image *,Fl_Image*> *>::iterator it,itend=texture2d_cache.end();
+	      it=texture2d_cache.find(optvalue._STRNGptr->c_str());
+	      if (it!=itend){
+		std::pair<Fl_Image *,Fl_Image*> * old= it->second;
+		delete old;
+		texture2d_cache.erase(it);
+	      }
 	      get_texture2d(*optvalue._STRNGptr,background_image);
 	    }
-	    else
-	      background_image=0;
+	    else {
+	      if (optvalue.type==_STRNG){
+		get_texture2d(*optvalue._STRNGptr,background_image);
+	      }
+	      else {
+		background_image=0;
+	      }
+	    }
 	  }
 	  if (optname.val==_TITLE )
 	    title=printstring(optvalue,contextptr);
@@ -391,6 +491,21 @@ namespace xcas {
 	      q.w=optvalv[3]._DOUBLE_val;
 	    }
 	  }
+	  if (optname.val==_GL_LOGX && optvalue.type==_INT_){
+	    display_mode &= (0xffff ^ 0x400);
+	    if (optvalue.val)
+	      display_mode |= 0x400;
+	  }
+	  if (optname.val==_GL_LOGY && optvalue.type==_INT_){
+	    display_mode &= (0xffff ^ 0x800);
+	    if (optvalue.val)
+	      display_mode |= 0x800;
+	  }
+	  if (optname.val==_GL_LOGZ && optvalue.type==_INT_){
+	    display_mode &= (0xffff ^ 0x1000);
+	    if (optvalue.val)
+	      display_mode |= 0x1000;
+	  }
 	  if (dynamic_cast<Graph3d *>(this)){
 	    if (optname.val==_GL_ROTATION_AXIS && optvalf.type==_VECT && optvalf._VECTptr->size()==3){
 	      vecteur & optvalv=*optvalf._VECTptr;
@@ -432,6 +547,7 @@ namespace xcas {
 		glLightModelf(GL_LIGHT_MODEL_LOCAL_VIEWER,optvalf._DOUBLE_val);
 	    }
 #endif
+#ifdef HAVE_LIBFLTK_GL
 	    /* GL_LIGHT_MODEL_TWO_SIDE = true /false */
 	    if (optname.val==_GL_LIGHT_MODEL_TWO_SIDE && optvalue.type==_INT_){
 	      glLightModeli(GL_LIGHT_MODEL_TWO_SIDE,optvalue.val);
@@ -458,6 +574,7 @@ namespace xcas {
 		  glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 	      }
 	    }
+#endif
 	    // gl_light0=[option1=value1,...]
 	    if (optname.val>=_GL_LIGHT0 && optname.val<=_GL_LIGHT7 && optvalue.type==_VECT){
 	      int j=optname.val-_GL_LIGHT0;
@@ -471,7 +588,7 @@ namespace xcas {
 	      light_spot_exponent[j]=0;light_spot_cutoff[j]=180;
 	      light_0[j]=1;light_1[j]=0;light_2[j]=0;
 	      vecteur & optv=*optvalue._VECTptr;
-	      for (int i=0;i<optv.size();++i){
+	      for (unsigned i=0;i<optv.size();++i){
 		gen & optg = optv[i];
 		if ( (optg.is_symb_of_sommet(at_equal) || optg.is_symb_of_sommet(at_same) )  && optg._SYMBptr->feuille.type==_VECT && g._SYMBptr->feuille._VECTptr->size()==2){
 		  gen & optgname = optg._SYMBptr->feuille._VECTptr->front();
@@ -573,7 +690,7 @@ namespace xcas {
   }
 
   void Graph2d3d::find_xyz(double i,double j,double k,double &x,double&y,double &z){
-    z=i; y=j; z=k;
+    x=i; y=j; z=k;
   }
 
   void Graph2d::find_xy(double i,double j,double & x,double & y) const {
@@ -609,88 +726,94 @@ namespace xcas {
     return find_graph2d3d(wid->parent());
   }
 
-  void cb_Graph2d3d_LaTeX_Preview(Fl_Menu_* m , void*) {
+  static void cb_Graph2d3d_LaTeX_Preview(Fl_Menu_* m , void*) {
     const char * filename=find_graph2d3d(m)->latex(0);
     if (filename)
       xdvi(filename);
   }
 
-  void cb_Graph2d3d_LaTeX_Print(Fl_Menu_* m , void*) {
+  static void cb_Graph2d3d_LaTeX_Print(Fl_Menu_* m , void*) {
     const char * filename=find_graph2d3d(m)->latex(0);
     if (filename)
       dvips(filename);
   }
 
-  void cb_Graph2d3d_Print(Fl_Menu_* m , void*) {
+  static void cb_Graph2d3d_Print(Fl_Menu_* m , void*) {
     Graph2d3d * gr = find_graph2d3d(m);
     if (gr)
       widget_print(gr);
   }
 
-  void cb_Graph2d3d_Preview(Fl_Menu_* m , void*) {
+  static void cb_Graph2d3d_Preview(Fl_Menu_* m , void*) {
     Graph2d3d * gr = find_graph2d3d(m);
     if (gr)
       widget_ps_print(gr,gr->title,true);
   }
 
-  void cb_Graph3dpng(Fl_Menu_* m , void*) {
+  static void cb_Graph3dpng(Fl_Menu_* m , void*) {
     Graph2d3d * gr = find_graph2d3d(m);
     if (Graph3d * gr3 = dynamic_cast<Graph3d *>(gr)){
-      char * filename = fl_file_chooser("Export to PNG file","*.png","session.png");
+      char * filename = file_chooser(gettext("Export to PNG file"),"*.png","session.png");
       if(!filename) return;
       gr3->opengl2png(filename);
     }
   }
 
-  void cb_Graph2d3d_Autoscale(Fl_Menu_* m , void*) {
+  static void cb_Graph2d3d_Autoscale(Fl_Menu_* m , void*) {
     Graph2d3d * gr = find_graph2d3d(m);
     if (gr)
-      gr->autoscale();
+      gr->autoscale(false);
   }
 
-  void cb_Graph2d3d_Orthonormalize(Fl_Menu_* m , void*) {
+  static void cb_Graph2d3d_AutoscaleFull(Fl_Menu_* m , void*) {
+    Graph2d3d * gr = find_graph2d3d(m);
+    if (gr)
+      gr->autoscale(true);
+  }
+
+  static void cb_Graph2d3d_Orthonormalize(Fl_Menu_* m , void*) {
     Graph2d3d * gr = find_graph2d3d(m);
     if (gr)
       gr->orthonormalize();
   }
 
-  void cb_Graph2d3d_Next(Fl_Menu_* m , void*) {
+  static void cb_Graph2d3d_Next(Fl_Menu_* m , void*) {
     Graph2d3d * gr = find_graph2d3d(m);
     if (gr)
       gr->move_cfg(1);
   }
 
-  void cb_Graph2d3d_Previous(Fl_Menu_* m , void*) {
+  static void cb_Graph2d3d_Previous(Fl_Menu_* m , void*) {
     Graph2d3d * gr = find_graph2d3d(m);
     if (gr)
       gr->move_cfg(-1);
   }
 
-  void cb_Graph2d3d_Zoomout(Fl_Menu_* m , void*) {
+  static void cb_Graph2d3d_Zoomout(Fl_Menu_* m , void*) {
     Graph2d3d * gr = find_graph2d3d(m);
     if (gr)
       gr->zoom(1.414);
   }
 
-  void cb_Graph2d3d_Zoomin(Fl_Menu_* m , void*) {
+  static void cb_Graph2d3d_Zoomin(Fl_Menu_* m , void*) {
     Graph2d3d * gr = find_graph2d3d(m);
     if (gr)
       gr->zoom(0.707);
   }
 
-  void cb_Graph2d3d_Config(Fl_Menu_* m , void*) {
+  static void cb_Graph2d3d_Config(Fl_Menu_* m , void*) {
     Graph2d3d * gr = find_graph2d3d(m);
     if (gr)
       gr->config();
   }
 
-  void cb_Graph2d3d_Pause(Fl_Menu_* m , void*) {
+  static void cb_Graph2d3d_Pause(Fl_Menu_* m , void*) {
     Graph2d3d * gr = find_graph2d3d(m);
     if (gr)
       gr->paused=true;
   }
 
-  void cb_Graph2d3d_Stop(Fl_Menu_* m , void*) {
+  static void cb_Graph2d3d_Stop(Fl_Menu_* m , void*) {
     Graph2d3d * gr = find_graph2d3d(m);
     if (gr){
       gr->animation_dt=0;
@@ -698,13 +821,13 @@ namespace xcas {
     }
   }
 
-  void cb_Graph2d3d_Restart(Fl_Menu_* m , void*) {
+  static void cb_Graph2d3d_Restart(Fl_Menu_* m , void*) {
     Graph2d3d * gr = find_graph2d3d(m);
     if (gr)
       gr->paused=false;
   }
 
-  void cb_Graph2d3d_Faster(Fl_Menu_* m , void*) {
+  static void cb_Graph2d3d_Faster(Fl_Menu_* m , void*) {
     Graph2d3d * gr = find_graph2d3d(m);
     if (gr){
       if (gr->animation_dt)
@@ -714,7 +837,7 @@ namespace xcas {
     }
   }
 
-  void cb_Graph2d3d_Slower(Fl_Menu_* m , void*) {
+  static void cb_Graph2d3d_Slower(Fl_Menu_* m , void*) {
     Graph2d3d * gr = find_graph2d3d(m);
     if (gr){
       if (gr->animation_dt)
@@ -724,7 +847,7 @@ namespace xcas {
     }
   }
 
-  void cb_Graph2d3d_hide(Fl_Menu_* m , void*) {
+  static void cb_Graph2d3d_hide(Fl_Menu_* m , void*) {
     Graph2d3d * gr = find_graph2d3d(m);
     if (Graph3d * gr3 = dynamic_cast<Graph3d *>(gr)){
       gr3->below_depth_hidden=true;
@@ -732,7 +855,7 @@ namespace xcas {
     }
   }
 
-  void cb_Graph2d3d_show(Fl_Menu_* m , void*) {
+  static void cb_Graph2d3d_show(Fl_Menu_* m , void*) {
     Graph2d3d * gr = find_graph2d3d(m);
     if (Graph3d * gr3 = dynamic_cast<Graph3d *>(gr)){
       gr3->below_depth_hidden=false;
@@ -740,7 +863,7 @@ namespace xcas {
     }
   }
 
-  void cb_Graph2d3d_startview(Fl_Menu_* m , void*) {
+  static void cb_Graph2d3d_startview(Fl_Menu_* m , void*) {
     Graph2d3d * gr = find_graph2d3d(m);
     if (Graph3d * gr3 = dynamic_cast<Graph3d *>(gr)){
       gr3->theta_x=-13;
@@ -751,7 +874,7 @@ namespace xcas {
     }
   }
 
-  void cb_Graph2d3d_xview(Fl_Menu_* m , void*) {
+  static void cb_Graph2d3d_xview(Fl_Menu_* m , void*) {
     Graph2d3d * gr = find_graph2d3d(m);
     if (Graph3d * gr3 = dynamic_cast<Graph3d *>(gr)){
       gr3->theta_x=0;
@@ -762,7 +885,7 @@ namespace xcas {
     }
   }
 
-  void cb_Graph2d3d_yview(Fl_Menu_* m , void*) {
+  static void cb_Graph2d3d_yview(Fl_Menu_* m , void*) {
     Graph2d3d * gr = find_graph2d3d(m);
     if (Graph3d * gr3 = dynamic_cast<Graph3d *>(gr)){
       gr3->theta_x=0;
@@ -773,7 +896,7 @@ namespace xcas {
     }
   }
 
-  void cb_Graph2d3d_zview(Fl_Menu_* m , void*) {
+  static void cb_Graph2d3d_zview(Fl_Menu_* m , void*) {
     Graph2d3d * gr = find_graph2d3d(m);
     if (Graph3d * gr3 = dynamic_cast<Graph3d *>(gr)){
       gr3->theta_x=0;
@@ -784,7 +907,7 @@ namespace xcas {
     }
   }
 
-  void cb_Graph2d3d_mouse_plan(Fl_Menu_* m , void*) {
+  static void cb_Graph2d3d_mouse_plan(Fl_Menu_* m , void*) {
     if (!Fl::focus())
       return;
     Graph2d3d * gr = find_graph2d3d(m);
@@ -833,6 +956,7 @@ namespace xcas {
     static Fl_Window * w = 0;
     static Fl_Button * button = 0;
     if (!w){
+      Fl_Group::current(0);
       w=new Fl_Window(100,24);
       button = new Fl_Button(2,2,w->w()-4,w->h()-4);
       button->label(gettext("Cancel"));
@@ -843,7 +967,7 @@ namespace xcas {
       w->set_modal();
       w->show();
       w->hotspot(w);
-      Fl::focus(w);
+      Fl::focus(button);
       double step=2*M_PI/nstep,lx[8],ly[8],lz[8],lX,lY,lZ;
       quaternion_double qsave(gr3->q);
       for (int j=0;j<8;++j){
@@ -894,7 +1018,7 @@ namespace xcas {
     }
   }
     
-  void cb_Graph2d3d_rotate(Fl_Menu_* m , void*) { 
+  static void cb_Graph2d3d_rotate(Fl_Menu_* m , void*) { 
     if (!Fl::focus())
       return;
     Graph2d3d * gr = find_graph2d3d(m);
@@ -902,7 +1026,7 @@ namespace xcas {
     oxyz_rotate(gr,gr->rotanim_type,gr->rotanim_nstep,gr->rotanim_tstep,gr->rotanim_danim,gr->rotanim_rx,gr->rotanim_ry,gr->rotanim_rz);
   }
 
-  void cb_Graph_Traceclear(Fl_Widget * m , void*) {
+  static void cb_Graph_Traceclear(Fl_Widget * m , void*) {
     Graph2d3d * gr = find_graph2d3d(m);
     if (gr){
       gr->trace_instructions.clear(); 
@@ -926,11 +1050,11 @@ namespace xcas {
       return gr;
     gr=do_find_figure(Fl::focus());
     //if (!gr)
-    //  fl_alert("No figure found. Please click in or add one");
+    //  fl_alert("%s","No figure found. Please click in or add one");
     return gr;
   }  
 
-  void cb_Graph_Traceobject(Fl_Widget * m , void*) {
+  static void cb_Graph_Traceobject(Fl_Widget * m , void*) {
     Fl_Widget * wid=Fl::focus();
     Figure * f=find_figure(m);
     if (f){
@@ -949,7 +1073,7 @@ namespace xcas {
     }
   }
 
-  void cb_Graph_Traceon(Fl_Widget * m , void*) {
+  static void cb_Graph_Traceon(Fl_Widget * m , void*) {
     Graph2d3d * gr = find_graph2d3d(m);
     if (gr){
       gr->display_mode |= 0x40; // set bit 6
@@ -957,7 +1081,7 @@ namespace xcas {
     }
   }
 
-  void cb_Graph_Traceoff(Fl_Widget * m , void*) {
+  static void cb_Graph_Traceoff(Fl_Widget * m , void*) {
     Graph2d3d * gr = find_graph2d3d(m);
     if (gr){
       gr->display_mode &= (0xffff ^ 0x40);; // clear bit 6
@@ -965,10 +1089,26 @@ namespace xcas {
     }
   }
 
+  static void cb_Graph_Graphon(Fl_Widget * m , void*) {
+    Graph2d3d * gr = find_graph2d3d(m);
+    if (gr){
+      gr->display_mode |= 0x1; // set bit 0
+      gr->redraw();
+    }
+  }
+
+  static void cb_Graph_Graphoff(Fl_Widget * m , void*) {
+    Graph2d3d * gr = find_graph2d3d(m);
+    if (gr){
+      gr->display_mode &= (0xffff ^ 0x1); // clear bit 0
+      gr->redraw();
+    }
+  }
+
   static void cb_Graph2d3d_Frameoff(Fl_Widget * m , void*) {
     Graph2d3d * gr = find_graph2d3d(m);
     if (gr){
-      gr->display_mode |= 0x80; // set bit 7
+      gr->display_mode |= 0x80; // set bit 6
       gr->redraw();
     }
   }
@@ -976,20 +1116,20 @@ namespace xcas {
   static void cb_Graph2d3d_Frameon(Fl_Widget * m , void*) {
     Graph2d3d * gr = find_graph2d3d(m);
     if (gr){
-      gr->display_mode &= (0xffff ^ 0x80);; // clear bit 7
+      gr->display_mode &= (0xffff ^ 0x80);; // clear bit 6
       gr->redraw();
     }
   }
 
-  void cb_Graph_Animate(Fl_Widget * m , void*) {
+  static void cb_Graph_Animate(Fl_Widget * m , void*) {
     Graph2d3d * gr = find_graph2d3d(m);
     if (gr){
-      const char * ch=fl_input("Frames?","10");
+      const char * ch=fl_input(gettext("Frames number? (>0 forward, <0 forward+backward)"),"10");
       if (ch){
 	int n=atoi(ch);
-	if (n<2)
-	  n=2;
 	gr->animation_instructions=gr->animate(n);
+	if (gr->animation_instructions.empty())
+	  fl_alert("%s",gettext("Figure must depend on a parameter (Edit->Add parameter)"));
 	gr->paused=false;
 	gr->animation_dt=0.1;
 	gr->display_mode |= 0x2; // set bit 1
@@ -998,7 +1138,7 @@ namespace xcas {
     }
   }
 
-  void cb_Graph_Unanimate(Fl_Widget * m , void*) {
+  static void cb_Graph_Unanimate(Fl_Widget * m , void*) {
     Graph2d3d * gr = find_graph2d3d(m);
     if (gr){
       gr->animation_instructions.clear();
@@ -1009,10 +1149,19 @@ namespace xcas {
     }
   }
 
+  Fl_Menu_Item Autoscale_menu[] = {
+    {gettext("auto"), 0,  0, 0, 64, 0, 0, 14, 56},
+    {gettext("Autoscale"), 0,  (Fl_Callback*)cb_Graph2d3d_Autoscale, 0, 0, 0, 0, 14, 56},
+    {gettext("Autoscale (full)"), 0,  (Fl_Callback*)cb_Graph2d3d_AutoscaleFull, 0, 0, 0, 0, 14, 56},
+    {0},
+    {0}
+  };
+
   Fl_Menu_Item Graph2d3d_menu[] = {
     {gettext("M"), 0,  0, 0, 64, 0, 0, 14, 56},
     {gettext("View"), 0,  0, 0, 64, 0, 0, 14, 56},
     {gettext("Autoscale"), 0,  (Fl_Callback*)cb_Graph2d3d_Autoscale, 0, 0, 0, 0, 14, 56},
+    {gettext("Autoscale (full)"), 0,  (Fl_Callback*)cb_Graph2d3d_AutoscaleFull, 0, 0, 0, 0, 14, 56},
     {gettext("Orthonormalize (2-d)"), 0,  (Fl_Callback*)cb_Graph2d3d_Orthonormalize, 0, 0, 0, 0, 14, 56},
     {gettext("Zoom in"), 0,  (Fl_Callback*)cb_Graph2d3d_Zoomin, 0, 0, 0, 0, 14, 56},
     {gettext("Zoom out"), 0,  (Fl_Callback*)cb_Graph2d3d_Zoomout, 0, 0, 0, 0, 14, 56},
@@ -1036,6 +1185,8 @@ namespace xcas {
     {gettext("Slower (2x)"), 0,  (Fl_Callback*)cb_Graph2d3d_Slower, 0, 0, 0, 0, 14, 56},
     {gettext("Build animation"), 0,  (Fl_Callback *) cb_Graph_Animate, 0, 0, 0, 0, 14, 56},
     {gettext("Unanimate"), 0,  (Fl_Callback *) cb_Graph_Unanimate, 0, 0, 0, 0, 14, 56},
+    {gettext("Graph on"), 0,  (Fl_Callback *) cb_Graph_Graphon, 0, 0, 0, 0, 14, 56},
+    {gettext("Graph off"), 0,  (Fl_Callback *) cb_Graph_Graphoff, 0, 0, 0, 0, 14, 56},
     {0},
     {gettext("3-d"), 0,  0, 0, 64, 0, 0, 14, 56},
     {gettext("Mouse plan equation"), 0,  (Fl_Callback*)cb_Graph2d3d_mouse_plan, 0, 0, 0, 0, 14, 56},
@@ -1075,7 +1226,7 @@ namespace xcas {
     bzoomin->tooltip(gettext("Zoom in"));
     bzoomin->callback(cb_graph_buttons);
     Fl_Button * bup = new Fl_Button(bx+bw,by,bw,bh,"@-18");
-    bup->color(dark_green_color);
+    bup->color(y_axis_color);
     bup->tooltip(gettext("Increase y"));
     bup->callback(cb_graph_buttons);
     Fl_Button * bupright = new Fl_Button(bx+2*bw,by,bw,bh,"@-18");
@@ -1085,14 +1236,14 @@ namespace xcas {
     by += bh;
     Fl_Button * bleft = new Fl_Button(bx,by,bw,bh,"@-1<-");
     bleft->when(FL_WHEN_RELEASE);
-    bleft->color(FL_ROUGE_PALE);
+    bleft->color(x_axis_color);
     bleft->tooltip(gettext("Decrease x"));
     bleft->callback(cb_graph_buttons);
     Fl_Button * bortho = new Fl_Button(bx+bw,by,bw,bh,"_|_");
     bortho->tooltip(gettext(is3d?"Hide or show below depth":"Orthonormalize"));
     bortho->callback(cb_graph_buttons);
     Fl_Button * bright = new Fl_Button(bx+2*bw,by,bw,bh,"@-1->");
-    bright->color(FL_ROUGE_PALE);
+    bright->color(x_axis_color);
     bright->tooltip(gettext("Increase x"));
     bright->callback(cb_graph_buttons);
     by += bh;
@@ -1100,7 +1251,7 @@ namespace xcas {
     bzoomout->tooltip(gettext("Zoom out"));
     bzoomout->callback(cb_graph_buttons);
     Fl_Button * bdown = new Fl_Button(bx+bw,by,bw,bh,"@-12");
-    bdown->color(dark_green_color);
+    bdown->color(y_axis_color);
     bdown->tooltip(gettext("Decrease y"));
     bdown->callback(cb_graph_buttons);
     Fl_Button * bdownright = new Fl_Button(bx+2*bw,by,bw,bh,"@-12");
@@ -1121,12 +1272,16 @@ namespace xcas {
     Fl_Button * bpause = new Fl_Button(bx+bw,by,bw,bh,"@>|");
     bpause->tooltip(gettext("Stop or restart animation"));
     bpause->callback(cb_graph_buttons);
-    Fl_Button * bauto = new Fl_Button(bx+2*bw,by,bw,bh,"auto");
+    Fl_Menu_Bar * bauto = new Fl_Menu_Bar(bx+2*bw,by,bw,bh,"auto");
     bauto->tooltip(gettext("Autoscale"));
-    bauto->callback(cb_graph_buttons);
-    menubar= new Fl_Menu_Bar(bx,by,bw,bh,"menu");
+    int s= Autoscale_menu->size();
+    Fl_Menu_Item * automenuitem = new Fl_Menu_Item[Autoscale_menu->size()];
+    for (int i=0;i<s;++i)
+      *(automenuitem+i)=*(Autoscale_menu+i);
+    bauto->menu (automenuitem);    
+    menubar= new Fl_Menu_Bar(bx,by,bw,bh,"+");
     menubar->tooltip(gettext("Graphic menu"));
-    int s= Graph2d3d_menu->size();
+    s= Graph2d3d_menu->size();
     Fl_Menu_Item * menuitem = new Fl_Menu_Item[Graph2d3d_menu->size()];
     for (int i=0;i<s;++i)
       *(menuitem+i)=*(Graph2d3d_menu+i);
@@ -1142,10 +1297,11 @@ namespace xcas {
   }
 
   Graph2d3d::Graph2d3d(int x,int y,int w,int h,const char * l,double xmin,double xmax,double ymin,double ymax,double zmin,double zmax,double ortho,History_Pack * hp_):
-    Fl_Widget(x,y,w,h,l),pushed(false),
+    Fl_Widget(x,y,w,h,l),
+    pushed(false),
     show_mouse_on_object(false),
-    display_mode(0x41),
     mode(255),args_tmp_push_size(0),no_handle(false),
+    display_mode(0x45),
     window_xmin(xmin),window_xmax(xmax),window_ymin(ymin),window_ymax(ymax),window_zmin(zmin),window_zmax(zmax),history_pos(0),
     ylegende(2.5),
     mouse_param_group(0),mouse_position(0),param_group(0),button_group(0),menubar(0),hp(hp_),
@@ -1164,15 +1320,18 @@ namespace xcas {
     struct timezone tz;
     gettimeofday(&animation_last,&tz);
     legende_size=giac::LEGENDE_SIZE;
-    y_axis_color=dark_green_color;
     x_axis_color=FL_RED;
+    y_axis_color=dark_green_color;
     z_axis_color=FL_BLUE;
+    current_i=current_j=RAND_MAX;
+    in_area=false;
   }
 
   Graph2d3d::Graph2d3d(int x,int y,int w,int h,const char * l,History_Pack * hp_):
-    Fl_Widget(x,y,w,h,l),pushed(false),
+    Fl_Widget(x,y,w,h,l),
+    pushed(false),
     show_mouse_on_object(false),
-    display_mode(0x41),
+    display_mode(0x45),
     mode(255),args_tmp_push_size(0),no_handle(false),
     window_xmin(Xcas_config.window_xmin),window_xmax(Xcas_config.window_xmax),window_ymin(Xcas_config.window_ymin),window_ymax(Xcas_config.window_ymax),window_zmin(Xcas_config.window_zmin),window_zmax(Xcas_config.window_zmax),history_pos(0),
     ylegende(2.5),
@@ -1192,8 +1351,8 @@ namespace xcas {
     struct timezone tz;
     gettimeofday(&animation_last,&tz);
     push_cfg();
-    y_axis_color=dark_green_color;
     x_axis_color=FL_RED;
+    y_axis_color=dark_green_color;
     z_axis_color=FL_BLUE;
   }
 
@@ -1277,6 +1436,7 @@ namespace xcas {
     static Fl_Button * button3 =0; // cancel changes, stay
     static Fl_Button * button4 =0; // apply, stay
     if (!w){
+      Fl_Group::current(0);
       w=new Fl_Window(dx,dy);
       int dh=dy/7;
       int dw=dx/8;
@@ -1348,7 +1508,7 @@ namespace xcas {
       button2 = new Fl_Button(2*dx/5+2,y_,dx/5-4,dh-4);
       button2->label(gettext("Default"));
       button3 = new Fl_Button(3*dx/5+2,y_,dx/5-4,dh-4);
-      button3->label(gettext("Undo"));
+      button3->label(gettext("Reset"));
       button4 = new Fl_Button(4*dx/5+2,y_,dx/5-4,dh-4);
       button4->label(gettext("Apply"));
     }
@@ -1356,8 +1516,9 @@ namespace xcas {
     change_group_fontsize(w,l);
     w->set_modal();
     w->show();
+    autosave_disabled=true;
     w->hotspot(w);
-    Fl::focus(w);
+    Fl::focus(pos_x);
     int r=-2;
     for (;;) {
       if (r==-2){
@@ -1432,7 +1593,20 @@ namespace xcas {
       if (r==0 || r==1)
 	break;
     }
+    autosave_disabled=false;
     w->hide();
+  }
+  
+  // round to 3 decimals
+  double setup_round(double x){
+    if (x<0)
+      return -setup_round(-x);
+    if (x<1e-300)
+      return 0;
+    int n=int(floor(log10(x)+.5)); // round to nearest
+    x=int(floor(x*pow(10.0,3.0-n)+.5));
+    x=x*pow(10.0,n-3.0);
+    return x;
   }
 
   void Graph2d3d::config(){
@@ -1453,7 +1627,7 @@ namespace xcas {
     static Fl_Button * button4 =0; // autoscale
     static Fl_Button * button5 =0; // round
     static Fl_Button * l0=0,*l1=0,*l2=0,*l3=0,*l4=0,*l5=0,*l6=0,*l7=0; // lights
-    static Fl_Check_Button* c1=0,*c2=0,*c3=0,*ct=0,*landscape=0,*notperspective=0,*lights=0,*shade=0,*blend=0;
+    static Fl_Check_Button* c1=0,*c2=0,*c3=0,*ct=0,*landscape=0,*notperspective=0,*lights=0,*shade=0,*blend=0,*fbox=0,*triedre=0,*logx=0,*logy=0;
     static Fl_Multiline_Output * currentcfg = 0; // display
     if (dy<240)
       dy=240;
@@ -1462,6 +1636,7 @@ namespace xcas {
     Graph3d * gr3d = dynamic_cast<Graph3d *>(this);
     Graph2d * gr2d = dynamic_cast<Graph2d *>(this);
     if (!w){
+      Fl_Group::current(0);
       w=new Fl_Window(dx,dy);
       int dh=dy/12;
       int y_=2;
@@ -1471,6 +1646,9 @@ namespace xcas {
       wxmax=new Fl_Value_Input(dx/2,y_,dx/6-2,dh-4,"WX+");
       wxmax->tooltip(gettext("Xmax for visualisation"));
       wxmax->labelcolor(x_axis_color);
+      logx=new Fl_Check_Button(5*dx/6,y_,dx/6-2,dh-4,"X-log");
+      logx->tooltip(gettext("X Logarithmic scale"));
+      logx->value(0);
       notperspective=new Fl_Check_Button(5*dx/6,y_,dx/6-2,dh-4,"Ortho proj");
       notperspective->tooltip(gettext("Orthonormal or perspective"));
       notperspective->value(0);
@@ -1481,9 +1659,12 @@ namespace xcas {
       wymax=new Fl_Value_Input(dx/2,y_,dx/6-2,dh-4,"WY+");
       wymax->tooltip(gettext("Ymax for visualisation"));
       wymax->labelcolor(y_axis_color);
-      blend=new Fl_Check_Button(5*dx/6,y_,dx/6-2,dh-4,"Blend");
-      blend->tooltip(gettext("Enable blending"));
-      blend->value(1);
+      logy=new Fl_Check_Button(5*dx/6,y_,dx/6-2,dh-4,"Y-log");
+      logy->tooltip(gettext("Y Logarithmic scale"));
+      logy->value(0);
+      shade=new Fl_Check_Button(5*dx/6,y_,dx/6-2,dh-4,"Gouraud");
+      shade->tooltip(gettext("Flat or Gouraud shading"));
+      shade->value(0);
       y_ += dh;
       wzmin=new Fl_Value_Input(dx/6,y_,dx/6-2,dh-4,"WZ-");
       wzmin->tooltip(gettext("Zmin for visualisation"));
@@ -1491,9 +1672,9 @@ namespace xcas {
       wzmax=new Fl_Value_Input(dx/2,y_,dx/6-2,dh-4,"WZ+");
       wzmax->tooltip(gettext("Zmax for visualisation"));
       wzmax->labelcolor(z_axis_color);
-      shade=new Fl_Check_Button(5*dx/6,y_,dx/6-2,dh-4,"Gouraud");
-      shade->tooltip(gettext("Flat or Gouraud shading"));
-      shade->value(0);
+      blend=new Fl_Check_Button(5*dx/6,y_,dx/6-2,dh-4,"Blend");
+      blend->tooltip(gettext("Enable blending"));
+      blend->value(1);
       y_ += dh;
       wxmin->minimum(-1e300);
       wxmin->maximum(1e300);
@@ -1501,12 +1682,18 @@ namespace xcas {
       wymin->maximum(1e300);
       wzmin->minimum(-1e300);
       wzmin->maximum(1e300);
-      ct=new Fl_Check_Button(2,y_,dx/3-2,dh-4,"Pixels");
+      fbox=new Fl_Check_Button(2,y_,dx/6-4,dh-4,"Framebox");
+      fbox->tooltip(gettext("Graphic displayed with a framebox"));
+      fbox->value(1);
+      ct=new Fl_Check_Button(dx/6+2,y_,dx/6-4,dh-4,"Pixels");
       ct->tooltip(gettext("Ticks in pixels or units"));
       ct->value(0);
-      tx=new Fl_Value_Input(dx/3+40,y_,dx/3-40,dh-4,"X-tick");
+      triedre=new Fl_Check_Button(2*dx/6+2,y_,dx/6-4,dh-4,"Triedre");
+      triedre->tooltip(gettext("View triedre even if axes are hidden"));
+      triedre->value(1);
+      tx=new Fl_Value_Input(2*dx/4+dx/8,y_,dx/4-dx/8,dh-4,"X-tick");
       tx->tooltip(gettext("Number of units or pixels for ticks on X"));
-      ty=new Fl_Value_Input(2*dx/3+40,y_,dx/3-40,dh-4,"Y-tick");
+      ty=new Fl_Value_Input(3*dx/4+dx/8,y_,dx/4-dx/8,dh-4,"Y-tick");
       ty->tooltip(gettext("Number of units or pixels for ticks on Y"));
       y_ += dh;
       nx=new Fl_Value_Input(30,y_,dx/7-30,dh-4,"x*");
@@ -1646,11 +1833,17 @@ namespace xcas {
       std::swap(window_zmin,window_zmax);
     Figure * fig=dynamic_cast<Figure *>(parent());
     if (fig){
-      landscape->show();
+      // landscape->show();
       landscape->value(fig->disposition);
     }
     else
       landscape->hide();
+    window_xmin=setup_round(window_xmin);
+    window_xmax=setup_round(window_xmax);
+    window_ymin=setup_round(window_ymin);
+    window_ymax=setup_round(window_ymax);
+    window_zmin=setup_round(window_zmin);
+    window_zmax=setup_round(window_zmax);
     double dtmp=(window_xmax-window_xmin)/100;
     wxmin->value(window_xmin);
     wxmin->step(dtmp);
@@ -1692,6 +1885,8 @@ namespace xcas {
       rotcfg_ry->value(rotanim_ry);
       rotcfg_rz->value(rotanim_rz);
       notperspective->show();
+      logx->hide();
+      logy->hide();
       notperspective->value(display_mode & 0x4);
       lights->show();
       lights->value(display_mode & 0x8);
@@ -1756,6 +1951,10 @@ namespace xcas {
       rotcfg_rx->hide(); rotcfg_ry->hide(); rotcfg_rz->hide();
       rotcfg_danim->hide(); rotcfg_type->hide();
       notperspective->hide();
+      logx->show();
+      logy->show();
+      logx->value(display_mode & (1<<10));
+      logy->value(display_mode & (1<<11));
       lights->hide();
       l0->hide();
       l1->hide();
@@ -1786,6 +1985,8 @@ namespace xcas {
       tx->value(x_tick);
       ty->value(y_tick);
     }
+    fbox->value((display_mode & 0x100));
+    triedre->value(display_mode & 0x200);
     if (!hp)
       hp=get_history_pack(this);
     if (hp)
@@ -1796,8 +1997,9 @@ namespace xcas {
     currentcfg->value(current_config().c_str());
     w->set_modal();
     w->show();
+    autosave_disabled=true;
     w->hotspot(w);
-    Fl::focus(w);
+    Fl::focus(wxmin);
     int r;
     for (;;) {
       r=-1;
@@ -1829,6 +2031,18 @@ namespace xcas {
 	  display_mode &= (0xffff ^ 0x20);
 	  if (blend->value())
 	    display_mode |= 0x20;	  
+	  redraw();
+	}
+	if (o==logx){
+	  display_mode &= (0xffff ^ (1<<10));
+	  if (logx->value())
+	    display_mode |= (1<<10);	  
+	  redraw();
+	}
+	if (o==logy){
+	  display_mode &= (0xffff ^ (1<<11));
+	  if (logy->value())
+	    display_mode |= (1<<11);	  
 	  redraw();
 	}
 	if (o==l0){
@@ -1885,7 +2099,7 @@ namespace xcas {
 	  ylegende=ylegendesize->value()/labelsize();
 	}
 	if (o==button4 ){
-	  autoscale();
+	  autoscale(false);
 	  wxmin->value(window_xmin);
 	  wxmax->value(window_xmax);
 	  wymin->value(window_ymin);
@@ -2005,6 +2219,12 @@ namespace xcas {
 	    x_tick=tx->value();
 	    y_tick=ty->value();
 	  }
+	  display_mode &= (0xffff ^ 0x100);
+	  if (fbox->value())
+	    display_mode |= 0x100;
+	  display_mode &= (0xffff ^ 0x200);
+	  if (triedre->value())
+	    display_mode |= 0x200;
 	  if (hp &&strlen(autoname_input->value()))
 	    autoname(hp->contextptr)=autoname_input->value();
 	  redraw();
@@ -2016,6 +2236,7 @@ namespace xcas {
       } // end else
       currentcfg->value(current_config().c_str());
     } // end for
+    autosave_disabled=false;
     w->hide();
   }
 
@@ -2028,7 +2249,7 @@ namespace xcas {
 	if (v.size()>4 && v[4].type==_DOUBLE_)
 	  step=v[4]._DOUBLE_val;
 	Fl_Group::current(0);
-	Gen_Value_Slider * gvs = new Gen_Value_Slider(0,0,1,1,-2,v[1]._DOUBLE_val,v[2]._DOUBLE_val,step,name.print(contextptr),name.print(contextptr).c_str());
+	Gen_Value_Slider * gvs = new Gen_Value_Slider(0,0,1,1,-2,v[1]._DOUBLE_val,v[2]._DOUBLE_val,step,name.print(contextptr));
 	gvs->align(FL_ALIGN_RIGHT);
 	gvs->value(v[3]._DOUBLE_val);
 	return gvs;
@@ -2052,7 +2273,7 @@ namespace xcas {
       vecteur & v = *e._SYMBptr->feuille._VECTptr;
       if (v.size()==3 && v.back().type==_STRNG){
 	string newauto=*v.back()._STRNGptr;
-	if (newauto.size()>=1 && newauto>=autoname(contextptr)){
+	if (newauto.size()>=1 && v[1].type!=_VECT && newauto>=autoname(contextptr)){
 	  autoname(contextptr)=newauto;
 	  autoname_plus_plus();
 	}
@@ -2097,26 +2318,90 @@ namespace xcas {
     ylegende=double(taille)/labelsize();
   }
 
-  void Graph2d3d::autoscale(){
+  void Graph2d3d::autoscale(bool fullview){
+    glequal(false);
     if (!plot_instructions.empty()){
       // Find the largest and lowest x/y/z in objects (except lines/plans)
       vector<double> vx,vy,vz;
       int s;
       context * contextptr=hp?hp->contextptr:get_context(this);
       bool ortho=autoscaleg(plot_instructions,vx,vy,vz,contextptr);
-      autoscaleminmax(vx,window_xmin,window_xmax);
+      autoscaleminmax(vx,window_xmin,window_xmax,fullview);
+      if (display_mode & 0x400){
+	if (window_xmin<=0){
+	  if (vx[0]<=0)
+	    window_xmin=-309;
+	  else
+	    window_xmin=std::log10(vx[0]);
+	}
+	else
+	  window_xmin=std::log10(window_xmin);
+	if (window_xmax<=0)
+	  window_xmax=-300;
+	else
+	  window_xmax=std::log10(window_xmax);
+      }
       zoomx(1.0);
-      autoscaleminmax(vy,window_ymin,window_ymax);
+      autoscaleminmax(vy,window_ymin,window_ymax,fullview);
+      if (display_mode & 0x800){
+	if (window_ymin<=0){
+	  if (vy[0]<=0)
+	    window_ymin=-309;
+	  else
+	    window_ymin=std::log10(vy[0]);
+	}
+	else
+	  window_ymin=std::log10(window_ymin);
+	if (window_ymax<=0)
+	  window_ymax=-300;
+	else
+	  window_ymax=std::log10(window_ymax);
+      }
       zoomy(1.0);
-      autoscaleminmax(vz,window_zmin,window_zmax);
+      autoscaleminmax(vz,window_zmin,window_zmax,fullview);
       zoomz(1.0);
-      if (ortho)
+      bool do_ortho=ortho;
+      if (!do_ortho){
+	if (Graph2d * ptr=dynamic_cast<Graph2d *>(this)){
+	  double h=this->h()*ptr->orthonormal_factor;
+	  double w=this->w();
+	  double window_w=window_xmax-window_xmin,window_h=window_ymax-window_ymin;
+	  double tst=h/w*window_w/window_h;
+	  if (tst>0.7 && tst<1.4)
+	    do_ortho=true;
+	}
+      }
+      if (do_ortho )
 	orthonormalize();
     }
     find_ylegende();
     y_tick=find_tick(window_ymax-window_ymin);
     redraw();
     push_cfg();
+  }
+
+  void glequalv(vecteur & v,bool rmequal){
+    iterateur it=v.begin(),itend=v.end();
+    if (rmequal){
+      for (;it!=itend;++it){
+	if (it->type==_VECT)
+	  glequalv(*it->_VECTptr,rmequal);
+	if (it->is_symb_of_sommet(at_equal))
+	  *it=symbolic(at_nop,it->_SYMBptr->feuille);
+      }
+    }
+    else {
+      for (;it!=itend;++it){
+	if (it->type==_VECT)
+	  glequalv(*it->_VECTptr,rmequal);
+	if (it->is_symb_of_sommet(at_nop))
+	  *it=symbolic(at_equal,it->_SYMBptr->feuille);
+      }
+    }
+  }
+
+  void Graph2d3d::glequal(bool rmequal){
+    glequalv(plot_instructions,rmequal);
   }
 
   void Graph2d3d::zoomx(double d,bool round){
@@ -2170,6 +2455,7 @@ namespace xcas {
 
 
   void Graph2d3d::zoom(double d){ 
+    glequal(true);
     zoomx(d);
     zoomy(d);
     zoomz(d);
@@ -2184,12 +2470,12 @@ namespace xcas {
   const char * latexfilename(const char * filename_){
     if (filename_)
       return filename_;
-    char * filename=fl_file_chooser(gettext("LaTeX filaneme"), "*.tex", "session.tex");
+    char * filename=file_chooser(gettext("LaTeX filaneme"), "*.tex", "session.tex");
     if (!filename)
       return 0;
     string s=remove_extension(filename)+".tex";
     if (is_file_available(s.c_str())){
-      int i=fl_ask(("File "+s+" exists. Overwrite?").c_str());
+      int i=fl_ask("%s",("File "+s+" exists. Overwrite?").c_str());
       if ( !i )
 	return 0;
     }
@@ -2211,6 +2497,7 @@ namespace xcas {
   }
 
   void Graph2d3d::up(double d){ 
+    glequal(true);
     window_ymin += d;
     window_ymax += d;
     parent_redraw(this);
@@ -2218,6 +2505,7 @@ namespace xcas {
   }
 
   void Graph2d3d::down(double d){ 
+    glequal(true);
     window_ymin -= d;
     window_ymax -= d;
     parent_redraw(this);
@@ -2225,6 +2513,7 @@ namespace xcas {
   }
 
   void Graph2d3d::up_z(double d){ 
+    glequal(true);
     window_zmin += d;
     window_zmax += d;
     parent_redraw(this);
@@ -2232,6 +2521,7 @@ namespace xcas {
   }
 
   void Graph2d3d::down_z(double d){ 
+    glequal(true);
     window_zmin -= d;
     window_zmax -= d;
     parent_redraw(this);
@@ -2239,6 +2529,7 @@ namespace xcas {
   }
 
   void Graph2d3d::left(double d){ 
+    glequal(true);
     window_xmin -= d;
     window_xmax -= d;
     parent_redraw(this);
@@ -2246,6 +2537,7 @@ namespace xcas {
   }
 
   void Graph2d3d::right(double d){ 
+    glequal(true);
     window_xmin += d;
     window_xmax += d;
     parent_redraw(this);
@@ -2266,8 +2558,8 @@ namespace xcas {
       int y=this->y();
       mouse_param_group->resize(x,y,W,h());
       bool is3d=dynamic_cast<Graph3d *>(this);
-      mouse_position->resize(x,y,W,(is3d?3:2)*l);
-      y += mouse_position->h();
+      if (mouse_position) mouse_position->resize(x,y,W,(is3d?3:2)*l);
+      if (mouse_position) y += mouse_position->h();
       button_group->resize(x,y,W,5*bh);
       y += 5*bh;
       param_group->resize(x,y,W,this->y()-y+h());
@@ -2277,10 +2569,12 @@ namespace xcas {
   }
 
   void Graph2d3d::resize(int X,int Y,int W,int H){
+    /*
     if (parent() && !dynamic_cast<Figure *>(parent()) && !dynamic_cast<Tableur_Group *>(parent()) && mouse_param_group){
       if (parent()->w()!=w()+mouse_param_group->w())
 	resize_mouse_param_group(parent()->w()-w());
     }
+    */
     Fl_Widget::resize(X,Y,W,H);
   }
 
@@ -2355,15 +2649,26 @@ namespace xcas {
     return res;
   }
 
-  void Graph2d::findij(const gen & e0,double x_scale,double y_scale,double & i0,double & j0,GIAC_CONTEXT) const {
+  bool Graph2d::findij(const gen & e0,double x_scale,double y_scale,double & i0,double & j0,GIAC_CONTEXT) const {
     gen e,f0,f1;
     evalfdouble2reim(e0,e,f0,f1,contextptr);
     if ((f0.type==_DOUBLE_) && (f1.type==_DOUBLE_)){
+      if (display_mode & 0x400){
+	if (f0._DOUBLE_val<=0)
+	  return false;
+	f0=std::log10(f0._DOUBLE_val);
+      }
       i0=(f0._DOUBLE_val-window_xmin)*x_scale;
+      if (display_mode & 0x800){
+	if (f1._DOUBLE_val<=0)
+	  return false;
+	f1=std::log10(f1._DOUBLE_val);
+      }
       j0=(window_ymax-f1._DOUBLE_val)*y_scale;
-      return;
+      return true;
     }
     // cerr << "Invalid drawing data" << endl;
+    return false;
   }
 
   int chooseinvecteur(const vecteur & v){
@@ -2447,34 +2752,186 @@ namespace xcas {
     return 0;
   }
 
+
+  void Graph2d3d::adjust_cursor_point_type(){
+    context * contextptr=hp?hp->contextptr:get_context(this);
+    if (abs_calc_mode(contextptr)==38){
+      double newx,newy,newz;
+      find_xyz(current_i,current_j,current_depth,newx,newy,newz);
+      int pos=-1;
+      gen orig;
+      gen res=Graph2d3d::geometry_round(newx,newy,newz,find_eps(),orig,pos);
+      cursor_point_type=pos>=0?6:3;
+      parent_redraw(this);
+    }
+  }
+
   // common to Graph2d and Geo2d
   // MOVE: modify arg_tmp.back()
   // PUSH: set pushed to true and mark mouse position
   int Graph2d::common_in_handle(int event){
     last_event=event;
     if (event== FL_MOUSEWHEEL ){
+      if (!Fl::event_inside(this))
+	return 0;
       if (Fl::e_dy<0)
 	zoom(0.707);
       else
 	zoom(1.414);
       return 1;
     }
-    int res=Graph2d3d::in_handle(event);
+    int res=handle_mouse(event);
     if (event==FL_UNFOCUS){
       return 1;
     }
+    int deltax=x(),deltay=y();
+    context * contextptr=hp?hp->contextptr:get_context(this);
+    if (event==FL_MOVE || event==FL_DRAG || event==FL_PUSH || event==FL_RELEASE){
+      current_i=Fl::event_x()-deltax,current_j=Fl::event_y()-deltay; current_depth=0;
+      if (abs_calc_mode(contextptr)==38)
+	adjust_cursor_point_type();
+    }
     int horizontal_pixels=w()-(show_axes?int(ylegende*labelsize()):0);
     int vertical_pixels= h()-((show_axes?1:0)+(!title.empty()))*labelsize();
-    int deltax=x(),deltay=y();
     double y_scale=(window_ymax-window_ymin)/vertical_pixels;
     double x_scale=(window_xmax-window_xmin)/horizontal_pixels;
-    current_i=Fl::event_x()-deltax,current_j=Fl::event_y()-deltay; current_depth=0;
+    if (mode!=255 && abs_calc_mode(contextptr)==38 && event==FL_KEYBOARD){
+      switch (Fl::event_key()){
+      case FL_Right:
+	if (current_i<horizontal_pixels)
+	  ++current_i;
+	adjust_cursor_point_type();
+	if (mouse_position) mouse_position->redraw();
+	if (Geo2d * geo=dynamic_cast<Geo2d *>(this))
+	  geo->geo_handle(moving?FL_DRAG:FL_MOVE);
+	return 1;
+      case FL_Left:
+	if (current_i>0)
+	  --current_i;
+	adjust_cursor_point_type();
+	if (mouse_position) mouse_position->redraw();
+	if (Geo2d * geo=dynamic_cast<Geo2d *>(this))
+	  geo->geo_handle(moving?FL_DRAG:FL_MOVE);
+	return 1;
+      case FL_Down:
+	if (current_j<vertical_pixels)
+	  ++current_j;
+	adjust_cursor_point_type();
+	if (mouse_position) mouse_position->redraw();
+	if (Geo2d * geo=dynamic_cast<Geo2d *>(this))
+	  geo->geo_handle(moving?FL_DRAG:FL_MOVE);
+	return 1;
+      case FL_Up:
+	if (current_j>0)
+	  --current_j;
+	adjust_cursor_point_type();
+	if (mouse_position) mouse_position->redraw();
+	if (Geo2d * geo=dynamic_cast<Geo2d *>(this))
+	  geo->geo_handle(moving?FL_DRAG:FL_MOVE);
+	return 1;
+      case FL_Page_Up:
+	if (current_j>vertical_pixels/10)
+	  current_j -= vertical_pixels/10;
+	else
+	  current_j =0;
+	adjust_cursor_point_type();
+	if (mouse_position) mouse_position->redraw();
+	if (Geo2d * geo=dynamic_cast<Geo2d *>(this))
+	  geo->geo_handle(moving?FL_DRAG:FL_MOVE);
+	return 1;
+      case FL_Page_Down:
+	if (current_j<9*vertical_pixels/10)
+	  current_j += vertical_pixels/10;
+	else
+	  current_j=vertical_pixels;
+	adjust_cursor_point_type();
+	if (mouse_position) mouse_position->redraw();
+	if (Geo2d * geo=dynamic_cast<Geo2d *>(this))
+	  geo->geo_handle(moving?FL_DRAG:FL_MOVE);
+	return 1;
+      case FL_End:
+	if (current_i<9*horizontal_pixels/10)
+	  current_i += horizontal_pixels/10;
+	else
+	  current_i=horizontal_pixels;
+	adjust_cursor_point_type();
+	if (mouse_position) mouse_position->redraw();
+	if (Geo2d * geo=dynamic_cast<Geo2d *>(this))
+	  geo->geo_handle(moving?FL_DRAG:FL_MOVE);
+	return 1;
+      case FL_Home:
+	if (current_i>horizontal_pixels/10)
+	  current_i -= horizontal_pixels/10;
+	else
+	  current_i=0;
+	adjust_cursor_point_type();
+	if (mouse_position) mouse_position->redraw();
+	if (Geo2d * geo=dynamic_cast<Geo2d *>(this))
+	  geo->geo_handle(moving?FL_DRAG:FL_MOVE);
+	return 1;
+      case FL_Enter:
+	if (Geo2d * geo=dynamic_cast<Geo2d *>(this)){
+	  if (!moving){
+	    pushed=true;
+	    push_i=current_i;
+	    push_j=current_j;
+	    geo->geo_handle(FL_PUSH);
+	    if (moving)
+	      return 1;
+	  }
+	  int res=geo->geo_handle(FL_RELEASE);
+	  pushed=false;
+	  return res;
+	}
+      } // end switch
+      if (Graph2d * gr2d= dynamic_cast<Graph2d *>(this)){
+	char ch=Fl::event_text()?Fl::event_text()[0]:0;
+	if (ch>='a')
+	  ch -= 'a'-'A';
+	if (ch>='A' && ch<='Z'){
+	  gen tmp=gen(string("G")+ch,contextptr);
+	  if (tmp.type==_IDNT){
+	    tmp=evalf(tmp,1,contextptr);
+	    if (tmp.is_symb_of_sommet(at_pnt)){
+	      tmp=remove_at_pnt(tmp);
+	      if (tmp.is_symb_of_sommet(at_cercle))
+		tmp=(tmp._SYMBptr->feuille[0]+tmp._SYMBptr->feuille[1])/2;
+	      if (tmp.type==_SYMB)
+		tmp=tmp._SYMBptr->feuille;
+	      if (tmp.type==_VECT && !tmp._VECTptr->empty())
+		tmp=tmp._VECTptr->front();
+	      if (tmp.type==_CPLX){
+		int horizontal_pixels=w()-(show_axes?int(ylegende*labelsize()):0);
+		int vertical_pixels=h()-((show_axes?1:0)+(!title.empty()))*labelsize();
+		double y_scale=vertical_pixels/(window_ymax-window_ymin);
+		double x_scale=horizontal_pixels/(window_xmax-window_xmin);
+		double i,j;
+		gr2d->findij(tmp,x_scale,y_scale,i,j,contextptr);
+		current_i=int(i+.5);
+		current_j=int(j+.5);
+		adjust_cursor_point_type();
+		if (mouse_position) mouse_position->redraw();
+		if (Geo2d * geo=dynamic_cast<Geo2d *>(this))
+		  geo->geo_handle(moving?FL_DRAG:FL_MOVE);
+		return 1;
+	      }
+	    }
+	  }
+	}
+      }
+    }
+    else {
+      int res=handle_keyboard(event);
+      if (res)
+	return res;
+    }
     bool old_in_area=in_area;
     in_area=(current_i>=0 && current_i<=horizontal_pixels && current_j>=0 && current_j<=vertical_pixels);
     if (old_in_area!=in_area && !args_tmp.empty())
       redraw();
     if (event==FL_FOCUS){
-      mouse_position->redraw();
+      if (mouse_position)
+	mouse_position->redraw();
       return 1;
     }
     Graph2d * gr2d =dynamic_cast<Graph2d *>(this);
@@ -2506,7 +2963,7 @@ namespace xcas {
     if (event==FL_PUSH ){
       if (this!=Fl::focus()){
 	Fl::focus(this);
-	handle(FL_FOCUS);
+	in_handle(FL_FOCUS);
       }
       pushed=true;
       push_i=current_i;
@@ -2542,7 +2999,7 @@ namespace xcas {
 	newx=(current_i-push_i)*x_scale;
 	newy=(push_j-current_j)*y_scale;
 	round3(newx,window_xmin,window_xmax);
-	round3(newy,window_ymin,window_ymax);      
+	round3(newy,window_ymin,window_ymax);
 	if (!(display_mode & 0x80)){
 	  window_xmin -= newx;
 	  window_xmax -= newx;
@@ -2612,6 +3069,7 @@ namespace xcas {
       int dx=25*fontsize, dy=10*fontsize;
 #endif
       int lignes=6;
+      Fl_Group::current(0);
       w=new Fl_Window(dx,dy);
       epaisseur=new Fl_Value_Input(dx/4,2,dx/4-2,dy/lignes-4,gettext("Thickness"));
       epaisseur->when(FL_WHEN_CHANGED);
@@ -2658,7 +3116,7 @@ namespace xcas {
       pt3->show_pnt(true);
       pt3->show_line(false);
       x+=pt3->w();
-      pt4=new Line_Type(x,2*dy/lignes,dx/10,dy/lignes,_POINT_WIDTH_3);
+      pt4=new Line_Type(x,2*dy/lignes,dx/10,dy/lignes,_POINT_INVISIBLE | _POINT_WIDTH_3);
       pt4->show_pnt(true);
       pt4->show_line(false);
       x+=pt4->w();
@@ -2715,9 +3173,6 @@ namespace xcas {
       ltres->show_pnt(true);
       ltres->show_poly(true);
       button_color = new Fl_Button(dx/5+2,2+4*dy/lignes,dx/5-4,dy/lignes-4);
-      button_approx=new Fl_Check_Button(3*dx/5+2,2+4*dy/lignes,dx/5-4,dy/lignes-4);
-      button_approx->label("~");
-      button_approx->tooltip(gettext("Check if mouse clicks in approx mode"));
       button_formel=new Fl_Check_Button(2*dx/5+2,2+4*dy/lignes,dx/5-4,dy/lignes-4);
       button_formel->label("symb");
       button_formel->tooltip(gettext("Make point symbolic"));
@@ -2768,11 +3223,6 @@ namespace xcas {
     static string titlestr;
     titlestr=gettext("Object attributs ")+title;
     w->label(titlestr.c_str());
-    if (show_approx)
-      button_approx->show();
-    else
-      button_approx->hide();
-    button_approx->value(approx);
     int r=-1;
     int lt=(res & 0x01c00000);
     int pt=(res & 0x0e000000);
@@ -2788,8 +3238,9 @@ namespace xcas {
     button_color->color(couleur);
     w->set_modal();
     w->show();
+    autosave_disabled=true;
     w->hotspot(w);
-    Fl::focus(w);
+    Fl::focus(epaisseur);
     for (;;) {
       Fl_Widget *o = Fl::readqueue();
       if (!o) Fl::wait();
@@ -2832,10 +3283,10 @@ namespace xcas {
 	if (o == w) { r=1; break; }
       }
     }
+    autosave_disabled=false;
     w->hide();
     if (!r){
       res=newcol;
-      approx=button_approx->value();
       if (formel){
 	formel=button_formel->value();
 	untranslate=button_untranslate->value();
@@ -2955,7 +3406,7 @@ namespace xcas {
 		  }
 		}
 		gen g7(symbolic(g2._SYMBptr->sommet,gen(v3,_SEQ__VECT)));
-		g7=add_attributs(g7,g6);
+		g7=add_attributs(g7,g6,contextptr);
 		g7=symbolic(at_sto,makevecteur((is_zero(delta)?g7:symbolic(at_plus,makevecteur(g7,delta))),pntname));
 		hp->set_gen_value(hp_pos,g7,false);
 		for (int k=v3s-1;k>=0;k--){
@@ -3002,7 +3453,7 @@ namespace xcas {
     }
     return eps;
   }
-  
+
   int Graph2d3d::geo_handle(int event){
     Graph3d * gr3d = dynamic_cast<Graph3d *>(this);
     Graph2d * gr2d = dynamic_cast<Graph2d *>(this);
@@ -3034,6 +3485,8 @@ namespace xcas {
       redraw();
       return 1;
     }
+    if (mode>=2 && event==FL_MOVE && args_tmp.size()>mode)
+      event=FL_RELEASE;
     if ( in_area && ((mode!=1 && event==FL_DRAG) || event==FL_PUSH || event==FL_RELEASE || (mode>=2 && event==FL_MOVE)) ){
       double newx,newy,newz;
       find_xyz(current_i,current_j,current_depth,newx,newy,newz);
@@ -3041,14 +3494,16 @@ namespace xcas {
       round3(newy,window_ymin,window_ymax);
       if (gr3d)
 	round3(newz,window_zmin,window_zmax);
-      tmp=geometry_round(newx,newy,newz,eps,tmp2,pos);
+      tmp=geometry_round(newx,newy,newz,eps,tmp2,pos,mode==0 || (args_tmp.size()==mode && function_final.type==_FUNC && equalposcomp(transformation_functions,*function_final._FUNCptr)),event==FL_RELEASE);
       if (tmp.type==_VECT && tmp._VECTptr->size()==3){
 	tmp.subtype=_SEQ__VECT;
 	tmp=symbolic(at_point,tmp);
       }
-      else 
-	if (tmp.type!=_IDNT)
+      else {
+	if (tmp.type!=_IDNT && !tmp.is_symb_of_sommet(at_extract_measure)){
 	  tmp=symbolic(at_point,makevecteur(re(tmp,contextptr),im(tmp,contextptr)));
+	}
+      }
     }
     double newx,newy,newz;
     if (gr2d){
@@ -3075,7 +3530,7 @@ namespace xcas {
     else
       decal=in_area?geometry_round_numeric(newx,newy,eps,approx):0;
     // cerr << in_area << " " << decal << endl;
-    if (event==FL_RELEASE && Fl::event_button()== FL_RIGHT_MOUSE && is_zero(decal)){
+    if (event==FL_RELEASE && Fl::event_button()== FL_RIGHT_MOUSE && (is_zero(decal)) ){
       pushed=moving=moving_frame=false;
       change_attributs();
       args_tmp.clear();
@@ -3119,16 +3574,18 @@ namespace xcas {
       if (mode==255)
 	return 0;
       if (moving && (event==FL_DRAG || event==FL_RELEASE) ){
-	mouse_position->redraw();
+	if (mouse_position) mouse_position->redraw();
 	// cerr << current_i << " " << current_j << endl;
 	// avoid point()+complex+complex+complex
 	gen newval;
 	if (drag_original_value.is_symb_of_sommet(at_plus) && drag_original_value._SYMBptr->feuille.type==_VECT && drag_original_value._SYMBptr->feuille._VECTptr->size()>=2){
-	  vecteur & v=*drag_original_value._SYMBptr->feuille._VECTptr;
-	  newval=symbolic(at_plus,makevecteur(v[0],ratnormal(_plus(vecteur(v.begin()+1,v.end()),contextptr)+decal)));
+	  vecteur v=*drag_original_value._SYMBptr->feuille._VECTptr;
+	  if (v[1].is_symb_of_sommet(at_nop))
+	    v[1]=v[1]._SYMBptr->feuille;
+	  newval=symbolic(at_plus,makevecteur(v[0],symbolic(at_nop,ratnormal(_plus(vecteur(v.begin()+1,v.end()),contextptr)+decal))));
 	}
 	else {
-	  newval=is_zero(decal)?drag_original_value:symbolic(at_plus,makevecteur(drag_original_value,decal));
+	  newval=is_zero(decal)?drag_original_value:symbolic(at_plus,makevecteur(drag_original_value,symbolic(at_nop,decal)));
 	}
 	int dclick = Fl::event_clicks() || drag_original_value.type==_VECT;
 	if (!dclick){
@@ -3155,7 +3612,7 @@ namespace xcas {
 	if (event==FL_RELEASE){
 	  string args=autoname(contextptr)+":=";
 	  if (function_final.type==_FUNC)
-	    args += function_final._FUNCptr->ptr->s;
+	    args += function_final._FUNCptr->ptr()->s;
 	  args +="(";
 	  if (function_final==at_plotode)
 	    args += fcnfield + "," + fcnvars + "," +tmp.print(contextptr) + ",plan)";
@@ -3177,7 +3634,7 @@ namespace xcas {
 	  if (in_area && args_tmp.front().is_symb_of_sommet(at_point)){
 	    val1=gen(autoname(hp->contextptr),hp->contextptr);
 	    // put in last history pack level
-	    hp->set_gen_value(-1,symbolic(at_sto,makevecteur(Graph2d3d::add_attributs(args_tmp.front(),couleur),val1)),false);
+	    hp->set_gen_value(-1,symbolic(at_sto,makevecteur(add_attributs(args_tmp.front(),couleur,contextptr),val1)),false);
 	    hp_pos=hp->children()-1;
 	    autoname_plus_plus();
 	  }
@@ -3185,7 +3642,7 @@ namespace xcas {
 	    val1=args_tmp.front();
 	  if (in_area && tmp.is_symb_of_sommet(at_point)){
 	    val2=gen(autoname(hp->contextptr),hp->contextptr);
-	    gen tmp3=symbolic(at_sto,makevecteur(Graph2d3d::add_attributs(tmp,couleur),val2));
+	    gen tmp3=symbolic(at_sto,makevecteur(add_attributs(tmp,couleur,contextptr),val2));
 	    hp->set_gen_value(-1,tmp3,false);
 	    if (hp_pos<0) hp_pos=hp->children()-1;
 	    autoname_plus_plus();
@@ -3193,7 +3650,7 @@ namespace xcas {
 	  else 
 	    val2=tmp;
 	  if (in_area){
-	    gen tmp3=add_attributs(symbolic(at_segment,makevecteur(val1,val2)),couleur);
+	    gen tmp3=add_attributs(symbolic(at_segment,makevecteur(val1,val2)),couleur,contextptr);
 	    string v1v2=val1.print(contextptr)+val2.print(contextptr);
 	    gen g1g2(v1v2,hp->contextptr);
 	    if (g1g2.type!=_IDNT)
@@ -3206,7 +3663,7 @@ namespace xcas {
 	  return 1;
 	}
 	if (in_area && tmp.type!=_IDNT)
-	  do_handle(symbolic(at_sto,makevecteur(add_attributs(tmp,couleur),gen(autoname(hp->contextptr),hp->contextptr))));
+	  do_handle(symbolic(at_sto,makevecteur(add_attributs(tmp,couleur,contextptr),gen(autoname(hp->contextptr),hp->contextptr))));
 	// element
 	if (tmp.type==_IDNT && tmp2.type==_SYMB && !equalposcomp(point_sommet_tab_op,tmp2._SYMBptr->sommet)){
 	  // tmp2 is the geo object, find parameter value
@@ -3215,8 +3672,10 @@ namespace xcas {
 	  round3(newx,window_xmin,window_xmax);
 	  round3(newy,window_ymin,window_ymax);
 	  gen t=projection(evalf(tmp2,1,hp->contextptr),gen(newx,newy),hp->contextptr);
-	  gen tmp3=symbolic(at_element,(t.type<_IDNT?gen(makevecteur(tmp,t),_SEQ__VECT):tmp));
-	  tmp3=symbolic(at_sto,makevecteur(add_attributs(tmp3,couleur),gen(autoname(hp->contextptr),hp->contextptr)));
+	  if (is_undef(t))
+	    return 0;
+	  gen tmp3=symbolic(at_element,( (t.type<_IDNT || t.type==_VECT)?gen(makevecteur(tmp,t),_SEQ__VECT):tmp));
+	  tmp3=symbolic(at_sto,makevecteur(add_attributs(tmp3,couleur,contextptr),gen(autoname(hp->contextptr),hp->contextptr)));
 	  hp->set_gen_value(-1,tmp3,false);
 	  if (hp_pos<0) hp_pos=hp->children()-1;
 	  hp->update(hp_pos);
@@ -3229,7 +3688,7 @@ namespace xcas {
       }
       if (event==FL_DRAG){
 	redraw();
-	mouse_position->redraw();
+	if (mouse_position) mouse_position->redraw();
 	return 1;
       }
       return 0;
@@ -3237,7 +3696,7 @@ namespace xcas {
     gen tmpval=remove_at_pnt(tmp.eval(1,contextptr));
     gen somm=symbolic(at_sommets,tmp);
     int npoints=1;
-    if (function_final!=at_inter_unique){
+    if (!equalposcomp(nosplit_polygon_function,*function_final._FUNCptr)){
       if (tmpval.type==_VECT && tmpval.subtype==_GROUP__VECT)
 	npoints=tmpval._VECTptr->size();
       if (tmpval.is_symb_of_sommet(at_cercle))
@@ -3250,9 +3709,41 @@ namespace xcas {
 	args_tmp_push_size=args_size;
       args_tmp.erase(args_tmp.begin()+args_tmp_push_size,args_tmp.end());
     }
+    unsigned new_args_size=args_tmp.size();
+    gen tmp_push=tmp;
+    bool swapargs=false;
+    if (npoints==2 && (new_args_size==2 || new_args_size==1) && (function_final==at_angleat || function_final==at_angleatraw) ){
+      // search if args_tmp[0] or args_tmp[1] is a vertex of tmp
+      gen tmp2=remove_at_pnt(evalf(tmp,1,contextptr));
+      gen somm=symbolic(at_sommets,tmp);
+      if (tmp2.type==_VECT && tmp2._VECTptr->size()==2){
+	gen tmpa=remove_at_pnt(evalf(args_tmp[0],1,contextptr));
+	gen tmpb=new_args_size==2?remove_at_pnt(evalf(args_tmp[1],1,contextptr)):undef;
+	if (npoints==2 && tmpa==tmp2._VECTptr->front() && tmpb!=tmp2._VECTptr->back()){
+	  tmp=symbolic(at_at,gen(makevecteur(somm,1),_SEQ__VECT));
+	  npoints=1;
+	}
+	if (npoints==2 && tmpa==tmp2._VECTptr->back() && tmpb!=tmp2._VECTptr->front()){
+	  tmp=symbolic(at_at,gen(makevecteur(somm,0),_SEQ__VECT));
+	  npoints=1;
+	}
+	if (npoints==2 && tmpb==tmp2._VECTptr->front() && tmpa!=tmp2._VECTptr->back() ){
+	  swapargs=true;
+	  tmp=symbolic(at_at,gen(makevecteur(somm,1),_SEQ__VECT));
+	  npoints=1;
+	}
+	if (npoints==2 && tmpb==tmp2._VECTptr->back() && tmpa!=tmp2._VECTptr->front()){
+	  swapargs=true;
+	  tmp=symbolic(at_at,gen(makevecteur(somm,0),_SEQ__VECT));
+	  npoints=1;
+	}
+      }
+    }
+    if (npoints+args_tmp.size()>mode)
+      npoints=1;
     if (event==FL_MOVE || event==FL_DRAG || event==FL_RELEASE){
-      mouse_position->redraw();
-      if (args_size && args_tmp_push_size && args_push!=tmp){
+      if (mouse_position) mouse_position->redraw();
+      if (args_size && args_tmp_push_size && args_push!=tmp_push){
 	// replace by current mouse position
 	if (npoints==1)
 	  args_tmp.push_back(tmp);
@@ -3263,12 +3754,14 @@ namespace xcas {
 	  }
 	}
 	redraw();
-	if (event!=FL_RELEASE)
+	if (event!=FL_RELEASE || (abs(push_i-current_i)<=5 && abs(push_j-current_j)<=5))
 	  return 1;
       }
     }
     if (event==FL_PUSH){
-      args_push=tmp;
+      if (swapargs)
+	swapgen(args_tmp[0],args_tmp[1]);
+      args_push=tmp_push;
       if (npoints==1)
 	args_tmp.push_back(tmp);
       else {
@@ -3283,6 +3776,7 @@ namespace xcas {
     if (event==FL_RELEASE){
       int s=args_tmp.size();
       args_tmp_push_size=s;
+      int save_undo_position=hp->undo_position;
       if (mode>1 && s>=mode){
 	if (s>mode){ 
 	  args_tmp=vecteur(args_tmp.begin(),args_tmp.begin()+mode);
@@ -3290,11 +3784,102 @@ namespace xcas {
 	}
 	gen tmp_plot;
 	if (in_area && function_final.type==_FUNC) {
+	  gen res,objname=gen(autoname(hp->contextptr),hp->contextptr);
+	  hp_pos=hp->children()-1;
+	  hp->update_pos=hp_pos;
+	  int pos0=hp_pos;
 	  unary_function_ptr * ptr=function_final._FUNCptr;
-	  hp_pos=-1;
-	  tmp_plot=symbolic(*ptr,gen( (*ptr==(gr3d?at_sphere:at_cercle)) ?makevecteur(args_tmp.front(),args_tmp.back()-args_tmp.front()):args_tmp,_SEQ__VECT));
-	  do_handle(symbolic(at_sto,makevecteur(Graph2d3d::add_attributs(tmp_plot,couleur),gen(autoname(hp->contextptr),hp->contextptr))));
+	  int ifinal=mode;
+	  if (equalposcomp(measure_functions,*ptr))
+	    ifinal--;
+	  // first replace points in args_tmp by assignations
+	  for (int i=0;i<ifinal;++i){
+	    tmp_plot=args_tmp[i];
+	    if (tmp_plot.is_symb_of_sommet(at_point)){
+	      tmp_plot=symbolic(at_sto,makevecteur(add_attributs(tmp_plot,couleur,contextptr),objname));
+	      args_tmp[i]=objname;
+	      hp->set_gen_value(hp_pos,tmp_plot,false);
+	      hp->add_entry(hp_pos+1);
+	      ++hp_pos;
+	      autoname_plus_plus();
+	      objname=gen(autoname(hp->contextptr),hp->contextptr);
+	    }
+	  }
+	  vecteur argv=args_tmp;
+	  if (*ptr==(gr3d?at_sphere:at_cercle)){
+	    gen argv1;
+	    try {
+	      argv1=evalf(args_tmp.back(),1,contextptr);
+	      argv1=evalf_double(argv1,1,contextptr);
+	    }
+	    catch (std::runtime_error & e){
+	      argv1=undef;
+	    }
+	    if (argv1.is_symb_of_sommet(at_pnt) ||argv1.type==_IDNT){
+	      argv1=remove_at_pnt(argv1);
+	      if ( (argv1.type==_VECT && argv1.subtype==_POINT__VECT) || argv1.type==_CPLX || argv1.type==_IDNT)
+	      argv.back()=args_tmp.back()-args_tmp.front();
+	    }
+	  }
+	  tmp_plot=symbolic(*ptr,gen(argv,_SEQ__VECT));
+	  try {
+	    res=evalf(tmp_plot,1,hp->contextptr);
+	  }
+	  catch (std::runtime_error & err){
+	    res=undef;
+	  }
+	  tmp_plot=symbolic(at_sto,makevecteur(add_attributs(tmp_plot,couleur,contextptr),objname));
+	  hp->set_gen_value(hp_pos,tmp_plot,false);
+	  hp->add_entry(hp_pos+1);
+	  ++hp_pos;
+	  if (res.is_symb_of_sommet(at_pnt)){
+	    res=remove_at_pnt(res);
+	    int ns=0;
+	    if (res.type==_VECT && res.subtype==_GROUP__VECT && (ns=res._VECTptr->size())>2){
+	      vecteur l;
+	      if (res._VECTptr->back()==res._VECTptr->front())
+		--ns;
+	      if (function_final.type==_FUNC && equalposcomp(transformation_functions,*function_final._FUNCptr)){
+		vecteur argv;
+		gen objn,som=symbolic(at_sommets,objname);
+		for (int i=1;i<=ns;++i){
+		  tmp_plot=symbolic(at_at,gen(makevecteur(som,i-1),_SEQ__VECT));
+		  objn=gen(autoname(hp->contextptr)+print_INT_(i),hp->contextptr);
+		  argv.push_back(objn);
+		  hp->set_gen_value(hp_pos,symbolic(at_sto,gen(makevecteur(tmp_plot,objn),_SEQ__VECT)),false);
+		  hp->add_entry(hp_pos+1);
+		  ++hp_pos;
+		}
+		for (int i=1;i<=ns;++i){
+		  tmp_plot=symbolic(at_segment,makevecteur(argv[i-1],argv[i%ns]));
+		  hp->set_gen_value(hp_pos,symbolic(at_sto,makevecteur(add_attributs(tmp_plot,couleur,contextptr),gen(autoname(hp->contextptr)+print_INT_(ns+i),hp->contextptr))),false);
+		  hp->add_entry(hp_pos+1);
+		  ++hp_pos;
+		}		
+	      }
+	      else {
+		for (int i=mode;i<ns;++i){
+		  tmp_plot=symb_at(
+				   symbolic(at_sommets,gen(autoname(hp->contextptr),hp->contextptr))
+				   ,i,hp->contextptr);
+		  gen newname=gen(autoname(hp->contextptr)+print_INT_(i),hp->contextptr);
+		  hp->set_gen_value(hp_pos,symbolic(at_sto,makevecteur(tmp_plot,newname)),false);
+		  args_tmp.push_back(newname);
+		  hp->add_entry(hp_pos+1);
+		  ++hp_pos;
+		}
+		for (int i=1;i<=ns;++i){
+		  tmp_plot=symbolic(at_segment,makevecteur(args_tmp[i-1],args_tmp[i%ns]));
+		  hp->set_gen_value(hp_pos,symbolic(at_sto,makevecteur(add_attributs(tmp_plot,couleur,contextptr),gen(autoname(hp->contextptr)+print_INT_(ns+i),hp->contextptr))),false);
+		  hp->add_entry(hp_pos+1);
+		  ++hp_pos;
+		}
+	      }
+	    } // if res.type==_VECT
+	  }
 	  autoname_plus_plus();
+	  // hp->undo_position=save_undo_position;
+	  hp->update(pos0);
 	}
 	args_tmp.clear();
 	args_tmp_push_size=0;
@@ -3308,11 +3893,46 @@ namespace xcas {
   int Graph2d3d::handle(int event){
     if (no_handle)
       return 0;
+    context * contextptr=hp?hp->contextptr:get_context(this);
+#ifdef HAVE_LIBPTHREAD
+    // cerr << "handle lock" << endl;
+    int locked=pthread_mutex_trylock(&interactive_mutex);
+    if (locked)
+      return 0;
+#endif
+    no_handle=true;
+    bool b=io_graph(contextptr);
+    io_graph(false,contextptr);
     int res=in_handle(event);
+    io_graph(b,contextptr);
+    no_handle=false;
+#ifdef HAVE_LIBPTHREAD
+    pthread_mutex_unlock(&interactive_mutex);
+    // cerr << "handle unlock" << endl;
+#endif
     return res;
   }
 
-  int Graph2d3d::in_handle(int event){
+  int Graph2d3d::handle_mouse(int event){
+    if (event==FL_MOVE || event==FL_ENTER || event==FL_LEAVE){
+      if (mouse_position) mouse_position->redraw();
+      if (event==FL_MOVE && hp && show_mouse_on_object){
+	double newx,newy,newz;
+	Graph3d * gr3d = dynamic_cast<Graph3d *>(this);
+	find_xyz(Fl::event_x()-(gr3d?0:x()),Fl::event_y()-(gr3d?0:y()),current_depth,newx,newy,newz);
+	int pos=-1;
+	gen orig;
+	gen res=geometry_round(newx,newy,newz,find_eps(),orig,pos);
+	set_cursor(this, pos>=0?FL_CURSOR_HAND:FL_CURSOR_ARROW);	
+      }
+      else
+	set_cursor(this, FL_CURSOR_ARROW);
+      return 1;
+    }
+    return 0;
+  }
+
+  int Graph2d3d::handle_keyboard(int event){
     if (event==FL_KEYBOARD){
       // Should bring this event to the current input in the parent() group
       switch (Fl::event_key()){
@@ -3343,7 +3963,7 @@ namespace xcas {
 	down_z((window_zmax-window_zmin)/10);
 	return 1;	
       default:
-	char ch=Fl::event_text()[0];
+	char ch=Fl::event_text()?Fl::event_text()[0]:0;
 	switch (ch){
 	case '-':
 	  zoom(1.414);
@@ -3352,7 +3972,10 @@ namespace xcas {
 	  zoom(0.707);
 	  return 1;
 	case 'A': case 'a':
-	  autoscale();
+	  autoscale(false);
+	  return 1;
+	case 'V': case 'v':
+	  autoscale(true);
 	  return 1;
 	case 'R': case 'r':
 	  oxyz_rotate(this,rotanim_type,rotanim_nstep,rotanim_tstep,rotanim_danim,rotanim_rx,rotanim_ry,rotanim_rz);
@@ -3370,7 +3993,7 @@ namespace xcas {
 	  return 1;
 	case 'C': case 'c': /* screen capture */
 	  if (Graph3d * gr3 = dynamic_cast<Graph3d *>(this)){
-	    char * filename = fl_file_chooser("Export to PNG file","*.png","session.png");
+	    char * filename = file_chooser(gettext("Export to PNG file"),"*.png","session.png");
 	    if(!filename) return 1;
 	    gr3->opengl2png(filename);
 	    return 1;
@@ -3378,22 +4001,12 @@ namespace xcas {
 	}	
       }
     }
-    if (event==FL_MOVE || event==FL_ENTER || event==FL_LEAVE){
-      mouse_position->redraw();
-      if (event==FL_MOVE && hp && show_mouse_on_object){
-	double newx,newy,newz;
-	Graph3d * gr3d = dynamic_cast<Graph3d *>(this);
-	find_xyz(Fl::event_x()-(gr3d?0:x()),Fl::event_y()-(gr3d?0:y()),current_depth,newx,newy,newz);
-	int pos=-1;
-	gen orig;
-	gen res=geometry_round(newx,newy,newz,find_eps(),orig,pos);
-	set_cursor(this, pos>=0?FL_CURSOR_HAND:FL_CURSOR_ARROW);	
-      }
-      else
-	set_cursor(this, FL_CURSOR_ARROW);
-      return 1;
-    }
     return 0;
+  }
+
+  int Graph2d3d::in_handle(int event){
+    int res=handle_keyboard(event);
+    return res?res:handle_mouse(event);
   }
 
   vecteur Graph2d3d::selection2vecteur(const vector<int> & v){
@@ -3405,26 +4018,89 @@ namespace xcas {
     return res;
   }
 
+  int findfirstclosedcurve(const vecteur & v){
+    int s=v.size();
+    for (int i=0;i<s;++i){
+      gen g=remove_at_pnt(v[i]);
+      if (g.is_symb_of_sommet(at_cercle))
+	return i;
+      if (g.type==_VECT && g.subtype==_GROUP__VECT){
+	vecteur & w=*g._VECTptr;
+	if (!w.empty() && w.front()==w.back())
+	  return i;
+      }
+    }
+    return -1;
+  }
+
   // find nearest point of x+i*y, returns position in history and either
   // a numeric value or the point name
-  gen Graph2d3d::geometry_round(double x,double y,double z,double eps,gen & original,int & pos) {
+  gen Graph2d3d::geometry_round(double x,double y,double z,double eps,gen & original,int & pos,bool selectfirstlevel,bool setscroller) {
     if (!hp)
       return undef;
     context * contextptr=hp?hp->contextptr:get_context(this);
     gen tmp;
-    geometry_round(x,y,z,eps,tmp,contextptr);
     pos=-1;
+    if (block_signal || is_context_busy(contextptr))
+      return undef;
+    geometry_round(x,y,z,eps,tmp,contextptr);
     if (selected.empty())
       return tmp;
-    pos=findfirstpoint(selection2vecteur(selected));
+    if (function_final==at_areaatraw || function_final==at_areaat || function_final==at_perimeteratraw || function_final==at_perimeterat){
+      int p=findfirstclosedcurve(selection2vecteur(selected));
+      if (p>0){
+	pos=p;
+      }
+    }
+    if (pos==-1){
+      if (selectfirstlevel){
+	sort(selected.begin(),selected.end());
+	// patch so that we move element and not the curve
+	int p=findfirstpoint(selection2vecteur(selected));
+	if (p>0){
+	  /*
+	  gen g=hp->parse(selected[p]);
+	  if (g.is_symb_of_sommet(at_sto) && g._SYMBptr->feuille.type==_VECT ){
+	    vecteur & v = *g._SYMBptr->feuille._VECTptr;
+	    if (v.size()>1 && v[0].is_symb_of_sommet(at_element))
+	      pos=p;
+	  }
+	  */
+	  pos=p;
+	}
+      }
+      else
+	pos=findfirstpoint(selection2vecteur(selected));
+    }
     gen g=hp->parse( (pos<0)?(pos=selected.front()):(pos=selected[pos]) );
-    if (pos>=0)
+    if (pos>=0 && pos<hp->children()){
       hp->_sel_begin=hp->_sel_end=pos;
+      if (setscroller)
+	hp->set_scroller(dynamic_cast<Fl_Group *>(hp->child(pos)));
+    }
+    if (g.is_symb_of_sommet(at_plus) && g._SYMBptr->feuille.type==_VECT && !g._SYMBptr->feuille._VECTptr->empty())
+      g=g._SYMBptr->feuille._VECTptr->front();
     if (g.is_symb_of_sommet(at_sto) && g._SYMBptr->feuille.type==_VECT ){
       vecteur & v = *g._SYMBptr->feuille._VECTptr;
       if (v.size()==2){
 	original = v[0];
 	tmp = v[1];
+	if (tmp.type==_IDNT){
+	  gen valeur=protecteval(original,1,contextptr);
+	  if (valeur.is_symb_of_sommet(at_pnt)){
+	    gen & valf = valeur._SYMBptr->feuille;
+	    if (valf.type==_VECT){
+	      vecteur & valv = *valf._VECTptr;
+	      int s=v.size();
+	      if (s>1){
+		gen valv1=valv[1];
+		if (valv1.type==_VECT && valv1._VECTptr->size()>2){
+		  tmp=symbolic(at_extract_measure,v[1]);
+		}
+	      }
+	    }
+	  }
+	}
       }
     }
     return tmp;
@@ -3436,7 +4112,7 @@ namespace xcas {
   void Graph2d::geometry_round(double x,double y,double z,double eps,gen & tmp,GIAC_CONTEXT) {
     tmp= geometry_round_numeric(x,y,eps,approx);
     try {
-      selected=nearest_point(plot_instructions,tmp,eps,contextptr);
+      selected=nearest_point(plot_instructions,geometry_round_numeric(x,y,eps,true),eps,contextptr);
       // bug bonux: when a figure is saved, plot_instructions is saved
       // if there are sequences in plot_instructions
       // they are not put back in an individual level
@@ -3504,7 +4180,7 @@ namespace xcas {
     return int2color(couleur).print(context0);
   }
 
-  giac::gen Graph2d3d::add_attributs(const giac::gen & g,int couleur_) const {
+  giac::gen add_attributs(const giac::gen & g,int couleur_,GIAC_CONTEXT) {
     if (g.type!=_SYMB)
       return g;
     gen & f=g._SYMBptr->feuille;
@@ -3515,6 +4191,8 @@ namespace xcas {
       v.back()=col;
       return symbolic(at_couleur,gen(v,_SEQ__VECT));
     }
+    if (couleur_==default_color(contextptr))
+      return g;
     if (g._SYMBptr->sommet==at_of){
       gen col=couleur_;
       col.subtype=_INT_COLOR;
@@ -3525,7 +4203,6 @@ namespace xcas {
     v.push_back(symbolic(at_equal,gen(makevecteur(at_display,col),_SEQ__VECT)));
     return symbolic(g._SYMBptr->sommet,(v.size()==1 && f.type!=_VECT)?f:gen(v,f.type==_VECT?f.subtype:_SEQ__VECT));
   }
-  
 
   void Graph2d3d::set_mode(const giac::gen & f_tmp,const giac::gen & f_final,int m){
     if (mode>=-1){
@@ -3545,7 +4222,7 @@ namespace xcas {
     Figure * f=find_figure(m);
     if (f && f->geo){
       if (!asked && mode==0 && !f->geo->approx){
-	int i=fl_ask("Dynamic geometry works faster in approx mode. Drag in approx mode?");
+	int i=fl_ask("%s","Dynamic geometry works faster in approx mode. Drag in approx mode?");
 	if (i)
 	  f->geo->approx=true;
 	asked=true;
@@ -3553,11 +4230,15 @@ namespace xcas {
       if (dynamic_cast<Geo2d *>(f->geo) || dynamic_cast<Geo3d *>(f->geo)){
 	f->geo->selected.clear();
 	f->geo->redraw();
+	f->geo->handle(FL_FOCUS);
 	context * contextptr=f->geo->hp?f->geo->hp->contextptr:0;
 	f->geo->set_mode(f_tmp,f_final,mode);
 	f->geo->args_help.clear();
 	if (mode!=0 && mode!=255){
+	  int oldmode=calc_mode(contextptr);
+	  calc_mode(0,contextptr);
 	  gen g(help,contextptr);
+	  calc_mode(oldmode,contextptr);
 	  if (g.type==_VECT){
 	    const_iterateur it = g._VECTptr->begin(),itend=g._VECTptr->end();
 	    for (;it!=itend;++it)
@@ -3589,39 +4270,92 @@ namespace xcas {
       hp=geo_find_history_pack(this);
     // cerr << event << " " << mode << endl;
     int res=common_in_handle(event);
+    if (Fl::event_button()==FL_RIGHT_MOUSE && res && mode==255)
+      return res; // right click desactivated
     if (event==FL_UNFOCUS){
       return 1;
     }
     if (event==FL_FOCUS){
+      Fl::focus(this);
       return 1;
     }
-    if (Fl::event_button()==FL_RIGHT_MOUSE && res && mode==255)
-      return res;
     if (int gres=geo_handle(event))
       return gres;
     // event not handeld by geometry
     return res;
   }
 
+  void fltk_point(int deltax,int deltay,int i0,int j0,int epaisseur_point,int type_point){
+    fl_line_style(FL_SOLID,epaisseur_point-1,0);
+    switch (type_point){
+    case 1: // losange
+      fl_line(deltax+i0-epaisseur_point,deltay+j0,deltax+i0,deltay+j0-epaisseur_point);
+      fl_line(deltax+i0,deltay+j0-epaisseur_point,deltax+i0+epaisseur_point,deltay+j0);
+      fl_line(deltax+i0-epaisseur_point,deltay+j0,deltax+i0,deltay+j0+epaisseur_point);
+      fl_line(deltax+i0,deltay+j0+epaisseur_point,deltax+i0+epaisseur_point,deltay+j0);
+      break;
+    case 2: // croix verticale
+      fl_line(deltax+i0,deltay+j0-epaisseur_point,deltax+i0,deltay+j0+epaisseur_point);
+      fl_line(deltax+i0-epaisseur_point,deltay+j0,deltax+i0+epaisseur_point,deltay+j0);
+      break;
+    case 3: // carre
+      fl_line(deltax+i0-epaisseur_point,deltay+j0-epaisseur_point,deltax+i0-epaisseur_point,deltay+j0+epaisseur_point);
+      fl_line(deltax+i0+epaisseur_point,deltay+j0-epaisseur_point,deltax+i0+epaisseur_point,deltay+j0+epaisseur_point);
+      fl_line(deltax+i0-epaisseur_point,deltay+j0-epaisseur_point,deltax+i0+epaisseur_point,deltay+j0-epaisseur_point);
+      fl_line(deltax+i0-epaisseur_point,deltay+j0+epaisseur_point,deltax+i0+epaisseur_point,deltay+j0+epaisseur_point);
+      break;
+    case 5: // triangle
+      fl_line(deltax+i0-epaisseur_point,deltay+j0,deltax+i0,deltay+j0-epaisseur_point);
+      fl_line(deltax+i0,deltay+j0-epaisseur_point,deltax+i0+epaisseur_point,deltay+j0);
+      fl_line(deltax+i0-epaisseur_point,deltay+j0,deltax+i0+epaisseur_point,deltay+j0);
+      break;
+    case 7: // point
+      if (epaisseur_point>2)
+	fl_arc(deltax+i0-(epaisseur_point-1),deltay+j0-(epaisseur_point-1),2*(epaisseur_point-1),2*(epaisseur_point-1),0,360);
+      else
+	fl_line(deltax+i0,deltay+j0,deltax+i0+1,deltay+j0);
+      break;
+    case 6: // etoile
+      fl_line(deltax+i0-epaisseur_point,deltay+j0,deltax+i0+epaisseur_point,deltay+j0);
+      // no break to add the following lines
+    case 0: // 0 croix diagonale
+      fl_line(deltax+i0-epaisseur_point,deltay+j0-epaisseur_point,deltax+i0+epaisseur_point,deltay+j0+epaisseur_point);
+      fl_line(deltax+i0-epaisseur_point,deltay+j0+epaisseur_point,deltax+i0+epaisseur_point,deltay+j0-epaisseur_point);
+      break;
+    default: // 4 nothing drawn
+      break;
+    }
+    fl_line_style(0);
+  }
+
   void Geo2d::draw(){
     if (!hp)
       hp=geo_find_history_pack(this);
     context * contextptr = hp?hp->contextptr:0;
+    int locked=0;
 #ifdef HAVE_LIBPTHREAD
-    // cerr << "geo2d lock" << endl;
-    pthread_mutex_lock(&interactive_mutex);
-    bool b=io_graph(contextptr);
-    io_graph(contextptr)=false;
+    // cerr << "geo2d draw lock" << endl;
+    locked=pthread_mutex_trylock(&interactive_mutex);
 #endif
+    bool b,block;
+    if (!locked){
+      b=io_graph(contextptr);
+      io_graph(contextptr)=false;
+      block=block_signal;
+      block_signal=true;
+    }
     int clip_x,clip_y,clip_w,clip_h;
-    bool block=block_signal;
-    block_signal=true;
+    // cerr << "geo2d draw block signal " << this << endl;
     fl_clip_box(x(),y(),w(),h(),clip_x,clip_y,clip_w,clip_h);
     fl_push_clip(clip_x,clip_y,clip_w,clip_h);
     int vertical_pixels;
     in_draw(clip_x,clip_y,clip_w,clip_h,vertical_pixels);
     int horizontal_pixels=w()-(show_axes?int(ylegende*labelsize()):0);
     int deltax=x(),deltay=y();
+    if (mode<255 && abs_calc_mode(contextptr)==38){
+      fl_color(FL_CYAN);
+      fltk_point(deltax,deltay,current_i,current_j,cursor_point_type,cursor_point_type);
+    }
     // Draw mouse drag
     if ( pushed && !waiting_click &&(current_i>=0 && current_i<=horizontal_pixels) && (current_j>=0 && current_j <=vertical_pixels) && (user_screen || (push_i!=current_i) || (push_j!=current_j))){
       fl_color(FL_RED);
@@ -3632,12 +4366,15 @@ namespace xcas {
     }
     fl_pop_clip();
     ++animation_instructions_pos;    
-    block_signal=block;
+    if (!locked){
+      block_signal=block;
+      // cerr << "geo2d draw unblock signal " << this << endl;
+      io_graph(contextptr)=b;
 #ifdef HAVE_LIBPTHREAD
-    // cerr << "geo2d unlock" << endl;
-    pthread_mutex_unlock(&interactive_mutex);
-    io_graph(contextptr)=b;
+      pthread_mutex_unlock(&interactive_mutex);
+    // cerr << "geo2d draw unlock" << endl;
 #endif
+    }
   }
 
   inline void swapint(int & i0,int & i1){
@@ -3650,6 +4387,9 @@ namespace xcas {
     /* int n=fl_size();
        if (j0>=jmin-n && j0<=jmin+dj+n) */
     // cerr << i0 << " " << j0 << endl;
+    if (strlen(ch)>2000)
+      fl_draw("String too long for display",i0+delta_i,j0+delta_j);
+    else
       fl_draw(ch,i0+delta_i,j0+delta_j);
   }
 
@@ -3742,8 +4482,54 @@ namespace xcas {
     fl_line(i0+delta_i,j0+delta_j,i1+delta_i,j1+delta_j);
   }
 
+  int logplot_points=20;
+
+  void checklog_fl_line(double i0,double j0,double i1,double j1,double deltax,double deltay,bool logx,bool logy,double window_xmin,double x_scale,double window_ymax,double y_scale){
+    if (!logx && !logy){
+      fl_line(round(i0+deltax),round(j0+deltay),round(i1+deltax),round(j1+deltay));
+      return;
+    }
+    // interpolate (i0,j0)->(i1,j1)
+    // if log enabled i0=(log10(x0)-window_xmin)*x_scale -> x0=pow10(i0/x_scale+window_xmin)
+    // j0=(window_ymax-log10(y1))*y_scale -> y1=pow10(window_ymax-j0/y_scale)
+    if (logx && logy){
+      double prevx=i0,prevy=j0,curx,cury;
+      double I0=pow10(i0/x_scale+window_xmin),I1=pow10(i1/x_scale+window_xmin),
+	J0=pow10(window_ymax-j0/y_scale),J1=pow10(window_ymax-j1/y_scale);
+      for (int i=1;i<logplot_points;++i){
+	double t=double(i)/logplot_points;
+	curx=(log10(I0+t*(I1-I0))-window_xmin)*x_scale;
+	cury=(window_ymax-log10(J0+t*(J1-J0)))*y_scale;
+	fl_line(round(prevx+deltax),round(prevy+deltay),round(curx+deltax),round(cury+deltay));
+	prevx=curx; prevy=cury;
+      }
+      return;
+    }
+    if (logy){
+      double prevx=i0,prevy=j0,curx,cury;
+      double J0=pow10(window_ymax-j0/y_scale),J1=pow10(window_ymax-j1/y_scale);
+      for (int i=1;i<logplot_points;++i){
+	double t=double(i)/logplot_points;
+	curx=i0+t*(i1-i0);
+	cury=(window_ymax-log10(J0+t*(J1-J0)))*y_scale;
+	fl_line(round(prevx+deltax),round(prevy+deltay),round(curx+deltax),round(cury+deltay));
+	prevx=curx; prevy=cury;
+      }
+      return;
+    }
+    // logx
+    double prevx=i0,prevy=j0,curx,cury;
+    double I0=pow10(i0/x_scale+window_xmin),I1=pow10(i1/x_scale+window_xmin);
+    for (int i=1;i<logplot_points;++i){
+      double t=double(i)/logplot_points;
+      curx=(log10(I0+t*(I1-I0))-window_xmin)*x_scale;
+      cury=j0+t*(j1-j0);
+      fl_line(round(prevx+deltax),round(prevy+deltay),round(curx+deltax),round(cury+deltay));
+      prevx=curx; prevy=cury;
+    }
+  }
+
   void find_dxdy(const string & legendes,int labelpos,int labelsize,int & dx,int & dy){
-    fl_font(FL_HELVETICA,labelsize);
     int l=int(fl_width(legendes.c_str()));
     dx=3;
     dy=1;
@@ -3761,40 +4547,6 @@ namespace xcas {
     }
   }
 
-  Fl_Font greek_translate(string & s){
-    int l=s.size();
-    if (l<4)
-      return FL_HELVETICA;
-    if (s.substr(0,2)!="$\\" && s[l-1]!='$')
-      return FL_HELVETICA;
-    string ss=s.substr(2,l-2);
-    if (l>=8 && ss.substr(0,5)=="alpha"){
-      s="a"+ss.substr(5,l-8);
-      return FL_SYMBOL;
-    }
-    if (l>=7 && ss.substr(0,4)=="beta"){
-      s="b"+ss.substr(4,l-7);
-      return FL_SYMBOL;
-    }
-    if (l>=8 && ss.substr(0,5)=="gamma"){
-      s="c"+ss.substr(5,l-8);
-      return FL_SYMBOL;
-    }
-    if (l>=8 && ss.substr(0,5)=="delta"){
-      s="d"+ss.substr(5,l-8);
-      return FL_SYMBOL;
-    }
-    if (l>=10 && ss.substr(0,7)=="epsilon"){
-      s="e"+ss.substr(7,l-10);
-      return FL_SYMBOL;
-    }
-    if (l>=6 && ss.substr(0,3)=="phi"){
-      s="f"+ss.substr(3,l-6);
-      return FL_SYMBOL;
-    }
-    return FL_HELVETICA;
-  }
-
   void draw_legende(const vecteur & f,int i0,int j0,int labelpos,const Graph2d * iptr,int clip_x,int clip_y,int clip_w,int clip_h,int deltax,int deltay){
     if (f.empty() ||!iptr->show_names )
       return;
@@ -3804,7 +4556,7 @@ namespace xcas {
       gen & f0=f[0]._SYMBptr->feuille;
       if (f0.type==_VECT && !f0._VECTptr->empty()){
 	gen & f1 = f0._VECTptr->front();
-	if (f1.type==_VECT && f1._VECTptr->size()>4 && !is_zero((*f1._VECTptr)[4])){
+	if (f1.type==_VECT && f1._VECTptr->size()>4 && (!is_zero((*f1._VECTptr)[4]) || (iptr->show_names & 2)) ){
 	  gen legende=f1._VECTptr->front();
 	  gen var=(*f1._VECTptr)[1];
 	  gen r=re(legende,contextptr),i=im(legende,contextptr),a,b;
@@ -3814,8 +4566,12 @@ namespace xcas {
 	  }
 	  else
 	    legendes=r.print(contextptr)+","+i.print(contextptr);
-	  if (legendes.size()>18)
-	    legendes=legendes.substr(0,16)+"...";
+	  if (legendes.size()>18){
+	    if (legendes.size()>30)
+	      legendes="";
+	    else
+	      legendes=legendes.substr(0,16)+"...";
+	  }
 	}
       }
     }
@@ -3823,53 +4579,12 @@ namespace xcas {
       legendes=gen2string(f[2])+(legendes.empty()?"":":")+legendes;
     if (legendes.empty())
       return;
+    if (abs_calc_mode(contextptr)==38 && legendes.size()>1 && legendes[0]=='G')
+      legendes=legendes.substr(1,legendes.size()-1);
     fl_font(cst_greek_translate(legendes),iptr->labelsize());
     int dx=3,dy=1;
     find_dxdy(legendes,labelpos,iptr->labelsize(),dx,dy);
     check_fl_draw(legendes.c_str(),iptr->x()+i0+dx,iptr->y()+j0+dy,clip_x,clip_y,clip_w,clip_h,deltax,deltay);
-  }
-
-  void fltk_point(int deltax,int deltay,int i0,int j0,int epaisseur_point,int type_point){
-    fl_line_style(FL_SOLID,epaisseur_point-1,0);
-    switch (type_point){
-    case 1: // losange
-      fl_line(deltax+i0-epaisseur_point,deltay+j0,deltax+i0,deltay+j0-epaisseur_point);
-      fl_line(deltax+i0,deltay+j0-epaisseur_point,deltax+i0+epaisseur_point,deltay+j0);
-      fl_line(deltax+i0-epaisseur_point,deltay+j0,deltax+i0,deltay+j0+epaisseur_point);
-      fl_line(deltax+i0,deltay+j0+epaisseur_point,deltax+i0+epaisseur_point,deltay+j0);
-      break;
-    case 2: // croix verticale
-      fl_line(deltax+i0,deltay+j0-epaisseur_point,deltax+i0,deltay+j0+epaisseur_point);
-      fl_line(deltax+i0-epaisseur_point,deltay+j0,deltax+i0+epaisseur_point,deltay+j0);
-      break;
-    case 3: // carre
-      fl_line(deltax+i0-epaisseur_point,deltay+j0-epaisseur_point,deltax+i0-epaisseur_point,deltay+j0+epaisseur_point);
-      fl_line(deltax+i0+epaisseur_point,deltay+j0-epaisseur_point,deltax+i0+epaisseur_point,deltay+j0+epaisseur_point);
-      fl_line(deltax+i0-epaisseur_point,deltay+j0-epaisseur_point,deltax+i0+epaisseur_point,deltay+j0-epaisseur_point);
-      fl_line(deltax+i0-epaisseur_point,deltay+j0+epaisseur_point,deltax+i0+epaisseur_point,deltay+j0+epaisseur_point);
-      break;
-    case 5: // triangle
-      fl_line(deltax+i0-epaisseur_point,deltay+j0,deltax+i0,deltay+j0-epaisseur_point);
-      fl_line(deltax+i0,deltay+j0-epaisseur_point,deltax+i0+epaisseur_point,deltay+j0);
-      fl_line(deltax+i0-epaisseur_point,deltay+j0,deltax+i0+epaisseur_point,deltay+j0);
-      break;
-    case 7: // point
-      if (epaisseur_point>2)
-	fl_arc(deltax+i0-(epaisseur_point-1),deltay+j0-(epaisseur_point-1),2*(epaisseur_point-1),2*(epaisseur_point-1),0,360);
-      else
-	fl_line(deltax+i0,deltay+j0,deltax+i0+1,deltay+j0);
-      break;
-    case 6: // etoile
-      fl_line(deltax+i0-epaisseur_point,deltay+j0,deltax+i0+epaisseur_point,deltay+j0);
-      // no break to add the following lines
-    case 0: // 0 croix diagonale
-      fl_line(deltax+i0-epaisseur_point,deltay+j0-epaisseur_point,deltax+i0+epaisseur_point,deltay+j0+epaisseur_point);
-      fl_line(deltax+i0-epaisseur_point,deltay+j0+epaisseur_point,deltax+i0+epaisseur_point,deltay+j0-epaisseur_point);
-      break;
-    default: // 4 nothing drawn
-      break;
-    }
-    fl_line_style(0);
   }
 
   void petite_fleche(double i1,double j1,double dx,double dy,int deltax,int deltay,int width){
@@ -3930,6 +4645,8 @@ namespace xcas {
       ensemble_attributs = mpz_get_si(*style.front()._ZINTptr);
       hidden_name=true;
     }
+    else
+      hidden_name=ensemble_attributs<0;
     int width           =(ensemble_attributs & 0x00070000) >> 16; // 3 bits
     int epaisseur_point =(ensemble_attributs & 0x00380000) >> 19; // 3 bits
     int type_line       =(ensemble_attributs & 0x01c00000) >> 22; // 3 bits
@@ -3947,6 +4664,17 @@ namespace xcas {
 	gen attrv0=attr._VECTptr->front();
 	if (attrv0.type==_INT_ && attrv0.val==_GL_TEXTURE){
 	  gen attrv1=(*attr._VECTptr)[1];
+	  if (attrv1.type==_VECT && attrv1._VECTptr->size()==2 && attrv1._VECTptr->front().type==_STRNG && is_undef(attrv1._VECTptr->back())){
+	    // reload cached image
+	    attrv1=attrv1._VECTptr->front();
+	    std::map<std::string,std::pair<Fl_Image *,Fl_Image*> *>::iterator it,itend=texture2d_cache.end();
+	    it=texture2d_cache.find(attrv1._STRNGptr->c_str());
+	    if (it!=itend){
+	      std::pair<Fl_Image *,Fl_Image*> * old= it->second;
+	      delete old;
+	      texture2d_cache.erase(it);
+	    }
+	  }
 	  if (attrv1.type==_STRNG){
 	    get_texture2d(*attrv1._STRNGptr,texture);
 	  }
@@ -3976,14 +4704,37 @@ namespace xcas {
       if (point.type==_SYMB) {
 	if (point._SYMBptr->sommet==at_hyperplan || point._SYMBptr->sommet==at_hypersphere)
 	  return;
-	if (point._SYMBptr->sommet==at_cercle){
+	/* fl_curve is a filled curved, not a Bezier curve!
+	if (point._SYMBptr->sommet==at_Bezier && point._SYMBptr->feuille.type==_VECT && point._SYMBptr->feuille._VECTptr->size()==4){
+	  vecteur v=*point._SYMBptr->feuille._VECTptr;
+	  double i2,j2,i3,j3; gen e,f0,f1;
+	  evalfdouble2reim(v[0],e,f0,f1,contextptr);
+	  i0=f0._DOUBLE_val; j0=f1._DOUBLE_val;
+	  evalfdouble2reim(v[1],e,f0,f1,contextptr);
+	  i1=f0._DOUBLE_val; j1=f1._DOUBLE_val;
+	  evalfdouble2reim(v[2],e,f0,f1,contextptr);
+	  i2=f0._DOUBLE_val; j2=f1._DOUBLE_val;
+	  evalfdouble2reim(v[3],e,f0,f1,contextptr);
+	  i3=f0._DOUBLE_val; j3=f1._DOUBLE_val;
+	  fl_push_matrix();
+	  fl_translate(deltax,deltay);
+	  fl_mult_matrix(x_scale,0,0,-y_scale,0,0);
+	  fl_translate(-Mon_image.window_xmin,-Mon_image.window_ymax);
+	  fl_curve(i0,j0,i1,j1,i2,j2,i3,j3);
+	  fl_end_complex_polygon();
+	  fl_pop_matrix(); // Restore initial matrix
+	  return;
+	}
+	*/
+	if (point._SYMBptr->sommet==at_cercle && !(Mon_image.display_mode & 0xc00)){
 	  vecteur v=*point._SYMBptr->feuille._VECTptr;
 	  gen diametre=remove_at_pnt(v[0]);
 	  gen e1=diametre._VECTptr->front().evalf_double(1,contextptr),e2=diametre._VECTptr->back().evalf_double(1,contextptr);
-	  gen centre=rdiv(e1+e2,2.0);
+	  gen centre=rdiv(e1+e2,2.0,contextptr);
 	  gen e12=e2-e1;
 	  double ex=evalf_double(re(e12,contextptr),1,contextptr)._DOUBLE_val,ey=evalf_double(im(e12,contextptr),1,contextptr)._DOUBLE_val;
-	  Mon_image.findij(centre,x_scale,y_scale,i0,j0,contextptr);
+	  if (!Mon_image.findij(centre,x_scale,y_scale,i0,j0,contextptr))
+	    return;
 	  gen diam=std::sqrt(ex*ex+ey*ey);
 	  gen angle=std::atan2(ey,ex);
 	  gen a1=v[1].evalf_double(1,contextptr),a2=v[2].evalf_double(1,contextptr);
@@ -3997,29 +4748,40 @@ namespace xcas {
 	      a1d=a2d;
 	      a2d=tmp;
 	    }
-	    if (fill_polygon)
-	      fl_pie(deltax+round(i0-i1),deltay+round(j0-j1),round(2*i1),round(2*j1),(angled+a1d)*180/M_PI,(angled+a2d)*180/M_PI);
+	    if (fill_polygon){
+	      if (v[1]==0 && v[2]==cst_two_pi)
+		fl_pie(deltax+round(i0-i1),deltay+round(j0-j1),round(2*i1),round(2*j1),0,360);
+	      else
+		fl_pie(deltax+round(i0-i1),deltay+round(j0-j1),round(2*i1),round(2*j1),(angled+a1d)*180/M_PI,(angled+a2d)*180/M_PI);
+	    }
 	    else {
-	      double anglei=(angled+a1d),anglef=(angled+a2d);
+	      double anglei=(angled+a1d),anglef=(angled+a2d),anglem=(anglei+anglef)/2;
 	      fl_arc(deltax+round(i0-i1),deltay+round(j0-j1),round(2*i1),round(2*j1),anglei*180/M_PI,anglef*180/M_PI);
 	      if (v.size()>=4){ // if cercle has the optionnal 5th arg
-		if (changer_sens)
-		  petite_fleche(i0+i1*std::cos(anglei),j0-j1*std::sin(anglei),-i1*std::sin(anglei),-j1*std::cos(anglei),deltax,deltay,width);
-		else
-		  petite_fleche(i0+i1*std::cos(anglef),j0-j1*std::sin(anglef),i1*std::sin(anglef),j1*std::cos(anglef),deltax,deltay,width);
+		if (v[3]==2)
+		  petite_fleche(i0+i1*std::cos(anglem),j0-j1*std::sin(anglem),-i1*std::sin(anglem),-j1*std::cos(anglem),deltax,deltay,width);
+		else {
+		  if (changer_sens)
+		    petite_fleche(i0+i1*std::cos(anglei),j0-j1*std::sin(anglei),-i1*std::sin(anglei),-j1*std::cos(anglei),deltax,deltay,width);
+		  else
+		    petite_fleche(i0+i1*std::cos(anglef),j0-j1*std::sin(anglef),i1*std::sin(anglef),j1*std::cos(anglef),deltax,deltay,width);
+		}
 	      }
 	    }
 	    // Label a few degrees from the start angle, 
 	    // FIXME should use labelpos
-	    i0=i0+i1*std::cos(angled+a1d+0.3); 
-	    j0=j0-j1*std::sin(angled+a1d+0.3);
+	    double anglel=angled+a1d+0.3;
+	    if (v.size()>=4 && v[3]==2)
+	      anglel=angled+(0.45*a1d+0.55*a2d);
+	    i0=i0+i1*std::cos(anglel); 
+	    j0=j0-j1*std::sin(anglel);
 	    if (!hidden_name)
 	      draw_legende(f,round(i0),round(j0),labelpos,&Mon_image,clip_x,clip_y,clip_w,clip_h,0,0);
 	    return;
 	  }
 	} // end circle
 	if (point._SYMBptr->sommet==at_pixon){
-	  // pixon (i,j,color,xmin,xmax,ymin,ymax)
+	  // pixon (i,j,color)
 	  if (point._SYMBptr->feuille.type!=_VECT)
 	    return;
 	  vecteur &v=*point._SYMBptr->feuille._VECTptr;
@@ -4112,8 +4874,9 @@ namespace xcas {
 	  }
 	}
       } // end point.type==_SYMB
-      if (point.type!=_VECT){ // single point
-	Mon_image.findij(point,x_scale,y_scale,i0,j0,contextptr);
+      if (point.type!=_VECT || (point.type==_VECT && (point.subtype==_GROUP__VECT || point.subtype==_VECTOR__VECT) && point._VECTptr->size()==2 && is_zero(point._VECTptr->back()-point._VECTptr->front())) ){ // single point
+	if (!Mon_image.findij((point.type==_VECT?point._VECTptr->front():point),x_scale,y_scale,i0,j0,contextptr))
+	  return;
 	if (i0>0 && i0<mxw && j0>0 && j0<myw)
 	  fltk_point(deltax,deltay,round(i0),round(j0),epaisseur_point,type_point);
 	if (!hidden_name)
@@ -4124,10 +4887,31 @@ namespace xcas {
       const_iterateur jt=point._VECTptr->begin(),jtend=point._VECTptr->end();
       if (jt==jtend)
 	return;
+      bool logx=Mon_image.display_mode & 0x400,logy=Mon_image.display_mode & 0x800;
+      if (jtend-jt==2 && logx && point.subtype==_LINE__VECT){
+	// find points with + coordinates ax+cx*t=x, ay+cy*t=y=
+	gen a=*jt,ax=re(a,contextptr),ay=im(a,contextptr),b=*(jt+1),c=b-a,cx=re(c,contextptr),cy=im(c,contextptr);
+	if (!is_zero(cx)){
+	  // y=ay+cy/cx*(x-ax)
+	  gen x=pow(10,Mon_image.window_xmin,contextptr);
+	  gen y=ay+cy/cx*(x-ax);
+	  Mon_image.findij(x+cst_i*y,x_scale,y_scale,i0,j0,contextptr);
+	  for (int i=1;i<=logplot_points;++i){
+	    x=pow(10,Mon_image.window_xmin+i*(Mon_image.window_xmax-Mon_image.window_xmin)/logplot_points,contextptr);
+	    y=ay+cy/cx*(x-ax);
+	    Mon_image.findij(x+cst_i*y,x_scale,y_scale,i1,j1,contextptr);
+	    fl_line(round(i0+deltax),round(j0+deltay),round(i1+deltax),round(j1+deltay));
+	    i0=i1;
+	    j0=j1;
+	  }
+	  return;
+	}
+      }
       if (texture && jtend-jt>2){
 	// use *jt and *(jt+2) for the rectangle texture
 	Mon_image.findij(*jt,x_scale,y_scale,i0,j0,contextptr);
-	Mon_image.findij(*(jt+2),x_scale,y_scale,i1,j1,contextptr);
+	if (!Mon_image.findij(*(jt+2),x_scale,y_scale,i1,j1,contextptr))
+	  return;
 	if (i0>i1)
 	  std::swap(i0,i1);
 	if (j0>j1)
@@ -4141,15 +4925,29 @@ namespace xcas {
 	else {
 	  if (texture->second)
 	    delete texture->second;
-	  texture->second=texture->first->copy(tw,th);
-	  texture->second->draw(tx,ty,tw,th);
+	  if (texture->first){
+	    texture->second=texture->first->copy(tw,th);
+	    texture->second->draw(tx,ty,tw,th);
+	  }
 	}
 	return;
       }
       if (jt->type==_VECT)
 	return;
+      if ( (type_point || epaisseur_point>2) && type_line==0 && width==0){
+	for (;jt!=jtend;++jt){
+	  if (!Mon_image.findij(*jt,x_scale,y_scale,i0,j0,contextptr))
+	    return;
+	  if (i0>0 && i0<mxw && j0>0 && j0<myw)
+	    fltk_point(deltax,deltay,round(i0),round(j0),epaisseur_point,type_point);
+	}
+	if (!hidden_name)
+	  draw_legende(f,round(i0),round(j0),labelpos,&Mon_image,clip_x,clip_y,clip_w,clip_h,0,0);
+	return;
+      }
       // initial point
-      Mon_image.findij(*jt,x_scale,y_scale,i0,j0,contextptr);
+      if (!Mon_image.findij(*jt,x_scale,y_scale,i0,j0,contextptr))
+	return;
       if (fill_polygon && *jt==*(jtend-1)){
 	const_iterateur jtsave=jt;
 	gen e,f0,f1;
@@ -4188,16 +4986,17 @@ namespace xcas {
       bool seghalfline=( point.subtype==_LINE__VECT || point.subtype==_HALFLINE__VECT ) && (point._VECTptr->size()==2);
       // rest of the path
       for (;;){
-	Mon_image.findij(*jt,x_scale,y_scale,i1,j1,contextptr);
+	if (!Mon_image.findij(*jt,x_scale,y_scale,i1,j1,contextptr))
+	  return;
 	if (!seghalfline){
-	  check_fl_line(round(i0)+deltax,round(j0)+deltay,round(i1)+deltax,round(j1)+deltay,clip_x,clip_y,clip_w,clip_h,0,0);
+	  checklog_fl_line(i0,j0,i1,j1,deltax,deltay,logx,logy,Mon_image.window_xmin,x_scale,Mon_image.window_ymax,y_scale);
 	  if (point.subtype==_VECTOR__VECT){
 	    double dx=i0-i1,dy=j0-j1;
 	    petite_fleche(i1,j1,dx,dy,deltax,deltay,width);
 	  }
 	}
 	++jt;
-	if (jt==jtend){ // label at midpoint, except for lines
+	if (jt==jtend){ // label of line at midpoint
 	  if (point.subtype==_LINE__VECT){
 	    i0=(6*i1-i0)/5-8;
 	    j0=(6*j1-j0)/5-8;
@@ -4217,10 +5016,10 @@ namespace xcas {
 	double deltaj=j1-j0save,adeltaj=std::abs(deltaj);
 	if (point.subtype==_LINE__VECT){
 	  if (deltai==0)
-	    fl_line(int(deltax+i1),int(deltay),int(deltax+i1),int(deltay+clip_h));
+	    checklog_fl_line(i1,0,i1,clip_h,deltax,deltay,logx,logy,Mon_image.window_xmin,x_scale,Mon_image.window_ymax,y_scale);
 	  else {
 	    if (deltaj==0)
-	      fl_line(int(deltax),int(deltay+j1),int(deltax+clip_w),int(deltay+j1));
+	      checklog_fl_line(0,j1,clip_w,j1,deltax,deltay,Mon_image.display_mode & 0x400,Mon_image.display_mode & 0x800,Mon_image.window_xmin,x_scale,Mon_image.window_ymax,y_scale);
 	    else {
 	      // Find the intersections with the 4 rectangle segments
 	      // Horizontal x=0 or w =i1+t*deltai: y=j1+t*deltaj
@@ -4239,7 +5038,7 @@ namespace xcas {
 	      if (xh>=0 && xh<=clip_w)
 		pts.push_back(complex<double>(xh,clip_h));
 	      if (pts.size()>=2)
-		fl_line(deltax+int(pts[0].real()+.5),deltay+int(pts[0].imag()+.5),deltax+int(pts[1].real()+.5),deltay+int(pts[1].imag()+.5));
+		checklog_fl_line(pts[0].real(),pts[0].imag(),pts[1].real(),pts[1].imag(),deltax,deltay,Mon_image.display_mode & 0x400,Mon_image.display_mode & 0x800,Mon_image.window_xmin,x_scale,Mon_image.window_ymax,y_scale);
 	    } // end else adeltai==0 , adeltaj==0
 	  } // end else adeltai==0
 	} // end LINE_VECT
@@ -4259,7 +5058,7 @@ namespace xcas {
 	    N /= 2;
 	  while (fabs(N*deltaj)>10000)
 	    N /= 2;
-	  check_fl_line(round(i0save)+deltax,round(j0save)+deltay,round(i1+N*deltai)+deltax,round(j1+N*deltaj)+deltay,clip_x,clip_y,clip_w,clip_h,0,0);
+	  checklog_fl_line(i0save,j0save,i1+N*deltai,j1+N*deltaj,deltax,deltay,Mon_image.display_mode & 0x400,Mon_image.display_mode & 0x800,Mon_image.window_xmin,x_scale,Mon_image.window_ymax,y_scale);
 	}
       } // end seghalfline
       if ( (point.subtype==_GROUP__VECT) && (point._VECTptr->size()==2))
@@ -4282,10 +5081,10 @@ namespace xcas {
     check_fl_rect(x(), y(), w(), h(),clip_x,clip_y,clip_w,clip_h,0,0);
     fl_font(FL_HELVETICA,labelsize());
     int cur_x,cur_y;
-    giac::context * contextptr = get_context(graphic);
+    // giac::context * contextptr = get_context(graphic);
     if (Graph2d * gr=dynamic_cast<Graph2d *>(graphic)){
-      cur_x=Fl::event_x()-gr->x();
-      cur_y=Fl::event_y()-gr->y();
+      cur_x=gr->current_i; // Fl::event_x()-gr->x();
+      cur_y=gr->current_j; // Fl::event_y()-gr->y();
       double y_scale=(gr->h()-(gr->show_axes?((gr->title.empty()?1:2)*gr->labelsize()):0))/(graphic->window_ymax-graphic->window_ymin);
       double x_scale=(gr->w()-(gr->show_axes?gr->ylegende*gr->labelsize():0))/(graphic->window_xmax-graphic->window_xmin);
       double d_mouse_x=graphic->window_xmin+cur_x/x_scale;
@@ -4294,8 +5093,8 @@ namespace xcas {
       check_fl_draw(("y:"+giac::print_DOUBLE_(d_mouse_y,3)).c_str(),x()+2,y()+h()-2,clip_x,clip_y,clip_w,clip_h,0,0);
     }
     if (Graph3d * gr=dynamic_cast<Graph3d *>(graphic)){
-      cur_x=Fl::event_x();
-      cur_y=Fl::event_y();
+      cur_x=gr->current_i; // Fl::event_x();
+      cur_y=gr->current_j; // Fl::event_y();
       double x0,y0,z0;
       gr->find_xyz(cur_x,cur_y,gr->depth,x0,y0,z0);
       fl_draw(("x:"+giac::print_DOUBLE_(x0,3)).c_str(),x()+2,y()+labelsize()-2);
@@ -4318,15 +5117,48 @@ namespace xcas {
 	if (function.type==_FUNC){
 	  bool dim2=dynamic_cast<Graph2d *>(this);
 	  vecteur args2=args_tmp;
-	  if ( *function._FUNCptr==(dim2?at_cercle:at_sphere) )
-	    args2=makevecteur(args_tmp.front(),args_tmp.back()-args_tmp.front());
+	  if ( *function._FUNCptr==(dim2?at_cercle:at_sphere)){
+	    gen argv1;
+	    try {
+	      argv1=evalf(args_tmp.back(),1,contextptr);
+	      argv1=evalf_double(argv1,1,contextptr);
+	    }
+	    catch (std::runtime_error & e){
+	      argv1=undef;
+	    }
+	    if (argv1.is_symb_of_sommet(at_pnt) ||argv1.type==_IDNT){
+	      argv1=remove_at_pnt(argv1);
+	      if ( (argv1.type==_VECT && argv1.subtype==_POINT__VECT) || argv1.type==_CPLX || argv1.type==_IDNT)
+		args2.back()=args_tmp.back()-args_tmp.front();
+	    }
+	  }
 	  if (function==at_ellipse)
 	    ;
 	  title_tmp=gen(args2,_SEQ__VECT);
 	  bool b=approx_mode(contextptr);
 	  if (!b)
 	    approx_mode(true,contextptr);
-	  plot_tmp=protecteval(symbolic(*function._FUNCptr,title_tmp),1,contextptr);
+	  plot_tmp=symbolic(*function._FUNCptr,title_tmp);
+	  if (!lidnt(title_tmp).empty())
+	    ; // cerr << plot_tmp << endl;
+	  bool bb=io_graph(contextptr);
+	  int locked=0;
+	  if (bb){
+#ifdef HAVE_LIBPTHREAD
+	    // cerr << "plot title lock" << endl;
+	    locked=pthread_mutex_trylock(&interactive_mutex);
+#endif
+	    if (!locked)
+	      io_graph(false,contextptr);
+	  }
+	  plot_tmp=protecteval(plot_tmp,1,contextptr);
+	  if (bb && !locked){
+	    io_graph(bb,contextptr);
+#ifdef HAVE_LIBPTHREAD
+	    pthread_mutex_unlock(&interactive_mutex);
+	    // cerr << "plot title unlock" << endl;
+#endif
+	  }
 	  if (!b)
 	    approx_mode(false,contextptr);	
 	} // end function.type==_FUNC
@@ -4355,14 +5187,17 @@ namespace xcas {
     fl_color(FL_WHITE);
     fl_rectf(clip_x, clip_y, clip_w, clip_h);
     fl_color(FL_BLACK);
-    fl_rect(x(), y(), horizontal_pixels, vertical_pixels);
+    if ( !(display_mode & 0x100) )
+      fl_rect(x(), y(), horizontal_pixels, vertical_pixels);
     if (background_image){
       if (!background_image->second || background_image->second->w()!=w() || background_image->second->h()!=h()){
 	if (background_image->second)
 	  delete background_image->second;
-	background_image->second=background_image->first->copy(w(),h());
+	if (background_image->first)
+	  background_image->second=background_image->first->copy(w(),h());
       }
-      background_image->second->draw(x(),y(),w(),h());
+      if (background_image->second)
+	background_image->second->draw(x(),y(),w(),h());
     }
     // History draw
     /****************/
@@ -4403,7 +5238,11 @@ namespace xcas {
       gen plot_tmp=*jt;
       if (plot_tmp.is_symb_of_sommet(at_pnt) && plot_tmp._SYMBptr->feuille.type==_VECT && !plot_tmp._SYMBptr->feuille._VECTptr->empty()){
 	vecteur & v=*plot_tmp._SYMBptr->feuille._VECTptr;
-	plot_tmp=symbolic(at_pnt,makevecteur(v[0],v[1].val | _DOT_LINE | _LINE_WIDTH_2));
+	// cerr << v << endl;
+	if (v[1].type==_INT_)
+	  plot_tmp=symbolic(at_pnt,makevecteur(v[0],v[1].val | _DOT_LINE | _LINE_WIDTH_2));
+	else
+	  plot_tmp=symbolic(at_pnt,v);
 	try {
 	  fltk_draw(*this,-1,plot_tmp,x_scale,y_scale,clip_x,clip_y,clip_w,clip_h);
 	}
@@ -4417,14 +5256,15 @@ namespace xcas {
     findij(zero,x_scale,y_scale,I0,J0,contextptr);
     int i_0=round(I0),j_0=round(J0);
     if ( show_axes &&  (window_ymax>=0) && (window_ymin<=0)){ // X-axis
-      fl_color(y_axis_color);
+      fl_color(x_axis_color);
       check_fl_line(deltax,deltay+j_0,deltax+horizontal_pixels,deltay+j_0,clip_x,clip_y,clip_w,clip_h,0,0); 
       fl_color(FL_CYAN);
       check_fl_line(deltax+i_0,deltay+j_0,deltax+i_0+int(x_scale),deltay+j_0,clip_x,clip_y,clip_w,clip_h,0,0);
-      fl_color(y_axis_color);
+      fl_color(x_axis_color);
       if (x_tick>0 && (horizontal_pixels)/(x_scale*x_tick) < 40){
 	double nticks=(horizontal_pixels-I0)/(x_scale*x_tick);
-	for (int ii=int(-I0/(x_tick*x_scale));ii<=nticks;++ii){
+	int count=0;
+	for (int ii=int(-I0/(x_tick*x_scale));ii<=nticks && count<40;++ii,++count){
 	  int iii=int(I0+ii*x_scale*x_tick+.5);
 	  check_fl_line(deltax+iii,deltay+j_0,deltax+iii,deltay+j_0-4,clip_x,clip_y,clip_w,clip_h,0,0);
 	}
@@ -4433,14 +5273,15 @@ namespace xcas {
       check_fl_draw(tmp.c_str(),deltax+horizontal_pixels-int(fl_width(tmp.c_str())),deltay+j_0+labelsize(),clip_x,clip_y,clip_w,clip_h,0,0);
     }
     if ( show_axes && (window_xmax>=0) && (window_xmin<=0) ) {// Y-axis
-      fl_color(x_axis_color);
+      fl_color(y_axis_color);
       check_fl_line(deltax+i_0,deltay,deltax+i_0,deltay+vertical_pixels,clip_x,clip_y,clip_w,clip_h,0,0);
       fl_color(FL_CYAN);
       check_fl_line(deltax+i_0,deltay+j_0,deltax+i_0,deltay+j_0-int(y_scale),clip_x,clip_y,clip_w,clip_h,0,0);
-      fl_color(x_axis_color);
+      fl_color(y_axis_color);
       if (y_tick>0 && vertical_pixels/(y_tick*y_scale) <40 ){
 	double nticks=(vertical_pixels-J0)/(y_tick*y_scale);
-	for (int jj=int(-J0/(y_tick*y_scale));jj<=nticks;++jj){
+	int count=0;
+	for (int jj=int(-J0/(y_tick*y_scale));jj<=nticks && count<25;++jj,++count){
 	  int jjj=int(J0+jj*y_scale*y_tick+.5);
 	  check_fl_line(deltax+i_0,deltay+jjj,deltax+i_0+4,deltay+jjj,clip_x,clip_y,clip_w,clip_h,0,0);
 	}
@@ -4453,9 +5294,10 @@ namespace xcas {
 	fl_color(FL_BLACK);
 	double nticks=(horizontal_pixels-I0)/(x_scale*x_tick);
 	double mticks=(vertical_pixels-J0)/(y_tick*y_scale);
+	int count=0;
 	for (int ii=int(-I0/(x_tick*x_scale));ii<=nticks;++ii){
 	  int iii=int(I0+ii*x_scale*x_tick+.5);
-	  for (int jj=int(-J0/(y_tick*y_scale));jj<=mticks;++jj){
+	  for (int jj=int(-J0/(y_tick*y_scale));jj<=mticks && count<1600;++jj,++count){
 	    int jjj=int(J0+jj*y_scale*y_tick+.5);
 	    check_fl_point(deltax+iii,deltay+jjj,clip_x,clip_y,clip_w,clip_h,0,0);
 	  }
@@ -4468,7 +5310,7 @@ namespace xcas {
     fl_color(FL_BLACK);
     fl_font(FL_HELVETICA,labelsize());
     if (!args_help.empty() && args_tmp.size()<= args_help.size()){
-      fl_draw((gettext("Click ")+args_help[max(1,args_tmp.size())-1]).c_str(),x(),y()+labelsize()-2);
+      fl_draw((gettext("Click ")+args_help[giacmax(1,args_tmp.size())-1]).c_str(),x(),y()+labelsize()-2);
     }
     string mytitle(title);
     if (!is_zero(title_tmp) && function_final.type==_FUNC)
@@ -4483,13 +5325,14 @@ namespace xcas {
       int taille,affs,delta;
       vecteur aff;
       string tmp;
+      bool logx=display_mode & 0x400,logy=display_mode & 0x800;
       // X
       fl_color(x_axis_color);
       aff=ticks(window_xmin,window_xmax,true);
       affs=aff.size();
       for (int i=0;i<affs;++i){
 	double d=evalf_double(aff[i],1,contextptr)._DOUBLE_val;
-	tmp=print_DOUBLE_(d);
+	tmp=print_DOUBLE_(logx?std::pow(10,d):d);
 	delta=int(horizontal_pixels*(d-window_xmin)/(window_xmax-window_xmin));
 	taille=int(fl_width(tmp.c_str()));
 	if (delta>=taille/2 && delta<=horizontal_pixels){
@@ -4507,28 +5350,37 @@ namespace xcas {
       taille=labelsize()/2;
       for (int j=0;j<affs;++j){
 	double d=evalf_double(aff[j],1,contextptr)._DOUBLE_val;
-	tmp=print_DOUBLE_(d)+y_axis_unit;;
+	tmp=print_DOUBLE_(logy?std::pow(10,d):d)+y_axis_unit;
 	delta=int(vertical_pixels*(window_ymax-d)/(window_ymax-window_ymin));
 	if (delta>=taille && delta<=vertical_pixels-taille){
 	  fl_line(x()+horizontal_pixels,y()+delta,x()+horizontal_pixels+3,y()+delta);
 	  fl_draw(tmp.c_str(),x()+horizontal_pixels+3,y()+delta+taille);
+	  int tmpi=fl_width(tmp.c_str());
+	  if (tmpi+horizontal_pixels+3>w()){
+	    ylegende=(tmpi+3.)/labelsize();
+	    redraw();
+	  }
 	}
       }
     }
   }
 
   void Graph2d::draw(){
+    int clip_x,clip_y,clip_w,clip_h;
     if (!hp)
       hp=geo_find_history_pack(this);
     context * contextptr = hp?hp->contextptr:0;
 #ifdef HAVE_LIBPTHREAD
-    pthread_mutex_lock(&interactive_mutex);
-    bool b=io_graph(contextptr);
-    io_graph(contextptr)=false;
+    // cerr << "graph2d draw lock" << endl;
+    int locked=pthread_mutex_trylock(&interactive_mutex);
+    if (locked)
+      return;
 #endif
-    int clip_x,clip_y,clip_w,clip_h;
+    bool b=io_graph(contextptr);
+    io_graph(false,contextptr);
     bool block=block_signal;
     block_signal=true;
+    // cerr << "graph2d draw " << this << " block_signal" << endl;
     fl_clip_box(x(),y(),w(),h(),clip_x,clip_y,clip_w,clip_h);
     fl_push_clip(clip_x,clip_y,clip_w,clip_h);
     int horizontal_pixels=w()-(show_axes?int(ylegende*labelsize()):0);
@@ -4537,22 +5389,27 @@ namespace xcas {
     in_draw(clip_x,clip_y,clip_w,clip_h,vertical_pixels);
     // Draw mouse drag
     if ( pushed && !waiting_click && current_i>=0 && current_i<=horizontal_pixels && current_j>=0 && current_j <=vertical_pixels && (push_i!=current_i || push_j!=current_j ) ){
-      fl_color(y_axis_color);
+      fl_color(FL_RED);
       check_fl_rect(deltax+min(push_i,current_i),deltay+min(push_j,current_j),absint(current_i-push_i),absint(current_j-push_j),clip_x,clip_y,clip_w,clip_h,0,0);
     }
     fl_pop_clip();
     if (!paused)
       ++animation_instructions_pos;
+    // cerr << "graph2d draw " << this << " restore block_signal" << endl;
     block_signal=block;
+    io_graph(b,contextptr);
 #ifdef HAVE_LIBPTHREAD
     pthread_mutex_unlock(&interactive_mutex);
-    io_graph(contextptr)=b;
+    // cerr << "graph2d draw unlock" << endl;
 #endif
   }
 
   void Graph2d3d::autoname_plus_plus(){
-    if (hp)
-      giac::autoname_plus_plus(autoname(hp->contextptr));
+    if (hp){
+      string s=autoname(hp->contextptr);
+      giac::autoname_plus_plus(s);
+      autoname(s,hp->contextptr);
+    }
   }
 
   void Graph2d3d::update(Fl_Group * pack,int pos){
@@ -4562,25 +5419,22 @@ namespace xcas {
     if (pos>=0){ // Check if we need to update from pos or pos+1
       if ( (last_event=FL_DRAG || last_event==FL_RELEASE) && pack->children()>pos){
 	Gen_Value_Slider * gs=dynamic_cast<Gen_Value_Slider *>(Fl::belowmouse());
-	if (gs){
-	  ++pos;
+	if (gs){ // last handle required by a cursor? 
+	  Fl_Widget * wid=pack->child(pos);
+	  Fl_Tile * t=dynamic_cast<Fl_Tile *>(wid);
+	  if (t && t->children()>=3)
+	    wid=t->child(2);
+	  Fl_Scroll * s =dynamic_cast<Fl_Scroll *>(wid);
+	  if (s)
+	    wid=s->child(0);
+	  if (const Gen_Output * go = dynamic_cast<const Gen_Output *>(wid)){
+	    if (go->value().is_symb_of_sommet(at_parameter))
+	      ++pos;
+	  }
 	  // cerr << clock() << " ++pos " << pos << " " << last_event << endl;
 	}
 	else
 	  ; // cerr << clock() << " =pos " << pos << " " << last_event <<  endl;
-	/*
-	Fl_Widget * wid=pack->child(pos),*wid1;
-	Fl_Tile * t=dynamic_cast<Fl_Tile *>(wid);
-	if (t && t->children()>=3)
-	  wid=t->child(2);
-	Fl_Scroll * s =dynamic_cast<Fl_Scroll *>(wid);
-	if (s)
-	  wid=s->child(0);
-	if (const Gen_Output * go = dynamic_cast<const Gen_Output *>(wid)){
-	  if (go->value().is_symb_of_sommet(at_parameter))
-	    ++pos;
-	}
-	*/
       }
     }
     else
@@ -4615,7 +5469,7 @@ namespace xcas {
       int n=param_group->children(),i=0;
       for (;i<n;++i){
 	if (Gen_Value_Slider * gvs=dynamic_cast<Gen_Value_Slider *>(param_group->child(i))){
-	  if (gvs->pos>=pos)
+	  if (gvs->pos>=int(pos))
 	    break;
 	}
       }
@@ -4623,6 +5477,22 @@ namespace xcas {
 	param_group->remove(param_group->child(n-1));
       }
     }
+  }
+
+  int Figure::handle(int event){
+    if (event==FL_MOUSEWHEEL){
+      if (!Fl::event_inside(this))
+	return 0;
+      if (Fl::focus()==geo){
+	int res=geo->handle(event);
+	if (res)
+	  return res;
+      }
+      if (!Fl::event_inside(s))
+	return 0;      
+      return s->child(2)->handle(event);
+    }
+    return Fl_Tile::handle(event);
   }
 
   void Figure::rename(const string & s){
@@ -4642,14 +5512,15 @@ namespace xcas {
     if (s.empty()){
       // Get filename
       for (;;){
-	char * newfile = fl_file_chooser(gettext("Save figure"), "*.cas", "session.cas");
+	char * newfile = file_chooser(gettext("Save figure"), "*.cas", "session.cas");
 	if ( (!newfile) || (!*newfile))
 	  return;
 	s=newfile; // remove_path(newfile);
+	//s=remove_path(remove_extension(s.substr(0,1000).c_str()))+".cas";
 	s=remove_extension(s.substr(0,1000).c_str())+".cas";
 	if (access(s.c_str(),R_OK))
 	  break;
-	int i=fl_ask((s+gettext(": file exists. Overwrite?")).c_str());
+	int i=fl_ask("%s",(s+gettext(": file exists. Overwrite?")).c_str());
 	if (i==1)
 	  break;
       }
@@ -4669,6 +5540,11 @@ namespace xcas {
 	    if (strlen(m->value()))
 	      of << replace(m->value(),'\n',' ')+";" << endl;
 	  }
+	  if (Xcas_Text_Editor * m=dynamic_cast<Xcas_Text_Editor *>(w)){
+	    string s=m->value();
+	    if (!s.empty())
+	      of << replace(s,'\n',' ')+";" << endl;
+	  }
 	}
       }
     }
@@ -4684,7 +5560,7 @@ namespace xcas {
     return geo->latex(thename.c_str());
   }
   
-  void cb_Figure_Save(Fl_Widget * m , void*) {
+  static void cb_Figure_Save(Fl_Widget * m , void*) {
     Figure * f=find_figure(m);
     if (f){
       if (f->namestr){
@@ -4696,7 +5572,7 @@ namespace xcas {
     }
   }
 
-  void cb_Figure_Save_as(Fl_Widget * m , void*) {
+  static void cb_Figure_Save_as(Fl_Widget * m , void*) {
     Figure * f=find_figure(m);
     if (f)
       f->save_figure_as("");
@@ -4706,7 +5582,7 @@ namespace xcas {
     if (!f->geo->hp)
       return "";
     if (f){
-      char * newfile = fl_file_chooser(gettext("Insert figure"), "*.cas", "");
+      char * newfile = load_file_chooser(gettext("Insert figure"), "*.cas", "",0,false);
       if ( file_not_available(newfile))
 	return "";
       // Put newfile in selection and paste to f->geo->hp
@@ -4726,24 +5602,25 @@ namespace xcas {
     return "";
   }
 
-  void cb_Figure_Insert(Fl_Widget * m , void*) {
+  static void cb_Figure_Insert(Fl_Widget * m , void*) {
     Figure * f=find_figure(m);
-    if (f) figure_insert(f);
+    if (!f) return;
+    figure_insert(f);
   }
 
-  void cb_Figure_Preview(Fl_Widget * m , void*) {
+  static void cb_Figure_Preview(Fl_Widget * m , void*) {
     Figure * f=find_figure(m);
     if (f)
       widget_ps_print(f->geo,remove_path(f->name->label()),true);
   }
 
-  void cb_Figure_Print(Fl_Widget * m , void*) {
+  static void cb_Figure_Print(Fl_Widget * m , void*) {
     Figure * f=find_figure(m);
     if (f)
       widget_print(f->geo);
   }
 
-  void cb_Figure_LaTeX_Preview(Fl_Widget * m , void*) {
+  static void cb_Figure_LaTeX_Preview(Fl_Widget * m , void*) {
     Figure * f=find_figure(m);
     if (f){
       string name=f->latex_save_figure();
@@ -4751,7 +5628,7 @@ namespace xcas {
     }
   }
 
-  void cb_Figure_LaTeX_Print(Fl_Widget * m , void*) {
+  static void cb_Figure_LaTeX_Print(Fl_Widget * m , void*) {
     Figure * f=find_figure(m);
     if (f){
       string name=f->latex_save_figure();
@@ -4772,6 +5649,7 @@ namespace xcas {
       if (!w){
 	int l=f->labelsize();
 	int dx=18*l,dy=6*l,dh=dy/3;
+	Fl_Group::current(0);
 	w=new Fl_Window(dx,dy);
 	wxmin=new Fl_Value_Input(dx/9,2,2*dx/9-2,dh-4,"t-");
 	wxmin->tooltip(gettext("Parameter minimal value"));
@@ -4815,8 +5693,9 @@ namespace xcas {
       wname->value(paramname.c_str());
       w->set_modal();
       w->show();
+      autosave_disabled=true;
       w->hotspot(w);
-      Fl::focus(w);
+      Fl::focus(wxmin);
       int r;
       for (;;) {
 	Fl_Widget *o = Fl::readqueue();
@@ -4828,6 +5707,7 @@ namespace xcas {
 	}
       }
       w->hide();
+      autosave_disabled=false;
       if (!r){ // insert parameter in figure pack
 	autoname_plus_plus(paramname);
 	name=wname->value();
@@ -4845,7 +5725,7 @@ namespace xcas {
     return 0;
   }
 
-  void cb_Figure_Parameter(Fl_Widget * m , void*) {
+  static void cb_Figure_Parameter(Fl_Widget * m , void*) {
     Fl_Widget * wid=Fl::focus();
     Figure * f=find_figure(m);
     if (f){
@@ -4878,6 +5758,7 @@ namespace xcas {
     static Fl_Button * button1 =0;
     static Fl_Check_Button * do_plotfield = 0,*do_normal=0;
     static Line_Type *ltres=0;
+    // static int curvestyle=0;
     Graph2d3d * gr = dynamic_cast<Graph2d3d *>(spread_ptr);
     if (!gr){
       if (Figure * fig=dynamic_cast<Figure *>(spread_ptr))
@@ -4887,10 +5768,11 @@ namespace xcas {
 #ifdef IPAQ
       int dx=240,dy=300;
 #else
-      int dx=(spread_ptr?24*spread_ptr->labelsize():240), 
-	dy=spread_ptr?8*spread_ptr->labelsize():300;
+      int dx=(spread_ptr?30*spread_ptr->labelsize():500), 
+	dy=spread_ptr?12*spread_ptr->labelsize():400;
 #endif
       int lignes=5;
+      Fl_Group::current(0);
       w=new Fl_Window(dx,dy);
       int l=spread_ptr->labelsize();
       ltres = new Line_Type(2,2,l,l,_MAGENTA+_FILL_POLYGON);
@@ -4907,7 +5789,7 @@ namespace xcas {
       fcnimplicit->tooltip(gettext("Implicit expression"));
       fcnfield=new Fl_Input(dx/2,2,dx/2-4,dy/lignes-4,gettext("dy/dt(t,y)="));
       fcnfield->value("sin(t*y)");
-      fcnfield->tooltip(gettext("Expression of dy/dt in terms of y and t, e.g. sin(t*y)"));
+      fcnfield->tooltip(gettext("Expression of dy/dt in terms of y and t, e.g. sin(t*y). For autonomous 2d system,change time variable to x and enter d[x,y]/dt in terms of [x,y], e.g. [[1,2],[3,4]]*[x,y]"));
       fcnrhot=new Fl_Input(dx/2,2,dx/2-4,dy/lignes-4,gettext("rho(t)="));
       fcnrhot->value("2*t");
       fcnrhot->tooltip(gettext("Expression of modulus rho wrt to angle t (e.g sin(t))"));
@@ -4978,7 +5860,7 @@ namespace xcas {
       xmin->value(-5);
       xmin->step(0.5);
       xstep = new Fl_Value_Input(3*dx/6,2+2*dy/lignes,dx/6-2,dy/lignes-4,gettext("xstep"));
-      xstep->value(0.25);
+      xstep->value(0.1);
       xstep->step(0.01);
       xmax = new Fl_Value_Input(5*dx/6,2+2*dy/lignes,dx/6-2,dy/lignes-4,gettext("xmax"));
       xmax->value(5);
@@ -4987,7 +5869,7 @@ namespace xcas {
       ymin->value(-5);
       ymin->step(0.5);
       ystep = new Fl_Value_Input(3*dx/6,2+3*dy/lignes,dx/6-2,dy/lignes-4,gettext("ystep"));
-      ystep->value(0.25);
+      ystep->value(0.1);
       ystep->step(0.01);
       ymax = new Fl_Value_Input(5*dx/6,2+3*dy/lignes,dx/6-2,dy/lignes-4,gettext("ymax"));
       ymax->value(5);
@@ -5100,16 +5982,17 @@ namespace xcas {
 	fcnfield->value(gr->fcnfield.c_str());
       xmin->value(gr->window_xmin);
       xmax->value(gr->window_xmax);
-      xstep->value((xmax->value()-xmin->value())/16);
+      xstep->value((xmax->value()-xmin->value())/64);
       ymin->value(gr->window_xmin);
       ymax->value(gr->window_xmax);
-      ystep->value((xmax->value()-xmin->value())/16);
+      ystep->value((xmax->value()-xmin->value())/64);
     }
     int r=-1;
     w->set_modal();
     w->show();
+    autosave_disabled=true;
     w->hotspot(w);
-    Fl::focus(w);
+    Fl::focus(button0);
     for (;;) {
       Fl_Widget *o = Fl::readqueue();
       if (!o) Fl::wait();
@@ -5125,6 +6008,7 @@ namespace xcas {
 	if (o == w) { r=1; break; }
       }
     }
+    autosave_disabled=false;
     w->hide();
     if (!r){
       if (modeplot==3){
@@ -5158,13 +6042,12 @@ namespace xcas {
   }
 
   void multiline_focus_error(){
-    fl_alert(gettext("Click first in a commandline"));
+    fl_alert("%s",gettext("Click first in a commandline"));
   }
 
-  void cb_Figure_Function(Fl_Widget * m , void*) {
-    Figure * f=find_figure(m);
-    if (!f) return;
-    Fl_Widget * wid=Fl::focus();
+  static void cb_Figure_Function(Fl_Widget * m , void*) {
+    Fl_Widget * wid=Xcas_input_focus;
+    Figure * f=find_figure(wid);
     if (f){
       string arg;
       bool dim3=dynamic_cast<Graph3d *>(f->geo);
@@ -5174,20 +6057,28 @@ namespace xcas {
 	if (hp!=get_history_pack(wid,pos))
 	  pos=hp->children()-1;
 	hp->add_entry(pos);
-	arg=autoname(hp->contextptr)+(dim3?":= plotfunc(":":=plot(")+arg+")";
+	// arg=autoname(hp->contextptr)+(dim3?":= plotfunc(":":=plot(")+arg+")";
+	arg=autoname(hp->contextptr)+":=plot("+arg+")";
 	f->geo->autoname_plus_plus();
 	hp->set_value(pos,arg,true);
-      }	
+      }
+      else Fl::focus(wid);
     }
   }
 
-  void cb_Figure_helpon(Fl_Widget * m ,const string & cmd) {
-    Fl_Widget * wid=Fl::focus();
-    Figure * f=find_figure(m);
+  static void cb_Figure_helpon(Fl_Widget * m ,const string & cmd) {
+    Fl_Widget * wid=Xcas_input_focus;
+    Figure * f=find_figure(wid);
     if (f){
       string ans;
       int remove=0;
-      int r=handle_tab(cmd,*giac::vector_completions_ptr,2*f->w()/3,2*f->h()/3,remove,ans);
+      int r;
+      if (do_helpon)
+	r=handle_tab(cmd,*giac::vector_completions_ptr(),2*f->w()/3,2*f->h()/3,remove,ans);
+      else {
+	ans=cmd+"()";
+	r=1;
+      }
       if (r){
 	if (!f->geo->hp)
 	  return;
@@ -5198,24 +6089,25 @@ namespace xcas {
 	hp->add_entry(pos);
 	hp->set_value(pos,ans,false);
       }
+      else Fl::focus(wid);
     }	
   }
 
-  void cb_Figure_Tangent(Fl_Widget * m , void*) {
+  static void cb_Figure_Tangent(Fl_Widget * m , void*) {
     // cb_set_mode(m,at_segment,at_tangent,2,gettext("Curve,Point"));
     cb_Figure_helpon(m,"tangent");
   }
 
-  void cb_Figure_Implicit(Fl_Widget * m , void*) {
-    Figure * f=find_figure(m);
-    Fl_Widget * wid=Fl::focus();
+  static void cb_Figure_Implicit(Fl_Widget * m , void*) {
+    Fl_Widget * wid=Xcas_input_focus;
+    Figure * f=find_figure(wid);
     if (f){
       if (!f->geo->hp)
 	return;
       string arg;
       bool dim3=dynamic_cast<Graph3d *>(f->geo);
       if (dim3)
-	fl_message("Currently limited to 2-d");
+	fl_message("%s","Currently limited to 2-d");
       else {
 	if (f && plotparam_dialog(f,arg,3)){
 	  History_Pack * hp=f->geo->hp;
@@ -5226,14 +6118,15 @@ namespace xcas {
 	  arg=autoname(hp->contextptr)+":=plotimplicit("+arg+")";
 	  f->geo->autoname_plus_plus();
 	  hp->set_value(pos,arg,true);
-	}	
+	}
+	else Fl::focus(wid);	
       }
     }
   }
 
-  void cb_Figure_Plotfield(Fl_Widget * m , void*) {
-    Figure * f=find_figure(m);
-    Fl_Widget * wid=Fl::focus();
+  static void cb_Figure_Plotfield(Fl_Widget * m , void*) {
+    Fl_Widget * wid=Xcas_input_focus;
+    Figure * f=find_figure(wid);
     if (f){
       if (!f->geo->hp)
 	return;
@@ -5241,7 +6134,7 @@ namespace xcas {
       bool dim3=dynamic_cast<Graph3d *>(f->geo);
       int res;
       if (dim3)
-	fl_message("Currently limited to 2-d");
+	fl_message("%s","Currently limited to 2-d");
       else {
 	if (f && (res=plotparam_dialog(f,arg,2))){
 	  if (res==2){
@@ -5254,13 +6147,14 @@ namespace xcas {
 	    hp->set_value(pos,arg,true);
 	  }
 	  cb_set_mode(f,0,at_plotode,1,gettext("Point_on_ode_curve"));
-	  fl_message(gettext("Click initials conditions in graphic window. Change mode when finished."));
-	}	
+	  fl_message("%s",gettext("Click initials conditions in graphic window. Change mode when finished."));
+	}
+	else Fl::focus(wid);
       }
     }
   }
 
-  void cb_plotode(Fl_Widget * m , void*) {
+  static void cb_plotode(Fl_Widget * m , void*) {
     Figure * f=find_figure(m);
     if (f){
       if (f->geo->fcnfield.empty())
@@ -5270,9 +6164,9 @@ namespace xcas {
     }
   }
 
-  void cb_Figure_Param(Fl_Widget * m , void*) {
-    Figure * f=find_figure(m);
-    Fl_Widget * wid=Fl::focus();
+  static void cb_Figure_Param(Fl_Widget * m , void*) {
+    Fl_Widget * wid=Xcas_input_focus;
+    Figure * f=find_figure(wid);
     if (f){
       if (!f->geo->hp)
 	return;
@@ -5287,20 +6181,21 @@ namespace xcas {
 	arg=autoname(hp->contextptr)+":=plotparam("+arg+")";
 	f->geo->autoname_plus_plus();
 	hp->set_value(pos,arg,true);
-      }	
+      }
+      else Fl::focus(wid);
     }
   }
 
-  void cb_Figure_Polar(Fl_Widget * m , void*) {
-    Figure * f=find_figure(m);
-    Fl_Widget * wid=Fl::focus();
+  static void cb_Figure_Polar(Fl_Widget * m , void*) {
+    Fl_Widget * wid=Xcas_input_focus;
+    Figure * f=find_figure(wid);
     if (f){
       if (!f->geo->hp)
 	return;
       string arg;
       bool dim3=dynamic_cast<Graph3d *>(f->geo);
       if (dim3)
-	fl_alert("Not a 3-d graph");
+	fl_alert("%s","Not a 3-d graph");
       else {
 	if (f && plotparam_dialog(f,arg,-1)){
 	  History_Pack * hp=f->geo->hp;
@@ -5312,22 +6207,23 @@ namespace xcas {
 	  f->geo->autoname_plus_plus();
 	  hp->set_value(pos,arg,true);
 	}	
+	else Fl::focus(wid);
       }
     }
   }
 
-  void cb_Figure_Plotarea(Fl_Widget * m , void*) {
-    Figure * f=find_figure(m);
-    Fl_Widget * wid=Fl::focus();
+  static void cb_Figure_Plotarea(Fl_Widget * m , void*) {
+    Fl_Widget * wid=Xcas_input_focus;
+    Figure * f=find_figure(wid);
     if (f){
       if (!f->geo->hp)
 	return;
       string arg;
       bool dim3=dynamic_cast<Graph3d *>(f->geo);
       if (dim3)
-	fl_alert("Not a 3-d graph");
+	fl_alert("%s","Not a 3-d graph");
       else {
-	if (f && tablefunc_dialog(f,arg,true,0,gettext("Shade area under a curve"))){
+	if (f && tablefunc_dialog(f,arg,true,2,gettext("Shade area under a curve"))){
 	  History_Pack * hp=f->geo->hp;
 	  int pos;
 	  if (hp!=get_history_pack(wid,pos))
@@ -5335,21 +6231,22 @@ namespace xcas {
 	  hp->add_entry(pos);
 	  arg="plotarea("+arg+")";
 	  hp->set_value(pos,arg,true);
-	}	
+	}
+	else Fl::focus(wid);
       }
     }
   }
 
-  void cb_Figure_Sequence(Fl_Widget * m , void*) {
-    Fl_Widget * wid=Fl::focus();
-    Figure * f=find_figure(m);
+  static void cb_Figure_Sequence(Fl_Widget * m , void*) {
+    Fl_Widget * wid=Xcas_input_focus;
+    Figure * f=find_figure(wid);
     if (f){
       if (!f->geo->hp)
 	return;
       string arg,u0param;
       bool dim3=dynamic_cast<Graph3d *>(f->geo);
       if (dim3)
-	fl_alert("Not a 2-d graph");
+	fl_alert("%s","Not a 2-d graph");
       else {
 	if (f && tableseq_dialog(f,arg,true,gettext("Graph of a recurrent sequence"),u0param)){
 	  History_Pack * hp=f->geo->hp;
@@ -5361,13 +6258,14 @@ namespace xcas {
 	  hp->set_value(pos,arg,false);
 	  hp->add_entry(pos);
 	  hp->set_value(pos,u0param,true);
-	}	
+	}
+	else Fl::focus(wid);
       }
     }
   }
 
   /* model for new callbacks
-  void cb_Figure(Fl_Widget * m , void*) {
+  static void cb_Figure(Fl_Widget * m , void*) {
     Figure * f=find_figure(m);
     if (f){
     }
@@ -5386,7 +6284,7 @@ namespace xcas {
     return 7;
   }
 
-  void cb_Figure_Color(Fl_Button * b , void*) {
+  static void cb_Figure_Color(Fl_Button * b , void*) {
     static string s;
     Figure * f=find_figure(b);
     if (f){
@@ -5402,7 +6300,22 @@ namespace xcas {
     }
   }
 
-  void cb_Figure_Autoeval(Fl_Button * b , void*) {
+  static void cb_Figure_Disposition(Fl_Button * b , void*) {
+    Figure * fig=find_figure(b);
+    if (!fig) return;
+    fig->disposition=b->value();
+    fig->resize(fig->x(),fig->y(),fig->w(),fig->h());
+    fig->geo->orthonormalize();
+    fig->redraw();
+  }
+
+  static void cb_Figure_Approx(Fl_Button * b , void*) {
+    Figure * fig=find_figure(b);
+    if (!fig) return;
+    fig->geo->approx=b->value();
+  }
+
+  static void cb_Figure_Autoeval(Fl_Button * b , void*) {
     static string s;
     Figure * f=find_figure(b);
     if (!f) return;
@@ -5413,21 +6326,21 @@ namespace xcas {
     f->geo->hp->focus(0,true);
   }
 
-  void cb_Exact(Fl_Button * b , void*) {
+  static void cb_Exact(Fl_Button * b , void*) {
     Figure * f=find_figure(b);
     if (f){
       f->geo->approx=false;
     }
   }
 
-  void cb_Approx(Fl_Button * b , void*) {
+  static void cb_Approx(Fl_Button * b , void*) {
     Figure * f=find_figure(b);
     if (f){
       f->geo->approx=true;
     }
   }
 
-  void cb_Figure_Line_Type(Fl_Widget * b , void*) {
+  static void cb_Figure_Line_Type(Fl_Widget * b , void*) {
     static string s;
     Figure * f=find_figure(b);
     if (f){
@@ -5445,7 +6358,7 @@ namespace xcas {
     }
   }
 
-  void cb_Figure_Portrait(Fl_Widget * b , void*) {
+  static void cb_Figure_Portrait(Fl_Widget * b , void*) {
     Figure * f=find_figure(b);
     if (f){
       f->disposition=0;
@@ -5455,7 +6368,7 @@ namespace xcas {
     }
   }
 
-  void cb_Figure_Landscape(Fl_Widget * b , void*) {
+  static void cb_Figure_Landscape(Fl_Widget * b , void*) {
     Figure * f=find_figure(b);
     if (f){
       f->disposition=1;
@@ -5465,8 +6378,14 @@ namespace xcas {
     }
   }
 
+  static void cb_Figure_Focus(Fl_Widget * b , void*) {
+    Figure * f=find_figure(b);
+    if (f){
+      f->geo->handle(FL_FOCUS);
+    }
+  }
 
-  void cb_Figure_Change_Attributs(Fl_Widget * b , void*) {
+  static void cb_Figure_Change_Attributs(Fl_Widget * b , void*) {
     Figure * f=find_figure(b);
     if (!f) return;
     if (!f->geo->hp)
@@ -5474,6 +6393,26 @@ namespace xcas {
     if (f && f->geo && f->geo->hp){
       int hp_pos=f->geo->hp->_sel_begin;
       f->geo->change_attributs(hp_pos);
+    }
+  }
+
+  static void cb_NumericalEdit(Fl_Widget * b , void*) {
+    Figure * f=find_figure(b);
+    if (!f) return;
+    if (!f->geo->hp)
+      return;
+    if (f && f->geo && f->geo->hp){
+      History_Pack * hp =f->geo->hp;
+      const char * ch=fl_input(gettext("Real number?"),"1");
+      static string s;
+      if (ch){
+	double n=atof(ch);
+	gen g=symbolic(at_legende,makevecteur(gen(f->geo->window_xmin+(f->geo->window_xmax-f->geo->window_xmin)/20,f->geo->window_ymin+(f->geo->window_ymax-f->geo->window_ymin)/20),n));
+	gen pntname(autoname(hp->contextptr),hp->contextptr);
+	g=symbolic(at_sto,gen(makevecteur(g,pntname),_SEQ__VECT));
+	f->geo->autoname_plus_plus();
+	f->geo->hp->set_gen_value(-1,g);
+      }
     }
   }
 
@@ -5485,103 +6424,206 @@ namespace xcas {
       return false;
   }
 
-  void cb_Frame(Fl_Widget * m , void*) {
+  static void cb_Frame(Fl_Widget * m , void*) {
     cb_set_mode(m,0,0,255," object_selects_level");
   }
 
-  void cb_Pointer(Fl_Widget * m , void*) {
+  static void cb_Pointer(Fl_Widget * m , void*) {
     cb_set_mode(m,0,0,0," point_to_move");
   }
 
-  void cb_Point(Fl_Widget * m , void*) {
+  static void cb_Point(Fl_Widget * m , void*) {
     cb_set_mode(m,0,at_point,1,"Point");
   }
 
-  void cb_Circle(Fl_Widget * m , void*) {
+  static void cb_Circle(Fl_Widget * m , void*) {
     cb_set_mode(m,at_segment,at_cercle,(dim3(m)?3:2),(dim3(m)?gettext("Center,Point_on_circle,Point_in_plane"):gettext("Center,Point_on_circle")));
   }
 
-  void cb_Inter_Unique(Fl_Widget * m , void*) {
+  static void cb_Inter_Unique(Fl_Widget * m , void*) {
     cb_set_mode(m,at_segment,at_inter_unique,2,gettext("Curve1,Curve2"));
   }
 
-  void cb_Segment(Fl_Widget * m , void*) {
-    cb_set_mode(m,0,at_point,1,gettext("Segment"));
+  static void cb_Inter(Fl_Widget * m , void*) {
+    cb_set_mode(m,at_segment,at_inter,2,gettext("Curve1,Curve2"));
   }
 
-  void cb_Vector(Fl_Widget * m , void*) {
+  static void cb_Inter_3(Fl_Widget * m , void*) {
+    cb_set_mode(m,at_polygone_ouvert,at_inter,3,gettext("Curve1,Curve2,Point"));
+  }
+
+  static void cb_Tangent(Fl_Widget * m , void*) {
+    cb_set_mode(m,at_segment,at_tangent,2,gettext("Curve,Point"));
+  }
+
+  static void cb_Segment(Fl_Widget * m , void*) {
+    cb_set_mode(m,at_segment,at_segment,2,gettext("Point1,Point2"));
+  }
+
+  static void cb_Vector(Fl_Widget * m , void*) {
     cb_set_mode(m,at_vector,at_vector,2,gettext("Point1,Point2"));
   }
 
-  void cb_Demi_Droite(Fl_Widget * m , void*) {
+  static void cb_Demi_Droite(Fl_Widget * m , void*) {
     cb_set_mode(m,at_demi_droite,at_demi_droite,2,gettext("Point1,Point2"));
   }
 
-  void cb_Droite(Fl_Widget * m , void*) {
+  static void cb_Droite(Fl_Widget * m , void*) {
     cb_set_mode(m,at_droite,at_droite,2,gettext("Point1,Point2"));
   }
 
-  void cb_Triangle(Fl_Widget * m , void*) {
+  static void cb_DistanceAB(Fl_Widget * m , void*) {
+    cb_set_mode(m,at_segment,at_distanceat,3,gettext("Object1,Object2,Position"));
+  }
+  static void cb_DistanceABraw(Fl_Widget * m , void*) {
+    cb_set_mode(m,at_segment,at_distanceatraw,3,gettext("Object1,Object2,Position"));
+  }
+
+  static void cb_AngleABC(Fl_Widget * m , void*) {
+    cb_set_mode(m,at_triangle,at_angleat,4,gettext("Angle_vertex,Direction1,Direction2,Position"));
+  }
+  static void cb_AngleABCraw(Fl_Widget * m , void*) {
+    cb_set_mode(m,at_triangle,at_angleatraw,4,gettext("Angle_vertex,Direction1,Direction2,Position"));
+  }
+
+  static void cb_Arearaw(Fl_Widget * m , void*) {
+    cb_set_mode(m,at_areaatraw,at_areaatraw,2,gettext("Object,Position"));
+  }
+
+  static void cb_Area(Fl_Widget * m , void*) {
+    cb_set_mode(m,at_areaat,at_areaat,2,gettext("Object,Position"));
+  }
+
+  static void cb_Perimeterraw(Fl_Widget * m , void*) {
+    cb_set_mode(m,at_perimeteratraw,at_perimeteratraw,2,gettext("Object,Position"));
+  }
+
+  static void cb_Perimeter(Fl_Widget * m , void*) {
+    cb_set_mode(m,at_perimeterat,at_perimeterat,2,gettext("Object,Position"));
+  }
+
+  static void cb_Sloperaw(Fl_Widget * m , void*) {
+    cb_set_mode(m,at_slopeatraw,at_slopeatraw,2,gettext("Object,Position"));
+  }
+
+  static void cb_Slope(Fl_Widget * m , void*) {
+    cb_set_mode(m,at_slopeat,at_slopeat,2,gettext("Object,Position"));
+  }
+
+  static void cb_Symetrie(Fl_Widget * m , void*) {
+    cb_set_mode(m,at_segment,at_symetrie,2,gettext("Symmetry_center_axis,Object"));
+  }
+
+  static void cb_Inversion(Fl_Widget * m , void*) {
+    cb_set_mode(m,at_segment,at_inversion,3,gettext("Center,Ratio,Object"));
+  }
+
+  static void cb_Projection(Fl_Widget * m , void*) {
+    cb_set_mode(m,at_segment,at_projection,2,gettext("Curve,Object"));
+  }
+
+  static void cb_Reciprocation(Fl_Widget * m , void*) {
+    cb_set_mode(m,at_segment,at_polaire_reciproque,2,gettext("Circle,Object"));
+  }
+
+  static void cb_Rotation(Fl_Widget * m , void*) {
+    cb_set_mode(m,at_polygone_ouvert,at_rotation,3,gettext("Center,Angle,Object"));
+  }
+
+  static void cb_Homothetie(Fl_Widget * m , void*) {
+    cb_set_mode(m,at_polygone_ouvert,at_homothetie,3,gettext("Center,Ratio,Object"));
+  }
+
+  static void cb_Translation(Fl_Widget * m , void*) {
+    cb_set_mode(m,at_segment,at_translation,2,gettext("Vector,Object"));
+  }
+
+  static void cb_Similitude(Fl_Widget * m , void*) {
+    cb_set_mode(m,at_polygone_ouvert,at_similitude,4,gettext("Center,Ratio,Angle,Object"));
+  }
+
+  static void cb_Polygone(Fl_Widget * m , void*) {
+    const char * ch=fl_input(gettext("Number of vertices?"),"5");
+    static string s;
+    if (ch){
+      int n=atoi(ch);
+      s="";
+      if (n>=2){
+	for (int i=1;i<=n;++i){
+	  s+=gettext("Point")+print_INT_(i);
+	  if (i<n)
+	    s+=",";
+	}
+	cb_set_mode(m,at_polygone_ouvert,at_polygone,n,s);
+      }
+    }
+  }
+
+  static void cb_Triangle(Fl_Widget * m , void*) {
     cb_set_mode(m,at_segment,at_triangle,3,gettext("Point1,Point2,Point3"));
   }
 
-  void cb_Carre(Fl_Widget * m , void*) {
+  static void cb_Carre(Fl_Widget * m , void*) {
     cb_set_mode(m,at_carre,at_carre,2,gettext("Point1,Point2"));
   }
 
-  void cb_Mediatrice(Fl_Widget * m , void*) {
+  static void cb_Mediatrice(Fl_Widget * m , void*) {
     cb_set_mode(m,at_segment,at_mediatrice,2,gettext("Point1,Point2"));
   }
 
-  void cb_Perpendiculaire(Fl_Widget * m , void*) {
+  static void cb_Perpendiculaire(Fl_Widget * m , void*) {
     cb_set_mode(m,at_segment,at_perpendiculaire,2,gettext("Point,Line"));
   }
 
-  void cb_Parallele(Fl_Widget * m , void*) {
+  static void cb_Parallele(Fl_Widget * m , void*) {
     cb_set_mode(m,at_segment,at_parallele,2,gettext("Point,Line"));
   }
 
-  void cb_Mediane(Fl_Widget * m , void*) {
+  static void cb_Mediane(Fl_Widget * m , void*) {
     cb_set_mode(m,at_segment,at_mediane,3,gettext("Sommet_angle,Point2,Point3"));
   }
 
-  void cb_Bissectrice(Fl_Widget * m , void*) {
+  static void cb_Bissectrice(Fl_Widget * m , void*) {
     cb_set_mode(m,at_segment,at_bissectrice,3,gettext("Sommet_angle,Point2,Point3"));
   }
 
-  void cb_Quadrilatere(Fl_Widget * m , void*) {
+  static void cb_Quadrilatere(Fl_Widget * m , void*) {
     cb_set_mode(m,at_polygone_ouvert,at_quadrilatere,4,gettext("Point1,Point2,Point3,Point4"));
   }
 
-  void cb_Triangle_Equilateral(Fl_Widget * m , void*) {
+  static void cb_Triangle_Equilateral(Fl_Widget * m , void*) {
     cb_set_mode(m,at_segment,at_triangle_equilateral,(dim3(m)?3:2),(dim3(m)?gettext("Point1,Point2,Point_in_plane"):gettext("Point1,Point2")));
   }
 
-  void cb_inscrit(Fl_Widget * m , void*) {
+  static void cb_inscrit(Fl_Widget * m , void*) {
     cb_set_mode(m,at_segment,at_inscrit,3,gettext("Point1,Point2,Point3"));
   }
 
-  void cb_exinscrit(Fl_Widget * m , void*) {
+  static void cb_exinscrit(Fl_Widget * m , void*) {
     cb_set_mode(m,at_segment,at_exinscrit,3,gettext("Point1,Point2,Point3"));
   }
 
-  void cb_circonscrit(Fl_Widget * m , void*) {
+  static void cb_circonscrit(Fl_Widget * m , void*) {
     cb_set_mode(m,at_segment,at_circonscrit,3,gettext("Point1,Point2,Point3"));
   }
 
-  void cb_ellipse(Fl_Widget * m , void*) {
+  static void cb_ellipse(Fl_Widget * m , void*) {
     cb_set_mode(m,at_segment,at_ellipse,3,gettext("Focus1,Focus2,Point_on_ellipse"));
   }
 
-  void cb_hyperbole(Fl_Widget * m , void*) {
+  static void cb_parabole(Fl_Widget * m , void*) {
+    cb_set_mode(m,at_segment,at_parabole,2,gettext("Focus,Point_or_line"));
+  }
+
+  static void cb_hyperbole(Fl_Widget * m , void*) {
     cb_set_mode(m,at_segment,at_hyperbole,3,gettext("Focus1,Focus2,Point_on_hyperbola"));
   }
 
-  void cb_plan(Fl_Widget * m , void*) {
+  static void cb_plan(Fl_Widget * m , void*) {
     cb_set_mode(m,at_segment,at_plan,3,gettext("Point1,Point2,Point3"));
   }
 
-  void cb_sphere(Fl_Widget * m , void*) {
+  static void cb_sphere(Fl_Widget * m , void*) {
     cb_set_mode(m,at_sphere,at_sphere,2,gettext("Center,Point_on_sphere"));
   }
 
@@ -5590,8 +6632,8 @@ namespace xcas {
     {gettext("Save figure as text"), 0,  (Fl_Callback*)cb_Figure_Save, 0, 0, 0, 0, 14, 56},
     {gettext("Save as alternate filename"), 0,  (Fl_Callback*)cb_Figure_Save_as, 0, 0, 0, 0, 14, 56},
     {gettext("Insert"), 0,  (Fl_Callback*)cb_Figure_Insert, 0, 0, 0, 0, 14, 56},
-    {gettext("Export, Print"), 0,  0, 0, 64, 0, 0, 14, 56},
-    {gettext("EPS, PNG and preview"), 0,  (Fl_Callback*)cb_Figure_Preview, 0, 0, 0, 0, 14, 56},
+    {gettext("Export Print"), 0,  0, 0, 64, 0, 0, 14, 56},
+    {gettext("EPS PNG and preview"), 0,  (Fl_Callback*)cb_Figure_Preview, 0, 0, 0, 0, 14, 56},
     {gettext("to printer"), 0,  (Fl_Callback*)cb_Figure_Print, 0, 0, 0, 0, 14, 56},
     {gettext("latex preview"), 0,  (Fl_Callback*)cb_Figure_LaTeX_Preview, 0, 0, 0, 0, 14, 56},
     {gettext("latex printer"), 0,  (Fl_Callback*)cb_Figure_LaTeX_Print, 0, 0, 0, 0, 14, 56},
@@ -5599,6 +6641,7 @@ namespace xcas {
     {0}, // end file
     {gettext("Edit"), 0,  0, 0, 64, 0, 0, 14, 56},
     {gettext("Add parameter"), 0,  (Fl_Callback *) cb_Figure_Parameter, 0, 0, 0, 0, 14, 56},
+    {gettext("Add numerical value"), 0,  (Fl_Callback *) cb_NumericalEdit, 0, 0, 0, 0, 14, 56},
     {gettext("Add new entry"), 0x8006e,  (Fl_Callback *) cb_New_Input, 0, 0, 0, 0, 14, 56},
     {gettext("Add an object trace"), 0,  (Fl_Callback *) cb_Graph_Traceobject, 0, 0, 0, 0, 14, 56},
     {gettext("Change selection attribut"), 0,  (Fl_Callback *) cb_Figure_Change_Attributs, 0, 0, 0, 0, 14, 56},
@@ -5606,8 +6649,9 @@ namespace xcas {
     {gettext("Delete selected levels"), 0,  (Fl_Callback *) cb_Delete, 0, 0, 0, 0, 14, 56},
     {gettext("Portrait"), 0,  (Fl_Callback *) cb_Figure_Portrait, 0, 0, 0, 0, 14, 56},
     {gettext("Landscape"), 0,  (Fl_Callback *) cb_Figure_Landscape, 0, 0, 0, 0, 14, 56},
-    {gettext("Undo"), 0,  (Fl_Callback *) History_cb_Undo, 0, 0, 0, 0, 14, 56},
-    {gettext("Redo"), 0,  (Fl_Callback *) History_cb_Redo, 0, 0, 0, 0, 14, 56},
+    {gettext("Undo"), 0x4007a,  (Fl_Callback *) History_cb_Undo, 0, 0, 0, 0, 14, 56},
+    {gettext("Redo"), 0x40079,  (Fl_Callback *) History_cb_Redo, 0, 0, 0, 0, 14, 56},
+    {gettext("Focus"), 0x8006d,  (Fl_Callback *) cb_Figure_Focus, 0, 0, 0, 0, 14, 56},
     {0}, // end Edit
     {gettext("Graph"), 0,  0, 0, 64, 0, 0, 14, 56},
     {gettext("Function"), 0,  (Fl_Callback *) cb_Figure_Function, 0, 0, 0, 0, 14, 56},
@@ -5617,7 +6661,7 @@ namespace xcas {
     {gettext("Parametric"), 0,  (Fl_Callback *) cb_Figure_Param, 0, 0, 0, 0, 14, 56},
     {gettext("Polar (2-d)"), 0,  (Fl_Callback *) cb_Figure_Polar, 0, 0, 0, 0, 14, 56},
     {gettext("Implicit"), 0,  (Fl_Callback *) cb_Figure_Implicit, 0, 0, 0, 0, 14, 56},
-    {gettext("Slopefield/Ode (2-d)"), 0,  (Fl_Callback *) cb_Figure_Plotfield, 0, 0, 0, 0, 14, 56},
+    {gettext("Slopefield Ode (2-d)"), 0,  (Fl_Callback *) cb_Figure_Plotfield, 0, 0, 0, 0, 14, 56},
     {0}, // end Math
     {0}, // end menu
   };
@@ -5642,6 +6686,7 @@ namespace xcas {
     {gettext("equilateral_triangle"), 0,  (Fl_Callback *) cb_Triangle_Equilateral, 0, 0, 0, 0, 14, 56},
     {gettext("square"), 0,  (Fl_Callback *) cb_Carre, 0, 0, 0, 0, 14, 56},
     {gettext("quadrilateral"), 0,  (Fl_Callback *) cb_Quadrilatere, 0, 0, 0, 0, 14, 56},
+    {gettext("polygon"), 0,  (Fl_Callback *) cb_Polygone, 0, 0, 0, 0, 14, 56},
     {0}, // end Triangle
     {gettext("Circles"), 0,  0, 0, 64, 0, 0, 14, 56},
     {gettext("circle"), 0,  (Fl_Callback *) cb_Circle, 0, 0, 0, 0, 14, 56},
@@ -5652,15 +6697,43 @@ namespace xcas {
     {gettext("Curves"), 0,  0, 0, 64, 0, 0, 14, 56},
     {gettext("ellipse"), 0,  (Fl_Callback *) cb_ellipse, 0, 0, 0, 0, 14, 56},
     {gettext("hyperbola"), 0,  (Fl_Callback *) cb_hyperbole, 0, 0, 0, 0, 14, 56},
+    {gettext("parabola"), 0,  (Fl_Callback *) cb_parabole, 0, 0, 0, 0, 14, 56},
     {gettext("plotode"), 0,  (Fl_Callback *) cb_plotode, 0, 0, 0, 0, 14, 56},
     {0}, // end Conics
     {gettext("Surfaces (3d)"), 0,  0, 0, 64, 0, 0, 14, 56},
     {gettext("plane"), 0,  (Fl_Callback *) cb_plan, 0, 0, 0, 0, 14, 56},
     {gettext("sphere"), 0,  (Fl_Callback *) cb_sphere, 0, 0, 0, 0, 14, 56},
     {0}, // end Surfaces
-    {gettext("Intersection"), 0,  (Fl_Callback *) cb_Inter_Unique, 0, 0, 0, 0, 14, 56},
-    {gettext("Exact"), 0,  (Fl_Callback *) cb_Exact, 0, 0, 0, 0, 14, 56},
-    {gettext("Approx"), 0,  (Fl_Callback *) cb_Approx, 0, 0, 0, 0, 14, 56},
+    {gettext("Measures"), 0,  0, 0, 64, 0, 0, 14, 56},
+    {gettext("distanceat"), 0,  (Fl_Callback *) cb_DistanceAB, 0, 0, 0, 0, 14, 56},
+    {gettext("angleat"), 0,  (Fl_Callback *) cb_AngleABC, 0, 0, 0, 0, 14, 56},
+    {gettext("areaat"), 0,  (Fl_Callback *) cb_Area, 0, 0, 0, 0, 14, 56},
+    {gettext("perimeterat"), 0,  (Fl_Callback *) cb_Perimeter, 0, 0, 0, 0, 14, 56},
+    {gettext("slopeat"), 0,  (Fl_Callback *) cb_Slope, 0, 0, 0, 0, 14, 56},
+    {gettext("distanceatraw"), 0,  (Fl_Callback *) cb_DistanceABraw, 0, 0, 0, 0, 14, 56},
+    {gettext("angleatraw"), 0,  (Fl_Callback *) cb_AngleABCraw, 0, 0, 0, 0, 14, 56},
+    {gettext("areaatraw"), 0,  (Fl_Callback *) cb_Arearaw, 0, 0, 0, 0, 14, 56},
+    {gettext("perimeteratraw"), 0,  (Fl_Callback *) cb_Perimeterraw, 0, 0, 0, 0, 14, 56},
+    {gettext("slopeatraw"), 0,  (Fl_Callback *) cb_Sloperaw, 0, 0, 0, 0, 14, 56},
+    {0}, // end measures
+    {gettext("Transformations"), 0,  0, 0, 64, 0, 0, 14, 56},
+    {gettext("reflection"), 0,  (Fl_Callback *) cb_Symetrie, 0, 0, 0, 0, 14, 56},
+    {gettext("rotation"), 0,  (Fl_Callback *) cb_Rotation, 0, 0, 0, 0, 14, 56},
+    {gettext("translation"), 0,  (Fl_Callback *) cb_Translation, 0, 0, 0, 0, 14, 56},
+    {gettext("projection"), 0,  (Fl_Callback *) cb_Projection, 0, 0, 0, 0, 14, 56},
+    {gettext("homothety"), 0,  (Fl_Callback *) cb_Homothetie, 0, 0, 0, 0, 14, 56},
+    {gettext("similarity"), 0,  (Fl_Callback *) cb_Similitude, 0, 0, 0, 0, 14, 56},
+    {gettext("inversion"), 0,  (Fl_Callback *) cb_Inversion, 0, 0, 0, 0, 14, 56},
+    {gettext("reciprocation"), 0,  (Fl_Callback *) cb_Reciprocation, 0, 0, 0, 0, 14, 56},
+    {0}, // end transformations
+    {gettext("Intersections"), 0,  0, 0, 64, 0, 0, 14, 56},
+    {gettext("inter_unique (1 point)"), 0,  (Fl_Callback *) cb_Inter_Unique, 0, 0, 0, 0, 14, 56},
+    {gettext("inter (close to a point)"), 0,  (Fl_Callback *) cb_Inter_3, 0, 0, 0, 0, 14, 56},
+    {gettext("inter (list of points)"), 0,  (Fl_Callback *) cb_Inter, 0, 0, 0, 0, 14, 56},
+    {0}, // end intersections
+    {gettext("tangent"), 0,  (Fl_Callback *) cb_Tangent, 0, 0, 0, 0, 14, 56},
+    // {gettext("Exact"), 0,  (Fl_Callback *) cb_Exact, 0, 0, 0, 0, 14, 56},
+    // {gettext("Approx"), 0,  (Fl_Callback *) cb_Approx, 0, 0, 0, 0, 14, 56},
     {0}, // end Menu
   };
   
@@ -5689,8 +6762,10 @@ namespace xcas {
       s = new xcas::HScroll (X,Y+l+H/2,W,H/2-l);
     else
       s = new xcas::HScroll (X,Y+l,W/3,H-l);
+    s->type(Fl_Scroll::VERTICAL_ALWAYS);
     s->box(FL_FLAT_BOX);
-    History_Pack * hp = new History_Pack (s->x(),s->y(),max(s->w()-L,20),max(s->h()-L,20));
+    History_Pack * hp = new History_Pack (s->x(),s->y(),max(s->w()-2*L,20),max(s->h()-L,20));
+    // hp->new_question=new_question_multiline_input;
     if (hp){
       hp->eval_below=true;
       hp->eval_below_once=false;
@@ -5704,11 +6779,29 @@ namespace xcas {
     hp->end();
     hp->add_entry(-1);
     s->end();
+    win=0;
     if (dim3){
+#ifdef GRAPH_WINDOW
+      Fl_Group::current(this);
+      if (disposition==1){
+	win = new Fl_Window(X,Y+l,W,H/2);
+	geo = new Geo3d(0,0,W,H/2,hp);
+	win->end();
+      }
+      else {
+	win = new Fl_Window(X+W/3,Y+l,2*W/3,H-l);
+	geo = new Geo3d(0,0,2*W/3,H-l,hp);
+	Fl_Group::current(win);
+	win->end();
+      }
+      // Problem: win is not in the window hierarchy, can not call win->show()
+      Fl_Group::current(this);
+#else
       if (disposition==1)
 	geo = new Geo3d(X,Y+l,W,H/2,hp);
       else
 	geo = new Geo3d(X+W/3,Y+l,2*W/3,H-l,hp);
+#endif
     }
     else {
       if (disposition==1)
@@ -5719,6 +6812,7 @@ namespace xcas {
     geo->labelsize(L);
     geo->autoscale();
     geo->orthonormalize();
+    hp->focus(0,true); //geo->handle(FL_FOCUS);
     barre=new Fl_Group(X,Y,W,l);
     Fl_Menu_Bar * menubar = new Fl_Menu_Bar(X,Y,Max(W/4,68),l);
     int n= Figure_menu->size();
@@ -5733,6 +6827,7 @@ namespace xcas {
     x += mode->w();
     mode->value(gettext("Frame"));
     Fl_Menu_Button * menubut = new Fl_Menu_Button(x,Y,(4*W)/60,l);
+    menubut->tooltip(gettext("Set mode for mouse constructions"));
 #ifndef IPAQ
     menubut->label("Mode");
 #endif
@@ -5755,11 +6850,21 @@ namespace xcas {
     lt->tooltip(gettext("Line style used for next mouse drawings"));
     lt->callback((Fl_Callback *) cb_Figure_Line_Type);
     x += l;
-    Fl_Check_Button * checkb = new Fl_Check_Button(x,Y,2*l,l,"Step");
+    Fl_Check_Button * checkb = new Fl_Check_Button(x,Y,3*l,l,"Step");
     checkb->value(false);
     checkb->tooltip(gettext("Check for step evaluation"));
     checkb->callback((Fl_Callback *) cb_Figure_Autoeval);
     x += checkb->w();
+    checkdisp = new Fl_Check_Button(x,Y,6*l,l,"Landscape");
+    checkdisp->value(false);
+    checkdisp->tooltip(gettext("Check for landscape"));
+    checkdisp->callback((Fl_Callback *) cb_Figure_Disposition);
+    x += checkdisp->w();
+    Fl_Check_Button * checkex = new Fl_Check_Button(x,Y,l,l,"~");
+    checkex->value(true);
+    checkex->tooltip(gettext("Check if mouse clicks in approx mode"));
+    checkex->callback((Fl_Callback *) cb_Figure_Approx);
+    x += checkex->w();
     name = new Fl_Button(x,Y,W+X-x,l,"<Save figure as text>");
     name->callback((Fl_Callback *) cb_Figure_Save);
     name->tooltip(gettext("Save current figure commands independently of the session"));
@@ -5771,6 +6876,12 @@ namespace xcas {
 
   int BorderBox::handle(int event){
     return 0;
+  }
+
+  void Figure::draw(){
+    if (win && !win->shown())
+      win->show();
+    Fl_Tile::draw();
   }
 
   void Figure::resize(int X,int Y,int W,int H,double dhp,double dgeo,double dmp){
@@ -5785,12 +6896,14 @@ namespace xcas {
     }
     barre->resize(X,Y,W,l);
     if (disposition==1){
+      checkdisp->value(true);
       double dgeomp=dgeo+dmp;
-      geo->resize(X,Y+l,int(W*dgeo/dgeomp+.5),int(H*dgeomp+.5));
+      geo->resize(X,Y+l,max(W-5*l,int(W*dgeo/dgeomp+.5)),int(H*dgeomp+.5));
       geo->mouse_param_group->resize(X+geo->w(),Y+l,W-geo->w(),geo->h());
       s->resize(X,geo->y()+geo->h(),W,H-geo->h()-l);
     }
     else {
+      checkdisp->value(false);
       int sw=s->w(),gw=geo->w(),mw=geo->mouse_param_group->w();
       int dw= W-(sw+gw+mw);
       sw += dw;
@@ -5802,15 +6915,22 @@ namespace xcas {
       geo->resize(X+s->w(),Y+l,gw,H-l);
       geo->mouse_param_group->resize(X+s->w()+geo->w(),Y+l,W-gw-sw,H-l);
     }
+    //geo->hp->Fl_Group::resize(s->x(),s->y(),max(s->w()-l,20),max(s->h()-l,20));
     init_sizes();
+    Fl_Group::resize(x(),y(),w(),h());
     redraw();
   }
 
   vecteur Graph2d3d::animate(int nframes){
     int n=param_group->children();
     vecteur res;
-    if (!n || nframes<2 || !hp)
+    if (!n || !hp)
       return res;
+    bool back=nframes<0;
+    if (back)
+      nframes=-nframes;
+    if (nframes<2)
+      nframes=2;
     Gen_Value_Slider * last=0;
     for (int i=0;i<nframes;++i){
       for (int j=n-1;j>=0;--j){
@@ -5855,6 +6975,10 @@ namespace xcas {
       }
       res.push_back(resi);
     }
+    if (back){
+      for (int i=nframes-1;i>=0;i--)
+	res.push_back(res[i]);
+    }
     return res;
   }
 
@@ -5865,7 +6989,7 @@ namespace xcas {
     double save_vert_latex=giac::vert_latex;
     giac::vert_latex=xunit*h();
     string thename="tortue"+print_INT_(nsession)+".tex";
-    char * filename = fl_file_chooser("Export to LaTeX","*.tex",thename.c_str());
+    char * filename = file_chooser(gettext("Export to LaTeX"),"*.tex",thename.c_str());
 
     if (filename)
       graph2tex(filename,turtlevect2vecteur(*turtleptr),0,w(),0,h(),xunit,xunit,true,get_context(this));
@@ -5875,11 +6999,20 @@ namespace xcas {
   
 
   void Turtle::draw(){
-    int clip_x,clip_y,clip_w,clip_h;
-    fl_clip_box(x(),y(),w(),h(),clip_x,clip_y,clip_w,clip_h);
-    fl_push_clip(clip_x,clip_y,clip_w,clip_h);
-    indraw();
-    fl_pop_clip();
+#if 0
+    context * contextptr=get_context(this);
+    if (is_context_busy(contextptr))
+      return;
+#endif
+    pthread_mutex_lock(&turtle_mutex);
+    try {
+      int clip_x,clip_y,clip_w,clip_h;
+      fl_clip_box(x(),y(),w(),h(),clip_x,clip_y,clip_w,clip_h);
+      fl_push_clip(clip_x,clip_y,clip_w,clip_h);
+      indraw();
+      fl_pop_clip();
+    } catch (...){ }
+    pthread_mutex_unlock(&turtle_mutex);
   }
   
   void Turtle::indraw(){
@@ -5890,21 +7023,41 @@ namespace xcas {
     fl_color(FL_WHITE);
     if (!redraw_cap_only)
       fl_rectf(deltax, deltay, w(), h());
-    if (maillage){
+    if (turtleptr && !turtleptr->empty()){
+      if (turtlezoom>8)
+	turtlezoom=8;
+      if (turtlezoom<0.125)
+	turtlezoom=0.125;
+      // check that position is not out of screen
+      logo_turtle t=turtleptr->back();
+      double x=turtlezoom*(t.x-turtlex);
+      if (x<0)
+	turtlex += int(x/turtlezoom);
+      if (x>=w()-10)
+	turtlex += int((x-w()+10)/turtlezoom);
+      double y=turtlezoom*(t.y-turtley);
+      if (y<0)
+	turtley += int(y/turtlezoom);
+      if (y>h()-10)
+	turtley += int((y-h()+10)/turtlezoom);
+    }
+    if (maillage & 0x3){
       fl_color(FL_BLACK);
-      if (maillage==1){
-	for (int i=0;i<w();i+=10){
-	  for (int j=0;j<h();j+=10){
-	    fl_point(deltax+i,deltay+h()-j);
+      double xdecal=std::floor(turtlex/10.0)*10;
+      double ydecal=std::floor(turtley/10.0)*10;
+      if ( (maillage & 0x3)==1){
+	for (double i=xdecal;i<w()+xdecal;i+=10){
+	  for (double j=ydecal;j<h()+ydecal;j+=10){
+	    fl_point(deltax+int((i-turtlex)*turtlezoom+.5),deltay+h()-int((j-turtley)*turtlezoom+.5));
 	  }
 	}
       }
       else {
-	double dj=std::sqrt(3.0)*10,i0=0;
-	for (double j=0;j<h();j+=dj){
-	  int J=deltay+int(h()-j);
-	  for (int i=int(i0);i<w();i+=10){
-	    fl_point(deltax+i,J);
+	double dj=std::sqrt(3.0)*10,i0=xdecal;
+	for (double j=ydecal;j<h()+ydecal;j+=dj){
+	  int J=deltay+int(h()-(j-turtley)*turtlezoom);
+	  for (double i=i0;i<w()+xdecal;i+=10){
+	    fl_point(deltax+int((i-turtlex)*turtlezoom+.5),J);
 	  }
 	  i0 += dj;
 	  while (i0>=10)
@@ -5913,7 +7066,7 @@ namespace xcas {
       }
     }
     // Show turtle position/cap
-    if (turtleptr && !turtleptr->empty()){
+    if (turtleptr && !turtleptr->empty() && !(maillage & 0x4)){
       logo_turtle turtle=turtleptr->back();
       fl_color(FL_YELLOW);
       fl_rectf(deltax+horizontal_pixels,deltay,w()-horizontal_pixels,2*COORD_SIZE);
@@ -6019,71 +7172,130 @@ namespace xcas {
   }
 
   int Turtle::handle(int event){
+#if 0
+    context * contextptr=get_context(this);
+    if (is_context_busy(contextptr))
+      return 0;
+#endif
+    // cerr << event << endl;
     if ( (event==FL_ENTER) || (event==FL_LEAVE) ){
-      redraw_cap_only=false;
+      if (event==FL_LEAVE)
+	redraw_cap_only=true;
       redraw();
       return 1;
     }
-    int current_i=Fl::event_x()-x(),current_j=Fl::event_y()-y();
-    int horizontal_pixels=w();
-    if (event==FL_RELEASE){
-      if ( current_i>horizontal_pixels && current_j<COORD_SIZE){ // zoom out
-	turtlezoom *= .707;
-	redraw();
-      }
-      if (current_j<8){ // up
-	turtley += int(h()/(5*turtlezoom));
-	redraw();
-      }
-      if (current_j+8>h()){ // down
-	turtley -= int(h()/(5*turtlezoom));
-	redraw();
-      }
-      if (current_i<8){ // left
-	turtlex -= int(w()/(5*turtlezoom));
-	redraw();
-      }
-      if (current_i+8>w()){ // right
-	turtlex += int(w()/(5*turtlezoom));
-	redraw();
-      }
+    if (event==FL_FOCUS){
+      Fl::focus(this);
       return 1;
     }
+    if (event==FL_PUSH){
+      push_x=Fl::event_x()-x();
+      push_y=Fl::event_y()-y();
+      Fl::focus(this);
+      return 1;      
+    }
+    int current_x=Fl::event_x()-x(),current_y=Fl::event_y()-y();
+    // int horizontal_pixels=w();
+    if (event== FL_MOUSEWHEEL ){
+      if (Fl::e_dy<0)
+	turtlezoom *= 0.707 ;
+      else
+	turtlezoom *= 1.414 ;
+      redraw();
+      return 1;
+    }
+    if (event==FL_RELEASE || event==FL_DRAG){
+      if (current_y!=push_y){ 
+	turtley += int((current_y-push_y));
+	redraw();
+      }
+      if (current_x!=push_x){ 
+	turtlex += int((push_x-current_x));
+	redraw();
+      }
+      push_y=current_y;
+      push_x=current_x;
+      return 1;
+    }
+    if (event==FL_KEYBOARD){
+      switch (Fl::event_key()){
+      case FL_Left:
+	turtlex += 10;
+	redraw();
+	return 1;
+      case FL_Up:
+	turtley -= 10;
+	redraw();
+	return 1;
+      case FL_Right: 
+	turtlex -= 10;
+	redraw();
+	return 1;
+      case FL_Down: 
+	turtley += 10;
+	redraw();
+	return 1;
+      case '+':
+	turtlezoom *= 1.414 ;
+	redraw();
+	return 1;
+      case '-':
+	turtlezoom *= 0.707 ;
+	redraw();
+	return 1;	
+      }
+    }
     return 0;
+  }
+
+  Turtle::~Turtle(){
+    context * contextptr=get_context(this);
+    if (turtle(contextptr).widget==this)
+      turtle(contextptr).widget=0;
   }
 
   void cb_Logo_button(No_Focus_Button * b,void *){
     if (!Fl::focus())
       return;
+    context * contextptr=get_context(b);
+    int l=language(contextptr);
     string text;
-    if (b->label()=="av")
-      text="avance ";
-    if (b->label()=="re")
-      text="recule ";
-    if (b->label()=="td")
-      text="tourne_droite ";
-    if (b->label()=="tg")
-      text="tourne_gauche ";    
-    if (b->label()=="pc")
-      text="pas_de_cote ";
-    if (b->label()=="sa")
-      text="saute ";
-    if (b->label()=="cr")
-      text="crayon ";
-    if (b->label()=="ro")
-      text="rond ";
-    if (b->label()=="di")
-      text="disque ";
-    if (b->label()=="rp")
-      text="rectangle_plein ";
-    if (b->label()=="tp")
-      text="triangle_plein ";
-    if (b->label()=="ef")
-      text="efface ";
-    if (b->label()=="ec")
-      text="ecris ";
-    if (b->label()=="sg")
-      text="signe ";
+    if (b->label()==gettext("fw"))
+      text=localize("avance ",l);
+    if (b->label()==gettext("bw"))
+      text=localize("recule ",l);
+    if (b->label()==gettext("tr"))
+      text=localize("tourne_droite ",l);
+    if (b->label()==gettext("tl"))
+      text=localize("tourne_gauche ",l);
+    if (b->label()==gettext("ss"))
+      text=localize("pas_de_cote ",l);
+    if (b->label()==gettext("ju"))
+      text=localize("saute ",l);
+    if (b->label()==gettext("pe")){
+      context * contextptr=get_context(b);
+      text=localize("crayon ",l);
+      int col = turtle(contextptr).color;
+      col=fl_show_colormap((Fl_Color) col);
+      string s=col<1000?print_INT_(col):"";
+      text += s;
+      // b->color(col);
+    }
+    if (b->label()==gettext("ci"))
+      text=localize("rond ",l);
+    if (b->label()==gettext("di"))
+      text=localize("disque ",l);
+    if (b->label()==gettext("fr"))
+      text=localize("rectangle_plein ",l);
+    if (b->label()==gettext("ft"))
+      text=localize("triangle_plein ",l);
+    if (b->label()==gettext("cl"))
+      text=localize("efface ",l);
+    if (b->label()==gettext("ec"))
+      text=localize("ecris ",l);
+    if (b->label()==gettext("sg"))
+      text=localize("signe ",l);
+    Fl::focus(Xcas_input_focus);
     if (!text.empty())
       help_output(text.substr(0,text.size()-1),language(get_context(Fl::focus())));
     Fl::e_text= (char *) text.c_str();
@@ -6103,18 +7315,50 @@ namespace xcas {
 	if (dynamic_cast<Multiline_Input_tab *>(i)){
 	  if (!s.empty() && s[s.size()-1]!=';')
 	    s += ";\n";
+	  else
+	    s += '\n';
 	  gen g(s,contextptr);
-	  if (!giac::first_error_line(contextptr))
+	  if (!giac::first_error_line(contextptr)){
+	    l->ed->editor->insert_position(l->ed->editor->buffer()->length());
 	    l->ed->editor->insert(s.c_str());
+	  }
+	  else {
+	    string logs(gettext("Not registered\n"));
+	    logs += gettext("Parse error line ")+giac::print_INT_(giac::first_error_line(contextptr))+ gettext(" at ") +giac::error_token_name(contextptr);
+	    fl_alert("%s",logs.c_str());
+	  }
 	}
 	else
 	  s = "// "+s+'\n';
 	l->t->redraw();
       }
     }
+    if (Xcas_Text_Editor * i=dynamic_cast<Xcas_Text_Editor *>(w)){
+      Fl_Group * g=parent_skip_scroll(w->parent()); // should be a pack
+      if (g)
+	g=parent_skip_scroll(g);
+      if (Logo * l= dynamic_cast<Logo *>(g)){
+	string s(i->value());
+	if (!s.empty() && s[s.size()-1]!=';')
+	  s += ";\n";
+	else
+	  s += '\n';
+	gen g(s,contextptr);
+	if (!giac::first_error_line(contextptr)){
+	  l->ed->editor->insert_position(l->ed->editor->buffer()->length());
+	  l->ed->editor->insert(s.c_str());
+	}
+	else {
+	  string logs(gettext("Not registered\n"));
+	  logs += gettext("Parse error line ")+giac::print_INT_(giac::first_error_line(contextptr))+ gettext(" at ") +giac::error_token_name(contextptr);
+	  fl_alert("%s",logs.c_str());
+	}
+	l->t->redraw();
+      }
+    }
     return Xcas_eval(w);
   }
-
+    
   Turtle * in_find_turtle(Fl_Widget * wid){
     if (Turtle * g=dynamic_cast<Turtle *>(wid))
       return g;
@@ -6136,13 +7380,13 @@ namespace xcas {
     return find_turtle(wid->parent());
   }
 
-  void cb_Logo_Preview(Fl_Menu_* m , void*) {
+  static void cb_Logo_Preview(Fl_Menu_* m , void*) {
     Turtle * gr = find_turtle(m);
     if (gr)
       widget_ps_print(gr,"tortue",true);
   }
 
-  void cb_Logo_Print(Fl_Menu_* m , void*) {
+  static void cb_Logo_Print(Fl_Menu_* m , void*) {
     Turtle * gr = find_turtle(m);
     if (gr)
       widget_print(gr);
@@ -6160,7 +7404,7 @@ namespace xcas {
   }
 
 
-  void cb_Logo_LaTeX_Preview(Fl_Menu_* m , void*) {
+  static void cb_Logo_LaTeX_Preview(Fl_Menu_* m , void*) {
     Turtle * f=find_turtle(m);
     if (f){
       string name=f->latex_save_figure();
@@ -6168,7 +7412,7 @@ namespace xcas {
     }
   }
 
-  void cb_Logo_LaTeX_Print(Fl_Menu_* m , void*) {
+  static void cb_Logo_LaTeX_Print(Fl_Menu_* m , void*) {
     Turtle * f=find_turtle(m);
     if (f){
       string name=f->latex_save_figure();
@@ -6176,37 +7420,105 @@ namespace xcas {
     }
   }
 
-  void cb_Logo_None(Fl_Menu_* m , void*) {
+  static void cb_Logo_None(Fl_Menu_* m , void*) {
     Turtle * f=find_turtle(m);
-    if (f) { f->maillage=0; f->redraw(); }
+    if (f) { f->maillage=f->maillage & 0x4; f->redraw(); }
   }
 
-  void cb_Logo_Square(Fl_Menu_* m , void*) {
+  static void cb_Logo_Square(Fl_Menu_* m , void*) {
     Turtle * f=find_turtle(m);
-    if (f) { f->maillage=1; f->redraw(); }
+    if (f) { f->maillage=1 | (f->maillage & 0x4); f->redraw(); }
   }
 
-  void cb_Logo_Triangle(Fl_Menu_* m , void*) {
+  static void cb_Logo_Triangle(Fl_Menu_* m , void*) {
     Turtle * f=find_turtle(m);
-    if (f) { f->maillage=2; f->redraw(); }
+    if (f) { f->maillage = 2 | (f->maillage & 0x4); f->redraw(); }
   }
 
-  void cb_Logo_Color(Fl_Menu_* m , void*) {
+  static void cb_Logo_ShowPosition(Fl_Menu_* m , void*) {
+    Turtle * f=find_turtle(m);
+    if (f) { f->maillage=f->maillage & 0x3; f->redraw(); }
+  }
+
+  static void cb_Logo_HidePosition(Fl_Menu_* m , void*) {
+    Turtle * f=find_turtle(m);
+    if (f) { f->maillage=f->maillage | 0x4; f->redraw(); }
+  }
+
+  static void cb_Logo_Color(Fl_Menu_* m , void*) {
     const giac::context * contextptr=get_context(m);
     int i=fl_show_colormap(Fl_Color(turtle(contextptr).color));
     string s="crayon "+print_INT_(i);
     if (Fl_Input * i=dynamic_cast<Fl_Input *>(Fl::focus()))
       i->insert(s.c_str());
     else
-      fl_message(s.c_str());
+      fl_message("%s",s.c_str());
+  }
+
+  static void cb_Logo_Zoomin(Fl_Menu_* m , void*) {
+    Turtle * gr = find_turtle(m);
+    if (gr){
+      gr->turtlezoom*=1.414;
+      gr->redraw();
+    }
+  }
+
+  static void cb_Logo_Zoomout(Fl_Menu_* m , void*) {
+    Turtle * gr = find_turtle(m);
+    if (gr){
+      gr->turtlezoom*=0.707;
+      gr->redraw();
+    }
+  }
+
+  static void cb_Logo_Right(Fl_Menu_* m , void*) {
+    Turtle * gr = find_turtle(m);
+    if (gr){
+      gr->turtlex -= 10 ;
+      gr->redraw();
+    }
+  }
+
+  static void cb_Logo_Left(Fl_Menu_* m , void*) {
+    Turtle * gr = find_turtle(m);
+    if (gr){
+      gr->turtlex += 10 ;
+      gr->redraw();
+    }
+  }
+
+  static void cb_Logo_Up(Fl_Menu_* m , void*) {
+    Turtle * gr = find_turtle(m);
+    if (gr){
+      gr->turtley -= 10 ;
+      gr->redraw();
+    }
+  }
+
+  static void cb_Logo_Down(Fl_Menu_* m , void*) {
+    Turtle * gr = find_turtle(m);
+    if (gr){
+      gr->turtley += 10 ;
+      gr->redraw();
+    }
   }
 
   Fl_Menu_Item Logo_menu[] = {
-    {gettext("Menu"), 0,  0, 0, 64, 0, 0, 14, 56},
-    {gettext("Maillage"), 0,  0, 0, 64, 0, 0, 14, 56},
+    {gettext("M"), 0,  0, 0, 64, 0, 0, 14, 56},
+    {gettext("Mesh"), 0,  0, 0, 64, 0, 0, 14, 56},
     {gettext("None"), 0,  (Fl_Callback*)cb_Logo_None, 0, 0, 0, 0, 14, 56},
     {gettext("Square"), 0,  (Fl_Callback*)cb_Logo_Square, 0, 0, 0, 0, 14, 56},
     {gettext("Triangle"), 0,  (Fl_Callback*)cb_Logo_Triangle, 0, 0, 0, 0, 14, 56},
+    {0},
+    {gettext("View"), 0,  0, 0, 64, 0, 0, 14, 56},
+    {gettext("Zoom in"), 0,  (Fl_Callback*)cb_Logo_Zoomin, 0, 0, 0, 0, 14, 56},
+    {gettext("Zoom out"), 0,  (Fl_Callback*)cb_Logo_Zoomout, 0, 0, 0, 0, 14, 56},
+    {gettext("Right"), 0,  (Fl_Callback*)cb_Logo_Right, 0, 0, 0, 0, 14, 56},
+    {gettext("Left"), 0,  (Fl_Callback*)cb_Logo_Left, 0, 0, 0, 0, 14, 56},
+    {gettext("Up"), 0,  (Fl_Callback*)cb_Logo_Up, 0, 0, 0, 0, 14, 56},
+    {gettext("Down"), 0,  (Fl_Callback*)cb_Logo_Down, 0, 0, 0, 0, 14, 56},
+    {gettext("ShowPosition"), 0,  (Fl_Callback*)cb_Logo_ShowPosition, 0, 0, 0, 0, 14, 56},
+    {gettext("HidePosition"), 0,  (Fl_Callback*)cb_Logo_HidePosition, 0, 0, 0, 0, 14, 56},
     {0},
     {gettext("Export/Print"), 0,  0, 0, 64, 0, 0, 14, 56},
     {gettext("EPS/PNG and preview"), 0,  (Fl_Callback*)cb_Logo_Preview, 0, 0, 0, 0, 14, 56},
@@ -6229,6 +7541,7 @@ namespace xcas {
     xcas::HScroll * s = new xcas::HScroll (X,Y,W/4,H);
     s->box(FL_FLAT_BOX);
     hp = new History_Pack (X,Y,max(W/4-20,W/5),max(H-L-20,20));
+    // hp->new_question=new_question_multiline_input;
     hp->labelsize(L);
     hp->pretty_output=false;
     hp->eval_below=false;
@@ -6239,78 +7552,79 @@ namespace xcas {
     s->end();
     t =  new Turtle(X+W/4,Y,W/2,H-L);
     t->labelsize(L);
-    t->turtleptr=&giac::turtle_stack(context0);
+    t->turtleptr=&giac::turtle_stack(context0); // will be overwritten by new_logo in History.cc
+    t->turtlezoom=2;
     int bw=(W/2-5*L/2)/14; 
     button_group = new Fl_Group(X+W/4,Y+H-L,bw*14,L);
     int bx=button_group->x(),by=button_group->y();
     No_Focus_Button * avance = new No_Focus_Button(bx,by,bw,L);
-    avance->label("av");
-    avance->tooltip("La tortue avance de n pas");
+    avance->label(gettext("fw"));
+    avance->tooltip(gettext("Turtle n steps forward"));
     avance->callback((Fl_Callback *) cb_Logo_button);
     bx += bw;
     No_Focus_Button * recule = new No_Focus_Button(bx,by,bw,L);
-    recule->label("re");
-    recule->tooltip("La tortue recule de n pas");
+    recule->label(gettext("bw"));
+    recule->tooltip(gettext("Turtle n steps backward"));
     recule->callback((Fl_Callback *) cb_Logo_button);
     bx += bw;
     No_Focus_Button * td = new No_Focus_Button(bx,by,bw,L);
-    td->label("td");
-    td->tooltip("La tortue tourne a droite de n degres");
+    td->label(gettext("tr"));
+    td->tooltip(gettext("Turtle turns right n degrees"));
     td->callback((Fl_Callback *) cb_Logo_button);
     bx += bw;
     No_Focus_Button * tg = new No_Focus_Button(bx,by,bw,L);
-    tg->label("tg");
-    tg->tooltip("La tortue tourne a gauche de n degres");
+    tg->label(gettext("tl"));
+    tg->tooltip(gettext("Turtle turns left n degrees"));
     tg->callback((Fl_Callback *) cb_Logo_button);
     bx += bw;
     No_Focus_Button * pc = new No_Focus_Button(bx,by,bw,L);
-    pc->label("pc");
-    pc->tooltip("Pas de cote a gauche de n pas");
+    pc->label(gettext("ss"));
+    pc->tooltip(gettext("Turtle steps to the left from n steps"));
     pc->callback((Fl_Callback *) cb_Logo_button);
     bx += bw;
     No_Focus_Button * sa = new No_Focus_Button(bx,by,bw,L);
-    sa->label("sa");
-    sa->tooltip("Saute de n pas");
+    sa->label(gettext("ju"));
+    sa->tooltip(gettext("Turtle jumps n steps"));
     sa->callback((Fl_Callback *) cb_Logo_button);
     bx += bw;
     No_Focus_Button * cr = new No_Focus_Button(bx,by,bw,L);
-    cr->label("cr");
-    cr->tooltip("Change la couleur du crayon");
+    cr->label(gettext("pe"));
+    cr->tooltip(gettext("Change pen color"));
     cr->callback((Fl_Callback *) cb_Logo_button);
     bx += bw;
     No_Focus_Button * ro = new No_Focus_Button(bx,by,bw,L);
-    ro->label("ro");
-    ro->tooltip("Arc de cercle");
+    ro->label(gettext("ci"));
+    ro->tooltip(gettext("Circle arc"));
     ro->callback((Fl_Callback *) cb_Logo_button);
     bx += bw;
     No_Focus_Button * di = new No_Focus_Button(bx,by,bw,L);
-    di->label("di");
-    di->tooltip("Arc de cercle rempli");
+    di->label(gettext("di"));
+    di->tooltip(gettext("Filled circle arc"));
     di->callback((Fl_Callback *) cb_Logo_button);
     bx += bw;
     No_Focus_Button * rp = new No_Focus_Button(bx,by,bw,L);
-    rp->label("rp");
-    rp->tooltip("Rectangle plein");
+    rp->label(gettext("fr"));
+    rp->tooltip(gettext("Filled rectangle"));
     rp->callback((Fl_Callback *) cb_Logo_button);
     bx += bw;
     No_Focus_Button * tp = new No_Focus_Button(bx,by,bw,L);
-    tp->label("tp");
-    tp->tooltip("Triangle plein");
+    tp->label(gettext("ft"));
+    tp->tooltip(gettext("Filled triangle"));
     tp->callback((Fl_Callback *) cb_Logo_button);
     bx += bw;
     No_Focus_Button * ec = new No_Focus_Button(bx,by,bw,L);
-    ec->label("ec");
-    ec->tooltip("Ecrire a la droite de la tortue");
+    ec->label(gettext("ec"));
+    ec->tooltip(gettext("Write to the right of the turtle"));
     ec->callback((Fl_Callback *) cb_Logo_button);
     bx += bw;
     No_Focus_Button * sg = new No_Focus_Button(bx,by,bw,L);
-    sg->label("sg");
-    sg->tooltip("Signer le dessin de la tortue");
+    sg->label(gettext("sg"));
+    sg->tooltip(gettext("Sign picture"));
     sg->callback((Fl_Callback *) cb_Logo_button);
     bx += bw;
     No_Focus_Button * ef = new No_Focus_Button(bx,by,bw,L);
-    ef->label("ef");
-    ef->tooltip("Efface tout");
+    ef->label(gettext("cl"));
+    ef->tooltip(gettext("Clear all"));
     ef->callback((Fl_Callback *) cb_Logo_button);
     button_group->end();
     menubar = new Fl_Menu_Bar(button_group->x()+button_group->w(),button_group->y(),W/2-button_group->w(),L);
@@ -6319,11 +7633,31 @@ namespace xcas {
     for (int i=0;i<ls;++i)
       *(menuitem+i)=*(Logo_menu+i);
     menubar->menu (menuitem);    
+    menubar->tooltip(gettext("Turtle menu"));
     ed = new Editeur(X+W/4+W/2,Y,W/4,H);
+    // ed->callback(History_Pack_cb_eval,0);
     ed->extension="tor";
+    ed->editor->buffer()->insert(0,"efface ;\n");
+    ed->editor->insert_position(9);
     hp->add_entry(-1);
     hp->resize();
     parent_redraw(this);
+  }
+
+  int Logo::handle(int event){
+    if (event==FL_MOUSEWHEEL){
+      if (!Fl::event_inside(this))
+	return 0;
+      if (Fl::focus()==t){
+	int res=t->handle(event);
+	if (res)
+	  return res;
+      }
+      if (!Fl::event_inside(hp->parent()))
+	return 0;      
+      return hp->parent()->handle(event);
+    }
+    return Fl_Tile::handle(event);
   }
 
   void Logo::draw(){
@@ -6372,9 +7706,9 @@ namespace xcas {
     return os;
   }
 
-  gen fltk_fl_widget_unarchive_function(istream & os,const vecteur & l){
+  gen fltk_fl_widget_unarchive_function(istream & os){
     // FIXME GIAC_CONTEXT
-    gen gplot=unarchive(os,l,context0),gparam=unarchive(os,l,context0);
+    gen gplot=unarchive(os,context0),gparam=unarchive(os,context0);
     if (gplot.type!=_VECT || gparam.type!=_VECT || gparam._VECTptr->size()<8)
       return 0;
     vecteur v=*gparam._VECTptr;
@@ -6446,14 +7780,14 @@ namespace xcas {
 	if (Fl_Scroll * s=dynamic_cast<Fl_Scroll *>(wid)) 
 	  if (s->children())
 	    wid=s->child(0);
-	if (hp=dynamic_cast<History_Pack *>(wid))
+	if ( (hp=dynamic_cast<History_Pack *>(wid)) )
 	  break;
       } // end for i
     }
     if (hp){
       // check that level is gvs->g := ...
       unsigned m=hp->children();
-      if (position>=0 && position<m){
+      if (position>=0 && position<int(m)){
 	bool do_cb=false;
 	giac::gen gt(hp->value(position),hp->contextptr);
 	if (gt.is_symb_of_sommet(at_sto) && gt._SYMBptr->feuille.type==_VECT && !gt._SYMBptr->feuille._VECTptr->empty() ){
@@ -6464,7 +7798,7 @@ namespace xcas {
 	    if (ff.type==_VECT && !ff._VECTptr->empty())
 	      ff = ff._VECTptr->front();
 	    // Change gt value with parameter
-	    ff = symbolic(at_element,makevecteur(ff,value(),Fl_Valuator::step()));
+	    ff = symbolic(at_element,gen(makevecteur(ff,value(),Fl_Valuator::step()),_SEQ__VECT));
 	    gt=symbolic(at_sto,makevecteur(ff,gt._SYMBptr->feuille._VECTptr->back()));
 	    do_cb=true;
 	  }
@@ -6512,6 +7846,16 @@ namespace xcas {
 	  hp->update_pos=position;
 	  if (pos==-2)
 	    hp->eval_below=true;
+	  gen curseur=protecteval(gt,1,hp->contextptr);
+	  Graph2d3d * graph=find_graph2d3d(hp);
+	  if (curseur.is_symb_of_sommet(at_parameter) && graph){
+	    vecteur & v=graph->plot_instructions;
+	    if (position>=0 && v.size()>position){
+	      gen & vp=v[position];
+	      if (vp.is_symb_of_sommet(at_parameter) && vp._SYMBptr->feuille[0]==curseur._SYMBptr->feuille[0])
+		vp=curseur;
+	    }
+	  }
 	  // check how to update (parameter in a figure or in history)
 	  Fl_Group * gr = hp->widget_group(position);
 	  if (gr && gr->children()>=3){
@@ -6522,11 +7866,11 @@ namespace xcas {
 	    }
 	  }
 	  hp->set_gen_value(position,gt,false);
-	  protecteval(gt,1,hp->contextptr);
 	  if (eval_hp && hp->children()>position+1){
 	    hp->update_pos=position+1;
 	    gt=hp->parse(position+1);
-	    hp->set_gen_value(position+1,gt,true);
+	    if (!is_undef(gt))
+	      hp->set_gen_value(position+1,gt,true);
 	  }
 	} // end do_cb
       } // end if gvs->pos<children()
@@ -6553,10 +7897,27 @@ namespace xcas {
       if (event==FL_RELEASE && hp->children()>position){
 	Fl_Widget * wid=hp->child(position);
 	while (Fl_Group * s=dynamic_cast<Fl_Group *>(wid)) {
+	  if (dynamic_cast<Xcas_Text_Editor *>(wid))
+	    break;
 	  if (s->children())
 	    wid=s->child(0);
 	}
 	if (Multiline_Input_tab * m=dynamic_cast<Multiline_Input_tab *>(wid)){
+	  gen g=m->g();
+	  if (figure_param_dialog(hp,true,tmin,tmax,tcur,tstep,paramname,g.is_symb_of_sommet(at_assume),tmp) ){
+	    minimum(tmin);
+	    maximum(tmax);
+	    value(tcur);
+	    // tstep=tstep*(tmax-tmin)/100.;
+	    step(tstep,10*tstep);
+	    redraw();
+	    label(paramname.c_str());
+	    hp->set_value(position,tmp,true);
+	    // if (!f)
+	      hp->eval_below=true;
+	  }
+	}
+	if (Xcas_Text_Editor * m=dynamic_cast<Xcas_Text_Editor *>(wid)){
 	  gen g=m->g();
 	  if (figure_param_dialog(hp,true,tmin,tmax,tcur,tstep,paramname,g.is_symb_of_sommet(at_assume),tmp) ){
 	    minimum(tmin);
@@ -6577,7 +7938,7 @@ namespace xcas {
     return Fl_Counter::handle(event);
   }
 
-  Gen_Value_Slider::Gen_Value_Slider(int x,int y,int w,int h,int _pos,double m,double M,double mystep,const std::string & pname,const char * l):Fl_Counter(x,y,w,h,l),pos(_pos) { 
+  Gen_Value_Slider::Gen_Value_Slider(int x,int y,int w,int h,int _pos,double m,double M,double mystep,const std::string & pname):Fl_Counter(x,y,w,h),pos(_pos) { 
     // type(FL_HOR_NICE_SLIDER);  
     // type(FL_HOR_FILL_SLIDER);
     minimum(m); maximum(M); 
@@ -6587,6 +7948,7 @@ namespace xcas {
     // slider_size(0.05);
     callback(gen_value_slider_cb);
     paramname=pname;
+    label(paramname.c_str());
     align(FL_ALIGN_LEFT);
   }
 

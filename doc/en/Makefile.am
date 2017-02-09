@@ -1,35 +1,138 @@
+TEX_LOCAL = cascmd_en.tex casinter.tex cas.tex slipres.tex giacxcas.tex
+
+PDF_LOCAL = cascmd_en.pdf casinter.pdf cas.pdf troussesurvie_en.pdf
+
+PS_LOCAL = cascmd_en.ps casinter.ps cas.ps
+
+DVI_LOCAL = cascmd_en.dvi casinter.dvi cas.dvi
+
+HTML_DIRS_LOCAL = casinter cascmd_en
+
+HTML_STAMPS = casinter.stamp cascmd_en.stamp
+
 info_TEXINFOS = giac_us.texinfo
-EXTRA_DIST = xcasmenu xcasex keywords ifpdf.sty cas.tex slipres.tex pgcd.cc pgcd.cpp .gdbinit giacxcas.tex casinter.tex cascmd_en.tex html_* 
-html:	giac_us.texinfo casinter.tex cascmd_en.tex
-	touch giac_us.html && makeinfo --html --no-split giac_us.texinfo
-	latex casinter
-	makeindex casinter.idx
-	latex casinter.tex
-	latex2html -no_math -html_version 3.2,math casinter.tex --address '<A HREF="http://www-fourier.ujf-grenoble.fr/~parisse/giac.html">giac</A> documentation written by Bernard Parisse'
-	latex cascmd_en.tex
-	makeindex cascmd_en.idx
-	latex cascmd_en.tex
-	latex2html -local_icons -no_math -html_version 3.2,math cascmd_en.tex --address 'Documentation of <A HREF="http://www-fourier.ujf-grenoble.fr/~parisse/giac.html">giac</A> written by Ren&eacute;e De Graeve and Bernard Parisse'
-dvi: cas.tex # giacxcas.tex
-	latex cas
-#	latex giacxcas
-install-exec-hook: html
-	../../mkinstalldirs $(prefix)/share/giac/doc/en
-	cp -f *.html $(prefix)/share/giac/doc/en
-	../../mkinstalldirs $(prefix)/share/giac/doc/en
-	../../mkinstalldirs $(prefix)/share/giac/doc/en/casinter
-	../../mkinstalldirs $(prefix)/share/giac/doc/en/cascmd_en
-	rm -f casinter/*.old
-	cp -f casinter/* $(prefix)/share/giac/doc/en/casinter
-	rm -f cascmd_en/*.old
-	cp -f cascmd_en/* $(prefix)/share/giac/doc/en/cascmd_en
-	cp -f html_* $(prefix)/share/giac/doc/en/
-	ln -sf ../fr/castor $(prefix)/share/giac/doc/en/castor
-	ln -sf ../fr/casexo $(prefix)/share/giac/doc/en/casexo
-	ln -sf ../fr/casrouge $(prefix)/share/giac/doc/en/casrouge
-	ln -sf ../fr/casgeo $(prefix)/share/giac/doc/en/casgeo
-	ln -sf ../fr/cassim $(prefix)/share/giac/doc/en/cassim
-	ln -sf ../fr/casexo $(prefix)/share/giac/doc/en/casexo
-	ln -sf ../fr/cascas $(prefix)/share/giac/doc/en/cascas
-	ln -sf ../fr/algo.html $(prefix)/share/giac/doc/en/
-	cp -f xcasmenu xcasex keywords $(prefix)/share/giac/doc/en/
+AM_MAKEINFOHTMLFLAGS = --no-split
+
+EXTRA_DIST = $(TEX_LOCAL) $(PDF_LOCAL) $(DVI_LOCAL) $(PS_LOCAL) \
+	     $(HTML_DIRS_LOCAL) $(HTML_LOCAL) $(HTML_STAMPS) \
+	     pgcd.cc pgcd.cpp .gdbinit cutting.*
+
+GIAC_HOMEPAGE = "http://www-fourier.ujf-grenoble.fr/~parisse/giac.html"
+GIAC_ADDRESS = <A HREF=$(LATEX2HTML_HOMEPAGE)>giac</A> documentation written
+
+the_LANG = en
+thelangdocdir = $(docdir)/$(the_LANG)
+dist_thelangdoc_DATA = html_mall html_mtt html_vall xcasmenu xcasex keywords 
+
+html-local: $(HTML_STAMPS) 
+pdf-local: $(PDF_LOCAL)
+dvi-local: $(DVI_LOCAL)
+ps-local: $(PS_LOCAL)
+
+$(srcdir)/cascmd_en: cascmd_en.stamp
+$(srcdir)/casinter: casinter.stamp
+
+install-data-local: $(HTML_STAMPS) $(PS_LOCAL) $(DVI_LOCAL) troussesurvie_en.pdf # $(PDF_LOCAL) 
+	$(install_sh) -d $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
+#	$(INSTALL_DATA) $(PDF_LOCAL) $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
+	$(INSTALL_DATA) troussesurvie_en.pdf $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
+	$(INSTALL_DATA) $(PS_LOCAL) $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
+#	$(INSTALL_DATA) $(DVI_LOCAL) $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
+#	$(INSTALL_DATA) $(HTML_LOCAL) $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
+	for dd in $(HTML_DIRS_LOCAL); do \
+		$(install_sh) -d $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)/$$dd ; \
+	done
+	for dd in $(HTML_DIRS_LOCAL); do \
+		$(INSTALL_DATA) $(srcdir)/$$dd/* $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)/$$dd ; \
+	done
+#	export LD_LIBRARY_PATH=$(DESTDIR)/lib ; $(DESTDIR)/bin/icas --rebuild-help-cache
+	$(INSTALL_DATA) $(dist_thelangdoc_DATA) $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
+
+
+LATEX2HTML_OPTIONS = -local_icons -no_math -html_version 3.2,math
+HEVEA_OPTIONS = -fix
+
+SUFFIXES = .tex .pdf .ps .dvi
+
+if DOC_PROGS
+
+RUN_PDFLATEX = TEXINPUTS=$(srcdir):$$TEXINPUTS $(PDFLATEX)
+RUN_LATEX = TEXINPUTS=$(srcdir):$$TEXINPUTS $(LATEX)
+RUN_MAKEINDEX = TEXINPUTS=$(srcdir):$$TEXINPUTS $(MAKEINDEX)
+RUN_LATEX2HTML = TEXINPUTS=$(srcdir):$$TEXINPUTS $(LATEX2HTML) $(LATEX2HTML_OPTIONS)
+RUN_HEVEA = TEXINPUTS=$(srcdir):$$TEXINPUTS hevea $(HEVEA_OPTIONS)
+
+.tex.pdf:
+	$(RUN_PDFLATEX) $<
+	$(RUN_PDFLATEX) $<
+	if $(EGREP) -q -e '\\makeindex' $<; then \
+		$(RUN_MAKEINDEX) `echo $@ | sed -e s/\.pdf/\.idx/` ; \
+	fi
+	$(RUN_PDFLATEX) $<
+
+.tex.dvi:
+	$(RUN_LATEX) $<
+	$(RUN_LATEX) $<
+	if $(EGREP) -q -e '\\makeindex' $<; then \
+		$(RUN_MAKEINDEX) `echo $@ | sed -e s/\.dvi/\.idx/` ; \
+	fi
+	$(RUN_LATEX) $<
+
+.dvi.ps:
+	$(DVIPS) -o $@ $<
+
+casinter.stamp: casinter.tex
+	$(RUN_HEVEA) $< 
+	tdir=`echo $< | sed -e 's/\.tex//'`; \
+	$(install_sh) -d $$tdir ; \
+	hacha $$tdir.html -o $$tdir/index.html ; \
+	touch $$tdir.png ; \
+	/bin/cp -f $$tdir*.png $$tdir
+#	rm -f $$tdir/*.old $$tdir/*.pl $$tdir/images.??? $$tdir/WARNINGS
+	touch $@	
+
+cascmd_en.stamp: cascmd_en.tex
+	$(RUN_HEVEA) $< 
+	tdir=`echo $< | sed -e 's/\.tex//'`; \
+	$(install_sh) -d $$tdir ; \
+	hacha $$tdir.html -o $$tdir/index.html ; \
+	touch $$tdir.png ; \
+	/bin/cp -f $$tdir*.png $$tdir
+#	rm -f $$tdir/*.old $$tdir/*.pl $$tdir/images.??? $$tdir/WARNINGS
+	touch $@
+
+dist-hook:
+	for ddir in $(HTML_DIRS_LOCAL); do $(MAKE) $$ddir.stamp; done
+else
+
+.tex.pdf:
+	if [ ! -f "$@" ]; then \
+		echo '*** Error: TeX is not installed, and $@ is missing' ; \
+		exit 1 ; \
+	fi
+
+.tex.dvi:
+	if [ ! -f "$@" ]; then \
+		echo '*** Error: TeX is not installed, and $@ is missing' ; \
+		exit 1 ; \
+	fi
+
+.tex.ps:
+	if [ ! -f "$@" ]; then \
+		echo '*** Error: TeX is not installed, and $@ is missing' ; \
+		exit 1 ; \
+	fi
+
+.tex.stamp:
+	docdir=`echo $< | sed -e 's/\.tex//'` ; \
+	if [ ! -f "$$docdir/index.html" ]; then \
+		echo '*** Error: hevea is not installed, and $$docdir is missing' ; \
+		exit 1 ; \
+	fi
+
+dist-hook:
+	echo '*** Error: no tools to rebuild documentation is installed' ; \
+	exit 1
+
+endif
+

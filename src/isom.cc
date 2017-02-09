@@ -1,7 +1,8 @@
 // -*- mode:C++ ; compile-command: "g++ -I.. -g -c isom.cc " -*- 
-#include "first.h"
+#include "giacPCH.h"
+
 /*
- *  Copyright (C) 2001,7 R. De Graeve, Institut Fourier, 38402 St Martin d'Heres
+ *  Copyright (C) 2001,14 R. De Graeve, Institut Fourier, 38402 St Martin d'Heres
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -14,8 +15,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 using namespace std;
@@ -27,15 +27,17 @@ using namespace std;
 #include "usual.h"
 #include "symbolic.h"
 #include "sym2poly.h"
+#include "giacintl.h"
 
 #ifndef NO_NAMESPACE_GIAC
 namespace giac {
 #endif // ndef NO_NAMESPACE_GIAC
 
   vecteur isom(const vecteur & M,GIAC_CONTEXT){
-    checkanglemode(contextptr);
+    gen errcode=checkanglemode(contextptr);
+    if (is_undef(errcode)) return vecteur(1,errcode);
     int n;
-    n=M.size();
+    n=int(M.size());
     vecteur I;
     // for (int i=0;i<n;i++){
     //vecteur li(n);
@@ -71,20 +73,22 @@ namespace giac {
     if (n==2) {
       //M est une symetrie par rapport a la droite de vecteur normal v[0]
       vecteur v;
-      mker(*(M+I)._VECTptr,v,contextptr);
+      mker(addvecteur(M,I),v,contextptr);
       return(makevecteur(v[0],b));
     }
     if (M.size()==3) {
       vecteur v;
       //v[0] est l'axe de la rotation si b=1
       //v[0] est la normale au plan de symetrie si b=-1 ou v=R3 tout gen
-      mker(*(M-b*I)._VECTptr,v,contextptr);
+      if (!mker(subvecteur(M,multvecteur(b,I)),v,contextptr))
+	return vecteur(1,gendimerr(contextptr));
       vecteur nn(3);
       nn[0]=v[0][0]; nn[1]=v[0][1]; nn[2]=v[0][2];
       vecteur w;
       if  (is_zero(b+1)) {
 	//w est _VECTose de vect qui engendre le plan de symetrie 
-	mker(*(M-I)._VECTptr,w,contextptr);
+	if (!mker(subvecteur(M,I),w,contextptr))
+	  return vecteur(1,gendimerr(contextptr));
       }
       else {
 	w=v;
@@ -99,7 +103,7 @@ namespace giac {
 	gen t;
 	vecteur u(3);
 	//2*cos(theta)+b=trace(M)
-	t=rdiv(M[0][0]+M[1][1]+M[2][2]-b,2);
+	t=rdiv(M[0][0]+M[1][1]+M[2][2]-b,2,contextptr);
 	//on cherche le signe de theta (t=cos(theta)), u est orth a nn 
 	if ((nn[0] !=0)||(nn[1] !=0)) {
 	  u[0]=-nn[1];
@@ -115,7 +119,7 @@ namespace giac {
 	A.push_back(nn);
 	A.push_back(u);
 	//A est la matrice formee par nn u M*u
-	A.push_back(*(M*u)._VECTptr);
+	A.push_back(multmatvecteur(M,u));
 	gen s;
 	s=mdet(A,contextptr);
 	//s est du signe de sin(theta) 
@@ -131,19 +135,20 @@ namespace giac {
     }
     return 0;
   }
-  gen symb_isom(const gen & args){
+  static gen symb_isom(const gen & args){
     return symbolic(at_isom,args);
   }
   gen _isom(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (!ckmatrix(args))
       return symb_isom(args);
     return isom(*args._VECTptr,contextptr);
   }
-  const string _isom_s("isom");
-  unary_function_eval __isom(&_isom,_isom_s);
-  unary_function_ptr at_isom (&__isom);
+  static const char _isom_s []="isom";
+  static define_unary_function_eval (__isom,&_isom,_isom_s);
+  define_unary_function_ptr5( at_isom ,alias_at_isom,&__isom,0,true);
 
-  int mkisom_teste(gen& n,int b, int & d1){
+  static int mkisom_teste(gen& n,int b, int & d1){
     int d;
     //d est la valeur de teste c'est la dim de l'espace du mkisom (d=2 ou >=3 )
     //d>3 pour faire des isometries orthogonales par rapport a un hyperplan
@@ -151,7 +156,7 @@ namespace giac {
       // n est un vecteur et d1 est la dimension du vecteur n 
       //si n n'est pas un vecteur il le devient! (cf else ...donc d1>=1)
       vecteur e=*(n._VECTptr);
-      d1=e.size();
+      d1=int(e.size());
       if (d1>=3) {
 	d=d1;
       }
@@ -202,11 +207,11 @@ namespace giac {
 	gen b=n[1];
 	vecteur M2;
 	vecteur li(2); 
-	li[0]=rdiv(b*b-a*a,a*a+b*b);
-	li[1]=-rdiv(gen(2)*a*b,a*a+b*b);
+	li[0]=rdiv(b*b-a*a,a*a+b*b,contextptr);
+	li[1]=-rdiv(gen(2)*a*b,a*a+b*b,contextptr);
 	M2.push_back(li);
-	li[0]=-rdiv(gen(2)*a*b,a*a+b*b);
-	li[1]=-rdiv(b*b-a*a,a*a+b*b);
+	li[0]=-rdiv(gen(2)*a*b,a*a+b*b,contextptr);
+	li[1]=-rdiv(b*b-a*a,a*a+b*b,contextptr);
 	M2.push_back(li);
 	return(M2);
 	//}
@@ -219,7 +224,7 @@ namespace giac {
 	//on a une symetrie point
 	vecteur I;
 	I=midn(d);
-	return(*((-I)._VECTptr));
+	return negvecteur(I);
       }
       vecteur nn(d);
       //on a une symetrie plan ou une rotation ou le produit rotation symetrie
@@ -279,18 +284,16 @@ namespace giac {
     }
     return 0;
   }
-  gen symb_mkisom(const gen & q,const gen & x){
-    return symbolic(at_mkisom,makevecteur(q,x));
-  }
-  gen symb_mkisom(const gen & args){
+  static gen symb_mkisom(const gen & args){
     return symbolic(at_mkisom,args);
   }
   gen _mkisom(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type!=_VECT)
       return symb_mkisom(args);
-    int s=args._VECTptr->size();
+    int s=int(args._VECTptr->size());
     if (s!=2)
-      setdimerr();
+      return gendimerr();
     if (args._VECTptr->back().type==_INT_){
       gen n=args._VECTptr->front();
       int b=args._VECTptr->back().val;
@@ -298,9 +301,9 @@ namespace giac {
     }
     return symb_mkisom(args);
   }
-  const string _mkisom_s("mkisom");
-  unary_function_eval __mkisom(&_mkisom,_mkisom_s);
-  unary_function_ptr at_mkisom (&__mkisom);
+  static const char _mkisom_s []="mkisom";
+  static define_unary_function_eval (__mkisom,&_mkisom,_mkisom_s);
+  define_unary_function_ptr5( at_mkisom ,alias_at_mkisom,&__mkisom,0,true);
 
 
 

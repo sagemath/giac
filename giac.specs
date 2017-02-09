@@ -1,113 +1,75 @@
 %define name giac
-%define version 0.8.4
+%define version 1.2.3
 %define release 1
 
 Name: %{name} 
 Summary: Computer Algebra System
 Version: %{version} 
 Release: %{release} 
-Source0: giac-0.8.4.tar.gz
+License: see /usr/share/doc/giac/COPYING
+Source0: giac-1.1.3.tar.bz2
 URL: http://www-fourier.ujf-grenoble.fr/~parisse/giac.html
 Group: Sciences/Mathematics
+Vendor: Bernard Parisse
 BuildRoot: %{_tmppath}/%{name}-buildroot 
-License: GPL
+BuildRequires: gcc-c++
+BuildRequires: gmp-devel, gsl-devel
 
 %description
 CAS
 
+%package devel
+Summary: Development files for libgiac
+Requires: %{name}
+
+%description devel
+Development files for libgiac.
+
 %prep 
-rm -rf $RPM_BUILD_ROOT/
-%setup -q 
+##rm -rf $RPM_BUILD_ROOT/
+%setup -q
 
 %build 
-#export CXXFLAGS=-g
-#export LIBS='/usr/local/lib/libpari.a /usr/local/lib/libgsl.a /usr/local/lib/libgslcblas.a'
+LDFLAGS+=-lX11
+export LDFLAGS
+##export LIBS='/usr/local/lib/libpari.a /usr/local/lib/libgsl.a /usr/local/lib/libgslcblas.a'
 
-%configure 
-make
+%configure
+%__make
 
-%install 
-%makeinstall
+%install
+%__rm -rf $RPM_BUILD_ROOT
+%__make DESTDIR=$RPM_BUILD_ROOT install
 
-%clean 
-rm -rf $RPM_BUILD_ROOT 
+%clean
+%__rm -rf $RPM_BUILD_ROOT
 
-%files 
-%defattr(-,root,root,0755) 
-%doc README NEWS COPYING AUTHORS 
-%{_bindir}/xcas
-%{_bindir}/cas
-%{_bindir}/updatecas
-%{_bindir}/giac
-%{_bindir}/aide
-%{_bindir}/cas_help
-%{_bindir}/en_cas_help
-%{_bindir}/es_cas_help
-%{_bindir}/fr_cas_help
-%{_libdir}/libgiac.so.0.0.0
-%{_libdir}/libgiac.so.0
-%{_libdir}/libgiac.so
-%{_libdir}/libgiac.a
+%files
+%defattr(-,root,root)
+%{_bindir}/*
+%{_libdir}/libgiac.so*
 %{_libdir}/libgiac.la
-%{_includedir}/giac/dispatch.h
-%{_includedir}/giac/fraction.h
-%{_includedir}/giac/gen.h
-%{_includedir}/giac/desolve.h
-%{_includedir}/giac/misc.h
-%{_includedir}/giac/ti89.h
-%{_includedir}/giac/mathml.h
-%{_includedir}/giac/identificateur.h
-%{_includedir}/giac/unary.h
-%{_includedir}/giac/symbolic.h
-%{_includedir}/giac/index.h
-%{_includedir}/giac/modpoly.h
-%{_includedir}/giac/modfactor.h
-%{_includedir}/giac/permu.h
-%{_includedir}/giac/monomial.h
-%{_includedir}/giac/poly.h
-%{_includedir}/giac/gausspol.h
-%{_includedir}/giac/sym2poly.h
-%{_includedir}/giac/ezgcd.h
-%{_includedir}/giac/derive.h
-%{_includedir}/giac/solve.h
-%{_includedir}/giac/quater.h
-%{_includedir}/giac/subst.h
-%{_includedir}/giac/usual.h
-%{_includedir}/giac/intg.h
-%{_includedir}/giac/risch.h
-%{_includedir}/giac/lin.h
-%{_includedir}/giac/series.h
-%{_includedir}/giac/vecteur.h
-%{_includedir}/giac/moyal.h
-%{_includedir}/giac/tex.h
-%{_includedir}/giac/global.h
-%{_includedir}/giac/ifactor.h
-%{_includedir}/giac/alg_ext.h 
-%{_includedir}/giac/gauss.h 
-%{_includedir}/giac/isom.h
-%{_includedir}/giac/plot.h
-%{_includedir}/giac/help.h
-%{_includedir}/giac/rpn.h
-%{_includedir}/giac/prog.h
-%{_includedir}/giac/pari.h
-%{_includedir}/giac/giac.h
-%{_includedir}/giac/input_lexer.h
-%{_includedir}/giac/input_parser.h
-%{_includedir}/giac/first.h
-%{_includedir}/giac/path.h
-%{_includedir}/giac/maple.h
-%{_includedir}/giac/giacintl.h
-%{_includedir}/giac/config.h
-%{_datadir}/giac/aide_cas
-%{_datadir}/giac/doc/*
-%{_datadir}/locale/es/LC_MESSAGES/giac.mo
-%{_datadir}/locale/fr/LC_MESSAGES/giac.mo
-%{_datadir}/locale/de/LC_MESSAGES/giac.mo
-%{_infodir}/giac_us.info.gz
-%{_infodir}/giac_es.info.gz
+%{_datadir}/giac
+%{_datadir}/doc/giac
+%{_datadir}/info/giac_*.info.gz
+%{_datadir}/locale/*/LC_MESSAGES/giac.mo
+##%{_datadir}/info/dir
+%{_datadir}/applications/xcas.desktop
+%{_datadir}/application-registry/xcas.applications
+%{_datadir}/pixmaps/xcas.xpm
+##%{_datadir}/man/man1/*
+
+%files devel
+%defattr(-,root,root)
+%{_includedir}/giac
+%{_libdir}/libgiac.a
 
 %changelog 
-* Wed Sep 30 2009 Bernard Parisse <parisse@fourier.ujf-grenoble.fr> 0.8.4
+* Mon Dec 10 2012 Bernard Parisse <parisse@fourier.ujf-grenoble.fr> 1.2.3
+Alpha release
+* Wed Nov 24 2010 Bernard Parisse <parisse@fourier.ujf-grenoble.fr> 0.9.1
+Alpha release
+* Wed Sep 26 2007 Bernard Parisse <parisse@fourier.ujf-grenoble.fr> 0.8.1
 Alpha release
 * Mon Jul  2 2007 Bernard Parisse <parisse@fourier.ujf-grenoble.fr> 0.7.1
 Alpha release

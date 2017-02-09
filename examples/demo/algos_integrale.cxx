@@ -31,8 +31,6 @@ integraleApprochee(f,b_inf,b_sup,n,mode):= {
   return evalf(h*integ);  
 };
 
---------------------------------------------
-
 // Approx. computation of integral of f using Simpson method
 // N = number of subdivisions of [a, b] 
 
