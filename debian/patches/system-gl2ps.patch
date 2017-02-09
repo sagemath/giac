@@ -1,0 +1,37 @@
+Description: Use system gl2ps
+Author: Ximin Luo <infinity0@debian.org>
+Forwarded: TODO
+--- a/src/Graph3d.cc
++++ b/src/Graph3d.cc
+@@ -48,7 +48,7 @@
+ #include "Editeur.h"
+ #include "Xcas1.h"
+ #include "Print.h"
+-#include "gl2ps.h"
++#include <gl2ps.h>
+ 
+ #ifdef __APPLE__
+ #include <AGL/agl.h>
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -28,17 +28,17 @@
+ static_help.h giacPCH.h giacintl.h gmp_replacements.h myostream.h
+ 
+ noinst_LTLIBRARIES = libxcas.la
+-libxcas_la_LIBADD = libgiac.la $(GUI_LIBS)
++libxcas_la_LIBADD = libgiac.la -lgl2ps $(GUI_LIBS)
+ 
+ libxcas_la_SOURCES = History.cc Input.cc Xcas1.cc Equation.cc Print.cc \
+ 	Tableur.cc Editeur.cc Graph.cc Graph3d.cc Help1.cc Cfg.cc \
+ 	Flv_CStyle.cc \
+ 	Flve_Check_Button.cc Flve_Input.cc Flv_Style.cc Flv_Data_Source.cc \
+-	Flve_Combo.cc Flv_List.cc Flv_Table.cc gl2ps.c \
++	Flve_Combo.cc Flv_List.cc Flv_Table.cc \
+ 	History.h Input.h Xcas1.h Equation.h Print.h Tableur.h \
+ 	Editeur.h Graph.h Graph3d.h Help1.h Cfg.h \
+ 	Flv_CStyle.H  Flve_Check_Button.H  Flve_Input.H  Flv_Style.H \
+-	Flv_Data_Source.H  Flve_Combo.H Flv_List.H Flv_Table.H gl2ps.h
++	Flv_Data_Source.H  Flve_Combo.H Flv_List.H Flv_Table.H
+ 
+ ##libjavagiac_la_LIBADD = libgiac.la 
+ 

@@ -1,0 +1,39 @@
+French documentation
+====================
+
+Unfortunately, upstream releases the documentation in French under a license
+that prohibits distribution for commercal purposes. This cannot be distributed
+in Debian, being against the DFSG:
+
+https://people.debian.org/~bap/dfsg-faq.html#no_commercial
+
+For more information see:
+
+http://xcas.e.ujf-grenoble.fr/XCAS/viewtopic.php?f=19&t=1777
+
+The only document in doc/fr which is available under a DFSG-free license is
+algo.tex. This is provided in this Debian package, however the interactive
+examples are non-functional due to the lack of emscripten in Debian. See the
+next section for details on this.
+
+giac.js library
+===============
+
+Upstream provides a pre-built web-based version of giac in doc/giac.js which is
+used by some of the documentation web pages. To follow Debian's anti-embedding
+policy, we add this to Files-Excluded with the intention of building it from
+source in Debian. The upstream build scripts are here:
+
+http://www-fourier.ujf-grenoble.fr/~parisse/giac/emgiac.tgz
+
+but the instructions are trivial - basically, one calls `emmake make`. So we
+probably don't need to combine its contents into this Debian package.
+
+However, `emscripten` is not available in Debian, because they require their
+own forked version of LLVM. So for the time being, giac.js is disabled in the
+Debian giac-doc package. (When we eventually enable it, it should probably go
+in a separate libjs-giac package.)
+
+For more details on the emscripten + LLVM situation in Debian, see:
+
+https://bugs.debian.org/cgi-bin/pkgreport.cgi?src=emscripten&sev-inc=critical&sev-inc=grave&sev-inc=serious

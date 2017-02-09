@@ -1,0 +1,86 @@
+.\"                                      Hey, EMACS: -*- nroff -*-
+.\" First parameter, NAME, should be all caps
+.\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
+.\" other parameters are allowed: see man(7), man(1)
+.TH GIAC 1 "2017-02-08"
+.\" Please adjust this date whenever revising the manpage.
+.\"
+.\" Some roff macros, for reference:
+.\" .nh        disable hyphenation
+.\" .hy        enable hyphenation
+.\" .ad l      left justify
+.\" .ad b      justify to both left and right margins
+.\" .nf        disable filling
+.\" .fi        enable filling
+.\" .br        insert line break
+.\" .sp <n>    insert n+1 empty lines
+.\" for manpage-specific macros, see man(7)
+.\"
+.\" TeX users may be more comfortable with the \fB<whatever>\fR and
+.\" \fI<whatever>\fR escape sequences to invode bold face and italics,
+.\" respectively.
+.SH NAME
+giac \- computer algebra system
+.SH SYNOPSIS
+.B giac
+.RI [ options ] " files"
+.br
+.B icas
+.RI [ options ] " files"
+.br
+.B xcas
+.RI " files"
+.SH DESCRIPTION
+.PP
+\fBgiac\fR is an advanced symbolic and numeric calculator. The console
+interface is named \fBicas\fR or equivalently \fBgiac\fR. The corresponding GUI
+program is called \fBxcas\fR.
+
+These programs have extensive documentation. The \fIGIAC/XCAS manual\fR is
+available in Info format by invoking `info giac`, and in HTML and DVI format in
+\fI/usr/share/giac/doc\fR. One can also obtain some help about a keyword like
+this, from inside the program:
+
+.P
+   0>> ?gcd
+.br
+   Returns the greatest common divisor of 2 polynomials of several variables
+   or of 2 integers or of 2 rationals.
+.br
+   (Intg(a) or Poly),(Intg(b) or Poly)
+.br
+   gcd(45,75); gcd(15/7,50/9); gcd(x^2-2*x+1,x^3-1); gcd(t^2-2*t+1,t^2+t-2);
+.br
+   gcd((x^2-1)*(y^2-1)*z^2,x^3*y^3*z+(-(y^3))*z+x^3*z-z)
+.br
+   lcm,euler,modgcd,ezgcd,psrgcd,heugcd,Gcd
+
+The equivalent output may be retrieved by invoking (e.g.) `cas_help gcd`.
+
+.SH OPTIONS
+.TP
+.B \-\-version
+Show version of program.
+.TP
+.B \-\-texmacs
+To call giac/icas from inside Texmacs. Users should not need to do this.
+.TP
+.B \-\-emacs
+To call giac/icas from inside Emacs. Users should not need to do this.
+.TP
+.B \-\-sage
+To call giac/icas from inside Sage. Users should not need to do this.
+
+.SH SEE ALSO
+\fBcas_help\fR(1)
+
+.SH AUTHORS
+\fBgiac\fR is written by Bernard Parisse.
+http://www-fourier.ujf-grenoble.fr/~parisse/giac.html
+
+This manual page was written by Carleos Artime <carleos@pinon.ccu.uniovi.es>
+and Ximin Luo <infinity0@debian.org> for the Debian GNU/Linux system (but may
+be used by others).
+
+.SH LICENSE
+GPLv3+

@@ -1,0 +1,86 @@
+Description: Don't include remote scripts
+ We have them in Debian, use those
+Author: Ximin Luo <infinity0@debian.org>
+Forwarded: not-needed
+---
+This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+--- a/doc/testfr.tex
++++ b/doc/testfr.tex
+@@ -60,7 +60,7 @@
+ 
+ 
+ \begin{document}
+-\begin{giacjsonline}
++\begin{giacjshere}
+ %\loadgiacjs
+ %\loadgiacjsonline
+  
+@@ -170,5 +170,5 @@
+ \verb|\giaclink{http://www-fourier.ujf-grenoble.fr/\%7eparisse/xcasfr.html#+factor(x^4-1)&+a:=idn(3)&}|\index{giaclink}\\
+ \giaclink{http://www-fourier.ujf-grenoble.fr/\%7eparisse/xcasfr.html#+factor(x^4-1)&+a:=idn(3)&}
+ 
+-\end{giacjsonline}
++\end{giacjshere}
+ \end{document}
+--- a/doc/test.tex
++++ b/doc/test.tex
+@@ -61,7 +61,7 @@
+ \begin{document}
+ %\loadgiacjsonline
+ %\loadgiacjs
+-\begin{giacjsonline}
++\begin{giacjshere}
+ \maketitle
+ 
+ \tableofcontents
+@@ -158,5 +158,5 @@
+ \verb|\giacslider{a}{-5}{5}{0.1}{0}{plot(sin(a*x))}|\index{giacslider}\\
+ \giacslider{a}{-5}{5}{0.1}{0}{plot(sin(a*x))}
+ 
+-\end{giacjsonline}
++\end{giacjshere}
+ \end{document}
+--- a/doc/giac.tex
++++ b/doc/giac.tex
+@@ -270,7 +270,7 @@
+   if (UI.usemathjax){
+     var script = document.createElement("script");
+     script.type = "text/javascript";
+-    script.src  = "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
++    script.src  = "file:///usr/share/javascript/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+     document.getElementsByTagName("head")[0].appendChild(script);
+   }
+   var elem= document.getElementById('controlindex');
+--- a/doc/giacfr.tex
++++ b/doc/giacfr.tex
+@@ -265,7 +265,7 @@
+   if (UI.usemathjax){
+     var script = document.createElement("script");
+     script.type = "text/javascript";
+-    script.src  = "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
++    script.src  = "file:///usr/share/javascript/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+     document.getElementsByTagName("head")[0].appendChild(script);
+   }
+   var elem= document.getElementById('controlindex');
+--- a/doc/xcasen.html
++++ b/doc/xcasen.html
+@@ -167,7 +167,7 @@
+  (function () {
+   var script = document.createElement("script");
+   script.type = "text/javascript";
+-  script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
++  script.src  = "file:///usr/share/javascript/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+   document.getElementsByTagName("head")[0].appendChild(script);
+ })();
+ }
+--- a/doc/xcasfr.html
++++ b/doc/xcasfr.html
+@@ -2940,7 +2940,7 @@
+  (function () {
+   var script = document.createElement("script");
+   script.type = "text/javascript";
+-  script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML";
++  script.src  = "file:///usr/share/javascript/mathjax/MathJax.js?config=TeX-AMS_CHTML";
+   document.getElementsByTagName("head")[0].appendChild(script);
+ })();
+ }

@@ -1,0 +1,18 @@
+Description: Fix equivalent test cases
+ The difference is probably just caused by having versions of dependencies
+ that are different in Debian from what upstream expects, most likely Pari
+Author: Ximin Luo <infinity0@debian.org>
+Forwarded: not-needed
+---
+This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+--- a/check/TP16-sol.cas.out1
++++ b/check/TP16-sol.cas.out1
+@@ -48,7 +48,7 @@
+ "Done",
+ [-sqrt(13)-1,sqrt(13)-1,4],
+ y^2+6*sqrt(13)+18,y^2-6*sqrt(13)+18,y^2,
+--sqrt(6)*I*sqrt(sqrt(13)+3),sqrt(6)*I*sqrt(sqrt(13)+3),-sqrt(6)*sqrt(sqrt(13)-3),sqrt(6)*sqrt(sqrt(13)-3),0,
++sqrt(6)*I*sqrt(sqrt(13)+3),-sqrt(6)*I*sqrt(sqrt(13)+3),-sqrt(6)*sqrt(sqrt(13)-3),sqrt(6)*sqrt(sqrt(13)-3),0,
+ "No such variable u",
+ x^2+1/4*y^2+1/9*z^2-1,
+ x^2+y^2+z^2-u,

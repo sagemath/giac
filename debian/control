@@ -2,31 +2,93 @@ Source: giac
 Section: science
 Priority: extra
 Maintainer: Debian Science Maintainers <debian-science-maintainers@lists.alioth.debian.org>
-Uploaders: Gilles Filippini <gilles.filippini@free.fr>
-DM-Upload-Allowed: yes
-Build-Depends: quilt (>= 0.46-7~), debhelper (>= 7), automake, libtool, cvs, libgmp3-dev, libreadline-dev, libntl-dev, libmpfr-dev, libpari-dev, texinfo, texlive-math-extra, texlive-pstricks, texlive-latex-recommended, latex2html, libfltk1.1-dev, libglu1-mesa-dev, libxinerama-dev, libfontconfig1-dev, libxft-dev, libxext-dev, libgsl0-dev, zlib1g-dev, libpng12-dev, libjpeg7-dev
-Standards-Version: 3.8.3
+Uploaders: Ximin Luo <infinity0@debian.org>, Gilles Filippini <pini@debian.org>
+Build-Depends:
+ debhelper (>= 10),
+ dh-autoreconf,
+ automake,
+ bison,
+ flex,
+ hevea <!nodoc>,
+ libtool,
+ libgl2ps-dev,
+ libgmp3-dev,
+ libgsl0-dev,
+ libntl-dev,
+ libmpfr-dev,
+ libmpfi-dev,
+ libpari-dev,
+ libreadline-dev,
+ zlib1g-dev,
+ libfltk1.3-dev,
+ libfontconfig1-dev,
+ libglu1-mesa-dev,
+ libjpeg-dev,
+ libpng-dev,
+ libxext-dev,
+ libxft-dev,
+ libxinerama-dev,
+ libjs-codemirror <!nodoc>,
+ libjs-mathjax <!nodoc>,
+ texinfo <!nodoc>,
+ texlive-binaries <!nodoc>,
+ texlive-font-utils <!nodoc>,
+ texlive-math-extra <!nodoc>,
+ texlive-pstricks <!nodoc>,
+ texlive-lang-all <!nodoc>,
+ texlive-latex-recommended <!nodoc>,
+ latex2html <!nodoc>,
+ xauth <!nodoc>,
+ xvfb <!nodoc>,
+Standards-Version: 3.9.8
 Homepage: http://www-fourier.ujf-grenoble.fr/~parisse/giac.html
 
-Package: libgiac
+Package: libgiac0
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
+Suggests: giac-doc
 Description: Computer Algebra System C++ library
- <insert long description, indented with spaces>
+ Giac is a computer algebra system, following the development of the CAS for HP
+ calculators. It has fast implementation of algorithms for polynomial
+ operations, and compatibility mode with Maple or Mupad CAS as well as TI
+ calculators.
+ .
+ This package contains the shared libraries needed to run programs using giac.
 
 Package: libgiac-dev
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Section: libdevel
+Depends: ${misc:Depends}
 Description: Computer Algebra System C++ library - Development files
- <insert long description, indented with spaces>
+ Giac is a computer algebra system, following the development of the CAS for HP
+ calculators. It has fast implementation of algorithms for polynomial
+ operations, and compatibility mode with Maple or Mupad CAS as well as TI
+ calculators.
+ .
+ This package contains the header files, static libraries, and other
+ development files needed to build software that uses giac.
 
 Package: xcas
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Giac based graphical calculator
- <insert long description, indented with spaces>
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${perl:Depends}
+Suggests: giac-doc
+Description: Computer Algebra System - console and graphical calculator
+ Giac is a computer algebra system, following the development of the CAS for HP
+ calculators. It has fast implementation of algorithms for polynomial
+ operations, and compatibility mode with Maple or Mupad CAS as well as TI
+ calculators.
+ .
+ This package contains the user-facing giac programs: xcas, icas, and pgiac;
+ as well as the cas_help program for providing user-oriented help.
 
 Package: giac-doc
 Architecture: all
-Description: Documentation for giac and xcas
- <insert long description, indented with spaces>
+Section: doc
+Depends: ${misc:Depends}, libjs-codemirror, libjs-mathjax, xcas
+Description: Computer Algebra System - documentation
+ Giac is a computer algebra system, following the development of the CAS for HP
+ calculators. It has fast implementation of algorithms for polynomial
+ operations, and compatibility mode with Maple or Mupad CAS as well as TI
+ calculators.
+ .
+ This package contains static user documentation for giac and xcas.

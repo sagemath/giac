@@ -1,7 +1,13 @@
-string.h
-non-free
-intl
-destdir
-gcc-4.3
-autobuild
-checks_equivs
+# For upstreaming
+no-useless-deps.patch
+system-gl2ps.patch
+missing-build-rules.patch
+version-bison-3.patch
+dont-bg-hevea.patch
+
+#no-X-deps-icas.patch # see README.source for details
+
+# Debian only
+test-fixes.patch
+dont-build-files-excluded.patch
+dont-include-remote-scripts.patch

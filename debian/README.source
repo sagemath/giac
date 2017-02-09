@@ -1,14 +1,14 @@
-giac for Debian
----------------
+icas graphics dependencies
+==========================
 
-This package uses quilt to manage all modifications to the upstream
-source.  Changes are stored in the source package as diffs in
-debian/patches and applied during the build.  Please see:
+The icas program is included in the xcas package even though it is primarily a
+non-GUI console interface, because it sometimes calls functions from xcas.
 
-    /usr/share/doc/quilt/README.source
-
-for more information on how to apply the patches, modify patches, or
-remove a patch.
-
-
-
+See debian/patches/no-X-deps-icas.patch for a way to make it completely
+non-dependent on X. There is also a --disable-gui option in ./configure which
+accomplishes the same effect as well as disabling xcas entirely. However
+upstream does not support a way to build a non-GUI icas and xcas at the same
+time, and it is unclear whether we should spend effort maintaining such a patch
+or add extra complexity to d/rules to run the build twice with different
+./configure arguments. For now, I have given up this attempt but the patch is
+included (just not applied) in case anyone wants to pick it up in the future.

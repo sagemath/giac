@@ -1,0 +1,83 @@
+Description: Avoid linking X libs to icas
+ See README.source for more details.
+Author: Ximin Luo <infinity0@debian.org>
+Forwarded: not-needed
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -47,7 +47,7 @@
+ 
+ bin_PROGRAMS = icas xcas aide
+ icas_SOURCES = icas.cc 
+-icas_LDADD = libxcas.la $(GINSH_LIBS) $(GSL_LIBS) $(LAPACK_LIBS)
++icas_LDADD = libgiac.la $(GINSH_LIBS) $(GSL_LIBS) $(LAPACK_LIBS)
+ aide_SOURCES = aide.cc
+ aide_LDADD = libgiac.la $(GINSH_LIBS) $(GSL_LIBS) $(LAPACK_LIBS)
+ 
+--- a/src/icas.cc
++++ b/src/icas.cc
+@@ -156,7 +156,6 @@
+ static int texmacs_counter= 0;
+ 
+ 
+-#ifdef VISUALC
+ using namespace giac;
+ #define STDIN_FILENO 0
+ namespace xcas {
+@@ -169,13 +168,6 @@
+   }
+ }
+ 
+-#else
+-void ctrl_c_signal_handler(int signum){
+-  giac::ctrl_c=true;
+-  cerr << "icas/giac process " << getpid() << ", Ctrl-C pressed, interruption requested" << endl;
+-}
+-#endif
+-
+ void format_plugin () {
+   // The configuration of a plugin can be completed at startup time.
+   // This is for instance interesting if you add tab-completion a posteriori.
+@@ -844,19 +836,11 @@
+ #if !defined EMCC && !defined NSPIRE_NEWLIB
+   giac::xcasroot()=giac::xcasroot_dir(ARGV[0]);
+ #endif
+-#ifndef VISUALC
+   signal(SIGINT,ctrl_c_signal_handler);
+-#endif
+   //cerr << giac::remove_filename(ARGV[0]) << endl;
+ #ifdef HAVE_LIBGSL
+   gsl_set_error_handler_off();
+ #endif
+-#ifdef HAVE_LIBFLTK
+-#if !defined(__APPLE__) && !defined(WIN32)
+-  if (getenv("DISPLAY"))
+-#endif
+-    Fl::gl_visual(FL_RGB | FL_DEPTH | FL_ACCUM | FL_ALPHA);
+-#endif
+   giac::secure_run=false;
+ #if !defined EMCC && !defined NSPIRE_NEWLIB
+   if (ARGC==2 && !strcmp(ARGV[1],"--rebuild-help-cache")){
+@@ -1199,11 +1183,6 @@
+ 
+ 	  // GEO SETUP?
+ 	  if ( (g.type==giac::_SYMB) && (g._SYMBptr->sommet==giac::at_xyztrange) && (g._SYMBptr->feuille.type==giac::_VECT) && (g._SYMBptr->feuille._VECTptr->size()<12) ){
+-#ifdef HAVE_LIBFLTK
+-	    xcas::Xcas_load_graph_setup(contextptr);
+-	    Fl::run();
+-	    Fl::wait(0.001);
+-#endif
+ 	    giac::history_in(contextptr).push_back(g);
+ 	    giac::history_out(contextptr).push_back(gg);
+ 	    printf("Done\n");
+@@ -1376,11 +1355,6 @@
+       // END ONLINE HELP
+       // GEO SETUP
+       if ( (g.type==giac::_SYMB) && (g._SYMBptr->sommet==giac::at_xyztrange) && (g._SYMBptr->feuille.type==giac::_VECT) && (g._SYMBptr->feuille._VECTptr->size()<12) ){
+-#ifdef HAVE_LIBFLTK
+-	xcas::Xcas_load_graph_setup(contextptr);
+-	Fl::run();
+-	Fl::wait(0.001);
+-#endif
+ 	giac::history_in(contextptr).push_back(g);
+ 	giac::history_out(contextptr).push_back(gg);
+ 	printf("Done\n");

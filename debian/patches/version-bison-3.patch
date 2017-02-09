@@ -1,0 +1,17 @@
+Description: Updates for flex 2.6.1
+Author: Ximin Luo <infinity0@debian.org>
+Forwarded: TODO
+--- a/src/input_parser.yy
++++ b/src/input_parser.yy
+@@ -21,10 +21,7 @@
+  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+ 
+-         %{
+-         #define YYPARSE_PARAM scanner
+-         #define YYLEX_PARAM   scanner
+-	 %}
++%lex-param   {void *scanner}
+ /*
+  *  Definitions
+  */

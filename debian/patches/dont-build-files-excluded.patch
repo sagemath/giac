@@ -1,0 +1,106 @@
+Description: Don't build Files-Excluded
+Author: Ximin Luo <infinity0@debian.org>
+Forwarded: not-needed
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -1,6 +1,6 @@
+-SUBDIRS = 	src check intl po debianold debian doc examples 
+-DIST_SUBDIRS = 	src check intl po debianold debian doc examples 
+-EXTRA_DIST = path.h.in setup inst TROUBLES Init.scm compte INSTALACION LEAME.WIN LEAME.ipaq giac.specs giac.specs32 fltk.1.1.changes README.MACOSX pariinl.h changeversion mkosx mkosx10 mkosx3 mkdebian mkdebian2 win2unix.cc addu.cc xcas*.nsi xcas.desktop xcas.xpm xcas.applications README.visualcpp java.README config.h.win win64 mkiphone build_for_iphoneos path.iphone simupath.iphone config.h.iphone config.h.64 config.h.mingw path.mingw configure.mingw README.mingw archive.mingw compile.android mkrpm icons/*
++SUBDIRS = 	src check intl po doc examples
++DIST_SUBDIRS = 	src check intl po doc examples
++EXTRA_DIST = path.h.in setup inst TROUBLES Init.scm compte INSTALACION LEAME.WIN LEAME.ipaq giac.specs giac.specs32 fltk.1.1.changes README.MACOSX pariinl.h changeversion mkosx mkosx10 mkosx3 win2unix.cc addu.cc xcas*.nsi xcas.desktop xcas.xpm xcas.applications README.visualcpp java.README config.h.win win64 mkiphone build_for_iphoneos path.iphone simupath.iphone config.h.iphone config.h.64 config.h.mingw path.mingw configure.mingw README.mingw archive.mingw compile.android mkrpm icons/*
+ 
+ # Rule to build tar-bzipped distribution package
+ $(PACKAGE)-$(VERSION).tar.gz: dist
+--- a/configure.in
++++ b/configure.in
+@@ -398,8 +398,6 @@
+ doc/es/Makefile
+ doc/fr/Makefile
+ doc/el/Makefile
+-doc/el/tutoriel/Makefile
+-doc/el/casinter/Makefile
+ doc/local/Makefile
+ doc/pt/Makefile
+ doc/zh/Makefile
+@@ -407,8 +405,6 @@
+ intl/Makefile
+ po/Makefile.in
+ examples/Makefile
+-debianold/Makefile
+-debian/Makefile
+ ])
+ 
+ echo "Adding link . to giac in src"
+--- a/doc/el/Makefile.am
++++ b/doc/el/Makefile.am
+@@ -1,5 +1,3 @@
+-SUBDIRS = tutoriel casinter
+-DIST_SUBDIRS = tutoriel casinter
+ info_TEXINFOS = giac_el.texinfo
+ AM_MAKEINFOHTMLFLAGS = --no-split
+ 
+@@ -15,7 +13,7 @@
+ 
+ the_LANG = el
+ thelangdocdir = $(docdir)/$(the_LANG)
+-dist_thelangdoc_DATA = html_mall html_mtt html_vall xcasmenu xcasex keywords 
++dist_thelangdoc_DATA = html_mall html_mtt html_vall xcasmenu xcasex keywords
+ 
+ html-local: $(HTML_STAMPS)
+ pdf-local: $(PDF_LOCAL)
+@@ -74,7 +72,7 @@
+ 
+ .tex.stamp:
+ #	$(RUN_LATEX2HTML) $< --address '$(GIAC_ADDRESS)'
+-	$(RUN_HEVEA) $< 
++	$(RUN_HEVEA) $<
+ 	tdir=`echo $< | sed -e 's/\.tex//'`; \
+ 	imagen -png -pdf -mag 2000 $$tdir; \
+ 	$(install_sh) -d $$tdir ; \
+--- a/doc/Makefile.am
++++ b/doc/Makefile.am
+@@ -1,6 +1,6 @@
+ SUBDIRS = 	en es fr el local pt zh de
+ DIST_SUBDIRS = 	en es fr el local pt zh de
+-XCASHTML = xcasfr.html xcasen.html codemirror.css codemirror.js xcasmode.js giac.js matchbrackets.js FileSaver.js logo.png longhelp.js giac.tex giacfr.tex test.tex testfr.tex test.html testfr.html
++XCASHTML = xcasfr.html xcasen.html xcasmode.js giac.js matchbrackets.js FileSaver.js logo.png longhelp.js giac.tex giacfr.tex test.tex testfr.tex test.html testfr.html
+ EXTRA_DIST = aide_cas README index.html $(XCASHTML) dxcas/* pari/*
+ 
+ dist_pkgdata_DATA = aide_cas
+@@ -8,12 +8,10 @@
+ 
+ install-exec-hook: testfr.html
+ 	$(install_sh) -d $(DESTDIR)$(prefix)/share/giac/doc/dxcas
+-	$(install_sh) -d $(DESTDIR)$(prefix)/share/giac/doc/pari
+ 	for dd in $(XCASHTML); do \
+ 	  $(INSTALL_DATA) $(top_srcdir)/doc/$$dd $(DESTDIR)$(prefix)/share/giac/doc/ ; \
+ 	done
+ 	$(INSTALL_DATA) $(top_srcdir)/doc/dxcas/* $(DESTDIR)$(prefix)/share/giac/doc/dxcas
+-	$(INSTALL_DATA) $(top_srcdir)/doc/pari/* $(DESTDIR)$(prefix)/share/giac/doc/pari
+ 	$(INSTALL_DATA) $(top_srcdir)/doc/index.html $(DESTDIR)$(prefix)/share/giac/doc/
+ 	$(INSTALL_DATA) $(top_srcdir)/doc/README $(DESTDIR)$(prefix)/share/giac/doc/
+ 	ln -sf ../aide_cas $(DESTDIR)$(prefix)/share/giac/doc/aide_cas
+--- a/doc/en/Makefile.am
++++ b/doc/en/Makefile.am
+@@ -1,6 +1,6 @@
+ TEX_LOCAL = cascmd_en.tex casinter.tex cas.tex slipres.tex giacxcas.tex
+ 
+-PDF_LOCAL = cascmd_en.pdf casinter.pdf cas.pdf troussesurvie_en.pdf
++PDF_LOCAL = cascmd_en.pdf casinter.pdf cas.pdf
+ 
+ PS_LOCAL = cascmd_en.ps casinter.ps cas.ps
+ 
+@@ -32,10 +32,9 @@
+ $(srcdir)/cascmd_en: cascmd_en.stamp
+ $(srcdir)/casinter: casinter.stamp
+ 
+-install-data-local: $(HTML_STAMPS) $(PS_LOCAL) $(DVI_LOCAL) troussesurvie_en.pdf # $(PDF_LOCAL) 
++install-data-local: $(HTML_STAMPS) $(PS_LOCAL) $(DVI_LOCAL) # $(PDF_LOCAL) 
+ 	$(install_sh) -d $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
+ #	$(INSTALL_DATA) $(PDF_LOCAL) $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
+-	$(INSTALL_DATA) troussesurvie_en.pdf $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
+ 	$(INSTALL_DATA) $(PS_LOCAL) $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
+ #	$(INSTALL_DATA) $(DVI_LOCAL) $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
+ #	$(INSTALL_DATA) $(HTML_LOCAL) $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)

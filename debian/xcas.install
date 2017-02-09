@@ -1,0 +1,14 @@
+/usr/bin/icas
+/usr/bin/giac
+/usr/bin/pgiac
+# TODO: The three above files could go into libgiac0 instead, if we get rid of
+# the X dependencies. Unclear if we should; see README.source for details.
+/usr/bin/xcas*
+/usr/bin/*cas_help
+/usr/share/giac/aide_cas
+/usr/share/applications/xcas.desktop
+/usr/share/application-registry/xcas.applications
+/usr/share/icons/hicolor/*/mimetypes/application-x-xcas.png
+/usr/share/icons/hicolor/*/apps/xcas.png
+/usr/share/info/giac*.info
+/usr/share/pixmaps/xcas.xpm
