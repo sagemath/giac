@@ -1,4 +1,4 @@
-/usr/lib/x86_64-linux-gnu/libgiac.la
+/usr/lib/*/libgiac.la
 # Looks like upstream didn't bother overriding default automake targets
 # This is a mis-mash of examples/ and a sub-set of doc/
 /usr/share/doc/giac
