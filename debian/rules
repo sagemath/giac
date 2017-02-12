@@ -19,6 +19,7 @@ override_dh_autoreconf:
 
 override_dh_install:
 	rm -f debian/tmp/usr/lib/*/libgiac.la
+	rm -f debian/tmp/usr/include/giac/config.h
 	dh_install --fail-missing
 
 override_dh_fixperms:
