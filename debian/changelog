@@ -1,4 +1,4 @@
-giac (1.2.3.25+dfsg1-1) UNRELEASED; urgency=low
+giac (1.2.3.25+dfsg1-1) unstable; urgency=low
 
   [ Gilles Filippini ]
   * Initial release.
@@ -6,4 +6,4 @@ giac (1.2.3.25+dfsg1-1) UNRELEASED; urgency=low
   [ Ximin Luo ]
   * New upstream release. (Closes: #783975)
 
- -- Ximin Luo <infinity0@debian.org>  Sat, 04 Feb 2017 20:15:14 +0100
+ -- Ximin Luo <infinity0@debian.org>  Sun, 12 Feb 2017 16:47:53 +0100
