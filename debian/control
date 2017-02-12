@@ -45,6 +45,7 @@ Homepage: http://www-fourier.ujf-grenoble.fr/~parisse/giac.html
 
 Package: libgiac0
 Architecture: any
+Multi-Arch: same
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Suggests: giac-doc
 Description: Computer Algebra System C++ library
@@ -57,6 +58,7 @@ Description: Computer Algebra System C++ library
 
 Package: libgiac-dev
 Architecture: any
+Multi-Arch: same
 Section: libdevel
 Depends: ${misc:Depends}
 Description: Computer Algebra System C++ library - Development files
@@ -70,6 +72,7 @@ Description: Computer Algebra System C++ library - Development files
 
 Package: xcas
 Architecture: any
+Multi-Arch: allowed
 Depends: ${shlibs:Depends}, ${misc:Depends}, ${perl:Depends}
 Suggests: giac-doc
 Description: Computer Algebra System - console and graphical calculator
@@ -83,6 +86,7 @@ Description: Computer Algebra System - console and graphical calculator
 
 Package: giac-doc
 Architecture: all
+Multi-Arch: foreign
 Section: doc
 Depends: ${misc:Depends}, libjs-codemirror, libjs-mathjax, xcas
 Description: Computer Algebra System - documentation
