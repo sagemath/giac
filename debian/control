@@ -28,6 +28,7 @@ Build-Depends:
  libxext-dev,
  libxft-dev,
  libxinerama-dev,
+ imagemagick <!nodoc>,
  libjs-codemirror <!nodoc>,
  libjs-mathjax <!nodoc>,
  texinfo <!nodoc>,
@@ -76,7 +77,15 @@ Package: xcas
 Architecture: any
 Multi-Arch: allowed
 Depends: ${shlibs:Depends}, ${misc:Depends}, ${perl:Depends}
-Suggests: giac-doc
+Suggests: giac-doc,
+# xcas calls system() in quite a bunch of places for optional behaviour
+ imagemagick,
+ kbd,
+ netpbm,
+ texlive-binaries,
+ texlive-latex-base,
+ wget,
+ xterm,
 Description: Computer Algebra System - console and graphical calculator
  Giac is a computer algebra system, following the development of the CAS for HP
  calculators. It has fast implementation of algorithms for polynomial
