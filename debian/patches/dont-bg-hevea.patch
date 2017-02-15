@@ -1,32 +1,27 @@
 Description: Don't run hevea in background
- Instead, run it from other Makefile rules in the foreground
 Author: Ximin Luo <infinity0@debian.org>
 Forwarded: TODO
 --- a/src/icas.cc
 +++ b/src/icas.cc
-@@ -494,10 +494,8 @@
+@@ -494,8 +494,8 @@
  	if (pos>=0 && pos<ss){
  	  out << s << endl;
  	  out.close();
 -	  COUT << "File " << outfile << " created, now running hevea in background and pgiac " << outfile << endl << "Then I will run pdflatex " << giac::remove_extension(outfile) << endl << "For HTML5 output, you can run\nhevea -fix " << infile_ << endl;
 -	  std::string cmd="hevea -fix "+infile_+" &";
--	  system(cmd.c_str());
--	  cmd="makeindex "+giac::remove_extension(outfile);
-+	  COUT << "File " << outfile << " created, now running pgiac " << outfile << endl << "Then I will run pdflatex " << giac::remove_extension(outfile) << endl << "For HTML5 output, you can run\nhevea -fix " << infile_ << endl;
-+	  std::string cmd="makeindex "+giac::remove_extension(outfile);
++	  COUT << "File " << outfile << " created, now running hevea and pgiac " << outfile << endl << "Then I will run pdflatex " << giac::remove_extension(outfile) << endl << "For HTML5 output, you can run\nhevea -fix " << infile_ << endl;
++	  std::string cmd="hevea -fix "+infile_;
  	  system(cmd.c_str());
- 	  cmd=("pdflatex "+giac::remove_extension(outfile)+" && mv "+giac::remove_extension(outfile)+".pdf "+infile_+".pdf");
- 	  COUT << cmd << endl;
-@@ -705,10 +703,8 @@
+ 	  cmd="makeindex "+giac::remove_extension(outfile);
+ 	  system(cmd.c_str());
+@@ -705,8 +705,8 @@
  	if (pos>=0 && pos<ss){
  	  out << s << endl;
  	  out.close();
 -	  COUT << "File " << outfile << " created, now running hevea in background and pgiac " << outfile << endl << "Then I will run pdflatex " << giac::remove_extension(outfile) << endl << "For HTML5 output, you can run\nhevea -fix " << giac::remove_extension(infile) << endl;
 -	  std::string cmd="hevea -fix "+giac::remove_extension(infile)+" &";
--	  system(cmd.c_str());
--	  cmd=("pgiac "+outfile+" && pdflatex "+giac::remove_extension(outfile)+" && mv "+giac::remove_extension(outfile)+".pdf "+giac::remove_extension(infile)+".pdf");
-+	  COUT << "File " << outfile << " created, now running pgiac " << outfile << endl << "Then I will run pdflatex " << giac::remove_extension(outfile) << endl << "For HTML5 output, you can run\nhevea -fix " << giac::remove_extension(infile) << endl;
-+	  std::string cmd=("pgiac "+outfile+" && pdflatex "+giac::remove_extension(outfile)+" && mv "+giac::remove_extension(outfile)+".pdf "+giac::remove_extension(infile)+".pdf");
- 	  COUT << cmd << endl;
++	  COUT << "File " << outfile << " created, now running hevea and pgiac " << outfile << endl << "Then I will run pdflatex " << giac::remove_extension(outfile) << endl << "For HTML5 output, you can run\nhevea -fix " << giac::remove_extension(infile) << endl;
++	  std::string cmd="hevea -fix "+giac::remove_extension(infile);
  	  system(cmd.c_str());
- 	  return;
+ 	  cmd=("pgiac "+outfile+" && pdflatex "+giac::remove_extension(outfile)+" && mv "+giac::remove_extension(outfile)+".pdf "+giac::remove_extension(infile)+".pdf");
+ 	  COUT << cmd << endl;

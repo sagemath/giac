@@ -9,7 +9,6 @@ Build-Depends:
  automake,
  bison,
  flex,
- hevea <!nodoc>,
  libtool,
  libgl2ps-dev,
  libgmp3-dev,
@@ -28,7 +27,9 @@ Build-Depends:
  libxext-dev,
  libxft-dev,
  libxinerama-dev,
+ hevea <!nodoc>,
  imagemagick <!nodoc>,
+ latex2html <!nodoc>,
  libjs-codemirror <!nodoc>,
  libjs-mathjax <!nodoc>,
  texinfo <!nodoc>,
@@ -38,7 +39,6 @@ Build-Depends:
  texlive-pstricks <!nodoc>,
  texlive-lang-all <!nodoc>,
  texlive-latex-recommended <!nodoc>,
- latex2html <!nodoc>,
  xauth <!nodoc>,
  xvfb <!nodoc>,
 Standards-Version: 3.9.8
@@ -79,6 +79,7 @@ Multi-Arch: allowed
 Depends: ${shlibs:Depends}, ${misc:Depends}, ${perl:Depends}
 Suggests: giac-doc,
 # xcas calls system() in quite a bunch of places for optional behaviour
+ hevea,
  imagemagick,
  kbd,
  netpbm,

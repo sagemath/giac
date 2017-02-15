@@ -1,79 +1,28 @@
-# Copied from upstream but with most things stripped
-# except "keywords", and "algo.tex" and its resources and build products
-# Special build instructions for algo.pdf are from upstream:
+# Copied from upstream but with most things stripped except "keywords"
+# Plus special build instructions for algo.{pdf,html} from upstream:
 # http://xcas.e.ujf-grenoble.fr/XCAS/viewtopic.php?p=8755#p8755
 
 TEX_LOCAL = algo.tex
 
 PDF_LOCAL = algo.pdf
 
-HTML_STAMPS = algo.stamp
-
-HTML_LOCAL = algo.html algo*png
+HTML_LOCAL = algo.html
 
 FIGURES = ellipse*
 
-EXTRA_DIST = $(TEX_LOCAL) $(HTML_LOCAL) $(HTML_STAMPS) $(FIGURES) $(PDF_LOCAL)
+EXTRA_DIST = $(TEX_LOCAL) $(HTML_LOCAL) $(FIGURES) $(PDF_LOCAL)
 
 the_LANG = fr
 thelangdocdir = $(docdir)/$(the_LANG)
 dist_thelangdoc_DATA = keywords
 
-html-local: $(HTML_STAMPS)
-pdf-local: $(PDF_LOCAL)
-dvi-local: $(DVI_LOCAL)
-ps-local: $(PS_LOCAL)
-
-all-local: $(PDF_LOCAL) $(HTML_STAMPS)
+all-local: $(PDF_LOCAL) $(HTML_LOCAL)
 
 install-data-local: all-local
 	$(install_sh) -d $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
 	$(INSTALL_DATA) $(PDF_LOCAL) $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
 	$(INSTALL_DATA) $(HTML_LOCAL) $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
 	$(INSTALL_DATA) $(dist_thelangdoc_DATA) $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
-
-HEVEA_OPTIONS = -fix
-# faire hevea -fix cascmd_fr ; cd cascmd_fr ; hacha ../cascmd_fr.html
-# verifier la presence de indexenv dans index.html
-LATEX2HTML_OPTIONS = -local_icons -no_math -html_version 3.2,math
-
-SUFFIXES = .stamp .tex .pdf .ps .dvi
-
-RUN_PDFLATEX = TEXINPUTS=$(srcdir):$$TEXINPUTS $(PDFLATEX)
-RUN_LATEX = TEXINPUTS=$(srcdir):$$TEXINPUTS $(LATEX)
-RUN_MAKEINDEX = TEXINPUTS=$(srcdir):$$TEXINPUTS $(MAKEINDEX)
-RUN_LATEX2HTML = TEXINPUTS=$(srcdir):$$TEXINPUTS $(LATEX2HTML) $(LATEX2HTML_OPTIONS)
-RUN_HEVEA = TEXINPUTS=$(srcdir):$$TEXINPUTS hevea $(HEVEA_OPTIONS)
-
-.tex.pdf:
-	$(RUN_PDFLATEX) $<
-	$(RUN_PDFLATEX) $<
-	if $(EGREP) -q -e '\\makeindex' $<; then \
-		$(RUN_MAKEINDEX) `echo $@ | sed -e s/\.dvi/\.idx/` ; \
-	fi
-	$(RUN_PDFLATEX) $<
-
-.tex.dvi:
-	$(RUN_LATEX) $<
-	$(RUN_LATEX) $<
-	if $(EGREP) -q -e '\\makeindex' $<; then \
-		$(RUN_MAKEINDEX) `echo $@ | sed -e s/\.dvi/\.idx/` ; \
-	fi
-	$(RUN_LATEX) $<
-
-.dvi.ps:
-	$(DVIPS) -o $@ $<
-
-.tex.stamp:
-	$(RUN_HEVEA) $<
-	tdir=`echo $< | sed -e 's/\.tex//'`; \
-	imagen -png -pdf -mag 2000 $$tdir; \
-	$(install_sh) -d $$tdir ; \
-	hacha $$tdir.html -o $$tdir/index.html ; \
-	touch $$tdir.png ; \
-	/bin/cp -f $$tdir*.png $$tdir
-#	rm -f $$tdir/*.old $$tdir/*.pl $$tdir/images.??? $$tdir/WARNINGS
-	touch $@
 
 install-exec-hook:
 	mkdir -p $(DESTDIR)$(prefix)/share/giac/doc/fr/
@@ -82,5 +31,5 @@ install-exec-hook:
 giacfr.tex: ../giacfr.tex
 	cp "$<" "$@"
 
-algo.pdf: algo.tex giacfr.tex
+algo.pdf algo.html: algo.tex giacfr.tex
 	xvfb-run ../../src/icas "$<"
