@@ -22,7 +22,7 @@ override_dh_install:
 	rm -f debian/tmp/usr/include/giac/config.h
 	dh_install --fail-missing
 
-override_dh_fixperms:
+override_dh_fixperms-indep:
 	dh_fixperms
 	find debian/giac-doc/usr/share/giac/examples/ \
 	  \( -name '*.cas' -o -name '*.xws' -o -name '*.cxx' \) -exec chmod -x '{}' \;
