@@ -1,3 +1,9 @@
+giac (1.2.3.25+dfsg1-3) UNRELEASED; urgency=medium
+
+  * Add missing depends from libgiac-dev on libgiac0. (Closes: #856949)
+
+ -- Ximin Luo <infinity0@debian.org>  Tue, 07 Mar 2017 16:23:22 +0100
+
 giac (1.2.3.25+dfsg1-2) unstable; urgency=medium
 
   * Fix arch-dep builds. (Closes: #855076)
