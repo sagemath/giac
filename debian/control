@@ -35,7 +35,7 @@ Build-Depends:
  texinfo <!nodoc>,
  texlive-binaries <!nodoc>,
  texlive-font-utils <!nodoc>,
- texlive-math-extra <!nodoc>,
+ texlive-science <!nodoc>,
  texlive-pstricks <!nodoc>,
  texlive-lang-all <!nodoc>,
  texlive-latex-recommended <!nodoc>,
