@@ -1,9 +1,9 @@
-giac (1.2.3.25+dfsg1-4) UNRELEASED; urgency=medium
+giac (1.2.3.25+dfsg1-4) unstable; urgency=medium
 
   * Split arch-dependent vs -independent builds to try to avoid failures
     building the documentation on some architectures.
 
- -- Ximin Luo <infinity0@debian.org>  Tue, 20 Jun 2017 16:19:44 +0200
+ -- Ximin Luo <infinity0@debian.org>  Tue, 20 Jun 2017 20:35:32 +0200
 
 giac (1.2.3.25+dfsg1-3) unstable; urgency=medium
 
