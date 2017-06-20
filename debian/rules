@@ -6,6 +6,18 @@
 %:
 	dh "$@" --with autoreconf
 
+# Use ccache if pkg.giac.ccache build-profile is active.
+# Your rebuilds will be *much quicker*.
+ifneq (,$(filter pkg.giac.ccache,$(DEB_BUILD_PROFILES)))
+export PATH := /usr/lib/ccache:$(PATH)
+export CCACHE_DIR := $(CURDIR)/debian/ccache
+#export CCACHE_BASEDIR := $(CURDIR)/debian/build
+$(shell mkdir -p "$(CCACHE_DIR)")
+endif
+
+# ~/.xcasrc sometimes interferes with doc/test targets, causing failures
+export HOME=/nonexistent
+
 override_dh_autoreconf:
 # Deal with embedded stuff
 	find doc/ -maxdepth 1 -type d -exec ln -sf /usr/share/texmf/tex/texinfo/texinfo.tex '{}/' \;
@@ -16,6 +28,28 @@ override_dh_autoreconf:
 	mv doc/fr/Makefile.am.Debian doc/fr/Makefile.am
 # Actually configure
 	dh_autoreconf
+
+override_dh_auto_build-arch:
+# Should be the same order as SUBDIRS in Makefile.am
+	dh_auto_build -a -D src
+	dh_auto_build -a -D intl
+	dh_auto_build -a -D po
+	dh_auto_build -a -D doc -- info
+
+override_dh_auto_test-arch:
+	dh_auto_test -a -D check
+
+override_dh_auto_test-indep:
+	true
+
+override_dh_auto_install-arch:
+# Should be the same order as SUBDIRS in Makefile.am
+	dh_auto_install -a -D src
+	dh_auto_install -a -D intl
+	dh_auto_install -a -D po
+	$(MAKE) DESTDIR=$(CURDIR)/debian/tmp AM_UPDATE_INFO_DIR=no -C doc \
+	  install-info install-dist_pkgdataDATA
+	$(MAKE) DESTDIR=$(CURDIR)/debian/tmp install-exec-hook
 
 override_dh_install:
 	rm -f debian/tmp/usr/lib/*/libgiac.la

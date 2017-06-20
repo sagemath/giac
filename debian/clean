@@ -2,6 +2,7 @@ doc/giac.js
 doc/fr/
 doc/*/texinfo.tex
 doc/texinfo.tex
+check/*.tst
 src/input_lexer.cc
 src/lexer.h
 src/input_parser.cc

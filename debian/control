@@ -27,6 +27,7 @@ Build-Depends:
  libxext-dev,
  libxft-dev,
  libxinerama-dev,
+Build-Depends-Indep:
  hevea <!nodoc>,
  imagemagick <!nodoc>,
  latex2html <!nodoc>,
