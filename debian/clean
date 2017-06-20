@@ -2,3 +2,8 @@ doc/giac.js
 doc/fr/
 doc/*/texinfo.tex
 doc/texinfo.tex
+src/input_lexer.cc
+src/lexer.h
+src/input_parser.cc
+src/input_parser.h
+src/input_parser.hh

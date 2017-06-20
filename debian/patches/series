@@ -11,3 +11,4 @@ dont-bg-hevea.patch
 test-fixes.patch
 dont-build-files-excluded.patch
 dont-include-remote-scripts.patch
+find-doc-files-at-buildtime.patch

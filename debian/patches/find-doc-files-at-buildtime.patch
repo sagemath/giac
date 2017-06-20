@@ -1,0 +1,32 @@
+Description: Allow XCAS_ROOT override, so doc files can be found during the build
+ By default the documentation build looks in /usr/share, leading to non-fatal
+ errors like "// Unable to find keyword file doc/en/keywords".
+Author: Ximin Luo <infinity0@debian.org>
+Forwarded: not-needed
+
+diff --git a/src/global.cc b/src/global.cc
+index 49bff8b..00e1d6f 100755
+--- a/src/global.cc
++++ b/src/global.cc
+@@ -2551,6 +2551,10 @@ extern "C" void Sleep(unsigned int miliSecond);
+     if (!access((xcasroot()+"aide_cas").c_str(),R_OK)){
+       return xcasroot();
+     }
++    if (getenv("XCAS_ROOT")){
++      string s=getenv("XCAS_ROOT");
++      return s;
++    }
+     if (xcasroot().size()>4 && xcasroot().substr(xcasroot().size()-4,4)=="bin/"){
+       string s(xcasroot().substr(0,xcasroot().size()-4));
+       s+="share/giac/";
+@@ -2561,10 +2565,6 @@ extern "C" void Sleep(unsigned int miliSecond);
+ #ifdef __APPLE__
+     if (!access("/Applications/usr/share/giac/",R_OK))
+       return "/Applications/usr/share/giac/";
+-    if (getenv("XCAS_ROOT")){
+-      string s=getenv("XCAS_ROOT");
+-      return s;
+-    }
+     return "/Applications/usr/share/giac/";
+ #endif
+ #ifdef WIN32

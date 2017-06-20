@@ -32,4 +32,4 @@ giacfr.tex: ../giacfr.tex
 	cp "$<" "$@"
 
 algo.pdf algo.html: algo.tex giacfr.tex
-	xvfb-run -a ../../src/icas "$<"
+	xvfb-run -a env XCAS_ROOT=../../ ../../src/icas "$<"
