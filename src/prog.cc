@@ -132,14 +132,21 @@ namespace giac {
       vecteur v=*g._VECTptr;
       iterateur it=v.begin(),itend=v.end();
       for (;it!=itend;++it)
-	*it=attoof(*it);
+       *it=attoof(*it);
       return gen(v,g.subtype);
     }
     if (g.type!=_SYMB)
       return g;
     if (g._SYMBptr->sommet!=at_at)
       return symbolic(g._SYMBptr->sommet,attoof(g._SYMBptr->feuille));
-    return symbolic(at_of,attoof(g._SYMBptr->feuille));
+    if (g._SYMBptr->feuille.type!=_VECT || g._SYMBptr->feuille._VECTptr->size()<=1) // not somehting that I recognize as a proper parameter list, just return as before
+      return symbolic(at_of,attoof(g._SYMBptr->feuille));
+    // This looks like it is a vector of at least 2 objects. The first one should be the variable to do an at/of on and all the rest should be indices that needs to be incremented
+    vecteur v=*g._SYMBptr->feuille._VECTptr; 
+    iterateur it=v.begin()+1,itend=v.end(); // from item 1 to n-1 in the vector
+    for (;it!=itend;++it) 
+      *it=attoof(*it)+gen(1); // add 1 to the object
+    return symbolic(at_of,attoof(gen(v,g._SYMBptr->feuille.subtype))); // return the of(vector with modified indices) gen
   }
 
   static int prog_eval_level(GIAC_CONTEXT){
@@ -3923,7 +3930,10 @@ namespace giac {
       return symb_dollar(args);
     gen a=vargs.front(),b=vargs[1],b1=eval(b,eval_level(contextptr),contextptr);
     if (b1.type==_VECT && b1.subtype==_SEQ__VECT && b1._VECTptr->size()==2){
-      return _dollar(gen(makevecteur(a,b1._VECTptr->front(),b1._VECTptr->back()),_SEQ__VECT),contextptr);
+      gen b11=b1._VECTptr->front();
+      if (b.type==_VECT && b.subtype==_SEQ__VECT && b._VECTptr->size()==2 && b11.is_symb_of_sommet(at_equal) && b._VECTptr->front().is_symb_of_sommet(at_equal))
+	b11=symb_equal(b._VECTptr->front()[1],b11[2]);
+      return _dollar(gen(makevecteur(a,b11,b1._VECTptr->back()),_SEQ__VECT),contextptr);
     }
     if (a.is_symb_of_sommet(at_interval) && a._SYMBptr->feuille.type==_VECT && a._SYMBptr->feuille._VECTptr->size()==2){
       a=eval(a,1,contextptr);
@@ -5902,7 +5912,7 @@ namespace giac {
     }
     if (!v.empty() && (f==at_inferieur_strict || f==at_inferieur_strict_sort)){
       // check integer or double vector
-      if (v.front().type==_INT_ && is_integer_vecteur(v)){
+      if (v.front().type==_INT_ && is_integer_vecteur(v,true)){
 	// find min/max
 	vector<int> w(vecteur_2_vector_int(v));
 	int m=giacmin(w),M=giacmax(w);
@@ -5918,7 +5928,7 @@ namespace giac {
 	      *it=val;
 	    }
 	  }
-	  return res;
+	  return gen(res,subtype);
 	}
 	sort(w.begin(),w.end());
 	vector_int2vecteur(w,v);
@@ -5945,6 +5955,12 @@ namespace giac {
   }
   gen _ans(const gen & args,GIAC_CONTEXT){
     if ( args.type==_STRNG &&  args.subtype==-1) return  args;
+    if (args.type==_VECT && args._VECTptr->size()>1){
+      vecteur v=*args._VECTptr;
+      gen tmp=_ans(v.front(),contextptr);
+      v.erase(v.begin());
+      return _at(makesequence(tmp,gen(v,args.subtype)),contextptr);
+    }
     int s=int(history_out(contextptr).size());
     if (!s)
       return undef;

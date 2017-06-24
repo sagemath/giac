@@ -285,8 +285,12 @@ namespace giac {
   define_unary_function_ptr5( at_id ,alias_at_id,&__id,0,true);
 
   static string printasnot(const gen & g,const char * s,GIAC_CONTEXT){
-    if (abs_calc_mode(contextptr)==38)
-      return "NOT "+g.print(contextptr);
+    if (abs_calc_mode(contextptr)==38){
+      if (g.is_symb_of_sommet(at_and) ||g.is_symb_of_sommet(at_ou))
+	return "NOT("+g.print(contextptr)+")";
+      else
+	return "NOT "+g.print(contextptr);
+    }
     else
       return "not("+g.print(contextptr)+")";
     
@@ -2644,8 +2648,9 @@ namespace giac {
     gen a,b;
     if (is_algebraic_program(e,a,b))
       return symbolic(at_program,gen(makevecteur(a,0,asinh(b,contextptr)),_SEQ__VECT));
+    if (keep_acosh_asinh(contextptr))
+      return symbolic(at_asinh,e);
     return ln(e+sqrt(pow(e,2)+1,contextptr),contextptr);
-    // return symbolic(at_asinh,e);
   }
   static gen d_asinh(const gen & args,GIAC_CONTEXT){
     return inv(recursive_normal(sqrt(pow(args,2)+1,contextptr),contextptr),contextptr);
@@ -2661,6 +2666,8 @@ namespace giac {
 
   // static symbolic symb_acosh(const gen & e){  return symbolic(at_cosh,e);  }
   static gen acoshasln(const gen & x,GIAC_CONTEXT){
+    if (re(x,contextptr)==x)
+      return ln(x+sqrt(x*x-1,contextptr),contextptr); // avoid multiple sqrt but it's the opposite for example for x non real
     return ln(x+sqrt(x+1,contextptr)*sqrt(x-1,contextptr),contextptr);
   }
   gen acosh(const gen & e0,GIAC_CONTEXT){
@@ -2700,9 +2707,10 @@ namespace giac {
     gen a,b;
     if (is_algebraic_program(e,a,b))
       return symbolic(at_program,gen(makevecteur(a,0,acosh(b,contextptr)),_SEQ__VECT));
+    if (keep_acosh_asinh(contextptr))
+      return symbolic(at_acosh,e);
     return acoshasln(e,contextptr);
     // return ln(e+sqrt(pow(e,2)-1,contextptr),contextptr);
-    // return symbolic(at_acosh,e);
   }
   static gen d_acosh(const gen & args,GIAC_CONTEXT){
     return inv(recursive_normal(sqrt(pow(args,2)-1,contextptr),contextptr),contextptr);
@@ -4245,6 +4253,13 @@ namespace giac {
     }
     if (arg0.type!=_IDNT)
       arg0=arg0.eval(eval_level(contextptr),contextptr);
+    if (arg0.type!=_IDNT && arg1.type==_IDNT){
+      gen swapped=gen(makevecteur(arg1,arg0),_SEQ__VECT);
+      if (s==at_superieur_strict) return assumesymbolic(symbolic(at_inferieur_strict,swapped),idnt_must_be,contextptr);
+      if (s==at_superieur_egal) return assumesymbolic(symbolic(at_inferieur_egal,swapped),idnt_must_be,contextptr);
+      if (s==at_inferieur_strict) return assumesymbolic(symbolic(at_superieur_strict,swapped),idnt_must_be,contextptr);
+      if (s==at_inferieur_egal) return assumesymbolic(symbolic(at_superieur_egal,swapped),idnt_must_be,contextptr);
+    }
     if ( (arg0.type!=_IDNT) || (!is_zero(idnt_must_be,contextptr) && (arg0!=idnt_must_be) ) )
       return gensizeerr(contextptr);
     bool or_assumption= !is_zero(idnt_must_be,contextptr) && (arg0==idnt_must_be);
@@ -4298,8 +4313,12 @@ namespace giac {
       purge_assume(a._SYMBptr->feuille,contextptr);
       return;
     }
-    if (a.type==_VECT && !a._VECTptr->empty())
-      purge_assume(a._VECTptr->front(),contextptr);
+    if (a.type==_VECT && !a._VECTptr->empty()){
+      if (a._VECTptr->back().type==_IDNT && a._VECTptr->front().type!=_IDNT)
+	purge_assume(a._VECTptr->back(),contextptr);
+      else
+	purge_assume(a._VECTptr->front(),contextptr);
+    }
     else
       purgenoassume(a,contextptr);
   }
@@ -5005,7 +5024,8 @@ namespace giac {
     vecteur vb(lvar(b));
     vecteur vab(lvar(makevecteur(a,b)));
     if (vab.size()==va.size()+vb.size()){
-      if (va.size()!=1 || va.front().type!=_IDNT || lvarx(b,va.front()).empty())
+      vecteur lvarxb;
+      if (va.size()!=1 || va.front().type!=_IDNT || (lvarxb=lvarx(b,va.front())).empty() || !lop(lvarxb,at_of).empty())
 	return symb_of(a,b);
     }
     if (!warn_implicit(a,b,contextptr))
@@ -5478,7 +5498,7 @@ namespace giac {
     if (debug_infolevel>2)
       CERR << "gcd begin " << CLOCK() << endl;
     vecteur::const_iterator it=args._VECTptr->begin(),itend=args._VECTptr->end();
-    if (ckmatrix(args) && itend-it==2)
+    if (ckmatrix(args) && itend-it==2 && it->subtype!=_POLY1__VECT && (it+1)->subtype!=_POLY1__VECT)
       return apply(*it,*(it+1),contextptr,gcd);
     gen res(0);
     for (;it!=itend;++it)
@@ -5497,7 +5517,7 @@ namespace giac {
     vecteur::const_iterator it=args._VECTptr->begin(),itend=args._VECTptr->end();
     if (itend==it)
       return 1;
-    if (ckmatrix(args) && itend-it==2)
+    if (ckmatrix(args) && itend-it==2 && it->subtype!=_POLY1__VECT && (it+1)->subtype!=_POLY1__VECT)
       return apply(*it,*(it+1),lcm);
     gen res(*it);
     for (++it;it!=itend;++it)
@@ -5690,8 +5710,11 @@ namespace giac {
       return *g._MODptr;
     if (g.type==_VECT)
       return apply(g,unmod);
-    if (g.type==_SYMB)
+    if (g.type==_SYMB){
+      if (g._SYMBptr->sommet==at_normalmod)
+	return g._SYMBptr->feuille[0];
       return symbolic(g._SYMBptr->sommet,unmod(g._SYMBptr->feuille));
+    }
     return g;
   }
   gen unmodunprod(const gen & g){
@@ -5882,6 +5905,8 @@ namespace giac {
       int dim=a.front()._POLYptr->dim;
       if (a[1]._POLYptr->dim!=dim)
 	return gendimerr(contextptr);
+      // Possible improvement? compute quotient of a and b using heap division
+      // then a-b*q with array multiplication instead of univariate conversion
       if (a.size()==3 && a.back().type==_INT_){
 	polynome rem,quo;
 	if ( !divrem1(*a.front()._POLYptr,*a[1]._POLYptr,quo,rem,args._VECTptr->back().val) )
@@ -7178,8 +7203,16 @@ namespace giac {
     gen g(x);
     if (g.type==_FLOAT_)
       g=evalf_double(g,1,contextptr);
-    if (g.type==_DOUBLE_)
+    if (g.type==_DOUBLE_){
+      if (g._DOUBLE_val<0){
+	if (g._DOUBLE_val==int(g._DOUBLE_val))
+	  return undef;
+	gen gg(g._DOUBLE_val,0.1);
+	*(gg._CPLXptr+1)=0.0; // convert to complex
+	return lngamma(gg,contextptr);
+      }
       return lngamma(g._DOUBLE_val);
+    }
     if (g.type==_CPLX && (g._CPLXptr->type==_DOUBLE_ || (g._CPLXptr+1)->type==_DOUBLE_ ||
 			  g._CPLXptr->type==_FLOAT_ || (g._CPLXptr+1)->type==_FLOAT_)){
       g=evalf_double(g,1,contextptr);
@@ -7459,6 +7492,11 @@ namespace giac {
       return pi*std::exp(z-(s-1)*std::log(z));
     }
 #endif
+    if (z<0){
+      double l=lower_incomplete_gamma(s,z,regularize,context0)._DOUBLE_val;
+      if (regularize) return 1-l;
+      return std::exp(lngamma(s))-l;
+    }
     // int_z^inf t^(s-1) exp(-t) dt
     // Continued fraction expansion: a1/(b1+a2/(b2+...)))
     // a1=1, a2=1-s, a3=1, a_{m+2}=a_m+1
@@ -7503,20 +7541,19 @@ namespace giac {
   // lower_incomplete_gamma(a,z)=z^(-a)*gammaetoile(a,z)
   // gammaetoile(a,z)=sum(n=0..inf,(-z)^n/(a+n)/n!)
   gen gammaetoile(const gen & a,const gen &z,GIAC_CONTEXT){
-    gen res=0,resr,resi,fact=1,zn=1,tmp,tmpr,tmpi;
+    gen res=0,resr,resi,znsurfact=1,tmp,tmpr,tmpi;
     double eps2=epsilon(contextptr); eps2=eps2*eps2;
     if (eps2<=0)
       eps2=1e-14;
     for (int n=0;;){
-      tmp=zn/((a+n)*fact);
+      tmp=znsurfact/(a+n);
       reim(tmp,tmpr,tmpi,contextptr);
       reim(res,resr,resi,contextptr);
       if (is_greater(eps2*(resr*resr+resi*resi),tmpr*tmpr+tmpi*tmpi,contextptr))
 	break;
       res += tmp;
       ++n;
-      fact=n*fact;
-      zn=(-z)*zn;
+      znsurfact = znsurfact *(-z)/n;
     }
     return res;
   }
@@ -7947,6 +7984,8 @@ namespace giac {
       return gensizeerr(contextptr);
     if (n==-1)
       return Gamma(x,contextptr);
+    if (n==0)
+      return Psi(x,contextptr);
     if (is_integer(x) && is_positive(-x,contextptr))
       return unsigned_inf;
     if (is_one(x)){
@@ -9328,7 +9367,7 @@ namespace giac {
 	// ? use __float80 or __float128
 	/*
 #ifdef __SSE__
-#if defined __x86_64__ && defined __SSE_4_2__
+#if defined x86_64 && defined __SSE_4_2__
 	__float128 ei=0.0q,pi=1.0q;
 #else
 	__float80 ei=0.0w,pi=1.0w;
@@ -9474,7 +9513,7 @@ namespace giac {
 	return gen(double(result.real()),double(result.imag())+M_PI*(x.imag()>0?-1:1));
       }
     }
-#if 1 // defined(__x86_64__) || defined(__i386__) // if long_double available use this
+#if 1 // defined(x86_64) || defined(__i386__) // if long_double available use this
     gen tmp=evalf_double(args,1,contextptr);
     if (tmp.type==_CPLX && prec<=13){
       complex_long_double Z(tmp._CPLXptr->_DOUBLE_val,(tmp._CPLXptr+1)->_DOUBLE_val);
@@ -9723,7 +9762,7 @@ namespace giac {
       return G;
     }
     if (g.type!=_SYMB)
-      return (g.type==_FRAC || is_integer(g))?abs(g,context0):1;
+      return (g.type==_FRAC || (is_integer(g) && g!=0))?abs(g,context0):1;
     if (g._SYMBptr->sommet==at_plus || g._SYMBptr->sommet==at_neg)
       return fast_icontent(g._SYMBptr->feuille);
     if (g._SYMBptr->sommet==at_inv)
@@ -9786,7 +9825,7 @@ namespace giac {
   // #ifndef GNUWINCE
   // #ifndef WIN32
   // #endif
-#if defined(GIAC_GENERIC_CONSTANTS) // || (defined(VISUALC) && !defined(RTOS_THREADX)) || defined( __x86_64__)
+#if defined(GIAC_GENERIC_CONSTANTS) // || (defined(VISUALC) && !defined(RTOS_THREADX)) || defined( x86_64)
   const gen zero(0);
   const gen plus_one(1);
   const gen plus_two(2);
@@ -9815,7 +9854,7 @@ namespace giac {
   const double deg2rad_d(M_PI/180);
   const double rad2grad_d(200 / M_PI);
   const double grad2rad_d(M_PI / 200);
-#if defined(DOUBLEVAL) || defined(GIAC_GENERIC_CONSTANTS) || defined(VISUALC) || defined(__x86_64__)
+#if defined(DOUBLEVAL) || defined(GIAC_GENERIC_CONSTANTS) || defined(VISUALC) || defined(x86_64)
   static const gen rad2deg_g_(rad2deg_d);
   const gen & rad2deg_g=rad2deg_g_;
   static const gen deg2rad_g_(deg2rad_d);
@@ -9838,7 +9877,7 @@ namespace giac {
   const gen & grad2rad_g = *(const gen*)& alias_grad2rad_g;
 #endif
 
-#if defined(GIAC_GENERIC_CONSTANTS) // || (defined(VISUALC) && !defined(RTOS_THREADX)) || defined(__x86_64__)
+#if defined(GIAC_GENERIC_CONSTANTS) // || (defined(VISUALC) && !defined(RTOS_THREADX)) || defined(x86_64)
   gen cst_two_pi(symbolic(at_prod,makevecteur(plus_two,_IDNT_pi())));
   gen cst_pi_over_2(_FRAC2_SYMB(_IDNT_pi(),2));
   gen plus_inf(symbolic(at_plus,_IDNT_infinity()));
@@ -10205,9 +10244,9 @@ namespace giac {
   const gen_op_context factorial2gamma_tab[]={factorialtogamma,0};
 
   // for integration
-  const alias_type  primitive_tab_op_alias[]={ (const alias_type)&__sin, (const alias_type)&__cos, (const alias_type)&__tan, (const alias_type)&__exp, (const alias_type)&__sinh, (const alias_type)&__cosh, (const alias_type)&__tanh, (const alias_type)&__asin, (const alias_type)&__acos, (const alias_type)&__atan, (const alias_type)&__ln,0};
+  const alias_type  primitive_tab_op_alias[]={ (const alias_type)&__sin, (const alias_type)&__cos, (const alias_type)&__tan, (const alias_type)&__exp, (const alias_type)&__sinh, (const alias_type)&__cosh, (const alias_type)&__tanh, (const alias_type)&__asin, (const alias_type)&__acos, (const alias_type)&__atan, (const alias_type)&__ln,(const alias_type)&__asinh, (const alias_type)&__acosh, (const alias_type)&__atanh,0};
   const unary_function_ptr * const primitive_tab_op=(const unary_function_ptr * const)primitive_tab_op_alias;
-  const alias_type inverse_tab_op_alias[]={ (const alias_type)&__asin, (const alias_type)&__acos, (const alias_type)&__atan, (const alias_type)&__ln, (const alias_type)&__asinh, (const alias_type)&__acos, (const alias_type)&__atanh, (const alias_type)&__erf, (const alias_type)&__erfc, (const alias_type)&__Ei, (const alias_type)&__Si, (const alias_type)&__Ci,0};
+  const alias_type inverse_tab_op_alias[]={ (const alias_type)&__asin, (const alias_type)&__acos, (const alias_type)&__atan, (const alias_type)&__ln, (const alias_type)&__asinh, (const alias_type)&__acosh, (const alias_type)&__atanh, (const alias_type)&__erf, (const alias_type)&__erfc, (const alias_type)&__Ei, (const alias_type)&__Si, (const alias_type)&__Ci,0};
   const unary_function_ptr * const inverse_tab_op=(const unary_function_ptr * const)inverse_tab_op_alias;
 
   const alias_type  analytic_sommets_alias[]={ (const alias_type)&__plus, (const alias_type)&__prod, (const alias_type)&__neg, (const alias_type)&__inv, (const alias_type)&__pow, (const alias_type)&__sin, (const alias_type)&__cos, (const alias_type)&__tan, (const alias_type)&__exp, (const alias_type)&__sinh, (const alias_type)&__cosh, (const alias_type)&__tanh, (const alias_type)&__asin, (const alias_type)&__acos, (const alias_type)&__atan, (const alias_type)&__asinh, (const alias_type)&__atanh, (const alias_type)&__acosh, (const alias_type)&__ln, (const alias_type)&__sqrt,0};  

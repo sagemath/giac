@@ -1333,9 +1333,9 @@ namespace giac {
 	  vector<int> res;
 	  if (mod_pcar(M,N,modulo,krylov,res,contextptr,true)){
 	    vector_int2vecteur(res,w);
-	    environment env;
-	    w=modularize(w,modulo,&env);
-	    return gen(w,_POLY1__VECT);
+	    return makemod(gen(w,_POLY1__VECT),modulo);
+	    // environment env; w=modularize(w,modulo,&env);
+	    // return gen(w,_POLY1__VECT);
 	  }
 	}
       }
@@ -3882,6 +3882,10 @@ static define_unary_function_eval (__center2interval,&_center2interval,_center2i
       if (args[0].type!=_VECT)
 	return gensizeerr(contextptr);
       vecteur data=*args[0]._VECTptr;
+      if (data.empty())
+	return gensizeerr(contextptr);
+      if (data.front().type==_VECT && data.front()._VECTptr->size()==1 && ckmatrix(data))
+	data=*mtran(data).front()._VECTptr;
       gen arg1=evalf_double(args[1],1,contextptr);
       if (ckmatrix(data)&&arg1.type==_DOUBLE_){ // [ [center, effectif] ... ], min
 	data=mtran(data); // 1st line = all centers
@@ -6449,6 +6453,23 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
     return res;
   }
   
+  vecteur endpoints(const gen & g){
+    vecteur res;
+    if (g.type==_VECT){
+      const_iterateur it=g._VECTptr->begin(),itend=g._VECTptr->end();
+      for (;it!=itend;++it)
+	res=mergevecteur(res,endpoints(*it));
+      return res;
+    }
+    if (g.type!=_SYMB)
+      return res;
+    if (g._SYMBptr->sommet==at_and || g._SYMBptr->sommet==at_ou)
+      return endpoints(g._SYMBptr->feuille);
+    if (is_inequation(g) || g._SYMBptr->sommet==at_different || g._SYMBptr->sommet==at_equal)
+      return vecteur(1,g._SYMBptr->feuille[1]);
+    return res;
+  }
+
   int step_param_(const gen & f,const gen & g,const gen & t,gen & tmin,gen&tmax,vecteur & poi,vecteur & tvi,bool printtvi,bool exactlegende,GIAC_CONTEXT){
     if (t.type!=_IDNT)
       return 0;
@@ -6456,8 +6477,10 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
     gen periodef,periodeg,periode;
     if (is_periodic(f,t,periodef,contextptr) && is_periodic(g,t,periodeg,contextptr)){
       periode=gcd(periodef,periodeg,contextptr);
-      tmin=normal(-periode/2,contextptr);
-      tmax=normal(periode/2,contextptr);
+      if (is_greater(tmax-tmin,periode,contextptr)){
+	tmin=normal(-periode/2,contextptr);
+	tmax=normal(periode/2,contextptr);
+      }
     }
     int eof=0,eog=0;
     if (tmin==-tmax && (eof=is_even_odd(f,t,contextptr)) && (eog=is_even_odd(g,t,contextptr))){
@@ -6515,6 +6538,7 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
     step_infolevel(st,contextptr);
     if (cx.type!=_VECT || cy.type!=_VECT){
       *logptr(contextptr) << "Unable to find critical points" << endl;
+      purgenoassume(t,contextptr);
       return 0;
     }
     vecteur c=mergevecteur(*cx._VECTptr,*cy._VECTptr),infl;
@@ -6531,12 +6555,14 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
     comprim(c);
     if (!lidnt(evalf(c,1,contextptr)).empty()){
       *logptr(contextptr) << "Infinite number of critical points. Try with optional argument " << t << "=tmin..tmax" << endl;
+      purgenoassume(t,contextptr);
       return 0;
     }
     it=c.begin();itend=c.end();
     for (;it!=itend;++it){
       if (!lop(*it,at_rootof).empty())
 	*it=re(evalf(*it,1,contextptr),contextptr);
+      *it=recursive_normal(*it,contextptr);
       if (in_domain(df,t,*it,contextptr) && is_greater(*it,tmin,contextptr) && is_greater(tmax,*it,contextptr)){
 	crit.push_back(*it);
 	gen fx=limit(f,xid,*it,0,contextptr);
@@ -6717,10 +6743,18 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
       tvx.insert(tvx.begin(),tmin0);
     if (in_domain(df,t,tmax0,contextptr))
       tvx.push_back(tmax0);
+    // add endpoints of df
+    vecteur ep=endpoints(df);
+    for (size_t i=0;i<ep.size();++i){
+      if (is_greater(ep[i],tmin0,contextptr) && is_greater(tmax0,ep[i],contextptr) && in_domain(df,t,ep[i],contextptr))
+	tvx.push_back(ep[i]);
+    }
     comprim(tvx);
     gen tmp=_sort(tvx,contextptr);
-    if (tmp.type!=_VECT)
+    if (tmp.type!=_VECT){
+      purgenoassume(t,contextptr);
       return 0;
+    }
     tvx=*tmp._VECTptr;
     int pos=equalposcomp(tvx,minus_inf);
     if (pos){
@@ -6744,12 +6778,12 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
       ymin=y;
     if (!is_inf(y) && is_greater(y,ymax,contextptr))
       ymax=y;
-    vecteur tvif=makevecteur(symb_equal(string2gen("x",false),f),x);
-    vecteur tvig=makevecteur(symb_equal(string2gen("y",false),g),y);
+    vecteur tvif=makevecteur(symb_equal(x__IDNT_e,f),x);
+    vecteur tvig=makevecteur(symb_equal(y__IDNT_e,g),y);
     gen nothing=string2gen(" ",false);
-    vecteur tvidf=makevecteur(symb_equal(string2gen("dx/dt",false),f1),limit(f1,xid,nextt,1,contextptr));
-    vecteur tvidg=makevecteur(symb_equal(string2gen("dy/dt",false),g1),limit(g1,xid,nextt,1,contextptr));
-    vecteur tviconv=makevecteur(string2gen("x'*y''-x''*y'",false),limit(conv,xid,nextt,1,contextptr));
+    vecteur tvidf=makevecteur(symb_equal(symbolic(at_derive,x__IDNT_e),f1),limit(f1,xid,nextt,1,contextptr));
+    vecteur tvidg=makevecteur(symb_equal(symbolic(at_derive,y__IDNT_e),g1),limit(g1,xid,nextt,1,contextptr));
+    vecteur tviconv=makevecteur(symbolic(at_derive,x__IDNT_e)*symbolic(at_derive,symbolic(at_derive,y__IDNT_e))-symbolic(at_derive,y__IDNT_e)*symbolic(at_derive,symbolic(at_derive,x__IDNT_e)),limit(conv,xid,nextt,1,contextptr));
     int tvs=int(tvx.size());
     for (int i=1;i<tvs;++i){
       gen curt=nextt,dfx,dgx,convt;
@@ -6779,8 +6813,10 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
 	  }
 	}
       }
-      if (is_zero(dfx) || is_zero(dgx))
+      if (is_zero(dfx) || is_zero(dgx)){
+	purgenoassume(t,contextptr);
 	return 0;
+      }
       if (is_strictly_positive(dfx,contextptr)){
 #if defined NSPIRE || defined NSPIRE_NEWLIB || defined HAVE_WINT_T
 	tvif.push_back(string2gen("↑",false));
@@ -6932,6 +6968,7 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
       *logptr(contextptr) << tvi << endl;
 #endif
     // finished!
+    purgenoassume(t,contextptr);
     return 1 + (periode!=1);
   }
 
@@ -6954,14 +6991,16 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
   // pass -inf and inf by default.
   // poi will contain point of interest: asymptotes and extremas
   // xmin and xmax will be set to values containing all points in poi
-  int step_func_(const gen & f,const gen & x,gen & xmin,gen&xmax,vecteur & poi,vecteur & tvi,gen& periode,vecteur & asym,vecteur & parab,vecteur & crit,vecteur & infl,bool printtvi,bool exactlegende,GIAC_CONTEXT){
+  int step_func_(const gen & f,const gen & x,gen & xmin,gen&xmax,vecteur & poi,vecteur & tvi,gen& periode,vecteur & asym,vecteur & parab,vecteur & crit,vecteur & infl,bool printtvi,bool exactlegende,GIAC_CONTEXT,bool do_inflex){
     if (x.type!=_IDNT)
       return 0;
     gprintf("====================\nFunction plot %gen, variable %gen",makevecteur(f,x),1,contextptr);
     if (is_periodic(f,x,periode,contextptr)){
       gprintf("Periodic function T=%gen",vecteur(1,periode),1,contextptr);
-      xmin=normal(-periode/2,contextptr);
-      xmax=normal(periode/2,contextptr);
+      if (is_greater(xmax-xmin,periode,contextptr)){
+	xmin=normal(-periode/2,contextptr);
+	xmax=normal(periode/2,contextptr);
+      }
     }
     int eo=0;
     if (xmin==-xmax && (eo=is_even_odd(f,x,contextptr))){
@@ -7004,7 +7043,7 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
     int cm=calc_mode(contextptr);
     calc_mode(-38,contextptr); // avoid rootof
     gen c1=solve(f1,x,periode==0?2:0,contextptr);
-    gen c2=is_zero(f2)?gen(vecteur(0)):solve(f2,x,periode==0?2:0,contextptr),c(c1);
+    gen c2=(!do_inflex || is_zero(f2))?gen(vecteur(0)):solve(f2,x,periode==0?2:0,contextptr),c(c1);
     calc_mode(cm,contextptr);
     step_infolevel(st,contextptr);
     if (x!=xval)
@@ -7025,11 +7064,13 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
     step_infolevel(st,contextptr);
     if (c.type!=_VECT){
       *logptr(contextptr) << "Unable to find critical points" << endl;
+      purgenoassume(x,contextptr);
       return 0;
     }
 #endif
     if (!lidnt(evalf(c,1,contextptr)).empty()){
       *logptr(contextptr) << "Infinite number of critical points. Try with optional argument " << x << "=xmin..xmax" << endl;
+      purgenoassume(x,contextptr);
       return 0;
     }
     it=c._VECTptr->begin();itend=c._VECTptr->end();
@@ -7170,10 +7211,18 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
       tvx.insert(tvx.begin(),xmin0);
     if (in_domain(df,x,xmax0,contextptr))
       tvx.push_back(xmax0);
+    // add endpoints of df
+    vecteur ep=endpoints(df);
+    for (size_t i=0;i<ep.size();++i){
+      if (is_greater(ep[i],xmin0,contextptr) && is_greater(xmax0,ep[i],contextptr) && in_domain(df,x,ep[i],contextptr))
+	tvx.push_back(ep[i]);
+    }
     comprim(tvx);
     gen tmp=_sort(tvx,contextptr);
-    if (tmp.type!=_VECT)
+    if (tmp.type!=_VECT){
+      purgenoassume(x,contextptr);
       return 0;
+    }
     tvx=*tmp._VECTptr;
     int pos=equalposcomp(tvx,minus_inf);
     if (pos){
@@ -7192,10 +7241,10 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
       ymin=y;
     if (!is_inf(y) && is_greater(y,ymax,contextptr))
       ymax=y;
-    vecteur tvif=makevecteur(symb_equal(string2gen("f",false),f),y);
+    vecteur tvif=makevecteur(symb_equal(y__IDNT_e,f),y);
     gen nothing=string2gen(" ",false);
-    vecteur tvidf=makevecteur(symb_equal(string2gen("f'",false),f1),limit(f1,xid,nextx,1,contextptr));
-    vecteur tvidf2=makevecteur(string2gen("f''",false),limit(f2,xid,nextx,1,contextptr));
+    vecteur tvidf=makevecteur(symb_equal(symbolic(at_derive,y__IDNT_e),f1),limit(f1,xid,nextx,1,contextptr));
+    vecteur tvidf2=makevecteur(symbolic(at_derive,symbolic(at_derive,y__IDNT_e)),limit(f2,xid,nextx,1,contextptr));
     int tvs=int(tvx.size());
     for (int i=1;i<tvs;++i){
       gen curx=nextx,dfx,df2;
@@ -7221,8 +7270,10 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
 	  }
 	}
       }
-      if (is_zero(dfx))
+      if (is_zero(dfx)){
+	purgenoassume(x,contextptr);
 	return 0;
+      }
       if (is_strictly_positive(dfx,contextptr)){
 #if defined NSPIRE || defined NSPIRE_NEWLIB || defined HAVE_WINT_T
 	tvif.push_back(string2gen("↑",false));
@@ -7239,11 +7290,13 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
 #endif
 	tvidf.push_back(string2gen("-",false));
       }
-      if (is_strictly_positive(df2,contextptr)){
-	tvidf2.push_back(string2gen("convex",false));
-      }
-      else {
-	tvidf2.push_back(string2gen("concav",false));
+      if (do_inflex){
+	if (is_strictly_positive(df2,contextptr)){
+	  tvidf2.push_back(string2gen("convex",false));
+	}
+	else {
+	  tvidf2.push_back(string2gen("concav",false));
+	}
       }
       if (i<tvs-1 && equalposcomp(sing,nextx)){
 	y=limit(f,xid,nextx,-1,contextptr);
@@ -7255,7 +7308,7 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
 	tvix.push_back(nextx);
 	tvif.push_back(y);
 	tvidf.push_back(string2gen("||",false));
-	tvidf2.push_back(string2gen("||",false));
+	if (do_inflex) tvidf2.push_back(string2gen("||",false));
 	y=limit(f,xid,nextx,1,contextptr);
 	y=recursive_normal(y,contextptr);
 	if (!is_inf(y) && is_greater(ymin,y,contextptr))
@@ -7265,7 +7318,7 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
 	tvix.push_back(nextx);
 	tvif.push_back(y);
 	tvidf.push_back(string2gen("||",false));
-	tvidf2.push_back(string2gen("||",false));
+	if (do_inflex) tvidf2.push_back(string2gen("||",false));
       }
       else {
 	y=limit(f,xid,nextx,-1,contextptr);
@@ -7281,10 +7334,11 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
 	tvidf.push_back(y);
 	y=limit(f2,xid,nextx,-1,contextptr);
 	y=recursive_normal(y,contextptr);
-	tvidf2.push_back(y);
+	if (do_inflex) tvidf2.push_back(y);
       }
     }
-    tvi=makevecteur(tvix,tvif,tvidf,tvidf2);
+    tvi=makevecteur(tvix,tvif,tvidf);
+    if (do_inflex) tvi.push_back(tvidf2);
     gen yscale=ymax-ymin;
     if (is_inf(yscale) || yscale==0){
       yscale=xmax-xmin;
@@ -7314,17 +7368,18 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
       *logptr(contextptr) << tvi << endl;
 #endif
     // finished!
+    purgenoassume(x,contextptr);
     return 1 + (periode!=0);
   }
 
-  int step_func(const gen & f,const gen & x,gen & xmin,gen&xmax,vecteur & poi,vecteur & tvi,gen & periode,vecteur & asym,vecteur & parab,vecteur & crit,vecteur & inflex,bool printtvi,bool exactlegende,GIAC_CONTEXT){
+  int step_func(const gen & f,const gen & x,gen & xmin,gen&xmax,vecteur & poi,vecteur & tvi,gen & periode,vecteur & asym,vecteur & parab,vecteur & crit,vecteur & inflex,bool printtvi,bool exactlegende,GIAC_CONTEXT,bool do_inflex){
     bool c=complex_mode(contextptr); int st=step_infolevel(contextptr),s=0;
     step_infolevel(0,contextptr);
 #ifdef NO_STDEXCEPT
-    s=step_func_(f,x,xmin,xmax,poi,tvi,periode,asym,parab,crit,inflex,printtvi,exactlegende,contextptr);
+    s=step_func_(f,x,xmin,xmax,poi,tvi,periode,asym,parab,crit,inflex,printtvi,exactlegende,contextptr,do_inflex);
 #else
     try {
-      s=step_func_(f,x,xmin,xmax,poi,tvi,periode,asym,parab,crit,inflex,printtvi,exactlegende,contextptr);
+      s=step_func_(f,x,xmin,xmax,poi,tvi,periode,asym,parab,crit,inflex,printtvi,exactlegende,contextptr,do_inflex);
     } catch (std::runtime_error & e){s=0;}
 #endif
     complex_mode(c,contextptr);
@@ -7337,30 +7392,37 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
     vecteur v(g.type==_VECT && g.subtype==_SEQ__VECT?*g._VECTptr:vecteur(1,g));
     int s=int(v.size());
 #ifdef EMCC
-    bool plot=true;
+    int plot=1;
 #else
-    bool plot=false;
+    int plot=0;
 #endif
-    bool return_tabvar=false,return_equation=false,return_coordonnees=false;
-    if (s && v[s-1]==at_plot){
-      plot=true;
-      v.pop_back();
-      --s;
-    }
-    if (s && v[s-1]==at_tabvar){
-      return_tabvar=true;
-      v.pop_back();
-      --s;
-    }
-    if (s && v[s-1]==at_equation){
-      return_equation=true;
-      v.pop_back();
-      --s;
-    }
-    if (s && v[s-1]==at_coordonnees){
-      return_coordonnees=true;
-      v.pop_back();
-      --s;
+    bool return_tabvar=false,return_equation=false,return_coordonnees=false,do_inflex=true;
+    for (int i=0;i<s;++i){
+      if (v[i]==at_plot){
+	plot=2;
+	v.erase(v.begin()+i);
+	--s; --i; continue;
+      }
+      if (v[i]==at_tabvar){
+	return_tabvar=true;
+	v.erase(v.begin()+i);
+	--s; --i; continue;
+      }
+      if (v[i]==at_equation){
+	return_equation=true;
+	v.erase(v.begin()+i);
+	--s; --i; continue;
+      }
+      if (v[i]==at_coordonnees){
+	return_coordonnees=true;
+	v.erase(v.begin()+i);
+	--s; --i; continue;
+      }
+      if (v[i]==at_derive){
+	do_inflex=false;
+	v.erase(v.begin()+i);
+	--s; --i; continue;
+      }
     }
     bool exactlegende=false;
     if (s>1 && v[s-1]==at_exact){
@@ -7368,6 +7430,8 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
       v.pop_back();
       --s;
     }
+    if (s==2 && v[1].type==_SYMB && v[1]._SYMBptr->sommet!=at_equal)
+      v=makevecteur(v,ggb_var(v));
     if (s==1){
       v.push_back(ggb_var(g));
       ++s;
@@ -7388,14 +7452,14 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
       if (g.is_symb_of_sommet(at_interval)){
 	xmin=g._SYMBptr->feuille[0];
 	xmax=g._SYMBptr->feuille[1];
-	default_interval=false;
+	default_interval=(xmin==minus_inf && xmax==plus_inf);
       }
     }
     else {
       if (s>=4){
 	xmin=v[2];
 	xmax=v[3];
-	default_interval=false;
+	default_interval=(xmin==minus_inf && xmax==plus_inf);
 	s0=4;
       }
       if (s==2 && x.type!=_IDNT)
@@ -7408,7 +7472,19 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
       periodic=step_param(f._VECTptr->front(),f._VECTptr->back(),x,xmin,xmax,poi,tvi,false,exactlegende,contextptr);
     else {
       gen periode; vecteur asym,parab,crit,inflex;
-      periodic=step_func(f,x,xmin,xmax,poi,tvi,periode,asym,parab,crit,inflex,false,exactlegende,contextptr);
+      periodic=step_func(f,x,xmin,xmax,poi,tvi,periode,asym,parab,crit,inflex,false,exactlegende,contextptr,do_inflex);
+    }
+    // round floats in tvi
+    for (int i=0;i<int(tvi.size());++i){
+      gen tmp=tvi[i];
+      if (tmp.type==_VECT){
+	vecteur v=*tmp._VECTptr;
+	for (int j=0;j<int(v.size());++j){
+	  if (v[j].type==_DOUBLE_)
+	    v[j]=_round(makesequence(v[j],3),contextptr);
+	}
+	tvi[i]=gen(v,tmp.subtype);
+      }
     }
     if (periodic==0)
       return undef;
@@ -7444,12 +7520,13 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
       p=funcplotfunc(gen(w,_SEQ__VECT),false,contextptr);
     if (plot){
       poi=mergevecteur(poi,gen2vecteur(p));
-      return gen(poi,_SEQ__VECT);
+      if (plot==2)
+	return gen(poi,_SEQ__VECT);
+      if (plot==1)
+	return tvi; // gprintf("%gen",makevecteur(gen(poi,_SEQ__VECT)),1,contextptr);
     }
-    else {
-      *logptr(contextptr) << (param?"plotparam(":"plotfunc(") << gen(w,_SEQ__VECT) << ')' <<"\nInside Xcas you can see the function with Cfg>Show>DispG." <<  endl;
-      return tvi;
-    }
+    *logptr(contextptr) << (param?"plotparam(":"plotfunc(") << gen(w,_SEQ__VECT) << ')' <<"\nInside Xcas you can see the function with Cfg>Show>DispG." <<  endl;
+    return tvi;
   }
   static const char _tabvar_s []="tabvar";
   static define_unary_function_eval (__tabvar,&_tabvar,_tabvar_s);
@@ -7516,6 +7593,74 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
   static define_unary_function_eval (__ggbsort,&_ggbsort,_ggbsort_s);
   define_unary_function_ptr5( at_ggbsort ,alias_at_ggbsort,&__ggbsort,0,true);
 
+  int charx2int(char c){
+    if (c>='0' && c<='9') return c-'0';
+    if (c>='a' && c<='z') return c-'a'+10;
+    if (c>='A' && c<='Z') return c-'A'+10;
+    return -1;
+  }
+
+  string html_filter(const string & s){
+    int ss=s.size();
+    string res;
+    bool semi=false;
+    for (int i=0;i<ss;++i){
+      char c=s[i];
+      if (i<ss-2 && c=='%'){
+	c = char(charx2int(s[i+1])*16+charx2int(s[i+2]));
+	i += 2;
+      }
+      if (c==';') 
+	semi=true;
+      else {
+	if (c!=' ')
+	  semi=false;
+      }
+      res += c;
+    }
+    if (!semi)
+      res += ';';
+    return res;
+  }
+
+  // translate HTML Xcas for Firefox link to a giac list of commands
+  string link2giac(const string & s,GIAC_CONTEXT){
+    string res;
+    // find # position, then create normal line for +, slider for *
+    int pos=s.find('#'),L=s.size();
+    if (pos>0 && pos<L){
+      bool finished=false;
+      while (!finished){
+	int nextpos=s.find('&',pos+1);
+	if (nextpos > L){
+	  nextpos=L;
+	  finished=true;
+	}
+	if (nextpos<pos+2)
+	  break;
+	string txt=s.substr(pos+2,nextpos-pos-2);
+	txt=html_filter(txt);
+	if (s[pos+1]=='*'){
+	  gen g(txt,contextptr);
+	  if (g.type==_VECT && g._VECTptr->size()>=5){
+	    txt="assume("+g[0].print(contextptr)+"=["+g[1].print(contextptr)+","+g[2].print(contextptr)+","+g[3].print(contextptr)+","+g[4].print(contextptr)+"])";
+	  }
+	}
+	res += txt;
+	pos=nextpos;
+      }
+    }
+    return res;
+  }
+
+  gen _link2giac(const gen & args,GIAC_CONTEXT){
+    if (args.type!=_STRNG)
+      return gensizeerr(contextptr);
+    return string2gen(link2giac(*args._STRNGptr,contextptr),false);
+  }
+  static const char _link2giac_s []="link2giac";
+  static define_unary_function_eval (__link2giac,&_link2giac,_link2giac_s);
+  define_unary_function_ptr5( at_link2giac ,alias_at_link2giac,&__link2giac,0,true);
 
 #ifndef NO_NAMESPACE_GIAC
 } // namespace giac

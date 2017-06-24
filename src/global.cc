@@ -668,6 +668,21 @@ extern "C" void Sleep(unsigned int miliSecond);
       _atan_tan_no_floor_=b;
   }
 
+  static bool _keep_acosh_asinh_=false; 
+  bool & keep_acosh_asinh(GIAC_CONTEXT){
+    if (contextptr && contextptr->globalptr )
+      return contextptr->globalptr->_keep_acosh_asinh_;
+    else
+      return _keep_acosh_asinh_;
+  }
+
+  void keep_acosh_asinh(bool b,GIAC_CONTEXT){
+    if (contextptr && contextptr->globalptr )
+      contextptr->globalptr->_keep_acosh_asinh_=b;
+    else
+      _keep_acosh_asinh_=b;
+  }
+
   static bool _keep_algext_=false; 
   bool & keep_algext(GIAC_CONTEXT){
     if (contextptr && contextptr->globalptr )
@@ -1617,6 +1632,7 @@ extern "C" void Sleep(unsigned int miliSecond);
 #ifdef BESTA_OS
   int LIST_SIZE_LIMIT = 100000 ;
   int FACTORIAL_SIZE_LIMIT = 1000 ;
+  int CALL_LAPACK = 1111;
 #else
   int LIST_SIZE_LIMIT = 1000 ;
   int FACTORIAL_SIZE_LIMIT = 254 ;
@@ -2599,7 +2615,7 @@ extern "C" void Sleep(unsigned int miliSecond);
      /* If we have a POSIX path list, convert to win32 path list */
      if (_epath != NULL && *_epath != 0
          && cygwin_posix_path_list_p (_epath)){
-#ifdef __x86_64__
+#ifdef x86_64
        int s = cygwin_conv_path (CCP_POSIX_TO_WIN_A , _epath, NULL, 0);
        char * _win32path = (char *) malloc(s);
        cygwin_conv_path(CCP_POSIX_TO_WIN_A,_epath, _win32path,s);
@@ -2862,7 +2878,7 @@ extern "C" void Sleep(unsigned int miliSecond);
       _epath = res.c_str()  ;
       if (_epath != NULL && *_epath != 0
 	  && cygwin_posix_path_list_p (_epath)){
-#ifdef __x86_64__
+#ifdef x86_64
 	int s = cygwin_conv_path (CCP_POSIX_TO_WIN_A , _epath, NULL, 0);
 	char * _win32path = (char *) malloc(s);
 	cygwin_conv_path(CCP_POSIX_TO_WIN_A,_epath, _win32path,s);
@@ -3332,6 +3348,7 @@ extern "C" void Sleep(unsigned int miliSecond);
      ptr->globalptr->_try_parse_i_=_try_parse_i_;
      ptr->globalptr->_specialtexprint_double_=_specialtexprint_double_;
      ptr->globalptr->_atan_tan_no_floor_=_atan_tan_no_floor_;
+     ptr->globalptr->_keep_acosh_asinh_=_keep_acosh_asinh_;
      ptr->globalptr->_keep_algext_=_keep_algext_;
      ptr->globalptr->_complex_variables_=_complex_variables_;
      ptr->globalptr->_increasing_power_=_increasing_power_;
@@ -3748,10 +3765,10 @@ extern "C" void Sleep(unsigned int miliSecond);
 		     _all_trig_sol_(false),
 #ifdef WITH_MYOSTREAM
 		     _ntl_on_(true),
-		     _lexer_close_parenthesis_(true),_rpn_mode_(false),_try_parse_i_(true),_specialtexprint_double_(false),_atan_tan_no_floor_(false),_keep_algext_(false),_angle_mode_(0), _bounded_function_no_(0), _series_flags_(0x3),_step_infolevel_(0),_default_color_(FL_BLACK), _epsilon_(1e-12), _proba_epsilon_(1e-15),  _show_axes_(1),_spread_Row_ (-1), _spread_Col_ (-1),_logptr_(&my_CERR),_prog_eval_level_val(1), _eval_level(DEFAULT_EVAL_LEVEL), _rand_seed(123457),_max_sum_sqrt_(3),_max_sum_add_(100000),_total_time_(0),_evaled_table_(0),_extra_ptr_(0),_series_variable_name_('h'),_series_default_order_(5),
+		     _lexer_close_parenthesis_(true),_rpn_mode_(false),_try_parse_i_(true),_specialtexprint_double_(false),_atan_tan_no_floor_(false),_keep_acosh_asinh_(false),_keep_algext_(false),_angle_mode_(0), _bounded_function_no_(0), _series_flags_(0x3),_step_infolevel_(0),_default_color_(FL_BLACK), _epsilon_(1e-12), _proba_epsilon_(1e-15),  _show_axes_(1),_spread_Row_ (-1), _spread_Col_ (-1),_logptr_(&my_CERR),_prog_eval_level_val(1), _eval_level(DEFAULT_EVAL_LEVEL), _rand_seed(123457),_max_sum_sqrt_(3),_max_sum_add_(100000),_total_time_(0),_evaled_table_(0),_extra_ptr_(0),_series_variable_name_('h'),_series_default_order_(5),
 #else
 		     _ntl_on_(true),
-		     _lexer_close_parenthesis_(true),_rpn_mode_(false),_try_parse_i_(true),_specialtexprint_double_(false),_atan_tan_no_floor_(false),_keep_algext_(false),_angle_mode_(0), _bounded_function_no_(0), _series_flags_(0x3),_step_infolevel_(0),_default_color_(FL_BLACK), _epsilon_(1e-12), _proba_epsilon_(1e-15),  _show_axes_(1),_spread_Row_ (-1), _spread_Col_ (-1), 
+		     _lexer_close_parenthesis_(true),_rpn_mode_(false),_try_parse_i_(true),_specialtexprint_double_(false),_atan_tan_no_floor_(false),_keep_acosh_asinh_(false),_keep_algext_(false),_angle_mode_(0), _bounded_function_no_(0), _series_flags_(0x3),_step_infolevel_(0),_default_color_(FL_BLACK), _epsilon_(1e-12), _proba_epsilon_(1e-15),  _show_axes_(1),_spread_Row_ (-1), _spread_Col_ (-1), 
 #ifdef EMCC
 		     _logptr_(&COUT), 
 #else
@@ -3807,6 +3824,7 @@ extern "C" void Sleep(unsigned int miliSecond);
      _series_default_order_=g._series_default_order_;
      _angle_mode_=g._angle_mode_;
      _atan_tan_no_floor_=g._atan_tan_no_floor_;
+     _keep_acosh_asinh_=g._keep_acosh_asinh_;
      _keep_algext_=g._keep_algext_;
      _variables_are_files_=g._variables_are_files_;
      _bounded_function_no_=g._bounded_function_no_;
@@ -4419,6 +4437,8 @@ unsigned int ConvertUTF8toUTF16 (
   }
   */
 
+#define DBG_ARCHIVE 0
+
   bool archive_save(void * f,const gen & g,size_t writefunc(void const* p, size_t nbBytes,size_t NbElements, void *file),GIAC_CONTEXT, bool noRecurse){
     // write the gen first
     writefunc(&g,sizeof(gen),1,f);
@@ -4448,6 +4468,12 @@ unsigned int ConvertUTF8toUTF16 (
       return true;
     }
     if (g.type==_IDNT){
+#if DBG_ARCHIVE
+      std::ofstream ofs;
+      ofs.open ("e:\\tmp\\logsave", std::ofstream::out | std::ofstream::app);
+      ofs << "IDNT " << g << endl;
+      ofs.close();
+#endif
       // fprintf(f,"%s",g._IDNTptr->id_name);
       writefunc(g._IDNTptr->id_name,1,strlen(g._IDNTptr->id_name),f);
       return true;
@@ -4455,6 +4481,12 @@ unsigned int ConvertUTF8toUTF16 (
     if (g.type==_SYMB){
       if (!archive_save(f,g._SYMBptr->feuille,writefunc,contextptr,noRecurse))
 	return false;
+#if DBG_ARCHIVE
+      std::ofstream ofs;
+      ofs.open ("e:\\tmp\\logsave", std::ofstream::out | std::ofstream::app);
+      ofs << "SYMB " << g << endl;
+      ofs.close();
+#endif
       short i=archive_function_index(g._SYMBptr->sommet); // equalposcomp(archive_function_tab(),g._SYMBptr->sommet);
       writefunc(&i,sizeof(short),1,f);
       if (i)
@@ -4576,11 +4608,23 @@ unsigned int ConvertUTF8toUTF16 (
 	delete [] ch;
 	return undef;
       }
-      gen res=identificateur(string(ch));
-      lock_syms_mutex();  
-      syms()[ch] = res;
-      unlock_syms_mutex();  
+      string sch(ch); gen res;
       delete [] ch;
+      lock_syms_mutex();
+      sym_string_tab::const_iterator it=syms().find(sch),itend=syms().end();
+      if (it!=itend)
+	res=it->second;
+      else {
+	res=identificateur(sch);
+	syms()[sch]=res;
+      }
+      unlock_syms_mutex();  
+#if DBG_ARCHIVE
+      std::ofstream ofs;
+      ofs.open ("e:\\tmp\\logrestore", std::ofstream::out | std::ofstream::app);
+      ofs << "IDNT " << res << endl;
+      ofs.close();
+#endif
       return res;
     }
     if (t==_SYMB){
@@ -4593,8 +4637,15 @@ unsigned int ConvertUTF8toUTF16 (
 	if (index<archive_function_tab_length){
 	  g=symbolic(aptr[index-1],fe);
 	}
-	else
+	else {
+#if DBG_ARCHIVE
+	  std::ofstream ofs;
+	  ofs.open ("e:\\tmp\\logrestore", std::ofstream::out | std::ofstream::app);
+	  ofs << "archive_restore error _SYMB index " << index << endl;
+	  ofs.close();
+#endif
 	  g=fe; // ERROR
+	}
       }
       else {
 	gen res;
@@ -4628,8 +4679,15 @@ unsigned int ConvertUTF8toUTF16 (
 #else	  
 	  if (builtin_lexer_functions_){
 #ifdef GIAC_HAS_STO_38
-	    if (!casbuiltin(ch,res))
+	    if (!casbuiltin(ch,res)){
+#if DBG_ARCHIVE
+	      std::ofstream ofs;
+	      ofs.open ("e:\\tmp\\logrestore", std::ofstream::out | std::ofstream::app);
+	      ofs << "archive_restore error _SYMB " << ch << endl;
+	      ofs.close();
+#endif
 	      res=0;
+	    }
 #else
 	    std::pair<charptr_gen *,charptr_gen *> p=equal_range(builtin_lexer_functions_begin(),builtin_lexer_functions_end(),std::pair<const char *,gen>(ch,0),tri);
 	    if (p.first!=p.second && p.first!=builtin_lexer_functions_end()){
@@ -4642,8 +4700,15 @@ unsigned int ConvertUTF8toUTF16 (
 	  }
 #endif 
 	}
-	if (is_zero(res))
+	if (is_zero(res)){
+#if DBG_ARCHIVE
+	  std::ofstream ofs;
+	  ofs.open ("e:\\tmp\\logrestore", std::ofstream::out | std::ofstream::app);
+	  ofs << "archive_restore error _SYMB 0 " << ch << endl;
+	  ofs.close();
+#endif
 	  res=gen(ch,contextptr);
+	}
 	delete [] ch;
 	if (res.type!=_FUNC){
 	  return undef;
@@ -4651,6 +4716,12 @@ unsigned int ConvertUTF8toUTF16 (
 	g=symbolic(*res._FUNCptr,fe);
       }
       g.subtype=s;
+#if DBG_ARCHIVE
+      std::ofstream ofs;
+      ofs.open ("e:\\tmp\\logrestore", std::ofstream::out | std::ofstream::app);
+      ofs << "SYMB " << g << endl;
+      ofs.close();
+#endif
       return g;
     }
     if (t==_FUNC){
@@ -4821,6 +4892,7 @@ unsigned int ConvertUTF8toUTF16 (
     "cpartfrac",
     "curve",
     "developper",
+    "diff",
     "domain",
     "element",
     "evalc",
@@ -4903,7 +4975,7 @@ unsigned int ConvertUTF8toUTF16 (
 #endif
     }
     std::string s=autosimplify(contextptr);
-    if (s.size()<1)
+    if (s.size()<1 || s=="'nop'")
       return g;
     gen a(s,contextptr);
     if (a.type==_FUNC)
@@ -4911,6 +4983,49 @@ unsigned int ConvertUTF8toUTF16 (
     if (a.type>=_IDNT)
       return symb_of(a,g);
     return g;
+  }
+
+  bool csv_guess(const char * data,int count,char & sep,char & nl,char & decsep){
+    bool ans=true;
+    int nb[256],pointdecsep=0,commadecsep=0; 
+    for (int i=0;i<256;++i)
+      nb[i]=0;
+    // count occurence of each char
+    // and detect decimal separator between . or ,
+    for (int i=1;i<count-1;++i){
+      if (data[i]=='[' || data[i]==']')
+	ans=false;
+      ++nb[(unsigned char) data[i]];
+      if (data[i-1]>='0' && data[i-1]<='9' && data[i+1]>='0' && data[i+1]<='9'){
+	if (data[i]=='.')
+	  ++pointdecsep;
+	if (data[i]==',')
+	  ++commadecsep;
+      }
+    }
+    decsep=commadecsep>pointdecsep?',':'.';
+    // detect nl (ctrl-M or ctrl-J)
+    nl=nb[10]>nb[13]?10:13;
+    // find in control characters and : ; the most used (except 10/13)
+    int nbmax=0,imax=-1;
+    for (int i=0;i<60;++i){
+      if (i==10 || i==13 || (i>=' ' && i<='9') )
+	continue;
+      if (nb[i]>nbmax){
+	imax=i;
+	nbmax=nb[i];
+      }
+    }
+    // compare . with , (44)
+    if (nb[unsigned(',')] && nb[unsigned(',')]>=nbmax){
+      imax=',';
+      nbmax=nb[unsigned(',')];
+    }
+    if (nbmax && nbmax>=nb[unsigned(nl)] && imax!=decsep)
+      sep=imax;
+    else
+      sep=' ';
+    return ans;
   }
 
   void (*my_gprintf)(unsigned special,const string & format,const vecteur & v,GIAC_CONTEXT)=0;

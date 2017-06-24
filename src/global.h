@@ -227,10 +227,10 @@ Boolean isLegalUTF8Sequence(const UTF8 *source, const UTF8 *sourceEnd);
   extern bool CAN_USE_LAPACK;
   extern bool simplify_sincosexp_pi;
 #ifndef RTOS_THREADX
-#ifndef BESTA_OS
+  //#ifndef BESTA_OS
   extern int CALL_LAPACK; // lapack is used if dim of matrix is >= CALL_LAPACK
   // can be changed using shell variable GIAC_LAPACK in icas
-#endif
+  //#endif
 #endif
   extern int FACTORIAL_SIZE_LIMIT;
   extern int GAMMA_LIMIT;
@@ -537,10 +537,11 @@ throw(std::runtime_error("Stopped by user interruption.")); \
     bool _try_parse_i_;
     bool _specialtexprint_double_;
     bool _atan_tan_no_floor_;
+    bool _keep_acosh_asinh_;
     bool _keep_algext_;
     int _angle_mode_;
     int _bounded_function_no_;
-    int _series_flags_; // bit1= full simplify, bit2=1 for truncation, bit3=atan does not rewrite sin/cos to tan, bit4=no back conversion, bit5=write<<1,1>> with series_variable_name, bit 6=write O() instead of order_size
+    int _series_flags_; // 1= full simplify, 2=1 for truncation, bit3=atan does not rewrite sin/cos to tan, bit4=no back conversion, bit5=write<<1,1>> with series_variable_name, bit 6=write O() instead of order_size, bit7= 1 diff in subst does not variable substitution
     int _step_infolevel_; 
     int _default_color_;
     double _epsilon_;
@@ -643,6 +644,7 @@ throw(std::runtime_error("Stopped by user interruption.")); \
   std::string autosimplify(GIAC_CONTEXT);
   std::string autosimplify(const std::string & s,GIAC_CONTEXT);
 
+  bool csv_guess(const char * data,int count,char & sep,char & nl,char & decsep);
   std::string & format_double(GIAC_CONTEXT);
 
   int check_thread(context * contextptr);
@@ -693,6 +695,9 @@ throw(std::runtime_error("Stopped by user interruption.")); \
 
   bool & atan_tan_no_floor(GIAC_CONTEXT);
   void atan_tan_no_floor(bool b,GIAC_CONTEXT);
+
+  bool & keep_acosh_asinh(GIAC_CONTEXT);
+  void keep_acosh_asinh(bool b,GIAC_CONTEXT);
 
   bool & keep_algext(GIAC_CONTEXT);
   void keep_algext(bool b,GIAC_CONTEXT);

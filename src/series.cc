@@ -42,7 +42,7 @@ namespace giac {
 
   static int mrv_begin_order=2;
 
-  bool taylor(const gen & f_x,const gen & x,const gen & lim_point,int ordre,vecteur & v,GIAC_CONTEXT){
+  static bool taylor_(const gen & f_x,const gen & x,const gen & lim_point,int ordre,vecteur & v,GIAC_CONTEXT){
     gen current_derf(f_x),value,factorielle(1);
     for (int i=0;;++i){
       value=subst(current_derf,x,lim_point,false,contextptr);
@@ -60,6 +60,14 @@ namespace giac {
     }
     v.dbgprint();
     return false;
+  }
+
+  bool taylor(const gen & f_x,const gen & x,const gen & lim_point,int ordre,vecteur & v,GIAC_CONTEXT){
+    int i=series_flags(contextptr);
+    series_flags(contextptr)=series_flags(contextptr) | (1<<7) ;
+    bool b=taylor_(f_x,x,lim_point,ordre,v,contextptr);
+    series_flags(i,contextptr);
+    return b;
   }
 
   // direction is always ignored for taylor, but might not 
@@ -1033,12 +1041,17 @@ namespace giac {
       return false;
     }
     if (base.size()==1){
+      gen basepow;
+      if (e.type==_FRAC && e._FRACptr->den==2 && is_positive(-base.front().coeff,contextptr))
+	basepow=pow(cst_i,e._FRACptr->num,contextptr)*pow(-base.front().coeff,e,contextptr);
+      else
+	basepow=pow(base.front().coeff,e,contextptr);
       if (&base==&res){
-	res.front().coeff=pow(res.front().coeff,e,contextptr);
+	res.front().coeff=basepow;
 	res.front().exponent=res.front().exponent*e;	
       }
       else 
-	res=sparse_poly1(1,monome(pow(base.front().coeff,e,contextptr),base.front().exponent*e));
+	res=sparse_poly1(1,monome(basepow,base.front().exponent*e));
       return true;
     }
     gen n=porder(base);
@@ -1108,8 +1121,14 @@ namespace giac {
 
   bool pintegrate(sparse_poly1 & p,const gen & t,GIAC_CONTEXT){
     sparse_poly1::iterator it=p.begin(),itend=p.end();
+    identificateur idu("u"); gen u(idu);
     for (;it!=itend;++it){
+#if 1
       it->coeff=integrate_gen(it->coeff,t,contextptr);
+#else
+      gen tmp=subst(it->coeff,t,u,false,contextptr);
+      it->coeff=_integrate(makesequence(tmp,u,0,t),contextptr);
+#endif
     }
     return true;
   }
@@ -1704,6 +1723,17 @@ namespace giac {
 	    invalidserieserr(gettext("Integration variable must be != from series expansion variable"));
 	    return false;
 	  }
+	  if (!contains(tempfv[0],x)){
+	    vecteur v;
+	    if (!taylor(temp__SYMB,x,lim_point,ordre,v,contextptr))
+	      return false;
+	    s.clear();
+	    for (int i=0;i<v.size();++i){
+	      s.push_back(monome(v[i],i));
+	    }
+	    lvx_s.push_back(s);
+	    continue;
+	  }
 	  if (!in_series__SPOL1(tempfv[0],x,lvx,lvx_s,ordre,direction,s,contextptr))
 	    return false;
 	  // FIXME if tempfv[3] and tempfv[2] tends to the same limit l
@@ -1902,8 +1932,9 @@ namespace giac {
 	}
 	else {
 	  sparse_poly1 temp;
-	  if (!ppow(s,shift_coeff,ordre,direction,temp,contextptr) ||
-	      !pcompose(*expansion._VECTptr,s,s,contextptr) ||
+	  if (!ppow(s,shift_coeff,ordre,direction,temp,contextptr))
+	    return false;
+	  if (!pcompose(*expansion._VECTptr,s,s,contextptr) ||
 	      !pmul(s,temp,s,true,ordre,contextptr))
 	    return false;
 	  if (is_positive(shift_coeff,contextptr)){

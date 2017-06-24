@@ -2,12 +2,12 @@
 # Copyright (C) YEAR Free Software Foundation, Inc.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#: src/misc.cc:5097
+#: src/misc.cc:5101
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-02-06 11:20+0100\n"
+"POT-Creation-Date: 2017-06-15 13:45+0200\n"
 "PO-Revision-Date: 2013-09-09 17:43+0200\n"
 "Last-Translator: Alkis Akritas <akritas@uth.gr>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,7 +21,7 @@ msgstr ""
 msgid " has changed. Save?"
 msgstr " έχει αλλάξει. Αποθήκευση?"
 
-#: src/hist.cxx:438 src/hist.cxx:2888 src/hist.menus:284
+#: src/hist.cxx:438 src/hist.cxx:2893 src/hist.menus:284
 msgid "CAS"
 msgstr ""
 
@@ -29,12 +29,12 @@ msgstr ""
 msgid "Program CAS"
 msgstr "Προγραμματισμός και υπολογισμός σε CAS"
 
-#: src/hist.cxx:440 src/hist.cxx:749 src/hist.cxx:5200 src/hist.menus:272
-#: src/hist.menus:286 src/Tableur.cc:154 src/Tableur.cc:3003
+#: src/hist.cxx:440 src/hist.cxx:749 src/hist.cxx:5205 src/hist.menus:272
+#: src/hist.menus:286 src/Tableur.cc:156 src/Tableur.cc:2962
 msgid "Spreadsheet"
 msgstr "ΥπΦύλλο"
 
-#: src/hist.cxx:441 src/hist.cxx:749 src/hist.cxx:2900 src/hist.menus:105
+#: src/hist.cxx:441 src/hist.cxx:749 src/hist.cxx:2905 src/hist.menus:105
 #: src/hist.menus:287
 msgid "Geometry"
 msgstr "Γεωμετρία"
@@ -69,11 +69,11 @@ msgstr "Εκκίνηση διδακτικής παρουσίασης?"
 msgid "Auto-recovery files found. Load ?"
 msgstr "Τα αρχεία αυτόματης επαναφοράς εντοπίστηκαν. Φορτωση?"
 
-#: src/hist.cxx:798 src/History.cc:1586 src/Tableur.cc:2696
+#: src/hist.cxx:798 src/History.cc:1586 src/Tableur.cc:2655
 msgid "Yes"
 msgstr "Ναι"
 
-#: src/hist.cxx:798 src/History.cc:1586 src/Tableur.cc:2696
+#: src/hist.cxx:798 src/History.cc:1586 src/Tableur.cc:2655
 msgid "No"
 msgstr "Όχι"
 
@@ -85,821 +85,821 @@ msgstr ""
 "Τα αρχεία αυτόματης επαναφοράς έχουν φορτωθεί. Γεωμετρία και υπολογιστικό "
 "φύλλο δεν ξαναυπολογίσθηκαν."
 
-#: src/hist.cxx:1371
+#: src/hist.cxx:1375
 msgid "Enter new help browser program (empty line for builtin)"
 msgstr ""
 "Δώστε το όνομα του προγράμματος πλοήγησης για βοήθεια (καμία καταχώρηση για "
 "ενσωματωμένο πλοηγό)"
 
-#: src/hist.cxx:1614
+#: src/hist.cxx:1618
 msgid "Exercise number (from 1 to 25)?"
 msgstr "Αριθμός άσκησης (από 1 εως 25)?"
 
-#: src/hist.cxx:1689 src/hist.cxx:1744 src/Graph.cc:6054
+#: src/hist.cxx:1693 src/hist.cxx:1748 src/Graph.cc:6081
 msgid "Graph of a function"
 msgstr "Γράφημα συνάρτησης"
 
-#: src/hist.cxx:1722 src/Graph.cc:6660
+#: src/hist.cxx:1726 src/Graph.cc:6687
 msgid "Area under curve"
 msgstr "Περιοχή κάτω από την καμπύλη"
 
-#: src/hist.cxx:1766 src/Graph.cc:6251
+#: src/hist.cxx:1770 src/Graph.cc:6278
 msgid "Graph of a recurrent sequence"
 msgstr "Γράφημα αναδρομικής ακολουθίας"
 
-#: src/hist.cxx:2235 src/hist.cxx:2295 src/hist.cxx:2370 src/hist.cxx:2373
+#: src/hist.cxx:2240 src/hist.cxx:2300 src/hist.cxx:2375 src/hist.cxx:2378
 msgid "min"
 msgstr "μικρά"
 
-#: src/hist.cxx:2236 src/hist.cxx:2371 src/hist.cxx:3601
+#: src/hist.cxx:2241 src/hist.cxx:2376 src/hist.cxx:3606
 msgid "Maj"
 msgstr "Κεφ"
 
-#: src/hist.cxx:2894
+#: src/hist.cxx:2899
 msgid "Tableur"
 msgstr "Υπολογιστικό φύλλο"
 
-#: src/hist.cxx:3123
+#: src/hist.cxx:3128
 msgid "Xcas New Interface"
 msgstr "Νέα διεπαφή Xcas"
 
-#: src/hist.cxx:3150 src/hist.cxx:3635 src/hist.cxx:4083 src/hist.cxx:4096
-#: src/hist.cxx:4109
+#: src/hist.cxx:3155 src/hist.cxx:3640 src/hist.cxx:4088 src/hist.cxx:4101
+#: src/hist.cxx:4114
 msgid "a"
 msgstr "a"
 
-#: src/hist.cxx:3161
+#: src/hist.cxx:3166
 msgid "b"
 msgstr "b"
 
-#: src/hist.cxx:3172
+#: src/hist.cxx:3177
 msgid "c"
 msgstr "c"
 
-#: src/hist.cxx:3183
+#: src/hist.cxx:3188
 msgid "d"
 msgstr "d"
 
-#: src/hist.cxx:3194
+#: src/hist.cxx:3199
 msgid "e"
 msgstr "e"
 
-#: src/hist.cxx:3205
+#: src/hist.cxx:3210
 msgid "f"
 msgstr "f"
 
-#: src/hist.cxx:3216
+#: src/hist.cxx:3221
 msgid "g"
 msgstr "g"
 
-#: src/hist.cxx:3227
+#: src/hist.cxx:3232
 msgid "h"
 msgstr "h"
 
-#: src/hist.cxx:3238 src/hist.cxx:3863
+#: src/hist.cxx:3243 src/hist.cxx:3868
 msgid "i"
 msgstr "i"
 
-#: src/hist.cxx:3249
+#: src/hist.cxx:3254
 msgid "j"
 msgstr "j"
 
-#: src/hist.cxx:3260
+#: src/hist.cxx:3265
 msgid "k"
 msgstr "k"
 
-#: src/hist.cxx:3271
+#: src/hist.cxx:3276
 msgid "l"
 msgstr "l"
 
-#: src/hist.cxx:3282
+#: src/hist.cxx:3287
 msgid "m"
 msgstr "m"
 
-#: src/hist.cxx:3293
+#: src/hist.cxx:3298
 msgid "n"
 msgstr "n"
 
-#: src/hist.cxx:3304
+#: src/hist.cxx:3309
 msgid "o"
 msgstr "o"
 
-#: src/hist.cxx:3315
+#: src/hist.cxx:3320
 msgid "p"
 msgstr "p"
 
-#: src/hist.cxx:3326
+#: src/hist.cxx:3331
 msgid "q"
 msgstr "q"
 
-#: src/hist.cxx:3337
+#: src/hist.cxx:3342
 msgid "r"
 msgstr "r"
 
-#: src/hist.cxx:3348
+#: src/hist.cxx:3353
 msgid "s"
 msgstr "s"
 
-#: src/hist.cxx:3359 src/hist.cxx:3720
+#: src/hist.cxx:3364 src/hist.cxx:3725
 msgid "t"
 msgstr "t"
 
-#: src/hist.cxx:3370
+#: src/hist.cxx:3375
 msgid "u"
 msgstr "u"
 
-#: src/hist.cxx:3381
+#: src/hist.cxx:3386
 msgid "v"
 msgstr "v"
 
-#: src/hist.cxx:3392
+#: src/hist.cxx:3397
 msgid "w"
 msgstr "w"
 
-#: src/hist.cxx:3403 src/hist.cxx:3684
+#: src/hist.cxx:3408 src/hist.cxx:3689
 msgid "x"
 msgstr "x"
 
-#: src/hist.cxx:3414 src/hist.cxx:3696
+#: src/hist.cxx:3419 src/hist.cxx:3701
 msgid "y"
 msgstr "y"
 
-#: src/hist.cxx:3425 src/hist.cxx:3708
+#: src/hist.cxx:3430 src/hist.cxx:3713
 msgid "z"
 msgstr "z"
 
-#: src/hist.cxx:3436
+#: src/hist.cxx:3441
 msgid "<"
 msgstr "<"
 
-#: src/hist.cxx:3447 src/hist.cxx:4274
+#: src/hist.cxx:3452 src/hist.cxx:4279
 msgid ">"
 msgstr ">"
 
-#: src/hist.cxx:3458
+#: src/hist.cxx:3463
 msgid "\\"
 msgstr "\\"
 
-#: src/hist.cxx:3469 src/hist.cxx:3746
+#: src/hist.cxx:3474 src/hist.cxx:3751
 msgid "("
 msgstr "("
 
-#: src/hist.cxx:3480 src/hist.cxx:3838
+#: src/hist.cxx:3485 src/hist.cxx:3843
 msgid ")"
 msgstr ")"
 
-#: src/hist.cxx:3491 src/hist.cxx:3849
+#: src/hist.cxx:3496 src/hist.cxx:3854
 msgid " "
 msgstr " "
 
-#: src/hist.cxx:3502
+#: src/hist.cxx:3507
 msgid "!"
 msgstr "!"
 
-#: src/hist.cxx:3513
+#: src/hist.cxx:3518
 msgid "]"
 msgstr "]"
 
-#: src/hist.cxx:3524
+#: src/hist.cxx:3529
 msgid "["
 msgstr "["
 
-#: src/hist.cxx:3535
+#: src/hist.cxx:3540
 msgid "{"
 msgstr "{"
 
-#: src/hist.cxx:3546
+#: src/hist.cxx:3551
 msgid "}"
 msgstr "}"
 
-#: src/hist.cxx:3557
+#: src/hist.cxx:3562
 msgid ":"
 msgstr ":"
 
-#: src/hist.cxx:3568 src/Tableur.cc:2109
+#: src/hist.cxx:3573 src/Tableur.cc:2068
 msgid "="
 msgstr "="
 
-#: src/hist.cxx:3579 src/hist.cxx:3734
+#: src/hist.cxx:3584 src/hist.cxx:3739
 msgid "\""
 msgstr "\""
 
-#: src/hist.cxx:3590
+#: src/hist.cxx:3595
 msgid "_"
 msgstr "_"
 
-#: src/hist.cxx:3613
+#: src/hist.cxx:3618
 msgid "#"
 msgstr "#"
 
-#: src/hist.cxx:3624
+#: src/hist.cxx:3629
 msgid "Π"
 msgstr ""
 
-#: src/hist.cxx:3647 src/hist.cxx:3793
+#: src/hist.cxx:3652 src/hist.cxx:3798
 msgid ","
 msgstr ","
 
-#: src/hist.cxx:3658 src/hist.cxx:3804
+#: src/hist.cxx:3663 src/hist.cxx:3809
 msgid ";"
 msgstr ";"
 
-#: src/hist.cxx:3669 src/hist.cxx:3781
+#: src/hist.cxx:3674 src/hist.cxx:3786
 msgid "'"
 msgstr "'"
 
-#: src/hist.cxx:3735
+#: src/hist.cxx:3740
 msgid "String delimiter"
 msgstr "Ορισμός συμβολοσειράς"
 
-#: src/hist.cxx:3757
+#: src/hist.cxx:3762
 msgid "{}"
 msgstr "{}"
 
-#: src/hist.cxx:3758
+#: src/hist.cxx:3763
 msgid "Bloc delimiter (set delimiter in maple compatible mode)"
 msgstr "Ορισμός μπλοκ (ορισμός συνόλου σε λειτουργία συμβατή με το maple)"
 
-#: src/hist.cxx:3769
+#: src/hist.cxx:3774
 msgid "[]"
 msgstr "[]"
 
-#: src/hist.cxx:3770
+#: src/hist.cxx:3775
 msgid "List, vector, matrix delimiter"
 msgstr "Ορισμός λίστας, διανύσματος, πίνακα"
 
-#: src/hist.cxx:3782
+#: src/hist.cxx:3787
 msgid "Quote"
 msgstr "quote: Αναστολή υπολογισμών "
 
-#: src/hist.cxx:3815
+#: src/hist.cxx:3820
 msgid ":="
 msgstr ":="
 
-#: src/hist.cxx:3816
+#: src/hist.cxx:3821
 msgid "Assign"
 msgstr "Απόδοση τιμής (σε μεταβλητή)"
 
-#: src/hist.cxx:3827
+#: src/hist.cxx:3832
 msgid "|"
 msgstr "|"
 
-#: src/hist.cxx:3864
+#: src/hist.cxx:3869
 msgid "Complex square root of -1"
 msgstr "Μιγαδική τετραγωνική ρίζα του -1"
 
-#: src/hist.cxx:3877
+#: src/hist.cxx:3882
 msgid "π"
 msgstr ""
 
-#: src/hist.cxx:3878
+#: src/hist.cxx:3883
 msgid "The pi number"
 msgstr "Ο αριθμός π"
 
-#: src/hist.cxx:3890
+#: src/hist.cxx:3895
 msgid "oo"
 msgstr ""
 
-#: src/hist.cxx:3891
+#: src/hist.cxx:3896
 msgid "Infinity (unsigned)"
 msgstr "Άπειρο (χωρίς πρόσημο)"
 
-#: src/hist.cxx:3903
+#: src/hist.cxx:3908
 msgid "sqrt"
 msgstr "sqrt"
 
-#: src/hist.cxx:3904
+#: src/hist.cxx:3909
 msgid "Square root"
 msgstr "Τετραγωνική ρίζα"
 
-#: src/hist.cxx:3919
+#: src/hist.cxx:3924
 msgid "~"
 msgstr "~"
 
-#: src/hist.cxx:3920 src/gen.cc:2487
+#: src/hist.cxx:3925 src/gen.cc:2487
 msgid "Evalf"
 msgstr "Προσεγγιστικός υπολογισμός"
 
-#: src/hist.cxx:3933 src/Equation.cc:4458 src/gen.cc:10009
+#: src/hist.cxx:3938 src/Equation.cc:4493 src/gen.cc:10043
 msgid "simplify"
 msgstr ""
 
-#: src/hist.cxx:3934 src/hist.menus:148
+#: src/hist.cxx:3939 src/hist.menus:148
 msgid "simplify: Simplify expression"
 msgstr "simplify: Απλοποίηση παράστασης"
 
-#: src/hist.cxx:3947 src/Equation.cc:4460
+#: src/hist.cxx:3952 src/Equation.cc:4495
 msgid "factor"
 msgstr ""
 
-#: src/hist.cxx:3948 src/hist.menus:151
+#: src/hist.cxx:3953 src/hist.menus:151
 msgid "factor: Factorization"
 msgstr "factor: Παραγοντοποίηση πολυωνύμου στο Ζ"
 
-#: src/hist.cxx:3961
+#: src/hist.cxx:3966
 msgid "=>"
 msgstr ""
 
-#: src/hist.cxx:3962
+#: src/hist.cxx:3967
 msgid "Sto/Convert to"
 msgstr "Απόδοση τιμής / Μετατροπή σε"
 
-#: src/hist.cxx:3975
+#: src/hist.cxx:3980
 msgid "prg"
 msgstr ""
 
-#: src/hist.cxx:3989
+#: src/hist.cxx:3994
 msgid "∂"
 msgstr ""
 
-#: src/hist.cxx:3990
+#: src/hist.cxx:3995
 msgid "diff"
 msgstr "Παραγώγιση"
 
-#: src/hist.cxx:4003
+#: src/hist.cxx:4008
 msgid "∫"
 msgstr ""
 
-#: src/hist.cxx:4004
+#: src/hist.cxx:4009
 msgid "Integral"
 msgstr "Ολοκλήρωση"
 
-#: src/hist.cxx:4017
+#: src/hist.cxx:4022
 msgid "Σ"
 msgstr ""
 
-#: src/hist.cxx:4018
+#: src/hist.cxx:4023
 msgid "Sum"
 msgstr "Άθροισμα"
 
-#: src/hist.cxx:4030
+#: src/hist.cxx:4035
 msgid "lim"
 msgstr ""
 
-#: src/hist.cxx:4031
+#: src/hist.cxx:4036
 msgid "Limit"
 msgstr "Όριο"
 
-#: src/hist.cxx:4048
+#: src/hist.cxx:4053
 msgid "sin"
 msgstr "sin"
 
-#: src/hist.cxx:4049
+#: src/hist.cxx:4054
 msgid "Sinus"
 msgstr "Ημίτονο"
 
-#: src/hist.cxx:4060
+#: src/hist.cxx:4065
 msgid "cos"
 msgstr "cos"
 
-#: src/hist.cxx:4071
+#: src/hist.cxx:4076
 msgid "tan"
 msgstr "tan"
 
-#: src/hist.cxx:4072 src/Graph.cc:6658
+#: src/hist.cxx:4077 src/Graph.cc:6685
 msgid "Tangent"
 msgstr "Εφαπτομένη"
 
-#: src/hist.cxx:4084
+#: src/hist.cxx:4089
 msgid "Arcsinus"
 msgstr "Τόξο ημιτόνου"
 
-#: src/hist.cxx:4097
+#: src/hist.cxx:4102
 msgid "Arccosinus"
 msgstr "Τόξο συνημιτόνου"
 
-#: src/hist.cxx:4110
+#: src/hist.cxx:4115
 msgid "Arctangent"
 msgstr "Τόξο εφαπτομένης"
 
-#: src/hist.cxx:4125
+#: src/hist.cxx:4130
 msgid "exp"
 msgstr "exp"
 
-#: src/hist.cxx:4126 src/Tableur.cc:3075
+#: src/hist.cxx:4131 src/Tableur.cc:3034
 msgid "Exponential"
 msgstr "Εκθετική (e)"
 
-#: src/hist.cxx:4137
+#: src/hist.cxx:4142
 msgid "10^"
 msgstr "10^"
 
-#: src/hist.cxx:4148
+#: src/hist.cxx:4153
 msgid "log10"
 msgstr "log10"
 
-#: src/hist.cxx:4149
+#: src/hist.cxx:4154
 msgid "base 10 logarithm"
 msgstr "Λογάριθμος ως προς βάση 10"
 
-#: src/hist.cxx:4160
+#: src/hist.cxx:4165
 msgid "ln"
 msgstr "ln"
 
-#: src/hist.cxx:4161
+#: src/hist.cxx:4166
 msgid "Natural logarithm"
 msgstr "Φυσικός λογάριθμος (ως προς βάση e)"
 
-#: src/hist.cxx:4177
+#: src/hist.cxx:4182
 msgid "+"
 msgstr "+"
 
-#: src/hist.cxx:4189
+#: src/hist.cxx:4194
 msgid "-"
 msgstr "-"
 
-#: src/hist.cxx:4190
+#: src/hist.cxx:4195
 msgid "Subtract"
 msgstr ""
 
-#: src/hist.cxx:4202
+#: src/hist.cxx:4207
 msgid "*"
 msgstr "*"
 
-#: src/hist.cxx:4214
+#: src/hist.cxx:4219
 msgid "/"
 msgstr "/"
 
-#: src/hist.cxx:4226
+#: src/hist.cxx:4231
 msgid "^"
 msgstr "^"
 
-#: src/hist.cxx:4238 src/gen.cc:10203
+#: src/hist.cxx:4243 src/gen.cc:10237
 msgid "%"
 msgstr "%"
 
-#: src/hist.cxx:4239
+#: src/hist.cxx:4244
 msgid "Modulo"
 msgstr "Modulo"
 
-#: src/hist.cxx:4250
+#: src/hist.cxx:4255
 msgid "inv"
 msgstr ""
 
-#: src/hist.cxx:4251
+#: src/hist.cxx:4256
 msgid "Inverse"
 msgstr "Αντίστροφο"
 
-#: src/hist.cxx:4262
+#: src/hist.cxx:4267
 msgid "neg"
 msgstr ""
 
-#: src/hist.cxx:4263
+#: src/hist.cxx:4268
 msgid "Opposite"
 msgstr "Αντίθετο"
 
-#: src/hist.cxx:4291
+#: src/hist.cxx:4296
 msgid "1"
 msgstr "1"
 
-#: src/hist.cxx:4303
+#: src/hist.cxx:4308
 msgid "2"
 msgstr "2"
 
-#: src/hist.cxx:4315
+#: src/hist.cxx:4320
 msgid "3"
 msgstr "3"
 
-#: src/hist.cxx:4327
+#: src/hist.cxx:4332
 msgid "4"
 msgstr "4"
 
-#: src/hist.cxx:4339
+#: src/hist.cxx:4344
 msgid "5"
 msgstr "5"
 
-#: src/hist.cxx:4351
+#: src/hist.cxx:4356
 msgid "6"
 msgstr "6"
 
-#: src/hist.cxx:4363
+#: src/hist.cxx:4368
 msgid "7"
 msgstr "7"
 
-#: src/hist.cxx:4375 src/Cfg.cc:282
+#: src/hist.cxx:4380 src/Cfg.cc:286
 msgid "8"
 msgstr "8"
 
-#: src/hist.cxx:4387
+#: src/hist.cxx:4392
 msgid "9"
 msgstr "9"
 
-#: src/hist.cxx:4399
+#: src/hist.cxx:4404
 msgid "0"
 msgstr "0"
 
-#: src/hist.cxx:4411
+#: src/hist.cxx:4416
 msgid "."
 msgstr "."
 
-#: src/hist.cxx:4422
+#: src/hist.cxx:4427
 msgid "E"
 msgstr "E"
 
-#: src/hist.cxx:4436
+#: src/hist.cxx:4441
 msgid "esc"
 msgstr "esc"
 
-#: src/hist.cxx:4437
+#: src/hist.cxx:4442
 msgid "Cancel (erase cmdline, stop interactive_plotode)"
 msgstr ""
 "Ακύρωση (διαγραφή της γραμμής εντολών, σταμάτημα της interactive_plotode )"
 
-#: src/hist.cxx:4450
+#: src/hist.cxx:4455
 msgid "abc"
 msgstr "abc"
 
-#: src/hist.cxx:4451
+#: src/hist.cxx:4456
 msgid "Show/Hide alphabetic keyboard"
 msgstr "Εμφάνιση/Απόκρυψη αλφαβητικού πληκτρολογίου"
 
-#: src/hist.cxx:4464
+#: src/hist.cxx:4469
 msgid "cmds"
 msgstr ""
 
-#: src/hist.cxx:4465
+#: src/hist.cxx:4470
 msgid "Show commands bandeau"
 msgstr "Εμφάνιση/Απόκρυψη λωρίδας εντολών"
 
-#: src/hist.cxx:4478 src/hist.menus:67 src/hist.menus:73
+#: src/hist.cxx:4483 src/hist.menus:67 src/hist.menus:73
 msgid "msg"
 msgstr ""
 
-#: src/hist.cxx:4479
+#: src/hist.cxx:4484
 msgid "Show messages"
 msgstr "Εμφάνιση/Απόκρυψη μηνυμάτων"
 
-#: src/hist.cxx:4492
+#: src/hist.cxx:4497
 msgid "b7"
 msgstr ""
 
-#: src/hist.cxx:4493
+#: src/hist.cxx:4498
 msgid "Set bit 7 for next key entry"
 msgstr ""
 
-#: src/hist.cxx:4506
+#: src/hist.cxx:4511
 msgid "ctrl"
 msgstr ""
 
-#: src/hist.cxx:4507
+#: src/hist.cxx:4512
 msgid "Control"
 msgstr ""
 
-#: src/hist.cxx:4520 src/hist.cxx:4729 src/hist.cxx:4760
+#: src/hist.cxx:4525 src/hist.cxx:4734 src/hist.cxx:4765
 msgid "X"
 msgstr ""
 
-#: src/hist.cxx:4521
+#: src/hist.cxx:4526
 msgid "Close keyboard"
 msgstr "Απόκρυψη πληκτρολογίου"
 
-#: src/hist.cxx:4533
+#: src/hist.cxx:4538
 msgid "@<"
 msgstr ""
 
-#: src/hist.cxx:4534
+#: src/hist.cxx:4539
 msgid "Backspace"
 msgstr ""
 
-#: src/hist.cxx:4547
+#: src/hist.cxx:4552
 msgid "paste"
 msgstr ""
 
-#: src/hist.cxx:4560
+#: src/hist.cxx:4565
 msgid "@returnarrow"
 msgstr "@returnarrow"
 
-#: src/hist.cxx:4579
+#: src/hist.cxx:4584
 msgid "<<"
 msgstr "<<"
 
-#: src/hist.cxx:4580
+#: src/hist.cxx:4585
 msgid "Previous menu page"
 msgstr "Προηγούμενη σελίδα του μενου"
 
-#: src/hist.cxx:4671
+#: src/hist.cxx:4676
 msgid ">>"
 msgstr ">>"
 
-#: src/hist.cxx:4672
+#: src/hist.cxx:4677
 msgid "Next menu page"
 msgstr "Επόμενη σελίδα του μενου"
 
-#: src/hist.cxx:4685
+#: src/hist.cxx:4690
 msgid "cust"
 msgstr ""
 
-#: src/hist.cxx:4686
+#: src/hist.cxx:4691
 msgid "Custom menu"
 msgstr "Προσαρμοσμένο μενού"
 
-#: src/hist.cxx:4699
+#: src/hist.cxx:4704
 msgid "var"
 msgstr ""
 
-#: src/hist.cxx:4700
+#: src/hist.cxx:4705
 msgid "Show list of variables"
 msgstr "Εμφάνηση λίστας μεταβλητών"
 
-#: src/hist.cxx:4713
+#: src/hist.cxx:4718
 msgid "home"
 msgstr "αρχή"
 
-#: src/hist.cxx:4714
+#: src/hist.cxx:4719
 msgid "Home menu"
 msgstr "Αρχικό μενού"
 
-#: src/hist.cxx:4746
+#: src/hist.cxx:4751
 msgid "Messages"
 msgstr "Μηνύματα"
 
-#: src/hist.cxx:4776
+#: src/hist.cxx:4781
 msgid "Xcas General Setup"
 msgstr "Γενικές Ρυθμίσεις του Xcas"
 
-#: src/hist.cxx:4777
+#: src/hist.cxx:4782
 msgid "Level"
 msgstr "Επίπεδο"
 
-#: src/hist.cxx:4778
+#: src/hist.cxx:4783
 msgid "Choose user level (from tortue to university)"
 msgstr "Επιλογή επιπέδου για χρήση (από CAS μέχρι Χελώνα)"
 
-#: src/hist.cxx:4790
+#: src/hist.cxx:4795
 msgid "Size"
 msgstr "Μέγεθος "
 
-#: src/hist.cxx:4794
+#: src/hist.cxx:4799
 msgid "Auto HTML help"
 msgstr "Αυτόματη βοήθεια HTML "
 
-#: src/hist.cxx:4795
+#: src/hist.cxx:4800
 msgid "Selecting a menu item displays fulls help in browser"
 msgstr ""
 "Όταν είναι τσεκαρισμένο, επιλέγοντας ένα στοιχείο από το μενού εμφανίζεται "
 "πλήρης βοήθεια στο πρόγραμμα πλοήγησης"
 
-#: src/hist.cxx:4799 src/hist.menus:94
+#: src/hist.cxx:4804 src/hist.menus:94
 msgid "browser"
 msgstr "Πρόγραμμα πλοήγησης"
 
-#: src/hist.cxx:4804
+#: src/hist.cxx:4809
 msgid "rows"
 msgstr "γραμμές"
 
-#: src/hist.cxx:4805
+#: src/hist.cxx:4810
 msgid "Number of rows for new->spreadsheet"
 msgstr "Αριθμός γραμμών για νέο υπολογιστικό φύλλο"
 
-#: src/hist.cxx:4812
+#: src/hist.cxx:4817
 msgid "cols"
 msgstr "στήλες"
 
-#: src/hist.cxx:4813
+#: src/hist.cxx:4818
 msgid "Number of columns for new->spreadsheet"
 msgstr "Αριθμός στηλών για νέο υπολογιστικό φύλλο"
 
-#: src/hist.cxx:4820 src/hist.menus:15 src/History.cc:3485 src/History.cc:3882
-#: src/Cfg.cc:372 src/Cfg.cc:745 src/Editeur.cc:2347
+#: src/hist.cxx:4825 src/hist.menus:15 src/History.cc:3492 src/History.cc:3889
+#: src/Cfg.cc:376 src/Cfg.cc:749 src/Editeur.cc:2348
 msgid "Save"
 msgstr ""
 
-#: src/hist.cxx:4821
+#: src/hist.cxx:4826
 msgid "Close window and save as default configuration"
 msgstr "Κλείσιμο παραθύρου και αποθήκευση ρυθμίσεων"
 
-#: src/hist.cxx:4825
+#: src/hist.cxx:4830
 msgid "Close"
 msgstr "Κλείσιμο"
 
-#: src/hist.cxx:4831
+#: src/hist.cxx:4836
 msgid "Print format"
 msgstr "Μορφή εκτύπωσης"
 
-#: src/hist.cxx:4832
+#: src/hist.cxx:4837
 msgid "Printer page format"
 msgstr "Μορφή σελίδας εκτύπωσης"
 
-#: src/hist.cxx:4845 src/Tableur.cc:3002
+#: src/hist.cxx:4850 src/Tableur.cc:2961
 msgid "Format"
 msgstr "Μορφή"
 
-#: src/hist.cxx:4849 src/Tableur.cc:156 src/Graph.cc:6651
+#: src/hist.cxx:4854 src/Tableur.cc:158 src/Graph.cc:6678
 msgid "Landscape"
 msgstr "Τοπίο"
 
-#: src/hist.cxx:4850
+#: src/hist.cxx:4855
 msgid "Landscape or Portrait"
 msgstr "Τοπίο ή Πορτραίτο"
 
-#: src/hist.cxx:4857
+#: src/hist.cxx:4862
 msgid "PS view"
 msgstr "Εμφάνιση PS"
 
-#: src/hist.cxx:4858
+#: src/hist.cxx:4863
 msgid "Postscript previewer program (put no for no preview)"
 msgstr "Πρόγραμμα προεπισκόπησης Postscript (θέσατε no για καμία)"
 
-#: src/hist.cxx:4862
+#: src/hist.cxx:4867
 msgid "Proxy"
 msgstr "Διαμεσολαβητής"
 
-#: src/hist.cxx:4863
+#: src/hist.cxx:4868
 msgid "Proxy server for update, e.g. http://cache.domain:3128"
 msgstr "Διαμεσολαβητής για την ενημέρωση, π.χ. http://cache.domain:3128"
 
-#: src/hist.cxx:4869
+#: src/hist.cxx:4874
 msgid "Font"
 msgstr "Γραμματοσειρά"
 
-#: src/hist.cxx:4872
+#: src/hist.cxx:4877
 msgid "Auto index help"
 msgstr "Αυτόματη βοήθεια ευρετηρίου"
 
-#: src/hist.cxx:4873
+#: src/hist.cxx:4878
 msgid "Selecting a menu item displays short index help"
 msgstr ""
 "Όταν είναι τσεκαρισμένο, επιλέγοντας ένα στοιχείο από το μενού εμφανίζεται "
 "σύντομη βοήθεια ευρετηρίου"
 
-#: src/hist.cxx:4878
+#: src/hist.cxx:4883
 msgid "Step by step"
 msgstr ""
 
-#: src/hist.cxx:4879
+#: src/hist.cxx:4884
 msgid ""
 "If not checked, save context information, incompatible with Xcas < 0.8.1"
 msgstr ""
 "Εάν δεν είναι τσεκαρισμένο, αποθήκευση συναφών πληροφοριών,μη-συμβατών με "
 "Xcas < 0.8.1"
 
-#: src/hist.cxx:4884
+#: src/hist.cxx:4889
 msgid "Disable tooltips"
 msgstr "Απενεργοποίηση\tσυμβουλών"
 
-#: src/hist.cxx:4885
+#: src/hist.cxx:4890
 msgid "Check box to disable tooltips"
 msgstr ""
 "Όταν είναι τσεκαρισμένο, οι (αναδυόμενες) συμβουλές είναι απενεργοποιημένες"
 
-#: src/hist.cxx:4890
+#: src/hist.cxx:4895
 msgid "Disable test i"
 msgstr "Απενεργοποίηση test i"
 
-#: src/hist.cxx:4891
+#: src/hist.cxx:4896
 msgid "Check to disable replacement of i inside loop by a variable"
 msgstr ""
 "Όταν είναι τσεκαρισμένο, απενεργοποιείται η αντικατάσταση του i από "
 "μεταβλητή, μέσα σε βρόχο"
 
-#: src/hist.cxx:4899
+#: src/hist.cxx:4904
 msgid "Xcas Script Window"
 msgstr "Παράθυρο προγραμματισμού (script) Xcas"
 
-#: src/hist.cxx:4903
+#: src/hist.cxx:4908
 msgid "Xcas DispG Window"
 msgstr "Παράθυρο Γραφικών (DispG) του Xcas"
 
-#: src/hist.cxx:4924
+#: src/hist.cxx:4929
 msgid "Click or Cancel"
 msgstr "Kάντε κλικ ή ακυρώστε"
 
-#: src/hist.cxx:4925
+#: src/hist.cxx:4930
 msgid "Click in graph or here to cancel"
 msgstr "Για ακύρωση κάντε κλικ στο γράφημα ή εδώ"
 
-#: src/hist.cxx:4930 src/hist.cxx:4941
+#: src/hist.cxx:4935 src/hist.cxx:4946
 msgid "label"
 msgstr "ετικέτα"
 
-#: src/hist.cxx:4955
+#: src/hist.cxx:4960
 msgid "Clear"
 msgstr "Εκκαθάριση"
 
-#: src/hist.cxx:4956
+#: src/hist.cxx:4961
 msgid "Clear DispG graphic"
 msgstr "Εκκαθάριση παραθύρου γραφικών"
 
-#: src/hist.cxx:5202 src/hist.menus:269
+#: src/hist.cxx:5207 src/hist.menus:269
 msgid "Geo"
 msgstr "Γεω"
 
-#: src/hist.cxx:5204 src/hist.menus:238
+#: src/hist.cxx:5209 src/hist.menus:238
 msgid "Graphic"
 msgstr "Γραφικά"
 
-#: src/hist.cxx:5206 src/hist.menus:235
+#: src/hist.cxx:5211 src/hist.menus:235
 msgid "Prg"
 msgstr ""
 
-#: src/hist.cxx:5369
+#: src/hist.cxx:5374
 msgid ""
 "Please close this window and run update.bat in the Xcas installation "
 "directory"
 msgstr ""
 
-#: src/hist.menus:1 src/hist.menus:4 src/History.cc:227 src/History.cc:3484
-#: src/global.cc:3187
+#: src/hist.menus:1 src/hist.menus:4 src/History.cc:227 src/History.cc:3491
+#: src/global.cc:3203
 msgid "File"
 msgstr "Αρχείο"
 
@@ -931,30 +931,30 @@ msgstr "πρόγραμμα ti89"
 msgid "V200 program"
 msgstr "πρόγραμμα V200"
 
-#: src/hist.menus:10 src/History.cc:3494 src/Tableur.cc:2978
-#: src/Editeur.cc:2340 src/Graph.cc:6634
+#: src/hist.menus:10 src/History.cc:3501 src/Tableur.cc:2937
+#: src/Editeur.cc:2341 src/Graph.cc:6661
 msgid "Insert"
 msgstr "Προσθήκη"
 
-#: src/hist.menus:11 src/History.cc:3495
+#: src/hist.menus:11 src/History.cc:3502
 msgid "xcas session"
 msgstr "συνεδρία xcas "
 
-#: src/hist.menus:12 src/History.cc:3496
+#: src/hist.menus:12 src/History.cc:3503
 msgid "figure"
 msgstr "σχήμα"
 
-#: src/hist.menus:13 src/History.cc:3497 src/History.cc:3518
-#: src/History.cc:3530
+#: src/hist.menus:13 src/History.cc:3504 src/History.cc:3525
+#: src/History.cc:3537
 msgid "spreadsheet"
 msgstr "υπολογιστικό φύλλο"
 
-#: src/hist.menus:14 src/History.cc:3498 src/History.cc:3524
-#: src/History.cc:3536
+#: src/hist.menus:14 src/History.cc:3505 src/History.cc:3531
+#: src/History.cc:3543
 msgid "program"
 msgstr "πρόγραμμα"
 
-#: src/hist.menus:16 src/History.cc:3486 src/Editeur.cc:2348
+#: src/hist.menus:16 src/History.cc:3493 src/Editeur.cc:2349
 msgid "Save as"
 msgstr "Αποθήκευση ως (Save as)"
 
@@ -962,49 +962,49 @@ msgstr "Αποθήκευση ως (Save as)"
 msgid "Save all"
 msgstr "Αποθήκευση όλων (Save all)"
 
-#: src/hist.menus:18 src/History.cc:3487
+#: src/hist.menus:18 src/History.cc:3494
 msgid "Export as"
 msgstr "Εξαγωγή ως"
 
-#: src/hist.menus:19 src/History.cc:3488 src/Editeur.cc:2342
-#: src/Editeur.cc:2351
+#: src/hist.menus:19 src/History.cc:3495 src/Editeur.cc:2343
+#: src/Editeur.cc:2352
 msgid "xcas text"
 msgstr "κείμενο xcas"
 
-#: src/hist.menus:20 src/History.cc:3489 src/Editeur.cc:2343
-#: src/Editeur.cc:2352
+#: src/hist.menus:20 src/History.cc:3496 src/Editeur.cc:2344
+#: src/Editeur.cc:2353
 msgid "maple text"
 msgstr "κείμενο maple"
 
-#: src/hist.menus:21 src/History.cc:3490 src/Editeur.cc:2344
-#: src/Editeur.cc:2353
+#: src/hist.menus:21 src/History.cc:3497 src/Editeur.cc:2345
+#: src/Editeur.cc:2354
 msgid "mupad text"
 msgstr "κείμενο mupad"
 
-#: src/hist.menus:22 src/History.cc:3491 src/Editeur.cc:2345
-#: src/Editeur.cc:2354
+#: src/hist.menus:22 src/History.cc:3498 src/Editeur.cc:2346
+#: src/Editeur.cc:2355
 msgid "ti text"
 msgstr "κείμενο ti89"
 
-#: src/hist.menus:23 src/History.cc:3500
+#: src/hist.menus:23 src/History.cc:3507
 msgid "Kill"
 msgstr "Τερματισμός"
 
-#: src/hist.menus:24 src/hist.menus:294 src/History.cc:3501 src/Graph.cc:1204
-#: src/Graph.cc:7525
+#: src/hist.menus:24 src/hist.menus:294 src/History.cc:3508 src/Graph.cc:1204
+#: src/Graph.cc:7552
 msgid "Print"
 msgstr "Εκτύπωση"
 
-#: src/hist.menus:25 src/hist.menus:295 src/History.cc:3502
+#: src/hist.menus:25 src/hist.menus:295 src/History.cc:3509
 msgid "preview"
 msgstr "προεπισκόπηση"
 
-#: src/hist.menus:26 src/History.cc:3503 src/Tableur.cc:2985
-#: src/Editeur.cc:2366 src/Graph.cc:6637
+#: src/hist.menus:26 src/History.cc:3510 src/Tableur.cc:2944
+#: src/Editeur.cc:2367 src/Graph.cc:6664
 msgid "to printer"
 msgstr "για εκτύπωση"
 
-#: src/hist.menus:27 src/History.cc:3504
+#: src/hist.menus:27 src/History.cc:3511
 msgid "preview selected levels"
 msgstr "προεπισκόπηση επιλεγμένων επιπέδων"
 
@@ -1012,15 +1012,15 @@ msgstr "προεπισκόπηση επιλεγμένων επιπέδων"
 msgid "LaTeX"
 msgstr "LaTeX"
 
-#: src/hist.menus:29 src/hist.menus:297 src/History.cc:3505 src/Graph.cc:6638
+#: src/hist.menus:29 src/hist.menus:297 src/History.cc:3512 src/Graph.cc:6665
 msgid "latex preview"
 msgstr "προεπισκόπηση latex"
 
-#: src/hist.menus:30 src/hist.menus:298 src/History.cc:3506
+#: src/hist.menus:30 src/hist.menus:298 src/History.cc:3513
 msgid "latex print"
 msgstr "εκτύπωση latex"
 
-#: src/hist.menus:31 src/History.cc:3508
+#: src/hist.menus:31 src/History.cc:3515
 msgid "latex print selection"
 msgstr "εκτύπωση επιλογής latex"
 
@@ -1044,8 +1044,8 @@ msgstr "Τερματισμός και ενημέρωση του Xcas"
 msgid "Quit"
 msgstr "Έξοδος"
 
-#: src/hist.menus:38 src/History.cc:3511 src/Tableur.cc:2988
-#: src/Editeur.cc:2369 src/Graph.cc:6642
+#: src/hist.menus:38 src/History.cc:3518 src/Tableur.cc:2947
+#: src/Editeur.cc:2370 src/Graph.cc:6669
 msgid "Edit"
 msgstr "Επεξ"
 
@@ -1062,16 +1062,16 @@ msgstr "Εκτέλεση του/των κατωτέρω"
 msgid "Remove answers below"
 msgstr "αφαίρεση των παρακάτω απαντήσεων"
 
-#: src/hist.menus:42 src/History.cc:3551 src/Tableur.cc:2992 src/Graph.cc:6652
+#: src/hist.menus:42 src/History.cc:3558 src/Tableur.cc:2951 src/Graph.cc:6679
 msgid "Undo"
 msgstr "Αναίρεση"
 
-#: src/hist.menus:43 src/History.cc:3552 src/Tableur.cc:2993 src/Graph.cc:6653
+#: src/hist.menus:43 src/History.cc:3559 src/Tableur.cc:2952 src/Graph.cc:6680
 msgid "Redo"
 msgstr "Ακύρωση αναίρεσης"
 
-#: src/hist.menus:44 src/History.cc:3546 src/Tableur.cc:2991
-#: src/Editeur.cc:2370 src/Graph.cc:6648
+#: src/hist.menus:44 src/History.cc:3553 src/Tableur.cc:2950
+#: src/Editeur.cc:2371 src/Graph.cc:6675
 msgid "Paste"
 msgstr "Επικόλληση"
 
@@ -1091,11 +1091,11 @@ msgstr "Νέα καταχώρηση"
 msgid "New parameter"
 msgstr "Νέα παράμετρος"
 
-#: src/hist.menus:49 src/History.cc:3545
+#: src/hist.menus:49 src/History.cc:3552
 msgid "Insert newline"
 msgstr "Προσθήκη νέας γραμμής"
 
-#: src/hist.menus:50 src/History.cc:3549
+#: src/hist.menus:50 src/History.cc:3556
 msgid "Merge selected levels"
 msgstr "Συγχώνευση επιλεγμένων επιπέδων"
 
@@ -1103,7 +1103,7 @@ msgstr "Συγχώνευση επιλεγμένων επιπέδων"
 msgid "New group"
 msgstr "Νέα ομάδα/ομαδοποίηση"
 
-#: src/hist.menus:52 src/History.cc:3548
+#: src/hist.menus:52 src/History.cc:3555
 msgid "Group selected levels"
 msgstr "Ομαδοποίηση επιλεγμένων επιπέδων"
 
@@ -1131,15 +1131,15 @@ msgstr "Γενικές Ρυθμίσεις"
 msgid "Mode (syntax)"
 msgstr "Λειτουργία"
 
-#: src/hist.menus:59 src/Editeur.cc:2357
+#: src/hist.menus:59 src/Editeur.cc:2358
 msgid "xcas"
 msgstr "xcas"
 
-#: src/hist.menus:60 src/Editeur.cc:2358
+#: src/hist.menus:60 src/Editeur.cc:2359
 msgid "maple"
 msgstr ""
 
-#: src/hist.menus:61 src/Editeur.cc:2359
+#: src/hist.menus:61 src/Editeur.cc:2360
 msgid "mupad"
 msgstr "mupad"
 
@@ -1743,8 +1743,8 @@ msgstr "studentd_icdf: αντίστροφη Student "
 msgid "studentt: T-Test"
 msgstr "studentt: τεστ T"
 
-#: src/hist.menus:229 src/Tableur.cc:1830 src/Tableur.cc:1833
-#: src/Tableur.cc:2100
+#: src/hist.menus:229 src/Tableur.cc:1789 src/Tableur.cc:1792
+#: src/Tableur.cc:2059
 msgid "Expression"
 msgstr "Παράσταση"
 
@@ -1780,7 +1780,7 @@ msgstr "debug: αποσφαλμάτωση"
 msgid "Attributs"
 msgstr "Χαρακτηριστικά"
 
-#: src/hist.menus:240 src/Graph.cc:6697
+#: src/hist.menus:240 src/Graph.cc:6724
 msgid "Curves"
 msgstr "Καμπύλες"
 
@@ -1924,11 +1924,11 @@ msgstr "Νέα χελώνα"
 msgid "si"
 msgstr "sin"
 
-#: src/hist.menus:279 src/Editeur.cc:2399
+#: src/hist.menus:279 src/Editeur.cc:2400
 msgid "pour"
 msgstr "pour"
 
-#: src/hist.menus:280 src/Editeur.cc:2400
+#: src/hist.menus:280 src/Editeur.cc:2401
 msgid "tantque"
 msgstr "tantque"
 
@@ -1940,7 +1940,7 @@ msgstr ""
 msgid "fonction"
 msgstr ""
 
-#: src/hist.menus:283 src/Editeur.cc:2383
+#: src/hist.menus:283 src/Editeur.cc:2384
 msgid "return"
 msgstr ""
 
@@ -1964,7 +1964,7 @@ msgstr "ΓΡΑΜΜΑ"
 msgid "ENVELOPE"
 msgstr "ΦΑΚΕΛΟΣ"
 
-#: src/hist.menus:296 src/Editeur.cc:2386 src/gen.cc:12982
+#: src/hist.menus:296 src/Editeur.cc:2387 src/gen.cc:13042
 msgid "print"
 msgstr "εκτύπωση"
 
@@ -1988,23 +1988,23 @@ msgstr ""
 msgid "Choose file to overwrite"
 msgstr "Επιλέξτε αρχείο για επανεγγραφή"
 
-#: src/History.cc:130 src/Input.cc:389 src/Xcas1.cc:2880 src/Xcas1.cc:3401
-#: src/Xcas1.cc:3651 src/Equation.cc:4620 src/Print.cc:798 src/Tableur.cc:164
-#: src/Tableur.cc:1537 src/Tableur.cc:1874 src/Tableur.cc:2043
-#: src/Tableur.cc:2125 src/Tableur.cc:2328 src/Editeur.cc:1605
+#: src/History.cc:130 src/Input.cc:389 src/Xcas1.cc:2881 src/Xcas1.cc:3419
+#: src/Xcas1.cc:3669 src/Equation.cc:4655 src/Print.cc:798 src/Tableur.cc:166
+#: src/Tableur.cc:1496 src/Tableur.cc:1833 src/Tableur.cc:2002
+#: src/Tableur.cc:2084 src/Tableur.cc:2287 src/Editeur.cc:1605
 #: src/Editeur.cc:1720 src/Editeur.cc:1844 src/Graph.cc:1504 src/Graph.cc:1819
-#: src/Graph.cc:3184 src/Graph.cc:5676 src/Graph.cc:5879
+#: src/Graph.cc:3184 src/Graph.cc:5686 src/Graph.cc:5892
 msgid "OK"
 msgstr "ΟΚ"
 
-#: src/History.cc:131 src/History.cc:1586 src/Input.cc:393 src/Xcas1.cc:2803
-#: src/Xcas1.cc:2878 src/Xcas1.cc:3405 src/Xcas1.cc:3654 src/Cfg.cc:377
-#: src/Cfg.cc:749 src/Equation.cc:4623 src/Print.cc:801 src/Tableur.cc:167
-#: src/Tableur.cc:497 src/Tableur.cc:1540 src/Tableur.cc:1877
-#: src/Tableur.cc:2046 src/Tableur.cc:2128 src/Tableur.cc:2331
+#: src/History.cc:131 src/History.cc:1586 src/Input.cc:393 src/Xcas1.cc:2804
+#: src/Xcas1.cc:2879 src/Xcas1.cc:3423 src/Xcas1.cc:3672 src/Cfg.cc:381
+#: src/Cfg.cc:753 src/Equation.cc:4658 src/Print.cc:801 src/Tableur.cc:169
+#: src/Tableur.cc:499 src/Tableur.cc:1499 src/Tableur.cc:1836
+#: src/Tableur.cc:2005 src/Tableur.cc:2087 src/Tableur.cc:2290
 #: src/Editeur.cc:1463 src/Editeur.cc:1608 src/Editeur.cc:1723
 #: src/Editeur.cc:1847 src/Graph.cc:962 src/Graph.cc:1506 src/Graph.cc:1821
-#: src/Graph.cc:3187 src/Graph.cc:5679 src/Graph.cc:5882
+#: src/Graph.cc:3187 src/Graph.cc:5689 src/Graph.cc:5895
 msgid "Cancel"
 msgstr "Ακύρωση"
 
@@ -2049,7 +2049,7 @@ msgstr ""
 "Σφάλμα συντακτικής ανάλυσης στην γραμμή "
 
 #: src/History.cc:488 src/History.cc:510 src/Input.cc:1034 src/Editeur.cc:1137
-#: src/Editeur.cc:1222 src/Editeur.cc:1399 src/Graph.cc:7327 src/Graph.cc:7353
+#: src/Editeur.cc:1222 src/Editeur.cc:1399 src/Graph.cc:7354 src/Graph.cc:7380
 msgid " at "
 msgstr " στο "
 
@@ -2057,11 +2057,11 @@ msgstr " στο "
 msgid " modified. Save?"
 msgstr " άλλαξε. Αποθήκευση?"
 
-#: src/History.cc:1728 src/plot.cc:10966
+#: src/History.cc:1728 src/plot.cc:11018
 msgid "Unable to open file "
 msgstr ""
 
-#: src/History.cc:1737 src/History.cc:3842
+#: src/History.cc:1737 src/History.cc:3849
 msgid "Unnamed"
 msgstr "Ανώνυμο"
 
@@ -2101,154 +2101,154 @@ msgstr "Εξαγωγή του φύλλου εργασίας ως"
 msgid "Current buffer modified. Save?"
 msgstr "Ενδιάμεση αποθήκη τροποποιήθηκε. Αποθήκευση?"
 
-#: src/History.cc:3493 src/Editeur.cc:2339
+#: src/History.cc:3500 src/Editeur.cc:2340
 msgid "Load"
 msgstr "Φόρτωση"
 
-#: src/History.cc:3507
+#: src/History.cc:3514
 msgid "latex preview selection"
 msgstr "επιλογή προεπισκόπησης latex"
 
-#: src/History.cc:3512 src/Editeur.cc:2379
+#: src/History.cc:3519 src/Editeur.cc:2380
 msgid "Add"
 msgstr "Προσθήκη"
 
-#: src/History.cc:3514 src/History.cc:3527
+#: src/History.cc:3521 src/History.cc:3534
 msgid "comment"
 msgstr "σχόλιο"
 
-#: src/History.cc:3515
+#: src/History.cc:3522
 msgid "entry"
 msgstr "καταχώρηση"
 
-#: src/History.cc:3516
+#: src/History.cc:3523
 msgid "expression"
 msgstr "Παράσταση"
 
-#: src/History.cc:3517
+#: src/History.cc:3524
 msgid "syntax colored entry"
 msgstr ""
 
-#: src/History.cc:3519 src/History.cc:3531
+#: src/History.cc:3526 src/History.cc:3538
 msgid "graph, geo2d"
 msgstr "2Δ_γράφημα (γεωμ2Δ)"
 
-#: src/History.cc:3520 src/History.cc:3532
+#: src/History.cc:3527 src/History.cc:3539
 msgid "graph, geo3d"
 msgstr "3Δ_γράφημα (γεωμ3Δ)"
 
-#: src/History.cc:3521 src/History.cc:3533
+#: src/History.cc:3528 src/History.cc:3540
 msgid "geo2d exact"
 msgstr "γεωμ2Δ_ακριβείς υπολογισμοί"
 
-#: src/History.cc:3522 src/History.cc:3534
+#: src/History.cc:3529 src/History.cc:3541
 msgid "geo3d exact"
 msgstr "γεωμ3Δ_ακριβείς υπολογισμοί"
 
-#: src/History.cc:3523
+#: src/History.cc:3530
 msgid "turtle"
 msgstr "χελώνα"
 
-#: src/History.cc:3525 src/History.cc:3537
+#: src/History.cc:3532 src/History.cc:3544
 msgid "group"
 msgstr "ομάδα/ομαδοποίηση"
 
-#: src/History.cc:3528
+#: src/History.cc:3535
 msgid "new entry"
 msgstr "νέα καταχώρηση"
 
-#: src/History.cc:3529
+#: src/History.cc:3536
 msgid "equation"
 msgstr "εξίσωση"
 
-#: src/History.cc:3535
+#: src/History.cc:3542
 msgid "turtle picture"
 msgstr ""
 
-#: src/History.cc:3540
+#: src/History.cc:3547
 msgid "Execute"
 msgstr "Εκτέλεση"
 
-#: src/History.cc:3541
+#: src/History.cc:3548
 msgid "worksheet"
 msgstr "φύλλο εργασίας"
 
-#: src/History.cc:3542
+#: src/History.cc:3549
 msgid "below"
 msgstr "(από) κάτω"
 
-#: src/History.cc:3543
+#: src/History.cc:3550
 msgid "remove answers below"
 msgstr "αφαίρεση των παρακάτω απαντήσεων"
 
-#: src/History.cc:3547 src/Graph.cc:6649
+#: src/History.cc:3554 src/Graph.cc:6676
 msgid "Delete selected levels"
 msgstr "Διαγραφή επιλεγμένων επιπέδων"
 
-#: src/History.cc:3550
+#: src/History.cc:3557
 msgid "Degroup current fold"
 msgstr "Αποομαδοποίηση της ομάδας"
 
-#: src/History.cc:3675 src/History.cc:3704
+#: src/History.cc:3682 src/History.cc:3711
 msgid "STOP pressed. Trying to cancel cleanly"
 msgstr ""
 
-#: src/History.cc:3680 src/History.cc:3730
+#: src/History.cc:3687 src/History.cc:3737
 msgid "Cleanly cancelled."
 msgstr ""
 
-#: src/History.cc:3689 src/History.cc:3742
+#: src/History.cc:3696 src/History.cc:3749
 msgid ""
 "Cancelling thread. Xcas may crash now or later :-( Consider saving and "
 "restarting Xcas."
 msgstr ""
 
-#: src/History.cc:3709
+#: src/History.cc:3716
 #, fuzzy
 msgid "Cancelling"
 msgstr "Ακύρωση"
 
-#: src/History.cc:3720
+#: src/History.cc:3727
 msgid "Trying to cancel cleanly: "
 msgstr ""
 
-#: src/History.cc:3880
+#: src/History.cc:3887
 msgid "Online help and command completion"
 msgstr "Online βοήθεια και συμπλήρωση εντολών"
 
-#: src/History.cc:3885
+#: src/History.cc:3892
 msgid "Save current session"
 msgstr "Αποθήκευση τρέχουσας συνεδρίας"
 
-#: src/History.cc:3890
+#: src/History.cc:3897
 msgid "Switch bandeau on or off"
 msgstr "Εμφάνιση ή απόκρυψη λωρίδας εντολών"
 
-#: src/History.cc:3900
+#: src/History.cc:3907
 msgid "Current CAS status. Click to modify"
 msgstr "Τρέχουσες ρυθμίσεις του CAS. Κάντε κλικ για αλλαγές."
 
-#: src/History.cc:3905
+#: src/History.cc:3912
 msgid "Interrupt current computation"
 msgstr "Διακοπή τρέχοντος υπολογισμού"
 
-#: src/History.cc:3908
+#: src/History.cc:3915
 msgid "Kbd"
 msgstr ""
 
-#: src/History.cc:3910
+#: src/History.cc:3917
 msgid "Switch keyboard on or off"
 msgstr "Ενεργοποίηση/Απενεργοποίηση πληκτρολογίου"
 
-#: src/History.cc:3918
+#: src/History.cc:3925
 msgid "Close current session"
 msgstr "Κλείσιμο τρέχουσας συνεδρίας"
 
-#: src/History.cc:4003 src/History.cc:4030
+#: src/History.cc:4010 src/History.cc:4037
 msgid "Unable to cut. Xcas is busy."
 msgstr "Η διαγραφή είναι αδύνατη. Το Xcas είναι αποσχολημένο"
 
-#: src/History.cc:4035
+#: src/History.cc:4042
 msgid ""
 "First select level(s):\n"
 "click on the level numbers near the left border"
@@ -2317,7 +2317,7 @@ msgid "Syntax error in compatibility mode: "
 msgstr "Συντακτικό λάθος στην λειτουργία συμβατότητας: "
 
 #: src/Input.cc:1034 src/Editeur.cc:1137 src/Editeur.cc:1222
-#: src/Editeur.cc:1399 src/Graph.cc:7327 src/Graph.cc:7353
+#: src/Editeur.cc:1399 src/Graph.cc:7354 src/Graph.cc:7380
 msgid "Parse error line "
 msgstr "Σφάλμα συντακτικής ανάλυσης στην γραμμή "
 
@@ -2338,7 +2338,7 @@ msgstr "Παράθυρο αποσφαλμάτωσης Xcas"
 msgid "Show the source of the program"
 msgstr "Εμφάνιση της πηγής του προγράμματος"
 
-#: src/Xcas1.cc:323 src/Cfg.cc:430 src/Equation.cc:4463
+#: src/Xcas1.cc:323 src/Cfg.cc:434 src/Equation.cc:4498
 msgid "eval"
 msgstr ""
 
@@ -2374,7 +2374,7 @@ msgstr "τερματισμός"
 msgid "Kill current program"
 msgstr "Τερματισμός τρέχοντος προγράμματος"
 
-#: src/Xcas1.cc:362 src/Editeur.cc:2404
+#: src/Xcas1.cc:362 src/Editeur.cc:2405
 msgid "break"
 msgstr ""
 
@@ -2410,19 +2410,19 @@ msgstr "Εμφάνιση μεταβλητών του watch"
 msgid "Computing..."
 msgstr "Υπολογισμός σε εξέλιξη..."
 
-#: src/Xcas1.cc:2800
+#: src/Xcas1.cc:2801
 msgid "Press a key"
 msgstr "Πατήστε ένα πλήκτρο"
 
-#: src/Xcas1.cc:2810
+#: src/Xcas1.cc:2811
 msgid "Press a key\n"
 msgstr "Πατήστε ένα πλήκτρο \n"
 
-#: src/Xcas1.cc:2883 src/Xcas1.cc:3409
+#: src/Xcas1.cc:2884 src/Xcas1.cc:3427
 msgid "STOP"
 msgstr "ΣΤΟΠ"
 
-#: src/Xcas1.cc:3641
+#: src/Xcas1.cc:3659
 msgid "What a nice font"
 msgstr "Τι ωραία γραμματοσειρά"
 
@@ -2446,41 +2446,41 @@ msgstr "Mupad"
 msgid "TI89/92"
 msgstr "TI89/92"
 
-#: src/Cfg.cc:280
+#: src/Cfg.cc:284
 msgid "10"
 msgstr "10"
 
-#: src/Cfg.cc:281
+#: src/Cfg.cc:285
 msgid "16"
 msgstr ""
 
-#: src/Cfg.cc:301
+#: src/Cfg.cc:305
 msgid "Xcas Cas Setup"
 msgstr "Ρυθμίσεις CAS του Xcas"
 
-#: src/Cfg.cc:302
+#: src/Cfg.cc:306
 msgid "Float format"
 msgstr "Κινητή υποδιαστολή"
 
-#: src/Cfg.cc:307
+#: src/Cfg.cc:311
 msgid "Current float printing format"
 msgstr "Τρέχουσα μορφή εκτύπωσης αριθμών κινητής υποδιαστολής"
 
-#: src/Cfg.cc:311
+#: src/Cfg.cc:315
 msgid "epsilon"
 msgstr "έψιλον"
 
-#: src/Cfg.cc:312
+#: src/Cfg.cc:316
 msgid "Number with absolute value less than epsilon can be coerced to 0"
 msgstr ""
 "Ένας αριθμός με απόλυτη τιμή μικρότερη του έψιλον μπορεί να αντικατασταθεί "
 "με 0"
 
-#: src/Cfg.cc:318
+#: src/Cfg.cc:322
 msgid "proba"
 msgstr "πιθαν"
 
-#: src/Cfg.cc:319
+#: src/Cfg.cc:323
 msgid ""
 "Maximal probability of a wrong answer for non-deterministic algorithms. Set "
 "to 0 for deterministic algorithms only."
@@ -2488,153 +2488,153 @@ msgstr ""
 "Μέγιστη πιθανότητα λάθους απάντησης για μη- ντετερμινιστικούς αλγορίθμους. "
 "Βάλτε 0 μόνο για ντετερμινιστικούς αλγορίθμους"
 
-#: src/Cfg.cc:325 src/Equation.cc:4461
+#: src/Cfg.cc:329 src/Equation.cc:4496
 msgid "approx"
 msgstr "προσεγγιστικά"
 
-#: src/Cfg.cc:326
+#: src/Cfg.cc:330
 msgid "Approx or exact mode"
 msgstr ""
 "Όταν δεν είναι τσεκαρισμένο, οι υπολογισμοί γίνονται με _άπειρη_ ακρίβεια "
 "(exact). Αλλιώς προσεγγιστικά (approx)."
 
-#: src/Cfg.cc:331
+#: src/Cfg.cc:335
 #, fuzzy
 msgid "autosimplify"
 msgstr "Απλοποίηση"
 
-#: src/Cfg.cc:332
+#: src/Cfg.cc:336
 msgid ""
 "Command automatically executed after evaluation (auto-simplification) for "
 "example nop or regroup or simplify"
 msgstr ""
 
-#: src/Cfg.cc:335
+#: src/Cfg.cc:339
 msgid "radian"
 msgstr "ακτίνια"
 
-#: src/Cfg.cc:336
+#: src/Cfg.cc:340
 msgid "Radian or degree angle mode"
 msgstr ""
 "Όταν δεν είναι τσεκαρισμένο, οι γωνίες εκφράζονται  σε μοίρες (DEG). Αλλιώς "
 "σε ακτίνια (RAD)."
 
-#: src/Cfg.cc:341
+#: src/Cfg.cc:345
 msgid "increasing power"
 msgstr "αύξουσα δύναμη"
 
-#: src/Cfg.cc:342
+#: src/Cfg.cc:346
 msgid "Show polynomials in increasin or decreasing order"
 msgstr ""
 "Όταν δεν είναι τσεκαρισμένο, η _κανονική_ μορφή των πολυωνύμων είναι σε "
 "φθίνουσες δυνάμεις. Αλλιώς σε αύξουσες."
 
-#: src/Cfg.cc:347
+#: src/Cfg.cc:351
 msgid "Prog style"
 msgstr "Στυλ Προγραμ"
 
-#: src/Cfg.cc:352
+#: src/Cfg.cc:356
 msgid "Current programmation syntax style"
 msgstr "Τρέχων στύλ προγραμματισμού"
 
-#: src/Cfg.cc:356
+#: src/Cfg.cc:360
 msgid "Complex"
 msgstr "στους μιγαδικούς"
 
-#: src/Cfg.cc:357
+#: src/Cfg.cc:361
 msgid "Complex mode (e.g. for factorization)"
 msgstr ""
 "Όταν δεν είναι τσεκαρισμένο, οι υπολογισμοί γίνονται στους πραγματικούς "
 "(real). Αλλιώς  στους μιγαδικούς (cplx). Παράδειγματα: πραγοντοποίηση, ρίζες "
 "πολυωνύμων κτλ."
 
-#: src/Cfg.cc:362
+#: src/Cfg.cc:366
 msgid "Cmplx_var"
 msgstr "μιγαδική_μεταβλητή"
 
-#: src/Cfg.cc:363
+#: src/Cfg.cc:367
 msgid "Variables are complex or real"
 msgstr ""
 "Όταν δεν είναι τσεκαρισμένο, oι μεταβλητές είναι πραγματικές. Αλλιώς "
 "μιγαδικές."
 
-#: src/Cfg.cc:368 src/Cfg.cc:741 src/Graph.cc:1513 src/Graph.cc:1789
+#: src/Cfg.cc:372 src/Cfg.cc:745 src/Graph.cc:1513 src/Graph.cc:1789
 msgid "Apply"
 msgstr "Εφαρμογή"
 
-#: src/Cfg.cc:382 src/Graph.cc:1509 src/Graph.cc:1785
+#: src/Cfg.cc:386 src/Graph.cc:1509 src/Graph.cc:1785
 msgid "Default"
 msgstr "Προεπιλεγμένο"
 
-#: src/Cfg.cc:386
+#: src/Cfg.cc:390
 msgid "threads"
 msgstr "νήματα"
 
-#: src/Cfg.cc:387
+#: src/Cfg.cc:391
 msgid "Maximal number of threads in parallel"
 msgstr "Μέγιστος αριθμός νημάτων σε παράλληλη λειτουργία"
 
-#: src/Cfg.cc:394
+#: src/Cfg.cc:398
 msgid "Sqrt"
 msgstr ""
 
-#: src/Cfg.cc:395
+#: src/Cfg.cc:399
 msgid "Factor 2nd order poly using sqrt"
 msgstr ""
 "Όταν δεν είναι τσεκαρισμένο, δεν χρησιμοποιούνται τεραγωνικές ρίζες στην  "
 "παραγοντοποίηση πολυωνύμων δευτέρου βαθμού. Αλλιώς χρησιμοποιούνται."
 
-#: src/Cfg.cc:400
+#: src/Cfg.cc:404
 msgid "All_trig_sol"
 msgstr "όλες_τριγ_λύσεις"
 
-#: src/Cfg.cc:401
+#: src/Cfg.cc:405
 msgid "Solver: principal solution vs all solutions"
 msgstr ""
 "Όταν δεν είναι τσεκαρισμένο, υπολογίζεται μόνο η βασική λύση (ή λύσεις). "
 "Αλλιώς όλες (π.χ. τριγωνομετρία)."
 
-#: src/Cfg.cc:406 src/Cfg.cc:407
+#: src/Cfg.cc:410 src/Cfg.cc:411
 msgid "Digits"
 msgstr "ψηφία"
 
-#: src/Cfg.cc:414
+#: src/Cfg.cc:418
 msgid "Integer basis"
 msgstr "Βάση Ακεραίων"
 
-#: src/Cfg.cc:419
+#: src/Cfg.cc:423
 msgid "Current basis for printing integers"
 msgstr "Τρέχουσα βάση για την εκτύπωση των ακεραίων"
 
-#: src/Cfg.cc:423
+#: src/Cfg.cc:427
 msgid "debug"
 msgstr ""
 
-#: src/Cfg.cc:424
+#: src/Cfg.cc:428
 msgid "Level of information displayed by giac functions"
 msgstr ""
 "Αποσφαλμάτωση: Επίπεδο ενημέρωσης που παρουσιάζεται από τις συναρτήσεις του "
 "giac"
 
-#: src/Cfg.cc:431
+#: src/Cfg.cc:435
 msgid "Number of embedded variable names replacement in interactive evaluation"
 msgstr ""
 "Αριθμός αναδρομικών αντικαταστάσεων των ονομάτων των μεταβλητών (σε "
 "διαδραστική λειτουργία)"
 
-#: src/Cfg.cc:438
+#: src/Cfg.cc:442
 msgid "recurs"
 msgstr ""
 
-#: src/Cfg.cc:439
+#: src/Cfg.cc:443
 msgid "Number of embedded function calls allowed"
 msgstr "Αριθμός επιτρεπόμενων αναδρομικών κλήσεων"
 
-#: src/Cfg.cc:446
+#: src/Cfg.cc:450
 msgid "prog"
 msgstr ""
 
-#: src/Cfg.cc:447
+#: src/Cfg.cc:451
 msgid ""
 "Number of embedded variable names replacement in program evaluation (1 or 0 "
 "for default eval level)"
@@ -2642,211 +2642,211 @@ msgstr ""
 "Αριθμός αναδρομικών αντικαταστάσεων των ονομάτων των μεταβλητών στον "
 "υπολογισμό προγράμματος (1 ή 0 για προεπιλεγμένο επίπεδο υπολογισμού)"
 
-#: src/Cfg.cc:454
+#: src/Cfg.cc:458
 msgid "maxiter"
 msgstr ""
 
-#: src/Cfg.cc:455
+#: src/Cfg.cc:459
 msgid "Default maximal number of iterations in Newton method"
 msgstr "Προεπιλεγμένος _μέγιστος_ αριθμός επαναλήψεων στην μέθοδο του Νεύτωνα"
 
-#: src/Cfg.cc:624
+#: src/Cfg.cc:628
 msgid "Xcas Plot Setup"
 msgstr "Ρυθμίσεις Γραφικών του Xcas"
 
-#: src/Cfg.cc:625
+#: src/Cfg.cc:629
 msgid "Plot setup"
 msgstr "Ρυθμίσεις Γραφικών"
 
-#: src/Cfg.cc:630
+#: src/Cfg.cc:634
 msgid "X-"
 msgstr "X-"
 
-#: src/Cfg.cc:631
+#: src/Cfg.cc:635
 msgid "Xmin for computation"
 msgstr "Xmin για υπολογισμούς"
 
-#: src/Cfg.cc:639
+#: src/Cfg.cc:643
 msgid "X+"
 msgstr ""
 
-#: src/Cfg.cc:640
+#: src/Cfg.cc:644
 msgid "Xmax for computation"
 msgstr "Xmax για υπολογισμούς"
 
-#: src/Cfg.cc:648
+#: src/Cfg.cc:652
 msgid "Y-"
 msgstr "Y-"
 
-#: src/Cfg.cc:649
+#: src/Cfg.cc:653
 msgid "Ymin for computation"
 msgstr "Ymin για υπολογισμούς"
 
-#: src/Cfg.cc:657
+#: src/Cfg.cc:661
 msgid "Y+"
 msgstr "Y+"
 
-#: src/Cfg.cc:658
+#: src/Cfg.cc:662
 msgid "Ymax for computation"
 msgstr "Ymax για υπολογισμούς"
 
-#: src/Cfg.cc:666
+#: src/Cfg.cc:670
 msgid "Z-"
 msgstr "Z-"
 
-#: src/Cfg.cc:667
+#: src/Cfg.cc:671
 msgid "Zmin (3-d)"
 msgstr "Zmin (3-d)"
 
-#: src/Cfg.cc:675
+#: src/Cfg.cc:679
 msgid "Z+"
 msgstr "Z+"
 
-#: src/Cfg.cc:676
+#: src/Cfg.cc:680
 msgid "Z-max (3-d)"
 msgstr "Zmax (3-d)"
 
-#: src/Cfg.cc:684
+#: src/Cfg.cc:688
 msgid "t-"
 msgstr "t-"
 
-#: src/Cfg.cc:685
+#: src/Cfg.cc:689
 msgid "T-min (parametric computation)"
 msgstr "T-min (παραμετρικοί υπολογισμοί)"
 
-#: src/Cfg.cc:693
+#: src/Cfg.cc:697
 msgid "t+"
 msgstr "t+"
 
-#: src/Cfg.cc:694
+#: src/Cfg.cc:698
 msgid "T-max (parametric computation)"
 msgstr "T-max (παραμετρικοί υπολογισμοί)"
 
-#: src/Cfg.cc:702
+#: src/Cfg.cc:706
 msgid "class_min"
 msgstr "ελάχιστο_τάξης"
 
-#: src/Cfg.cc:703
+#: src/Cfg.cc:707
 msgid "Minimum for classes (for e.g. histogram...)"
 msgstr "Ελάχιστη τιμή τάξης (π.χ. για ιστόγραμμα...)"
 
-#: src/Cfg.cc:710
+#: src/Cfg.cc:714
 msgid "class_size"
 msgstr "μέγεθος_τάξης"
 
-#: src/Cfg.cc:711
+#: src/Cfg.cc:715
 msgid "Size of a class (e.g. for histogram...)"
 msgstr "Μέγεθος τάξης (π.χ. για ιστόγραμμα...)"
 
-#: src/Cfg.cc:718
+#: src/Cfg.cc:722
 msgid "TX"
 msgstr ""
 
-#: src/Cfg.cc:719
+#: src/Cfg.cc:723
 msgid "Tick range on X axis"
 msgstr "Σημάδεψε το διάστημα στον άξονα των Χ"
 
-#: src/Cfg.cc:726
+#: src/Cfg.cc:730
 msgid "TY"
 msgstr ""
 
-#: src/Cfg.cc:727
+#: src/Cfg.cc:731
 msgid "Tick range on Y axis"
 msgstr "Σημάδεψε το διάστημα στον άξονα των Υ"
 
-#: src/Cfg.cc:734
+#: src/Cfg.cc:738
 msgid "autoscale"
 msgstr ""
 
-#: src/Cfg.cc:735
+#: src/Cfg.cc:739
 msgid "Autoscale graphs"
 msgstr ""
 
-#: src/Cfg.cc:753
+#: src/Cfg.cc:757
 msgid "WX-"
 msgstr "WX-"
 
-#: src/Cfg.cc:754 src/Graph.cc:1644
+#: src/Cfg.cc:758 src/Graph.cc:1644
 msgid "Xmin for visualisation"
 msgstr "Xmin για οπτικοποίηση"
 
-#: src/Cfg.cc:762
+#: src/Cfg.cc:766
 msgid "WX+"
 msgstr "WX+"
 
-#: src/Cfg.cc:763
+#: src/Cfg.cc:767
 msgid "Xmax for visualization"
 msgstr "Xmax για οπτικοποίηση"
 
-#: src/Cfg.cc:771
+#: src/Cfg.cc:775
 msgid "WY-"
 msgstr "WY-"
 
-#: src/Cfg.cc:772
+#: src/Cfg.cc:776
 msgid "Ymin for visualization"
 msgstr "Ymin για οπτικοποίηση"
 
-#: src/Cfg.cc:780
+#: src/Cfg.cc:784
 msgid "WY+"
 msgstr "WY+"
 
-#: src/Cfg.cc:781
+#: src/Cfg.cc:785
 msgid "Ymax for visualization"
 msgstr "Ymax για οπτικοποίηση"
 
-#: src/Cfg.cc:789
+#: src/Cfg.cc:793
 msgid "ortho"
 msgstr ""
 
-#: src/Cfg.cc:790
+#: src/Cfg.cc:794
 msgid "Orthonormalize"
 msgstr "Ορθοκανονικοποίηση"
 
-#: src/Cfg.cc:794
+#: src/Cfg.cc:798
 msgid ">W"
 msgstr ""
 
-#: src/Cfg.cc:795
+#: src/Cfg.cc:799
 msgid "Copy XYminmax to W"
 msgstr "Αντιγραφή XYminmax στο W"
 
-#: src/Cfg.cc:799
+#: src/Cfg.cc:803
 msgid "W>"
 msgstr ""
 
-#: src/Cfg.cc:800
+#: src/Cfg.cc:804
 msgid "Copy W to XYminmax"
 msgstr "Αντιγραφή W στο XYminmax"
 
-#: src/Equation.cc:4455 src/Graph.cc:1161 src/Graph.cc:7507
+#: src/Equation.cc:4490 src/Graph.cc:1161 src/Graph.cc:7534
 msgid "M"
 msgstr ""
 
-#: src/Equation.cc:4456
+#: src/Equation.cc:4491
 msgid "Select all"
 msgstr "Επιλογή όλων"
 
-#: src/Equation.cc:4457
+#: src/Equation.cc:4492
 msgid "Edit selection"
 msgstr "Επεξεργασία επιλογής"
 
-#: src/Equation.cc:4459
+#: src/Equation.cc:4494
 msgid "normal"
 msgstr ""
 
-#: src/Equation.cc:4462
+#: src/Equation.cc:4497
 msgid "exact"
 msgstr "ακριβής"
 
-#: src/Equation.cc:4464
+#: src/Equation.cc:4499
 msgid "Back"
 msgstr "Προηγούμενο"
 
-#: src/Equation.cc:4465
+#: src/Equation.cc:4500
 msgid "Forward"
 msgstr "Επόμενο"
 
-#: src/Equation.cc:4484
+#: src/Equation.cc:4519
 msgid "Equation menu"
 msgstr "Μενού Εξίσωσης"
 
@@ -2878,328 +2878,328 @@ msgstr "Μέγεθος εικονοστοιχείου σε mm"
 msgid "Size in pixels for export"
 msgstr "Μέγεθος σε εικονοστοιχεία για εξαγωγή (εικόνας)"
 
-#: src/Tableur.cc:104
+#: src/Tableur.cc:106
 msgid "No spreadsheet found. Please click in or add one"
 msgstr "Δεν βρέθηκε υπολογιστικό φύλλο. Κάντε κλικ για προσθήκη ενός"
 
-#: src/Tableur.cc:137
+#: src/Tableur.cc:139
 msgid "Variable"
 msgstr "Μεταβλητή"
 
-#: src/Tableur.cc:138
+#: src/Tableur.cc:140
 msgid "Save the spreadsheet as a matrix in this variable"
 msgstr "Αποθήκευση του υπολογιστικού φύλλου ως πίνακα σε αυτή την μεταβλητή"
 
-#: src/Tableur.cc:139 src/Tableur.cc:497
+#: src/Tableur.cc:141 src/Tableur.cc:499
 msgid "Rows"
 msgstr "Γραμμές"
 
-#: src/Tableur.cc:143 src/Tableur.cc:497
+#: src/Tableur.cc:145 src/Tableur.cc:499
 msgid "Cols"
 msgstr "Στήλες"
 
-#: src/Tableur.cc:147
+#: src/Tableur.cc:149
 msgid "Eval"
 msgstr ""
 
-#: src/Tableur.cc:148
+#: src/Tableur.cc:150
 msgid "Reeval spreadsheet automatically"
 msgstr "Αυτόματος επανυπολογισμός του υπολογιστικού φύλλου"
 
-#: src/Tableur.cc:150
+#: src/Tableur.cc:152
 msgid "Move right"
 msgstr "Κίνηση δεξιά"
 
-#: src/Tableur.cc:151
+#: src/Tableur.cc:153
 msgid "Move right or down after Enter"
 msgstr "Κίνηση δεξιά ή κάτω μετά το Enter"
 
-#: src/Tableur.cc:152
+#: src/Tableur.cc:154
 msgid "Distribute"
 msgstr "Κατανομή"
 
-#: src/Tableur.cc:153
+#: src/Tableur.cc:155
 #, fuzzy
 msgid "Matrix input is distributed or kept inside a cell"
 msgstr "Εισαγωγή πίνακα κατανέμεται ή παραμένει σε ένα κελί "
 
-#: src/Tableur.cc:155
+#: src/Tableur.cc:157
 msgid "Matrix or spreadsheet"
 msgstr "Πίνακας ή υπολογιστικό φύλλο"
 
-#: src/Tableur.cc:157
+#: src/Tableur.cc:159
 msgid "Split sheet/graph horizontally or vertically"
 msgstr "Διαχωρισμός φύλλου/γραφήματος οριζοντίως ή καθέτως"
 
-#: src/Tableur.cc:158 src/Tableur.cc:2996 src/Graph.cc:6656
+#: src/Tableur.cc:160 src/Tableur.cc:2955 src/Graph.cc:6683
 msgid "Graph"
 msgstr "Γράφημα"
 
-#: src/Tableur.cc:159
+#: src/Tableur.cc:161
 msgid "Show or hide graph connected to this sheet"
 msgstr "Εμφάνιση ή απόκρυψη γραφήματος που συνδέεται με αυτό το φύλλο"
 
-#: src/Tableur.cc:160
+#: src/Tableur.cc:162
 msgid "Undo history"
 msgstr "Αναίρεση ιστορικού"
 
-#: src/Tableur.cc:161
+#: src/Tableur.cc:163
 msgid "Init sheet"
 msgstr "Προσθήκη φύλλου"
 
-#: src/Tableur.cc:171 src/Tableur.cc:2980
+#: src/Tableur.cc:173 src/Tableur.cc:2939
 msgid "Sheet configuration"
 msgstr "Ρυθμίσεις Υπολογιστικού Φύλλου"
 
-#: src/Tableur.cc:497
+#: src/Tableur.cc:499
 msgid "Remove what?"
 msgstr "Απομάκρυνση τίνος?"
 
-#: src/Tableur.cc:817
+#: src/Tableur.cc:819
 msgid "computation aborted"
 msgstr "Υπολογισμός διεκόπη"
 
-#: src/Tableur.cc:1309
+#: src/Tableur.cc:1268
 msgid "Save sheet"
 msgstr "Απόθηκευση φύλλου"
 
-#: src/Tableur.cc:1319 src/Editeur.cc:721 src/Graph.cc:5523
+#: src/Tableur.cc:1278 src/Editeur.cc:721 src/Graph.cc:5533
 msgid ": file exists. Overwrite?"
 msgstr ": φάκελος υπάρχει. Αντικατάσταση?"
 
-#: src/Tableur.cc:1456
+#: src/Tableur.cc:1415
 msgid "Variable name?"
 msgstr "Όνομα της μεταβλητής?"
 
-#: src/Tableur.cc:1460
+#: src/Tableur.cc:1419
 msgid "is not a variable name"
 msgstr "δεν είναι όνομα μεταβλητής"
 
-#: src/Tableur.cc:1484
+#: src/Tableur.cc:1443
 msgid "Insert sheet"
 msgstr "Προσθήκη φύλλου"
 
-#: src/Tableur.cc:1507
+#: src/Tableur.cc:1466
 msgid "Insert CSV sheet"
 msgstr "Προσθήκη φύλλου CSV"
 
-#: src/Tableur.cc:1525
+#: src/Tableur.cc:1484
 msgid "Separator"
 msgstr "Διαχωριστής"
 
-#: src/Tableur.cc:1526
+#: src/Tableur.cc:1485
 msgid "One character used to separate fields, like ; Use ^I for tab"
 msgstr ""
 "Ένας χαρακτήρας χρησιμοποιείται ως διαχωριστής πεδίων, π.χ. ; "
 "Χρησιμοποιείστε ^I για tab"
 
-#: src/Tableur.cc:1527
+#: src/Tableur.cc:1486
 msgid "Newline"
 msgstr "Νέα γραμμή"
 
-#: src/Tableur.cc:1528
+#: src/Tableur.cc:1487
 msgid "One character used to separate lines, like <return> Use ^I for tab"
 msgstr ""
 "Ένας χαρακτήρας χρησιμοποιείται ως διαχωριστής γραμμών, π.χ. <return> "
 "Χρησιμοποιείστε ^I για tab"
 
-#: src/Tableur.cc:1529
+#: src/Tableur.cc:1488
 msgid "Decimal"
 msgstr "Δεκαδικά"
 
-#: src/Tableur.cc:1530
+#: src/Tableur.cc:1489
 msgid "One character used for decimal digit separator, like . or ,"
 msgstr "Ένας χαρακτήρας χρησιμοποιείται ως διαχωριστής δεκαδικών, π.χ. . ή ,"
 
-#: src/Tableur.cc:1531
+#: src/Tableur.cc:1490
 msgid "Endfile"
 msgstr "Τέλος αρχείου"
 
-#: src/Tableur.cc:1532
+#: src/Tableur.cc:1491
 msgid "Stop reading at first occurence of this character, leave blank for none"
 msgstr ""
 "Η ανάγνωση σταματά όταν εμφανιστεί αυτός ο χαρακτήρας, αλλιώς αφήστε κενό"
 
-#: src/Tableur.cc:1533
+#: src/Tableur.cc:1492
 msgid "Start row=1"
 msgstr "Γραμμή εκκίνησης=1"
 
-#: src/Tableur.cc:1543
+#: src/Tableur.cc:1502
 msgid "CSV Import filter"
 msgstr "Φίλτρο εισόδου CSV"
 
-#: src/Tableur.cc:1770 src/Tableur.cc:1798 src/Tableur.cc:1871
+#: src/Tableur.cc:1729 src/Tableur.cc:1757 src/Tableur.cc:1830
 msgid "builtin integration"
 msgstr "προκαθορισμένη ολοκλήρωση"
 
-#: src/Tableur.cc:1776
+#: src/Tableur.cc:1735
 msgid "right rectangle"
 msgstr "δεξί ορθογώνιο"
 
-#: src/Tableur.cc:1782
+#: src/Tableur.cc:1741
 msgid "left rectangle"
 msgstr "αριστερό ορθογώνιο"
 
-#: src/Tableur.cc:1788
+#: src/Tableur.cc:1747
 msgid "middle point"
 msgstr "μεσαίο σημείο"
 
-#: src/Tableur.cc:1794 src/Tableur.cc:1802
+#: src/Tableur.cc:1753 src/Tableur.cc:1761
 msgid "trapezoid"
 msgstr "τραπεζοειδές"
 
-#: src/Tableur.cc:1799
+#: src/Tableur.cc:1758
 msgid "right_rectangle"
 msgstr "δεξί_ορθογώνιο"
 
-#: src/Tableur.cc:1800
+#: src/Tableur.cc:1759
 msgid "left_rectangle"
 msgstr "αριστερό_ορθογώνιο"
 
-#: src/Tableur.cc:1801
+#: src/Tableur.cc:1760
 msgid "middle_point"
 msgstr "μεσαίο σημείο"
 
-#: src/Tableur.cc:1829
+#: src/Tableur.cc:1788
 msgid "Plot style (select a point type or width for dotted plot)"
 msgstr ""
 
-#: src/Tableur.cc:1832
+#: src/Tableur.cc:1791
 msgid "Expression of the function (e.g sin(x))"
 msgstr "Παράσταση συνάρτησης (π.χ. sin(x))"
 
-#: src/Tableur.cc:1835
+#: src/Tableur.cc:1794
 msgid "Expression of the function (e.g x-y^2)"
 msgstr "Παράσταση συνάρτησης (π.χ. x-y^2)"
 
-#: src/Tableur.cc:1836 src/Graph.cc:5814 src/Graph.cc:5820
+#: src/Tableur.cc:1795 src/Graph.cc:5827 src/Graph.cc:5833
 msgid "1st var"
 msgstr "1η μεταβλητή"
 
-#: src/Tableur.cc:1838
+#: src/Tableur.cc:1797
 msgid "Independant variable name (e.g x)"
 msgstr "Όνομα ανεξάρτητης μεταβλητής (π.χ. x)"
 
-#: src/Tableur.cc:1839 src/Graph.cc:5817 src/Graph.cc:5823 src/Graph.cc:5829
+#: src/Tableur.cc:1798 src/Graph.cc:5830 src/Graph.cc:5836 src/Graph.cc:5842
 msgid "2nd var"
 msgstr "2η μεταβλητή"
 
-#: src/Tableur.cc:1841 src/Graph.cc:5825
+#: src/Tableur.cc:1800 src/Graph.cc:5838
 msgid "Second independant variable name (e.g y)"
 msgstr "Όνομα δεύτερης ανεξάρτητης μεταβλητής (π.χ. y)"
 
-#: src/Tableur.cc:1842 src/Graph.cc:5859
+#: src/Tableur.cc:1801 src/Graph.cc:5872
 msgid "xmin"
 msgstr ""
 
-#: src/Tableur.cc:1845
+#: src/Tableur.cc:1804
 msgid "Minimal value for 1st independant variable"
 msgstr "Ελάχιστη τιμή για την πρώτη ανεξάρτητη μεταβλητή"
 
-#: src/Tableur.cc:1846 src/Graph.cc:5862
+#: src/Tableur.cc:1805 src/Graph.cc:5875
 msgid "xstep"
 msgstr ""
 
-#: src/Tableur.cc:1849
+#: src/Tableur.cc:1808
 msgid "Discretization step for 1st independant variable"
 msgstr ""
 
-#: src/Tableur.cc:1850 src/Graph.cc:5865
+#: src/Tableur.cc:1809 src/Graph.cc:5878
 msgid "xmax"
 msgstr ""
 
-#: src/Tableur.cc:1853
+#: src/Tableur.cc:1812
 msgid "Maximal value for 1st independant variable"
 msgstr "Μέγιστη τιμή για την πρώτη ανεξάρτητη μεταβλητή"
 
-#: src/Tableur.cc:1854
+#: src/Tableur.cc:1813
 msgid "Target"
 msgstr "Στόχος"
 
-#: src/Tableur.cc:1855
+#: src/Tableur.cc:1814
 msgid ""
 "Name of the first of two columns that will be overwritten by the tablefunc"
 msgstr ""
 "Όνομα της πρώτης εκ των δύο στηλών που θα αντικατασταθεί απο το tablefunc"
 
-#: src/Tableur.cc:1856 src/Graph.cc:5868
+#: src/Tableur.cc:1815 src/Graph.cc:5881
 msgid "ymin"
 msgstr ""
 
-#: src/Tableur.cc:1859
+#: src/Tableur.cc:1818
 msgid "Minimal value for 2nd independant variable"
 msgstr "Ελάχιστη τιμή για την δεύτερη ανεξάρτητη μεταβλητή"
 
-#: src/Tableur.cc:1860 src/Graph.cc:5871
+#: src/Tableur.cc:1819 src/Graph.cc:5884
 msgid "ystep"
 msgstr ""
 
-#: src/Tableur.cc:1863
+#: src/Tableur.cc:1822
 msgid "Discretization step for 2nd independant variable"
 msgstr ""
 
-#: src/Tableur.cc:1864 src/Graph.cc:5874
+#: src/Tableur.cc:1823 src/Graph.cc:5887
 msgid "ymax"
 msgstr ""
 
-#: src/Tableur.cc:1867
+#: src/Tableur.cc:1826
 msgid "Maximal value for 2nd independant variable"
 msgstr "Μέγιστη τιμή για την δεύτερη ανεξάρτητη μεταβλητή"
 
-#: src/Tableur.cc:1868
+#: src/Tableur.cc:1827
 msgid "Choose"
 msgstr "Επιλογή"
 
-#: src/Tableur.cc:1870
+#: src/Tableur.cc:1829
 msgid "int. method"
 msgstr "μέθοδος ολοκλήρωσης"
 
-#: src/Tableur.cc:1994
+#: src/Tableur.cc:1953
 msgid "Table of value of a function"
 msgstr "Πίνακας τιμών μιας συνάρτησης"
 
-#: src/Tableur.cc:2025
+#: src/Tableur.cc:1984
 msgid "Target cell range"
 msgstr "Περιοχή κελιών προορισμού"
 
-#: src/Tableur.cc:2026
+#: src/Tableur.cc:1985
 msgid "Target cell range will be filled by random numbers, e.g. A1:A8"
 msgstr ""
 "Η περιοχή κελιών προορισμού θα γεμίσει από τυχαίους αριθμούς, π.χ. A1:A8"
 
-#: src/Tableur.cc:2027 src/Tableur.cc:2112
+#: src/Tableur.cc:1986 src/Tableur.cc:2071
 msgid "x-"
 msgstr ""
 
-#: src/Tableur.cc:2029
+#: src/Tableur.cc:1988
 msgid "Minimal value"
 msgstr "Ελάχιστη τιμή"
 
-#: src/Tableur.cc:2030 src/Tableur.cc:2115
+#: src/Tableur.cc:1989 src/Tableur.cc:2074
 msgid "x+"
 msgstr ""
 
-#: src/Tableur.cc:2032
+#: src/Tableur.cc:1991
 msgid "Maximal value"
 msgstr "Μέγιστη τιμή"
 
-#: src/Tableur.cc:2033
+#: src/Tableur.cc:1992
 msgid "integers"
 msgstr "ακέραιοι"
 
-#: src/Tableur.cc:2034
+#: src/Tableur.cc:1993
 msgid "Real or integers"
 msgstr "Πραγματικοί ή ακέραιοι"
 
-#: src/Tableur.cc:2037
+#: src/Tableur.cc:1996
 msgid "static"
 msgstr ""
 
-#: src/Tableur.cc:2038
+#: src/Tableur.cc:1997
 msgid "Immediate static value or formula reevaled each time"
 msgstr "Στατική τιμή ή ο τύπος επανυπολογίζεται κάθε φορά"
 
-#: src/Tableur.cc:2102
+#: src/Tableur.cc:2061
 msgid ""
 "Expression of u_(n+1) in terms of a variable=u_n, e.g. 1/2*(x+2/x)\n"
 "Or expression of u_(n+k+1) in terms of a list of variables=[u_n,...,u_(n"
@@ -3209,11 +3209,11 @@ msgstr ""
 "παράσταση του u_(n+k+1) συναρτήσει μιας λίστας μεταβλητών =[u_n,...,u_(n"
 "+k)], π.χ. x+y"
 
-#: src/Tableur.cc:2103
+#: src/Tableur.cc:2062
 msgid "Variable(s)"
 msgstr "Μεταβλητή(-ές)"
 
-#: src/Tableur.cc:2105
+#: src/Tableur.cc:2064
 msgid ""
 "Independant variable name representing u_n, e.g. x\n"
 "Or list of independant variables representing u_n,...,u_(n+k), e.g. [x,y]"
@@ -3222,555 +3222,555 @@ msgstr ""
 "ανεξάρτητων μεταβλητών \n"
 "που αναπαριστάνουν τα u_n,...,u_(n+k), π.χ. [x,y]"
 
-#: src/Tableur.cc:2108
+#: src/Tableur.cc:2067
 msgid "Name of the initial value of un"
 msgstr "Όνομα της αρχικής τιμής του un"
 
-#: src/Tableur.cc:2111
+#: src/Tableur.cc:2070
 msgid ""
 "Initial value, e.g. 1.0\n"
 "Or list of initial values, e.g. [1.0,1.0]"
 msgstr ""
 "Αρχική τιμή του , u_0, π.χ. 1.0  ή λίστα των αρχικών τιμών, π.χ.[1.0,1.0]"
 
-#: src/Tableur.cc:2114
+#: src/Tableur.cc:2073
 msgid "Minimal value for the function graph"
 msgstr "Ελάχιστη τιμή του γραφήματος της συνάρτησης"
 
-#: src/Tableur.cc:2117
+#: src/Tableur.cc:2076
 msgid "Maximal value for the function graph"
 msgstr "Μέγιστη τιμή του γραφήματος της συνάρτησης"
 
-#: src/Tableur.cc:2118
+#: src/Tableur.cc:2077
 msgid "Target column"
 msgstr "Στήλη προορισμού"
 
-#: src/Tableur.cc:2120
+#: src/Tableur.cc:2079
 msgid "Number of terms"
 msgstr "Πλήθος όρων"
 
-#: src/Tableur.cc:2181
+#: src/Tableur.cc:2140
 msgid "Expression contains a cell name "
 msgstr ""
 
-#: src/Tableur.cc:2185
+#: src/Tableur.cc:2144
 msgid "Invalid list initial value "
 msgstr "Μη έγκυρη λίστα αρχικών τιμών"
 
-#: src/Tableur.cc:2271
+#: src/Tableur.cc:2230
 msgid "Table of value of a recurrent sequence"
 msgstr "Πίνακας τιμών μιας περιοδικής ακολουθίας"
 
-#: src/Tableur.cc:2307
+#: src/Tableur.cc:2266
 msgid "cells input"
 msgstr "κελί εισόδου"
 
-#: src/Tableur.cc:2308
+#: src/Tableur.cc:2267
 msgid "Zone over which the function will be applied, e.g. A1..B7 or A1..B7,D,E"
 msgstr "Περιοχή στην οποία θα εφαρμοστεί η συνάρτηση, π.χ. A0..B7 ή A0..B7,D,E"
 
-#: src/Tableur.cc:2309
+#: src/Tableur.cc:2268
 msgid "target cell"
 msgstr "κελί προορισμού"
 
-#: src/Tableur.cc:2310
+#: src/Tableur.cc:2269
 msgid "Target cell(s) will be filled by the formula, e.g. A8"
 msgstr "Κελί(-ά) προορισμού θα γεμίσει(-σουν) από τον τύπο, π.χ. A8"
 
-#: src/Tableur.cc:2311
+#: src/Tableur.cc:2270
 msgid "class min"
 msgstr "το ελάχιστο της τάξης"
 
-#: src/Tableur.cc:2312
+#: src/Tableur.cc:2271
 msgid "Minimal value of classes for histogramsl, e.g. -10"
 msgstr "Ελάχιστη τιμή για τις τάξεις του ιστογράμματος, π.χ. -10"
 
-#: src/Tableur.cc:2313
+#: src/Tableur.cc:2272
 msgid "class size"
 msgstr "μέγεθος τάξης"
 
-#: src/Tableur.cc:2314
+#: src/Tableur.cc:2273
 msgid "Size of a class for histograms, e.g. 2"
 msgstr "Μέγεθος της τάξης για ιστογράμματα, π.χ. 2"
 
-#: src/Tableur.cc:2315
+#: src/Tableur.cc:2274
 msgid "value"
 msgstr "τιμή"
 
-#: src/Tableur.cc:2316
+#: src/Tableur.cc:2275
 msgid "Use submatrix by reference (dynamic) or by value (static)"
 msgstr "Χρήση υποπίνακα κατ' αναφορά (δυναμική) ή κατ' αξία (στατική)"
 
-#: src/Tableur.cc:2318
+#: src/Tableur.cc:2277
 msgid "lines"
 msgstr "γραμμές"
 
-#: src/Tableur.cc:2319
+#: src/Tableur.cc:2278
 msgid "Use line or columns"
 msgstr "Χρήση γραμμών ή στηλών"
 
-#: src/Tableur.cc:2321
+#: src/Tableur.cc:2280
 msgid "outside"
 msgstr "εξωτερικά"
 
-#: src/Tableur.cc:2322
+#: src/Tableur.cc:2281
 msgid "Sheet graph or standalone graph"
 msgstr "Γράφημα στο φύλλο ή ξεχωριστό γράφημα"
 
-#: src/Tableur.cc:2324
+#: src/Tableur.cc:2283
 msgid "degree"
 msgstr ""
 
-#: src/Tableur.cc:2325
+#: src/Tableur.cc:2284
 msgid "Degree of the polynomial regression"
 msgstr "Βαθμός της πολυωνυμικής παλινδρόμησης"
 
-#: src/Tableur.cc:2416
+#: src/Tableur.cc:2375
 msgid "Syntax error"
 msgstr "Συντακτικό λάθος"
 
-#: src/Tableur.cc:2499
+#: src/Tableur.cc:2458
 msgid "New row number"
 msgstr "Νέος αριθμός γραμμών"
 
-#: src/Tableur.cc:2503
+#: src/Tableur.cc:2462
 msgid "Really delete rows?"
 msgstr "Είστε σίγουροι οτι θέλετε να διαγράψετε τις γραμμές?"
 
-#: src/Tableur.cc:2515
+#: src/Tableur.cc:2474
 msgid "New col number"
 msgstr "Νέος αριθμός στηλών"
 
-#: src/Tableur.cc:2519
+#: src/Tableur.cc:2478
 msgid "Really delete columns?"
 msgstr "Είστε σίγουροι οτι θέλετε να διαγράψετε τις στήλες?"
 
-#: src/Tableur.cc:2533
+#: src/Tableur.cc:2492
 msgid "Histogram 1 or 2 columns: data or data/eff"
 msgstr "Ιστόγραμμα με 1 ή 2 στήλες: δεδομένα ή δεδομένα/eff"
 
-#: src/Tableur.cc:2543
+#: src/Tableur.cc:2502
 msgid "Make classes from column data or data/eff into two adjacent columns"
 msgstr ""
 "Δημιουργία τάξεων απο δεδομένα στηλών ή δεδομένα/eff σε δύο γειτονικές στήλες"
 
-#: src/Tableur.cc:2572
+#: src/Tableur.cc:2531
 msgid "One boxwhisker per column"
 msgstr "Ένα θηκόγραμμα ανα στήλη"
 
-#: src/Tableur.cc:2579
+#: src/Tableur.cc:2538
 msgid "Plotlist: One column (y) or two columns (x,y)"
 msgstr "Διακριτή Σχεδίαση: μία στήλη (y) ή 2 στήλες (x,y)"
 
-#: src/Tableur.cc:2586
+#: src/Tableur.cc:2545
 msgid "Camembert: column 1: legends, column 2: data"
 msgstr "Διάγραμμα πίττας: στήλη 1: υπομνήματα, στήλη 2: δεδομένα"
 
-#: src/Tableur.cc:2593
+#: src/Tableur.cc:2552
 msgid "Bar_plot: column 1: legends, column 2: data"
 msgstr "Διάγραμμα Ράβδων: στήλη 1: υπομνήματα, στήλη 2: δεδομένα"
 
-#: src/Tableur.cc:2600
+#: src/Tableur.cc:2559
 msgid "Column 1: x, one scatterplot per remaining column"
 msgstr "Στήλη 1: x, ένα γράφημα διασποράς ανα υπολειπόμενη στήλη"
 
-#: src/Tableur.cc:2607
+#: src/Tableur.cc:2566
 msgid "Column 1: x, one polygonplot per remaining column"
 msgstr "Στήλη 1: x, ένα πολυγωνικό γράφημα ανα υπολειπόμενη στήλη"
 
-#: src/Tableur.cc:2614
+#: src/Tableur.cc:2573
 msgid "Column 1: x, one polygon line per remaining column"
 msgstr "Στήλη 1: x, μία πολυγωνική γραμμή ανα υπολειπόμενη στήλη"
 
-#: src/Tableur.cc:2621
+#: src/Tableur.cc:2580
 msgid "Linear regression: column 1: x, column 2: y"
 msgstr "Γραμμική παλινδρόμηση: στήλη 1: x, στήλη 2: y"
 
-#: src/Tableur.cc:2628
+#: src/Tableur.cc:2587
 msgid "Power regression: Column 1: x, column 2: y"
 msgstr "Βαθμωτή παλινδρόμηση: στήλη 1: x, στήλη 2: y"
 
-#: src/Tableur.cc:2635
+#: src/Tableur.cc:2594
 msgid "Log regression: Column 1: x, column 2: y"
 msgstr "Λογαριθμική παλινδρόμηση: στήλη 1: x, στήλη 2: y"
 
-#: src/Tableur.cc:2642
+#: src/Tableur.cc:2601
 msgid "Exp regression: Column 1: x, column 2: y"
 msgstr "Εκθετική παλινδρόμηση: στήλη 1: x, στήλη 2: y"
 
-#: src/Tableur.cc:2649
+#: src/Tableur.cc:2608
 msgid "Polynomial regression degree d: Column 1: x, column 2: y"
 msgstr "Πολυωνυμική παλινδρόμηση: στήλη 1: x, στήλη 2: y"
 
-#: src/Tableur.cc:2656
+#: src/Tableur.cc:2615
 #, fuzzy
 msgid "Logistic regression for y', with y(x=1)=y1"
 msgstr "Λογιστική παλινδρόμηση για y', με y(x=1)=y1"
 
-#: src/Tableur.cc:2665 src/Tableur.cc:2721
+#: src/Tableur.cc:2624 src/Tableur.cc:2680
 msgid "Sort with respect to "
 msgstr "Ταξινόμηση με βάση τη "
 
-#: src/Tableur.cc:2667 src/Tableur.cc:2723
+#: src/Tableur.cc:2626 src/Tableur.cc:2682
 msgid "row"
 msgstr "γραμμή"
 
-#: src/Tableur.cc:2669 src/Tableur.cc:2725
+#: src/Tableur.cc:2628 src/Tableur.cc:2684
 msgid "column"
 msgstr "στήλη"
 
-#: src/Tableur.cc:2696
+#: src/Tableur.cc:2655
 msgid "Sorting is not compatible with some cell references. Sort anyway"
 msgstr ""
 "Η ταξινόμηση δεν είναι συμβατή με κάποιες αναφορές κελιών. Παρ' όλα αυτά "
 "ταξινόμηση?"
 
-#: src/Tableur.cc:2861 src/Tableur.cc:2873 src/Tableur.cc:2885
-#: src/Tableur.cc:2897
+#: src/Tableur.cc:2820 src/Tableur.cc:2832 src/Tableur.cc:2844
+#: src/Tableur.cc:2856
 msgid "Make rows==cols first!"
 msgstr "Πρώτα να γίνουν γραμμές==στήλες!"
 
-#: src/Tableur.cc:2972
+#: src/Tableur.cc:2931
 msgid "Table"
 msgstr "Πίνακας"
 
-#: src/Tableur.cc:2973
+#: src/Tableur.cc:2932
 msgid "Save sheet as text"
 msgstr "Αποθήκευση φύλλου ως κείμενο"
 
-#: src/Tableur.cc:2974 src/Graph.cc:6633
+#: src/Tableur.cc:2933 src/Graph.cc:6660
 msgid "Save as alternate filename"
 msgstr "Αποθήκευση ως εναλλακτικό όνομα αρχείου"
 
-#: src/Tableur.cc:2975
+#: src/Tableur.cc:2934
 msgid "Save as CSV"
 msgstr "Αποθήκευση ως CSV "
 
-#: src/Tableur.cc:2976
+#: src/Tableur.cc:2935
 msgid "Save as mathml"
 msgstr "Αποθήκευση ως mathml"
 
-#: src/Tableur.cc:2977
+#: src/Tableur.cc:2936
 msgid "Save selection to variable"
 msgstr "Αποθήκευση επιλογής σε μεταβλητή"
 
-#: src/Tableur.cc:2979
+#: src/Tableur.cc:2938
 msgid "Insert CSV"
 msgstr "Εισαγωγή CSV"
 
-#: src/Tableur.cc:2981
+#: src/Tableur.cc:2940
 msgid "Print Export"
 msgstr "Εκτύπωση-Εξαγωγή"
 
-#: src/Tableur.cc:2984 src/Graph.cc:1202 src/Graph.cc:6636
+#: src/Tableur.cc:2943 src/Graph.cc:1202 src/Graph.cc:6663
 msgid "EPS PNG and preview"
 msgstr "EPS-PNG και προεπισκόπηση"
 
-#: src/Tableur.cc:2989
+#: src/Tableur.cc:2948
 msgid "Eval sheet"
 msgstr "Υπολογισμός φύλλου"
 
-#: src/Tableur.cc:2990
+#: src/Tableur.cc:2949
 msgid "Copy Cell"
 msgstr "Αντιγραφή κελιού"
 
-#: src/Tableur.cc:2994
+#: src/Tableur.cc:2953
 msgid "Configuration"
 msgstr "Ρυθμίσεις"
 
-#: src/Tableur.cc:2995
+#: src/Tableur.cc:2954
 msgid "Cfg window"
 msgstr "Ρυθμίσεις παραθύρου"
 
-#: src/Tableur.cc:2997
+#: src/Tableur.cc:2956
 msgid "Autoscale graph"
 msgstr "Αυτόματη ρύθμιση κλίμακος στο γράφημα"
 
-#: src/Tableur.cc:2998
+#: src/Tableur.cc:2957
 msgid "Graph portrait"
 msgstr "Πορτραίτο γράφηματος"
 
-#: src/Tableur.cc:2999
+#: src/Tableur.cc:2958
 msgid "Graph landscape"
 msgstr "Τοπίο γραφήματος"
 
-#: src/Tableur.cc:3000
+#: src/Tableur.cc:2959
 msgid "Hide Graph"
 msgstr "Απόκρυψη γραφήματος"
 
-#: src/Tableur.cc:3004
+#: src/Tableur.cc:2963
 msgid "Matrix"
 msgstr "Πίνακας"
 
-#: src/Tableur.cc:3005
+#: src/Tableur.cc:2964
 msgid "Normal matrix"
 msgstr "Κανονικός πίνακας"
 
-#: src/Tableur.cc:3006
+#: src/Tableur.cc:2965
 msgid "Symmetric matrix"
 msgstr "Συμμετρικός Πίνακας"
 
-#: src/Tableur.cc:3007
+#: src/Tableur.cc:2966
 msgid "AntiSymmetric matrix"
 msgstr "Αντισυμμετρικός Πίνακας"
 
-#: src/Tableur.cc:3008
+#: src/Tableur.cc:2967
 msgid "Hermitian matrix"
 msgstr "Ερμητιανός Πίνακας"
 
-#: src/Tableur.cc:3009
+#: src/Tableur.cc:2968
 msgid "AntiHermitian matrix"
 msgstr "Αντιερμητιανός Πίνακας"
 
-#: src/Tableur.cc:3011
+#: src/Tableur.cc:2970
 msgid "Set Rows Number"
 msgstr "Ορισμός αριθμού γραμμών"
 
-#: src/Tableur.cc:3012
+#: src/Tableur.cc:2971
 msgid "Set Cols Number"
 msgstr "Ορισμός αριθμού στηλών"
 
-#: src/Tableur.cc:3013
+#: src/Tableur.cc:2972
 msgid "Move ->"
 msgstr "Κίνηση δεξιά"
 
-#: src/Tableur.cc:3014
+#: src/Tableur.cc:2973
 msgid "Move down"
 msgstr "Κίνηση κάτω "
 
-#: src/Tableur.cc:3015
+#: src/Tableur.cc:2974
 msgid "Auto Recompute"
 msgstr "Αυτόματος επανυπολογισμός"
 
-#: src/Tableur.cc:3016
+#: src/Tableur.cc:2975
 msgid "No Recompute"
 msgstr "Όχι αυτόμματος επανυπολογισμός"
 
-#: src/Tableur.cc:3017
+#: src/Tableur.cc:2976
 msgid "Dispatch matrice to cells"
 msgstr "Αποστολή πίνακα σε κελιά"
 
-#: src/Tableur.cc:3018
+#: src/Tableur.cc:2977
 msgid "Keep matrice in one cell"
 msgstr "Διατήρηση πίνακα σε ένα κελί"
 
-#: src/Tableur.cc:3020
+#: src/Tableur.cc:2979
 msgid "Fill"
 msgstr "Πλήρωση"
 
-#: src/Tableur.cc:3021
+#: src/Tableur.cc:2980
 msgid "Copy right"
 msgstr "Αντιγραφή δεξιά"
 
-#: src/Tableur.cc:3022
+#: src/Tableur.cc:2981
 msgid "Copy down"
 msgstr "Αντιγραφή κάτω"
 
-#: src/Tableur.cc:3023
+#: src/Tableur.cc:2982
 msgid "Fill selection with pushed cell"
 msgstr "Πλήρωση επιλογής με pushed κελί"
 
-#: src/Tableur.cc:3024
+#: src/Tableur.cc:2983
 msgid "Fill selection with 0"
 msgstr "Πλήρωση επιλογής με 0"
 
-#: src/Tableur.cc:3025
+#: src/Tableur.cc:2984
 msgid "Fill sheet with 0"
 msgstr "Πλήρωση φύλλου με 0"
 
-#: src/Tableur.cc:3027
+#: src/Tableur.cc:2986
 msgid "Add or delete"
 msgstr "Προσθήκη ή Διαγραφή"
 
-#: src/Tableur.cc:3028
+#: src/Tableur.cc:2987
 msgid "Insert Row"
 msgstr "Προσθήκη γραμμής"
 
-#: src/Tableur.cc:3029
+#: src/Tableur.cc:2988
 msgid "Row+ at end"
 msgstr "Γραμμή+ στο τέλος"
 
-#: src/Tableur.cc:3030
+#: src/Tableur.cc:2989
 msgid "Insert Col"
 msgstr "Προσθήκη στήλης"
 
-#: src/Tableur.cc:3031
+#: src/Tableur.cc:2990
 msgid "Col+ at end"
 msgstr "Στήλη+ στο τέλος"
 
-#: src/Tableur.cc:3032
+#: src/Tableur.cc:2991
 msgid "Erase current row"
 msgstr "Διαγραφή τρέχουσας γραμμής"
 
-#: src/Tableur.cc:3033
+#: src/Tableur.cc:2992
 msgid "Erase selection rows"
 msgstr "Διαγραφή επιλεγμένων γραμμών"
 
-#: src/Tableur.cc:3034
+#: src/Tableur.cc:2993
 msgid "Erase current col"
 msgstr "Διαγραφή τρέχουσας στήλης"
 
-#: src/Tableur.cc:3035
+#: src/Tableur.cc:2994
 msgid "Erase selection cols"
 msgstr "Διαγραφή επιλεγμένων στηλών"
 
-#: src/Tableur.cc:3037
+#: src/Tableur.cc:2996
 msgid "Sort"
 msgstr "Ταξινόμηση"
 
-#: src/Tableur.cc:3038
+#: src/Tableur.cc:2997
 msgid "Inc col"
 msgstr "Αύξουσα στήλη"
 
-#: src/Tableur.cc:3039
+#: src/Tableur.cc:2998
 msgid "Dec col"
 msgstr "Φθίνουσα στήλη"
 
-#: src/Tableur.cc:3040
+#: src/Tableur.cc:2999
 msgid "Inc row"
 msgstr "Αύξουσα γραμμή"
 
-#: src/Tableur.cc:3041
+#: src/Tableur.cc:3000
 msgid "Dec row"
 msgstr "Φθίνουσα γραμμή"
 
-#: src/Tableur.cc:3043
+#: src/Tableur.cc:3002
 msgid "Col larger"
 msgstr "Στήλη μεγαλύτερη"
 
-#: src/Tableur.cc:3044
+#: src/Tableur.cc:3003
 msgid "Col smaller"
 msgstr "Στήλη μικρότερη"
 
-#: src/Tableur.cc:3048
+#: src/Tableur.cc:3007
 msgid "Maths"
 msgstr "Μαθηματικά"
 
-#: src/Tableur.cc:3049 src/Graph.cc:6657
+#: src/Tableur.cc:3008 src/Graph.cc:6684
 msgid "Function"
 msgstr "Συνάρτηση"
 
-#: src/Tableur.cc:3050
+#: src/Tableur.cc:3009
 msgid "Random values"
 msgstr "Τυχαίοι αριθμοί"
 
-#: src/Tableur.cc:3051
+#: src/Tableur.cc:3010
 msgid "Sequences"
 msgstr "Ακολουθίες"
 
-#: src/Tableur.cc:3052
+#: src/Tableur.cc:3011
 msgid "Recurrent sequence"
 msgstr "Αναδρομική ακολουθία"
 
-#: src/Tableur.cc:3053 src/Tableur.cc:3061
+#: src/Tableur.cc:3012 src/Tableur.cc:3020
 msgid "Bar plot"
 msgstr "Διάγραμμα ράβδων"
 
-#: src/Tableur.cc:3054 src/Tableur.cc:3062
+#: src/Tableur.cc:3013 src/Tableur.cc:3021
 msgid "plotlist"
 msgstr "Διακριτή σχεδίαση"
 
-#: src/Tableur.cc:3055 src/Tableur.cc:3068
+#: src/Tableur.cc:3014 src/Tableur.cc:3027
 msgid "Polygonscatterplot"
 msgstr "Πολυγωνικό διάγραμμα διασποράς"
 
-#: src/Tableur.cc:3056 src/Tableur.cc:3069
+#: src/Tableur.cc:3015 src/Tableur.cc:3028
 msgid "Scatterplot"
 msgstr "Διάγραμμα διασποράς"
 
-#: src/Tableur.cc:3057 src/Tableur.cc:3070
+#: src/Tableur.cc:3016 src/Tableur.cc:3029
 msgid "Polygonplot"
 msgstr "Πολυγωνικό διάγραμμα"
 
-#: src/Tableur.cc:3059
+#: src/Tableur.cc:3018
 msgid "1-d stats"
 msgstr "1-Δ στατιστικά"
 
-#: src/Tableur.cc:3060
+#: src/Tableur.cc:3019
 msgid "camembert"
 msgstr "Διάγραμμα πίττας"
 
-#: src/Tableur.cc:3063
+#: src/Tableur.cc:3022
 msgid "Boxwhisker"
 msgstr "Θηκόγραμμα"
 
-#: src/Tableur.cc:3064
+#: src/Tableur.cc:3023
 msgid "Classes (data or data,eff)"
 msgstr "Τάξεις (δεδομένα ή δεδομένα,eff)"
 
-#: src/Tableur.cc:3065
+#: src/Tableur.cc:3024
 msgid "Histogram (interval,eff)"
 msgstr "Ιστόγραμμα (διάστημα,eff)"
 
-#: src/Tableur.cc:3067
+#: src/Tableur.cc:3026
 msgid "2-d stats"
 msgstr "2-Δ στατιστικά"
 
-#: src/Tableur.cc:3072
+#: src/Tableur.cc:3031
 msgid "Regressions"
 msgstr "Παλινδρομίσεις"
 
-#: src/Tableur.cc:3073
+#: src/Tableur.cc:3032
 msgid "Linear"
 msgstr "Γραμμική"
 
-#: src/Tableur.cc:3074
+#: src/Tableur.cc:3033
 msgid "Polynomial"
 msgstr "Πολυωνυμική"
 
-#: src/Tableur.cc:3076
+#: src/Tableur.cc:3035
 msgid "Logarithmic"
 msgstr "Λογαριθμική"
 
-#: src/Tableur.cc:3077
+#: src/Tableur.cc:3036
 msgid "Power"
 msgstr "Βαθμωτή"
 
-#: src/Tableur.cc:3078
+#: src/Tableur.cc:3037
 msgid "Logistic"
 msgstr "Λογιστική"
 
-#: src/Tableur.cc:3230
+#: src/Tableur.cc:3189
 msgid "Too large for cell display"
 msgstr "Πολύ μεγάλη για εμφάνιση στο κελί"
 
-#: src/Tableur.cc:3316
+#: src/Tableur.cc:3275
 msgid "CAS is busy"
 msgstr "Το CAS είναι απασχολημένο"
 
-#: src/Tableur.cc:3490
+#: src/Tableur.cc:3449
 msgid "Spreadsheet commandline"
 msgstr "Γραμμή εντολών του υπολογιστικού φύλλου"
 
-#: src/Tableur.cc:3497
+#: src/Tableur.cc:3456
 msgid "Selection area"
 msgstr "Περιοχή επιλογής"
 
-#: src/Tableur.cc:3522
+#: src/Tableur.cc:3481
 msgid "Reeval current sheet"
 msgstr "Επανυπολογισμός τρέχοντος φύλλου"
 
-#: src/Tableur.cc:3526
+#: src/Tableur.cc:3485
 msgid "See value instead of formula"
 msgstr "Εμφάνιση της τιμής αντί του τύπου"
 
-#: src/Tableur.cc:3530
+#: src/Tableur.cc:3489
 msgid "Initialize the sheet using init formula"
 msgstr "Αρχικοποίηση φύλλου με τον τύπο init"
 
-#: src/Tableur.cc:3534
+#: src/Tableur.cc:3493
 msgid "View attached graph 2-d"
 msgstr "Εμφάνιση του επισυναπτόμενου 2-Δ γραφήματος"
 
-#: src/Tableur.cc:3538
+#: src/Tableur.cc:3497
 msgid "View attached graph 3-d"
 msgstr "Εμφάνιση του  επισυναπτόμενου 3-Δ γραφήματος"
 
-#: src/Tableur.cc:3542
+#: src/Tableur.cc:3501
 msgid "<Save sheet as text>"
 msgstr "Αποθήκευση φύλλου ως κείμενο"
 
-#: src/Tableur.cc:3544
+#: src/Tableur.cc:3503
 msgid "Save spreadsheet independently of session"
 msgstr "Αποθήκευση υπολογιστικού φύλλου ανεξάρτητα της συνεδρίας"
 
@@ -3875,7 +3875,7 @@ msgstr "while"
 msgid "Check this button for a undefined loop"
 msgstr ""
 
-#: src/Editeur.cc:1697 src/Graph.cc:5811
+#: src/Editeur.cc:1697 src/Graph.cc:5824
 msgid "Var"
 msgstr ""
 
@@ -3915,7 +3915,7 @@ msgstr "Συνθήκη"
 msgid "Enter condition for continuation of loop"
 msgstr ""
 
-#: src/Editeur.cc:1714 src/Editeur.cc:2397 src/Editeur.cc:2500
+#: src/Editeur.cc:1714 src/Editeur.cc:2398 src/Editeur.cc:2501
 msgid "Loop"
 msgstr "Βρόχος"
 
@@ -3974,191 +3974,191 @@ msgstr "Νέα συνάρτηση"
 msgid "Invalid functionname"
 msgstr "Μη έγκυρο όνομα συνάρτησης"
 
-#: src/Editeur.cc:2180 src/Editeur.cc:2181 src/Editeur.cc:2184
+#: src/Editeur.cc:2181 src/Editeur.cc:2182 src/Editeur.cc:2185
 msgid "print();"
 msgstr ""
 
-#: src/Editeur.cc:2191 src/Editeur.cc:2192 src/Editeur.cc:2195
+#: src/Editeur.cc:2192 src/Editeur.cc:2193 src/Editeur.cc:2196
 msgid "input();"
 msgstr ""
 
-#: src/Editeur.cc:2338
+#: src/Editeur.cc:2339
 msgid "Prog"
 msgstr "Προγρ"
 
-#: src/Editeur.cc:2341
+#: src/Editeur.cc:2342
 msgid "file"
 msgstr "αρχείο"
 
-#: src/Editeur.cc:2349
+#: src/Editeur.cc:2350
 msgid "File extension"
 msgstr "Επέκταση αρχείου"
 
-#: src/Editeur.cc:2350
+#: src/Editeur.cc:2351
 msgid "Export"
 msgstr "Εξαγωγή"
 
-#: src/Editeur.cc:2356
+#: src/Editeur.cc:2357
 msgid "Translate"
 msgstr "Μετάφραση"
 
-#: src/Editeur.cc:2360
+#: src/Editeur.cc:2361
 msgid "ti"
 msgstr ""
 
-#: src/Editeur.cc:2362 src/Graph.cc:7523
+#: src/Editeur.cc:2363 src/Graph.cc:7550
 msgid "Export/Print"
 msgstr "Εξαγωγή-Εκτύπωση"
 
-#: src/Editeur.cc:2365
+#: src/Editeur.cc:2366
 msgid "Preview"
 msgstr "Προεπισκόπηση"
 
-#: src/Editeur.cc:2371
+#: src/Editeur.cc:2372
 msgid "Search (Ctrl-F)"
 msgstr "Αναζήτηση"
 
-#: src/Editeur.cc:2372
+#: src/Editeur.cc:2373
 msgid "Indent line (Esc)"
 msgstr "Εσοχή κειμένου"
 
-#: src/Editeur.cc:2373
+#: src/Editeur.cc:2374
 msgid "Indent all"
 msgstr "Εσοχή όλων"
 
-#: src/Editeur.cc:2374
+#: src/Editeur.cc:2375
 msgid "Parse"
 msgstr "Συντακτική ανάλυση"
 
-#: src/Editeur.cc:2375
+#: src/Editeur.cc:2376
 msgid "Exec all"
 msgstr "Εκτέλεση όλων"
 
-#: src/Editeur.cc:2376
+#: src/Editeur.cc:2377
 msgid "Extend editor"
 msgstr ""
 
-#: src/Editeur.cc:2377
+#: src/Editeur.cc:2378
 msgid "Shrink editor"
 msgstr ""
 
-#: src/Editeur.cc:2380 src/Editeur.cc:2490
+#: src/Editeur.cc:2381 src/Editeur.cc:2491
 msgid "Func"
 msgstr "Συνάρτηση"
 
-#: src/Editeur.cc:2381
+#: src/Editeur.cc:2382
 msgid "new function"
 msgstr "νέα συνάρτηση"
 
-#: src/Editeur.cc:2382
+#: src/Editeur.cc:2383
 msgid "local"
 msgstr ""
 
-#: src/Editeur.cc:2385
+#: src/Editeur.cc:2386
 msgid "IO"
 msgstr ""
 
-#: src/Editeur.cc:2387
+#: src/Editeur.cc:2388
 msgid "input"
 msgstr "dans"
 
-#: src/Editeur.cc:2389 src/Editeur.cc:2495
+#: src/Editeur.cc:2390 src/Editeur.cc:2496
 msgid "Test"
 msgstr "Τεστ"
 
-#: src/Editeur.cc:2390
+#: src/Editeur.cc:2391
 msgid "new test"
 msgstr "νέο τεστ"
 
-#: src/Editeur.cc:2391
+#: src/Editeur.cc:2392
 msgid "si alors sinon"
 msgstr "si alors sinon"
 
-#: src/Editeur.cc:2392
+#: src/Editeur.cc:2393
 msgid "if [then]"
 msgstr "if [then]"
 
-#: src/Editeur.cc:2393
+#: src/Editeur.cc:2394
 msgid "if [then] else"
 msgstr "if [then] else"
 
-#: src/Editeur.cc:2394
+#: src/Editeur.cc:2395
 msgid "switch"
 msgstr "switch"
 
-#: src/Editeur.cc:2395
+#: src/Editeur.cc:2396
 msgid "try catch"
 msgstr "try catch"
 
-#: src/Editeur.cc:2398
+#: src/Editeur.cc:2399
 msgid "new loop"
 msgstr ""
 
-#: src/Editeur.cc:2401
+#: src/Editeur.cc:2402
 msgid "repeter jusqu_a"
 msgstr "repeter jusqu_a"
 
-#: src/Editeur.cc:2402
+#: src/Editeur.cc:2403
 msgid "for "
 msgstr ""
 
-#: src/Editeur.cc:2403
+#: src/Editeur.cc:2404
 msgid "while "
 msgstr ""
 
-#: src/Editeur.cc:2405
+#: src/Editeur.cc:2406
 msgid "continue"
 msgstr "continue"
 
-#: src/Editeur.cc:2472
+#: src/Editeur.cc:2473
 msgid "Line number"
 msgstr "Αριθμός γραμμής"
 
-#: src/Editeur.cc:2477
+#: src/Editeur.cc:2478
 msgid "nxt"
 msgstr "επόμενο"
 
-#: src/Editeur.cc:2478
+#: src/Editeur.cc:2479
 msgid "Find next occurence (defined by Edit->Search)"
 msgstr "Αναζήτηση επόμενης εμφάνισης (όπως ορίσθηκε στο Επεξ->Αναζήτηση)"
 
-#: src/Editeur.cc:2484
+#: src/Editeur.cc:2485
 msgid "exe"
 msgstr "exe"
 
-#: src/Editeur.cc:2485
+#: src/Editeur.cc:2486
 msgid "Exec line in current widget"
 msgstr "Εκτέλεση γραμμής στο τρέχων widget"
 
-#: src/Editeur.cc:2491
+#: src/Editeur.cc:2492
 msgid "Assistant for function creation"
 msgstr ""
 
-#: src/Editeur.cc:2496
+#: src/Editeur.cc:2497
 msgid "Assistant for test creation"
 msgstr ""
 
-#: src/Editeur.cc:2501
+#: src/Editeur.cc:2502
 msgid "Assistant for loop creation"
 msgstr ""
 
-#: src/Editeur.cc:2510
+#: src/Editeur.cc:2511
 msgid "Parse current program"
 msgstr "Συντακτική ανάλυση του τρέχοντος προγράμματος"
 
-#: src/Editeur.cc:2516
+#: src/Editeur.cc:2517
 msgid "Save current program"
 msgstr "Αποθήκευση του τρέχοντος προγράμματος"
 
-#: src/Editeur.cc:2891
+#: src/Editeur.cc:2892
 msgid "No help"
 msgstr "Δεν υπάρχει βοήθεια"
 
-#: src/Editeur.cc:2893
+#: src/Editeur.cc:2894
 msgid "Press F1 to copy examples or for interactive help"
 msgstr ""
 
-#: src/Editeur.cc:2899
+#: src/Editeur.cc:2900
 msgid "Press F1 to open help index at "
 msgstr ""
 
@@ -4196,7 +4196,7 @@ msgstr "Αυτόματη ρύθμιση κλίμακας"
 msgid "Autoscale (full)"
 msgstr "Αυτόματη ρύθμιση κλίμακας"
 
-#: src/Graph.cc:1162 src/Graph.cc:7513 src/Help1.cc:241
+#: src/Graph.cc:1162 src/Graph.cc:7540 src/Help1.cc:241
 msgid "View"
 msgstr "Εμφάνιση"
 
@@ -4204,11 +4204,11 @@ msgstr "Εμφάνιση"
 msgid "Orthonormalize (2-d)"
 msgstr "Ορθοκανονικοποίηση (2-Δ)"
 
-#: src/Graph.cc:1166 src/Graph.cc:1226 src/Graph.cc:7514
+#: src/Graph.cc:1166 src/Graph.cc:1226 src/Graph.cc:7541
 msgid "Zoom in"
 msgstr "Μεγένθυση"
 
-#: src/Graph.cc:1167 src/Graph.cc:1251 src/Graph.cc:7515
+#: src/Graph.cc:1167 src/Graph.cc:1251 src/Graph.cc:7542
 msgid "Zoom out"
 msgstr "Σμίκρυνση"
 
@@ -4320,7 +4320,7 @@ msgstr "Απόκρυψη αντικειμένων"
 msgid "Show below depth"
 msgstr "Εμφάνιση αντικειμένων"
 
-#: src/Graph.cc:1201 src/Graph.cc:6635
+#: src/Graph.cc:1201 src/Graph.cc:6662
 msgid "Export Print"
 msgstr "Εξαγωγή-Εκτύπωση"
 
@@ -4328,11 +4328,11 @@ msgstr "Εξαγωγή-Εκτύπωση"
 msgid "3-d to PNG"
 msgstr "3-Δ σε PNG"
 
-#: src/Graph.cc:1205 src/Graph.cc:7526
+#: src/Graph.cc:1205 src/Graph.cc:7553
 msgid "Preview (with Latex)"
 msgstr "Προοπτικοποίηση (με LaTeX)"
 
-#: src/Graph.cc:1206 src/Graph.cc:7527
+#: src/Graph.cc:1206 src/Graph.cc:7554
 msgid "Print (with Latex)"
 msgstr "Εκτύπωση (με LaTeX)"
 
@@ -4609,7 +4609,7 @@ msgstr "Ονόματα γραφημάτων"
 msgid "Show/Hide names of parametric and function plots"
 msgstr "Εμφάνιση/Απόκρυψη ονομάτων παραμετρικών και συναρτησιακών γραφημάτων "
 
-#: src/Graph.cc:1766 src/Graph.cc:6650
+#: src/Graph.cc:1766 src/Graph.cc:6677
 msgid "Portrait"
 msgstr "Πορτραίτο"
 
@@ -4705,811 +4705,815 @@ msgstr "Διαγραφή επιλεγμένου αντικειμένου"
 msgid "Object attributs "
 msgstr "Χαρακτηριστικά αντικειμένου "
 
-#: src/Graph.cc:4252 src/Graph.cc:6670 src/Graph.cc:6828
+#: src/Graph.cc:4252 src/Graph.cc:6697 src/Graph.cc:6855
 msgid "Frame"
 msgstr "Πλαίσιο"
 
-#: src/Graph.cc:4254 src/Graph.cc:6671
+#: src/Graph.cc:4254 src/Graph.cc:6698
 msgid "Pointer"
 msgstr "Δείκτης"
 
-#: src/Graph.cc:5313 src/Graph3d.cc:2238
+#: src/Graph.cc:5323 src/Graph3d.cc:2238
 msgid "Click "
 msgstr "Κλικ "
 
-#: src/Graph.cc:5515
+#: src/Graph.cc:5525
 msgid "Save figure"
 msgstr "Αποθήκευση σχήματος"
 
-#: src/Graph.cc:5585
+#: src/Graph.cc:5595
 msgid "Insert figure"
 msgstr "Προσθήκη σχήματος"
 
-#: src/Graph.cc:5655
+#: src/Graph.cc:5665
 msgid "Parameter minimal value"
 msgstr "Ελάχιστη τιμή παραμέτρου"
 
-#: src/Graph.cc:5658
+#: src/Graph.cc:5668
 msgid "Parameter maximal value"
 msgstr "Μέγιστη τιμή παραμέτρου"
 
-#: src/Graph.cc:5661
+#: src/Graph.cc:5671
 msgid "Parameter current value"
 msgstr "Τρέχουσα τιμή παραμέτρου"
 
-#: src/Graph.cc:5663
+#: src/Graph.cc:5673
 msgid "Parameter step value"
 msgstr "Τιμή παραμετρικού βήματος"
 
-#: src/Graph.cc:5669
+#: src/Graph.cc:5679
 msgid "Parameter variable name"
 msgstr "Όνομα της μεταβλητής της παραμέτρου"
 
-#: src/Graph.cc:5672
+#: src/Graph.cc:5682
 msgid "Numeric or formal parameter"
 msgstr "Αριθμητική ή συμβολική παράμετρος"
 
-#: src/Graph.cc:5683
+#: src/Graph.cc:5693
 msgid "Parameter definition"
 msgstr "Ορισμός παραμέτρου"
 
-#: src/Graph.cc:5783
+#: src/Graph.cc:5793
 msgid "Draw slopefield"
 msgstr "Σχεδιασμός του πεδίου κλίσεων"
 
-#: src/Graph.cc:5786
+#: src/Graph.cc:5796
+msgid "Autonomous 2d systems."
+msgstr ""
+
+#: src/Graph.cc:5799
 msgid "Normalize slopefield"
 msgstr "Κανονικοποίηση του πεδίου κλίσεων"
 
-#: src/Graph.cc:5787
+#: src/Graph.cc:5800
 msgid "F(x,y)="
 msgstr "F(x,y)="
 
-#: src/Graph.cc:5789
+#: src/Graph.cc:5802
 msgid "Implicit expression"
 msgstr "Πεπλεγμένη παράσταση"
 
-#: src/Graph.cc:5790
+#: src/Graph.cc:5803
 msgid "dy/dt(t,y)="
 msgstr "dy/dt(t,y)"
 
-#: src/Graph.cc:5792
+#: src/Graph.cc:5805
 msgid ""
 "Expression of dy/dt in terms of y and t, e.g. sin(t*y). For autonomous 2d "
 "system,change time variable to x and enter d[x,y]/dt in terms of [x,y], e.g. "
 "[[1,2],[3,4]]*[x,y]"
 msgstr ""
 
-#: src/Graph.cc:5793
+#: src/Graph.cc:5806
 msgid "rho(t)="
 msgstr "rho(t)="
 
-#: src/Graph.cc:5795
+#: src/Graph.cc:5808
 msgid "Expression of modulus rho wrt to angle t (e.g sin(t))"
 msgstr "Παράσταση του modulus rho αναφορικά με την γωνια t, (π.χ. sin(t))"
 
-#: src/Graph.cc:5796
+#: src/Graph.cc:5809
 msgid "x(t)="
 msgstr "x(t)="
 
-#: src/Graph.cc:5798
+#: src/Graph.cc:5811
 msgid "Expression of x wrt to t (e.g sin(t))"
 msgstr "Παράσταση του x αναφορικά με το t (π.χ. sin(t))"
 
-#: src/Graph.cc:5799
+#: src/Graph.cc:5812
 msgid "y(t)="
 msgstr "y(t)="
 
-#: src/Graph.cc:5801
+#: src/Graph.cc:5814
 msgid "Expression of y wrt to t (e.g cos(t))"
 msgstr "Παράσταση του y αναφορικά με το t (π.χ. cos(t))"
 
-#: src/Graph.cc:5802
+#: src/Graph.cc:5815
 msgid "x="
 msgstr ""
 
-#: src/Graph.cc:5804
+#: src/Graph.cc:5817
 msgid "Expression of x wrt to u and v (e.g. u+v)"
 msgstr "Παράσταση του x αναφορικά με τα u και v (π.χ. u+v)"
 
-#: src/Graph.cc:5805 src/Graph.cc:5808
+#: src/Graph.cc:5818 src/Graph.cc:5821
 msgid "y="
 msgstr ""
 
-#: src/Graph.cc:5807
+#: src/Graph.cc:5820
 msgid "Expression of y wrt to u and v (e.g exp(u)-v)"
 msgstr "Παράσταση του y αναφορικά με τα u και v (π.χ. exp(u)-v)"
 
-#: src/Graph.cc:5810
+#: src/Graph.cc:5823
 msgid "Expression of z wrt to u and v (e.g u-v)"
 msgstr "Παράσταση του y αναφορικά με τα u και v (π.χ. u-v)"
 
-#: src/Graph.cc:5813
+#: src/Graph.cc:5826
 msgid "Independant variable name (e.g t)"
 msgstr "Όνομα ανεξάρτητης μεταβλητής (π.χ. t)"
 
-#: src/Graph.cc:5816
+#: src/Graph.cc:5829
 msgid "First independant variable name (e.g u)"
 msgstr "Όνομα 1ης ανεξάρτητης μεταβλητής (πχ. u)"
 
-#: src/Graph.cc:5819
+#: src/Graph.cc:5832
 msgid "Second independant variable name (e.g v)"
 msgstr "Όνομα 2ης ανεξάρτητης μεταβλητής (πχ. v)"
 
-#: src/Graph.cc:5822
+#: src/Graph.cc:5835
 msgid "First independant variable name (e.g x)"
 msgstr "Όνομα 1ης ανεξάρτητης μεταβλητής (πχ. x)"
 
-#: src/Graph.cc:5826
+#: src/Graph.cc:5839
 msgid "Time var"
 msgstr "Χρονική μεταβλητή"
 
-#: src/Graph.cc:5828
+#: src/Graph.cc:5841
 msgid "Time variable name"
 msgstr "Όνομα χρονικής μεταβλητής"
 
-#: src/Graph.cc:5831
+#: src/Graph.cc:5844
 msgid "Function variable name"
 msgstr "Όνομα μεταβλητής της συνάρτησης"
 
-#: src/Graph.cc:5832
+#: src/Graph.cc:5845
 msgid "tmin"
 msgstr ""
 
-#: src/Graph.cc:5835
+#: src/Graph.cc:5848
 msgid "tstep"
 msgstr ""
 
-#: src/Graph.cc:5838
+#: src/Graph.cc:5851
 msgid "tmax"
 msgstr ""
 
-#: src/Graph.cc:5841
+#: src/Graph.cc:5854
 msgid "umin"
 msgstr ""
 
-#: src/Graph.cc:5844
+#: src/Graph.cc:5857
 msgid "ustep"
 msgstr ""
 
-#: src/Graph.cc:5847
+#: src/Graph.cc:5860
 msgid "umax"
 msgstr ""
 
-#: src/Graph.cc:5850
+#: src/Graph.cc:5863
 msgid "vmin"
 msgstr ""
 
-#: src/Graph.cc:5853
+#: src/Graph.cc:5866
 msgid "vstep"
 msgstr ""
 
-#: src/Graph.cc:5856
+#: src/Graph.cc:5869
 msgid "vmax"
 msgstr ""
 
-#: src/Graph.cc:5889
+#: src/Graph.cc:5902
 msgid "Polar plot"
 msgstr "Πολικό γράφημα"
 
-#: src/Graph.cc:5892
+#: src/Graph.cc:5905
 msgid "Parametric plot"
 msgstr "Παραμετρικό γράφημα"
 
-#: src/Graph.cc:5895
+#: src/Graph.cc:5908
 msgid "Field/Odeplot"
 msgstr "Πεδίο κλίσεων / Γράφημα Συνήθους Δ.Ε."
 
-#: src/Graph.cc:5898
+#: src/Graph.cc:5911
 msgid "Implicitplot"
 msgstr "Γράφημα πεπλεγμένης συναρτησης"
 
-#: src/Graph.cc:6045
+#: src/Graph.cc:6072
 msgid "Click first in a commandline"
 msgstr "Κάντε πρώτα κλικ σε γραμμή εντολών"
 
-#: src/Graph.cc:6149 src/Graph.cc:6163
+#: src/Graph.cc:6176 src/Graph.cc:6190
 msgid "Point_on_ode_curve"
 msgstr "Σημείο_στην_καπμύλη_ΣΔΕ"
 
-#: src/Graph.cc:6150
+#: src/Graph.cc:6177
 msgid "Click initials conditions in graphic window. Change mode when finished."
 msgstr ""
 "Κάντε κλικ για τις αρχικές συνθήκες στο παράθυρο γραφήματος. Αλλαξτε τρόπο "
 "λειτουργίας όταν τελειώσετε."
 
-#: src/Graph.cc:6226
+#: src/Graph.cc:6253
 msgid "Shade area under a curve"
 msgstr "Σκιαγράφηση περιοχής κάτω από την καμπύλη"
 
-#: src/Graph.cc:6406
+#: src/Graph.cc:6433
 msgid "Real number?"
 msgstr "Πραγματικός αριθμός?"
 
-#: src/Graph.cc:6440
+#: src/Graph.cc:6467
 msgid "Center,Point_on_circle,Point_in_plane"
 msgstr "Κέντρο,Σημείο_στον_κύκλο,Σημείο_στο_επιπεδο"
 
-#: src/Graph.cc:6440
+#: src/Graph.cc:6467
 msgid "Center,Point_on_circle"
 msgstr "Κέντρο,Σημείο_στον_κύκλο"
 
-#: src/Graph.cc:6444 src/Graph.cc:6448
+#: src/Graph.cc:6471 src/Graph.cc:6475
 msgid "Curve1,Curve2"
 msgstr "Καπμύλη1,Καμπύλη2"
 
-#: src/Graph.cc:6452
+#: src/Graph.cc:6479
 msgid "Curve1,Curve2,Point"
 msgstr "Καπμύλη1,Καμπύλη2,Σημείο"
 
-#: src/Graph.cc:6456
+#: src/Graph.cc:6483
 msgid "Curve,Point"
 msgstr "Καμπύλη,Σημείο"
 
-#: src/Graph.cc:6460 src/Graph.cc:6464 src/Graph.cc:6468 src/Graph.cc:6472
-#: src/Graph.cc:6567 src/Graph.cc:6571 src/Graph.cc:6595
+#: src/Graph.cc:6487 src/Graph.cc:6491 src/Graph.cc:6495 src/Graph.cc:6499
+#: src/Graph.cc:6594 src/Graph.cc:6598 src/Graph.cc:6622
 msgid "Point1,Point2"
 msgstr "Σημείο1,Σημείο2"
 
-#: src/Graph.cc:6476 src/Graph.cc:6479
+#: src/Graph.cc:6503 src/Graph.cc:6506
 msgid "Object1,Object2,Position"
 msgstr "Αντικείμενο1,Αντικείμενο2,Θέση"
 
-#: src/Graph.cc:6483 src/Graph.cc:6486
+#: src/Graph.cc:6510 src/Graph.cc:6513
 msgid "Angle_vertex,Direction1,Direction2,Position"
 msgstr "Κορυφή_γωνίας,Διεύθυνση1,Διεύθυνση2,Θέση"
 
-#: src/Graph.cc:6490 src/Graph.cc:6494 src/Graph.cc:6498 src/Graph.cc:6502
-#: src/Graph.cc:6506 src/Graph.cc:6510
+#: src/Graph.cc:6517 src/Graph.cc:6521 src/Graph.cc:6525 src/Graph.cc:6529
+#: src/Graph.cc:6533 src/Graph.cc:6537
 msgid "Object,Position"
 msgstr "Αντικείμενο,Θέση"
 
-#: src/Graph.cc:6514
+#: src/Graph.cc:6541
 msgid "Symmetry_center_axis,Object"
 msgstr "Κέντρο_συμμετρίας_άξονας,Αντικείμενο"
 
-#: src/Graph.cc:6518 src/Graph.cc:6534
+#: src/Graph.cc:6545 src/Graph.cc:6561
 msgid "Center,Ratio,Object"
 msgstr "Κέντρο,Συντελεστής,Αντικείμενο"
 
-#: src/Graph.cc:6522
+#: src/Graph.cc:6549
 msgid "Curve,Object"
 msgstr "Καμπύλη,Αντικείμενο"
 
-#: src/Graph.cc:6526
+#: src/Graph.cc:6553
 msgid "Circle,Object"
 msgstr "Κύκλος,Αντικείμενο"
 
-#: src/Graph.cc:6530
+#: src/Graph.cc:6557
 msgid "Center,Angle,Object"
 msgstr "Κέντρο,Γωνία,Αντικείμενο"
 
-#: src/Graph.cc:6538
+#: src/Graph.cc:6565
 msgid "Vector,Object"
 msgstr "Διάνυσμα,Αντικείμενο"
 
-#: src/Graph.cc:6542
+#: src/Graph.cc:6569
 msgid "Center,Ratio,Angle,Object"
 msgstr "Κέντρο,Συντελεστής,Γωνία,Αντικείμενο"
 
-#: src/Graph.cc:6546
+#: src/Graph.cc:6573
 msgid "Number of vertices?"
 msgstr "Αριθμός κορυφών;"
 
-#: src/Graph.cc:6553
+#: src/Graph.cc:6580
 msgid "Point"
 msgstr "Σημείο"
 
-#: src/Graph.cc:6563 src/Graph.cc:6599 src/Graph.cc:6603 src/Graph.cc:6607
-#: src/Graph.cc:6623
+#: src/Graph.cc:6590 src/Graph.cc:6626 src/Graph.cc:6630 src/Graph.cc:6634
+#: src/Graph.cc:6650
 msgid "Point1,Point2,Point3"
 msgstr "Σημείο1,Σημείο2,Σημείο3"
 
-#: src/Graph.cc:6575 src/Graph.cc:6579
+#: src/Graph.cc:6602 src/Graph.cc:6606
 msgid "Point,Line"
 msgstr "Σημείο,Ευθεία"
 
-#: src/Graph.cc:6583 src/Graph.cc:6587
+#: src/Graph.cc:6610 src/Graph.cc:6614
 msgid "Sommet_angle,Point2,Point3"
 msgstr "Κορυφή_γωνίας,Σημείο1,Σημείο2"
 
-#: src/Graph.cc:6591
+#: src/Graph.cc:6618
 msgid "Point1,Point2,Point3,Point4"
 msgstr "Σημείο1,Σημείο2,Σημείο3,Σημείο4"
 
-#: src/Graph.cc:6595
+#: src/Graph.cc:6622
 msgid "Point1,Point2,Point_in_plane"
 msgstr "Σημείο1,Σημείο2,Σημείο_στο_επίπεδο"
 
-#: src/Graph.cc:6611
+#: src/Graph.cc:6638
 msgid "Focus1,Focus2,Point_on_ellipse"
 msgstr "Εστία1,Εστία2,Σημείο_στην_έλλειψη"
 
-#: src/Graph.cc:6615
+#: src/Graph.cc:6642
 msgid "Focus,Point_or_line"
 msgstr "Εστία, Σημείο_ή_ευθεία"
 
-#: src/Graph.cc:6619
+#: src/Graph.cc:6646
 msgid "Focus1,Focus2,Point_on_hyperbola"
 msgstr "Εστία1,Εστία2,Σημείο_στην_υπερβολή"
 
-#: src/Graph.cc:6627
+#: src/Graph.cc:6654
 msgid "Center,Point_on_sphere"
 msgstr "Κέντρο,Σημείο_στην_σφαίρα"
 
-#: src/Graph.cc:6631
+#: src/Graph.cc:6658
 msgid "Fig"
 msgstr "Σχήμα"
 
-#: src/Graph.cc:6632
+#: src/Graph.cc:6659
 msgid "Save figure as text"
 msgstr "Αποθήκευση σχήματος"
 
-#: src/Graph.cc:6639
+#: src/Graph.cc:6666
 msgid "latex printer"
 msgstr "εκτύπωση(latex)"
 
-#: src/Graph.cc:6643
+#: src/Graph.cc:6670
 msgid "Add parameter"
 msgstr "Προσθήκη παραμέτρου"
 
-#: src/Graph.cc:6644
+#: src/Graph.cc:6671
 msgid "Add numerical value"
 msgstr "Προσθήκη αριθμητικής τιμής"
 
-#: src/Graph.cc:6645
+#: src/Graph.cc:6672
 msgid "Add new entry"
 msgstr "Προσθήκη νέας καταχώρησης"
 
-#: src/Graph.cc:6646
+#: src/Graph.cc:6673
 msgid "Add an object trace"
 msgstr "Προσθήκη ίχνηλάτησης αντικειμένου"
 
-#: src/Graph.cc:6647
+#: src/Graph.cc:6674
 msgid "Change selection attribut"
 msgstr "Αλλαγή επιλογής χαρακτηριστικών"
 
-#: src/Graph.cc:6654
+#: src/Graph.cc:6681
 msgid "Focus"
 msgstr "Εστία"
 
-#: src/Graph.cc:6659
+#: src/Graph.cc:6686
 msgid "Recurrent sequence (2-d)"
 msgstr "2-Δ αναδρομική ακολουθία"
 
-#: src/Graph.cc:6661
+#: src/Graph.cc:6688
 msgid "Parametric"
 msgstr "Παραμετρική συνάρτηση"
 
-#: src/Graph.cc:6662
+#: src/Graph.cc:6689
 msgid "Polar (2-d)"
 msgstr "2-Δ πολική"
 
-#: src/Graph.cc:6663
+#: src/Graph.cc:6690
 msgid "Implicit"
 msgstr "Πεπλεγμένη"
 
-#: src/Graph.cc:6664
+#: src/Graph.cc:6691
 msgid "Slopefield Ode (2-d)"
 msgstr "2-Δ πεδίο κλίσεων - ΣΔΕ"
 
-#: src/Graph.cc:6672
+#: src/Graph.cc:6699
 msgid "point"
 msgstr "Σημείο"
 
-#: src/Graph.cc:6673
+#: src/Graph.cc:6700
 msgid "Lines"
 msgstr "Γραμμές"
 
-#: src/Graph.cc:6674
+#: src/Graph.cc:6701
 msgid "segment"
 msgstr "ευθύγραμμο_τμήμα"
 
-#: src/Graph.cc:6675
+#: src/Graph.cc:6702
 msgid "vector"
 msgstr "διάνυσμα"
 
-#: src/Graph.cc:6676
+#: src/Graph.cc:6703
 msgid "half_line"
 msgstr "ημιευθεία"
 
-#: src/Graph.cc:6677
+#: src/Graph.cc:6704
 msgid "line"
 msgstr "ευθεία"
 
-#: src/Graph.cc:6678
+#: src/Graph.cc:6705
 msgid "parallel"
 msgstr "παράλληλος"
 
-#: src/Graph.cc:6679
+#: src/Graph.cc:6706
 msgid "perpendicular"
 msgstr "κάθετος"
 
-#: src/Graph.cc:6680
+#: src/Graph.cc:6707
 msgid "perpen_bisector"
 msgstr "μεσοκάθετος"
 
-#: src/Graph.cc:6681
+#: src/Graph.cc:6708
 msgid "median_line"
 msgstr "διάμεσος"
 
-#: src/Graph.cc:6682
+#: src/Graph.cc:6709
 msgid "bisector"
 msgstr "διχοτόμος"
 
-#: src/Graph.cc:6684
+#: src/Graph.cc:6711
 msgid "Polygons"
 msgstr "Πολύγωνα"
 
-#: src/Graph.cc:6685
+#: src/Graph.cc:6712
 msgid "triangle"
 msgstr "τρίγωνο"
 
-#: src/Graph.cc:6686
+#: src/Graph.cc:6713
 msgid "equilateral_triangle"
 msgstr "ισόπλευρο_τρίγωνο"
 
-#: src/Graph.cc:6687
+#: src/Graph.cc:6714
 msgid "square"
 msgstr "τετράγωνο"
 
-#: src/Graph.cc:6688
+#: src/Graph.cc:6715
 msgid "quadrilateral"
 msgstr "τετράπλευρο"
 
-#: src/Graph.cc:6689
+#: src/Graph.cc:6716
 msgid "polygon"
 msgstr "πολύγωνο"
 
-#: src/Graph.cc:6691
+#: src/Graph.cc:6718
 msgid "Circles"
 msgstr "Κύκλοι"
 
-#: src/Graph.cc:6692 src/plot.cc:3322 src/plot.cc:3361
+#: src/Graph.cc:6719 src/plot.cc:3325 src/plot.cc:3364
 msgid "circle"
 msgstr "κύκλος"
 
-#: src/Graph.cc:6693
+#: src/Graph.cc:6720
 msgid "incircle"
 msgstr "εγγεγραμμένος"
 
-#: src/Graph.cc:6694
+#: src/Graph.cc:6721
 msgid "excircle"
 msgstr "παραγεγραμμένος"
 
-#: src/Graph.cc:6695
+#: src/Graph.cc:6722
 msgid "circumcircle"
 msgstr "περιγεγραμμένος"
 
-#: src/Graph.cc:6698
+#: src/Graph.cc:6725
 msgid "ellipse"
 msgstr "έλλειψη"
 
-#: src/Graph.cc:6699
+#: src/Graph.cc:6726
 msgid "hyperbola"
 msgstr "υπερβολή"
 
-#: src/Graph.cc:6700
+#: src/Graph.cc:6727
 msgid "parabola"
 msgstr ""
 
-#: src/Graph.cc:6701
+#: src/Graph.cc:6728
 msgid "plotode"
 msgstr ""
 
-#: src/Graph.cc:6703
+#: src/Graph.cc:6730
 msgid "Surfaces (3d)"
 msgstr "Επιφάνειες (3-Δ)"
 
-#: src/Graph.cc:6704
+#: src/Graph.cc:6731
 msgid "plane"
 msgstr "επίπεδο"
 
-#: src/Graph.cc:6705
+#: src/Graph.cc:6732
 msgid "sphere"
 msgstr "σφαίρα"
 
-#: src/Graph.cc:6707
+#: src/Graph.cc:6734
 msgid "Measures"
 msgstr "Μετρήσεις"
 
-#: src/Graph.cc:6708
+#: src/Graph.cc:6735
 msgid "distanceat"
 msgstr "απόσταση"
 
-#: src/Graph.cc:6709
+#: src/Graph.cc:6736
 msgid "angleat"
 msgstr "γωνία"
 
-#: src/Graph.cc:6710
+#: src/Graph.cc:6737
 msgid "areaat"
 msgstr "εμβαδόν"
 
-#: src/Graph.cc:6711
+#: src/Graph.cc:6738
 msgid "perimeterat"
 msgstr "περίμετρος"
 
-#: src/Graph.cc:6712
+#: src/Graph.cc:6739
 msgid "slopeat"
 msgstr "κλίση"
 
-#: src/Graph.cc:6713
+#: src/Graph.cc:6740
 msgid "distanceatraw"
 msgstr "απόσταση (μόνο αριθμός)"
 
-#: src/Graph.cc:6714
+#: src/Graph.cc:6741
 msgid "angleatraw"
 msgstr "γωνία (μόνο αριθμός)"
 
-#: src/Graph.cc:6715
+#: src/Graph.cc:6742
 msgid "areaatraw"
 msgstr "εμβαδόν (μόνο αριθμός)"
 
-#: src/Graph.cc:6716
+#: src/Graph.cc:6743
 msgid "perimeteratraw"
 msgstr "περίμετρος (μόνο αριθμός)"
 
-#: src/Graph.cc:6717
+#: src/Graph.cc:6744
 msgid "slopeatraw"
 msgstr "κλίση (μόνο αριθμός)"
 
-#: src/Graph.cc:6719
+#: src/Graph.cc:6746
 msgid "Transformations"
 msgstr "Μετασχηματισμοί"
 
-#: src/Graph.cc:6720
+#: src/Graph.cc:6747
 msgid "reflection"
 msgstr "συμμετρία"
 
-#: src/Graph.cc:6721
+#: src/Graph.cc:6748
 msgid "rotation"
 msgstr "περιστροφή"
 
-#: src/Graph.cc:6722
+#: src/Graph.cc:6749
 msgid "translation"
 msgstr "μετάθεση"
 
-#: src/Graph.cc:6723
+#: src/Graph.cc:6750
 msgid "projection"
 msgstr "προβολή"
 
-#: src/Graph.cc:6724
+#: src/Graph.cc:6751
 msgid "homothety"
 msgstr "ομοιοθεσία"
 
-#: src/Graph.cc:6725
+#: src/Graph.cc:6752
 msgid "similarity"
 msgstr "ομοιότητa"
 
-#: src/Graph.cc:6726
+#: src/Graph.cc:6753
 msgid "inversion"
 msgstr "αντιστροφή"
 
-#: src/Graph.cc:6727 src/plot.cc:14356
+#: src/Graph.cc:6754 src/plot.cc:14410
 msgid "reciprocation"
 msgstr "πολική_αντιστροφή"
 
-#: src/Graph.cc:6729
+#: src/Graph.cc:6756
 msgid "Intersections"
 msgstr "Τομές"
 
-#: src/Graph.cc:6730
+#: src/Graph.cc:6757
 msgid "inter_unique (1 point)"
 msgstr "μοναδική τομή (1 σημείο)"
 
-#: src/Graph.cc:6731
+#: src/Graph.cc:6758
 msgid "inter (close to a point)"
 msgstr "τομή (κοντά σε ένα σημείο)"
 
-#: src/Graph.cc:6732
+#: src/Graph.cc:6759
 msgid "inter (list of points)"
 msgstr "τομή (λίστα σημείων)"
 
-#: src/Graph.cc:6734
+#: src/Graph.cc:6761
 msgid "tangent"
 msgstr "Εφαπτομένη"
 
-#: src/Graph.cc:6830
+#: src/Graph.cc:6857
 msgid "Set mode for mouse constructions"
 msgstr ""
 "Επιλογή τρόπου λειτουργίας (του ποντικιού) για κατασκευές με το ποντίκι"
 
-#: src/Graph.cc:6844
+#: src/Graph.cc:6871
 msgid "Color used for next mouse drawings"
 msgstr "Χρώμα που χρησιμοποιείται για τους επόμενους σχεδιασμούς του ποντικιού"
 
-#: src/Graph.cc:6850
+#: src/Graph.cc:6877
 msgid "Line style used for next mouse drawings"
 msgstr ""
 "Στυλ γραμμής που χρησιμοποιείται για τους επόμενους σχεδιασμούς του ποντικιού"
 
-#: src/Graph.cc:6855
+#: src/Graph.cc:6882
 msgid "Check for step evaluation"
 msgstr "Τσεκαρισμένο αναπαράγει την γεωμ. κατασκευή βήμα-βήμα"
 
-#: src/Graph.cc:6860
+#: src/Graph.cc:6887
 msgid "Check for landscape"
 msgstr "Επιλέξτε για οριζόντια διάταξη"
 
-#: src/Graph.cc:6865
+#: src/Graph.cc:6892
 msgid "Check if mouse clicks in approx mode"
 msgstr ""
 "Όταν είναι τσεκαρισμένο (συνιστώμενος τρόπος λειτουργίας) οι υπολογισμοί "
 "γίνονται προσεγγιστικά"
 
-#: src/Graph.cc:6870
+#: src/Graph.cc:6897
 msgid "Save current figure commands independently of the session"
 msgstr "Αποθήκευση τρεχουσών εντολών σχήματος ανεξάρτητα απο την συνεδρία"
 
-#: src/Graph.cc:6992
+#: src/Graph.cc:7019
 msgid "Export to LaTeX"
 msgstr "Εξαγωγή στο LaTeX"
 
-#: src/Graph.cc:7263 src/Graph.cc:7561
+#: src/Graph.cc:7290 src/Graph.cc:7588
 msgid "fw"
 msgstr ""
 
-#: src/Graph.cc:7265 src/Graph.cc:7566
+#: src/Graph.cc:7292 src/Graph.cc:7593
 msgid "bw"
 msgstr ""
 
-#: src/Graph.cc:7267 src/Graph.cc:7571
+#: src/Graph.cc:7294 src/Graph.cc:7598
 msgid "tr"
 msgstr ""
 
-#: src/Graph.cc:7269 src/Graph.cc:7576
+#: src/Graph.cc:7296 src/Graph.cc:7603
 msgid "tl"
 msgstr ""
 
-#: src/Graph.cc:7271 src/Graph.cc:7581
+#: src/Graph.cc:7298 src/Graph.cc:7608
 msgid "ss"
 msgstr ""
 
-#: src/Graph.cc:7273 src/Graph.cc:7586
+#: src/Graph.cc:7300 src/Graph.cc:7613
 msgid "ju"
 msgstr ""
 
-#: src/Graph.cc:7275 src/Graph.cc:7591
+#: src/Graph.cc:7302 src/Graph.cc:7618
 msgid "pe"
 msgstr ""
 
-#: src/Graph.cc:7284 src/Graph.cc:7596
+#: src/Graph.cc:7311 src/Graph.cc:7623
 msgid "ci"
 msgstr ""
 
-#: src/Graph.cc:7286 src/Graph.cc:7601
+#: src/Graph.cc:7313 src/Graph.cc:7628
 msgid "di"
 msgstr ""
 
-#: src/Graph.cc:7288 src/Graph.cc:7606
+#: src/Graph.cc:7315 src/Graph.cc:7633
 msgid "fr"
 msgstr ""
 
-#: src/Graph.cc:7290 src/Graph.cc:7611
+#: src/Graph.cc:7317 src/Graph.cc:7638
 msgid "ft"
 msgstr ""
 
-#: src/Graph.cc:7292 src/Graph.cc:7626
+#: src/Graph.cc:7319 src/Graph.cc:7653
 msgid "cl"
 msgstr ""
 
-#: src/Graph.cc:7294 src/Graph.cc:7616
+#: src/Graph.cc:7321 src/Graph.cc:7643
 msgid "ec"
 msgstr ""
 
-#: src/Graph.cc:7296 src/Graph.cc:7621
+#: src/Graph.cc:7323 src/Graph.cc:7648
 msgid "sg"
 msgstr ""
 
-#: src/Graph.cc:7326 src/Graph.cc:7352
+#: src/Graph.cc:7353 src/Graph.cc:7379
 msgid "Not registered\n"
 msgstr "Δεν έχει καταχωρηθεί\n"
 
-#: src/Graph.cc:7508
+#: src/Graph.cc:7535
 msgid "Mesh"
 msgstr ""
 
-#: src/Graph.cc:7509
+#: src/Graph.cc:7536
 msgid "None"
 msgstr "Κανένα"
 
-#: src/Graph.cc:7510
+#: src/Graph.cc:7537
 msgid "Square"
 msgstr "Τετράγωνο"
 
-#: src/Graph.cc:7511
+#: src/Graph.cc:7538
 msgid "Triangle"
 msgstr "Τρίγωνο"
 
-#: src/Graph.cc:7516
+#: src/Graph.cc:7543
 msgid "Right"
 msgstr "Δεξιά"
 
-#: src/Graph.cc:7517
+#: src/Graph.cc:7544
 msgid "Left"
 msgstr "Αριστερά"
 
-#: src/Graph.cc:7518
+#: src/Graph.cc:7545
 msgid "Up"
 msgstr "Επάνω"
 
-#: src/Graph.cc:7519
+#: src/Graph.cc:7546
 msgid "Down"
 msgstr "Κάτω"
 
-#: src/Graph.cc:7520
+#: src/Graph.cc:7547
 msgid "ShowPosition"
 msgstr "ΕμφάνισηΘέσης"
 
-#: src/Graph.cc:7521
+#: src/Graph.cc:7548
 msgid "HidePosition"
 msgstr "ΚρύψιμοΘέσης"
 
-#: src/Graph.cc:7524
+#: src/Graph.cc:7551
 msgid "EPS/PNG and preview"
 msgstr "EPS-PNG και προεπισκόπηση"
 
-#: src/Graph.cc:7529
+#: src/Graph.cc:7556
 msgid "Color"
 msgstr "Χρώμα"
 
-#: src/Graph.cc:7562
+#: src/Graph.cc:7589
 msgid "Turtle n steps forward"
 msgstr "Χελώνα n βήματα μπροστά"
 
-#: src/Graph.cc:7567
+#: src/Graph.cc:7594
 msgid "Turtle n steps backward"
 msgstr "Χελώνα n βήματα πίσω"
 
-#: src/Graph.cc:7572
+#: src/Graph.cc:7599
 msgid "Turtle turns right n degrees"
 msgstr "Η χελώνα στρίβει προς τα δεξιά n μοίρες"
 
-#: src/Graph.cc:7577
+#: src/Graph.cc:7604
 msgid "Turtle turns left n degrees"
 msgstr "Χελώνα γυρίζει αριστερά n μοίρες"
 
-#: src/Graph.cc:7582
+#: src/Graph.cc:7609
 msgid "Turtle steps to the left from n steps"
 msgstr "Χελώνα κάνει βήμα αριστερά μετά από n βήματα"
 
-#: src/Graph.cc:7587
+#: src/Graph.cc:7614
 msgid "Turtle jumps n steps"
 msgstr "Χελώνα πηδάει n βήματα"
 
-#: src/Graph.cc:7592
+#: src/Graph.cc:7619
 msgid "Change pen color"
 msgstr "Άλλαξε το χρώμα του μολυβιού"
 
-#: src/Graph.cc:7597
+#: src/Graph.cc:7624
 msgid "Circle arc"
 msgstr "Κυκλικό τόξο"
 
-#: src/Graph.cc:7602
+#: src/Graph.cc:7629
 msgid "Filled circle arc"
 msgstr "Γεμισμένο κυκλικό τόξο"
 
-#: src/Graph.cc:7607
+#: src/Graph.cc:7634
 msgid "Filled rectangle"
 msgstr "Γεμισμένο ορθογώνιο"
 
-#: src/Graph.cc:7612
+#: src/Graph.cc:7639
 msgid "Filled triangle"
 msgstr "Γεμισμένο τρίγωνο"
 
-#: src/Graph.cc:7617
+#: src/Graph.cc:7644
 msgid "Write to the right of the turtle"
 msgstr "Γράψε στα δεξιά της χελώνας"
 
-#: src/Graph.cc:7622
+#: src/Graph.cc:7649
 msgid "Sign picture"
 msgstr "Υπογραφή εικόνας"
 
-#: src/Graph.cc:7627
+#: src/Graph.cc:7654
 msgid "Clear all"
 msgstr "Εκκαθάριση όλων"
 
-#: src/Graph.cc:7636
+#: src/Graph.cc:7663
 msgid "Turtle menu"
 msgstr "Μενού χελώνας"
 
@@ -5553,83 +5557,83 @@ msgstr ""
 msgid "sym2poly.cc/addfirstrow"
 msgstr ""
 
-#: src/sym2poly.cc:674 src/sym2poly.cc:1142 src/gausspol.cc:1037
+#: src/sym2poly.cc:675 src/sym2poly.cc:1143 src/gausspol.cc:1037
 msgid "Polynomial exponent overflow."
 msgstr ""
 
-#: src/sym2poly.cc:754
+#: src/sym2poly.cc:755
 msgid "Can't check irreducibility extracting rootof"
 msgstr ""
 
-#: src/sym2poly.cc:792
+#: src/sym2poly.cc:793
 msgid ""
 "Warning, checking for positivity of a root depending of parameters might "
 "return wrong sign: "
 msgstr ""
 
-#: src/sym2poly.cc:811
+#: src/sym2poly.cc:812
 msgid "sym2poly.cc/sym2rxroot"
 msgstr ""
 
-#: src/sym2poly.cc:1183
+#: src/sym2poly.cc:1184
 msgid "Minimal poly. in rootof must be fraction free"
 msgstr ""
 
-#: src/sym2poly.cc:1219
+#: src/sym2poly.cc:1220
 msgid "sym2poly.cc/bool sym2r (const"
 msgstr ""
 
-#: src/sym2poly.cc:1385
+#: src/sym2poly.cc:1386
 msgid "Unable to handle type [sym2poly.cc]"
 msgstr "Αδύνατος ο χειρισμός του τύπου [sym2poly.cc]"
 
-#: src/sym2poly.cc:1387
+#: src/sym2poly.cc:1388
 msgid "Unable to handle "
 msgstr "Αδύνατος ο χειρισμός"
 
-#: src/sym2poly.cc:1894
+#: src/sym2poly.cc:1895
 msgid "sym2poly/r2sym(const gen & e,const index_m & i,const vecteur & l)"
 msgstr ""
 
-#: src/sym2poly.cc:1991 src/sym2poly.cc:1997
+#: src/sym2poly.cc:1992 src/sym2poly.cc:1998
 msgid "sym2poly.cc/ckdeg2_rootof"
 msgstr ""
 
-#: src/sym2poly.cc:2048
+#: src/sym2poly.cc:2049
 msgid "sym2poly.cc/is_root_of_deg2"
 msgstr ""
 
-#: src/sym2poly.cc:2301
+#: src/sym2poly.cc:2302
 msgid "Warning, choosing root of "
 msgstr ""
 
-#: src/sym2poly.cc:2729
+#: src/sym2poly.cc:2732
 msgid "Making implicit assumption for sqrt argument "
 msgstr ""
 
-#: src/sym2poly.cc:2745
+#: src/sym2poly.cc:2748
 msgid ""
 "Unable to build a single algebraic extension for simplifying.\n"
 "Trying rational simplification only. This might return a wrong answer if "
 "simplifying 0/0!"
 msgstr ""
 
-#: src/sym2poly.cc:2911 src/gausspol.cc:266 src/gausspol.cc:346
+#: src/sym2poly.cc:2914 src/gausspol.cc:266 src/gausspol.cc:346
 #: src/gausspol.cc:381 src/gausspol.cc:997 src/gausspol.cc:1585
-#: src/gausspol.cc:3530 src/gausspol.cc:4714 src/threaded.cc:3628
-#: src/maple.cc:1085 src/ti89.cc:2547 src/ti89.cc:2559 src/modpoly.cc:489
+#: src/gausspol.cc:3622 src/gausspol.cc:4806 src/threaded.cc:3628
+#: src/maple.cc:1087 src/ti89.cc:2547 src/ti89.cc:2559 src/modpoly.cc:489
 #: src/modpoly.cc:507 src/modpoly.cc:651 src/modpoly.cc:669 src/modpoly.cc:765
 #: src/modpoly.cc:781 src/modpoly.cc:803 src/modpoly.cc:819
-#: src/modpoly.cc:1606 src/solve.cc:4153 src/solve.cc:4235 src/intg.cc:3254
-#: src/intgab.cc:264 src/prog.cc:2031 src/gen.cc:1887 src/gen.cc:2037
-#: src/gen.cc:2218 src/gen.cc:4235 src/gen.cc:4254 src/gen.cc:4521
-#: src/gen.cc:5007 src/gen.cc:5019 src/gen.cc:5186 src/gen.cc:5749
-#: src/gen.cc:6214 src/gen.cc:6580 src/gen.cc:6943 src/gen.cc:7070
-#: src/gen.cc:7326 src/gen.cc:7461
+#: src/modpoly.cc:1606 src/solve.cc:4172 src/solve.cc:4254 src/intg.cc:3301
+#: src/intgab.cc:264 src/prog.cc:2038 src/gen.cc:1887 src/gen.cc:2037
+#: src/gen.cc:2218 src/gen.cc:4237 src/gen.cc:4256 src/gen.cc:4523
+#: src/gen.cc:5009 src/gen.cc:5021 src/gen.cc:5188 src/gen.cc:5751
+#: src/gen.cc:6227 src/gen.cc:6593 src/gen.cc:6956 src/gen.cc:7083
+#: src/gen.cc:7339 src/gen.cc:7474
 msgid "Stopped by user interruption."
 msgstr ""
 
-#: src/sym2poly.cc:3181 src/sym2poly.cc:3218
+#: src/sym2poly.cc:3184 src/sym2poly.cc:3221
 msgid "Not implemented, e.g. for multivariate mod/approx polynomials"
 msgstr ""
 
@@ -5641,71 +5645,71 @@ msgstr ""
 msgid "Negative polynome power"
 msgstr ""
 
-#: src/gausspol.cc:1879 src/gausspol.cc:1881 src/gausspol.cc:1902
-#: src/gausspol.cc:1904 src/usual.cc:5888 src/usual.cc:5916
+#: src/gausspol.cc:1971 src/gausspol.cc:1973 src/gausspol.cc:1994
+#: src/gausspol.cc:1996 src/usual.cc:5913 src/usual.cc:5941
 msgid "Unable to divide, perhaps due to rounding error"
 msgstr ""
 
-#: src/gausspol.cc:2210
+#: src/gausspol.cc:2302
 msgid "gausspol.cc/divremmod2"
 msgstr ""
 
-#: src/gausspol.cc:2369 src/gausspol.cc:2372 src/gausspol.cc:2379
-#: src/gausspol.cc:2381
+#: src/gausspol.cc:2461 src/gausspol.cc:2464 src/gausspol.cc:2471
+#: src/gausspol.cc:2473
 msgid "gausspol.cc/pow"
 msgstr ""
 
-#: src/gausspol.cc:2978
+#: src/gausspol.cc:3070
 msgid "content1mod"
 msgstr ""
 
-#: src/gausspol.cc:3241
+#: src/gausspol.cc:3333
 msgid "Modgcd: no suitable evaluation point"
 msgstr ""
 
-#: src/gausspol.cc:3443
+#: src/gausspol.cc:3535
 msgid "gausspol.cc/contentgcdmod"
 msgstr ""
 
-#: src/gausspol.cc:3505
+#: src/gausspol.cc:3597
 msgid "Bug!"
 msgstr ""
 
-#: src/gausspol.cc:3903 src/gausspol.cc:3963
+#: src/gausspol.cc:3995 src/gausspol.cc:4055
 msgid "Incompatible coeff type"
 msgstr ""
 
-#: src/gausspol.cc:4192 src/gausspol.cc:4221
+#: src/gausspol.cc:4284 src/gausspol.cc:4313
 msgid "gausspol.cc/gcdheu"
 msgstr ""
 
-#: src/gausspol.cc:5063
+#: src/gausspol.cc:5155
 msgid "Square free factor mod bug"
 msgstr ""
 
-#: src/gausspol.cc:5197
+#: src/gausspol.cc:5289
 msgid ""
 "Multivariate finite field factorzation expects a unitary polynomial regular "
 "at 0. Try to translate with respect to one variable"
 msgstr ""
 
-#: src/gausspol.cc:5293
+#: src/gausspol.cc:5385
 msgid "gausspol.cc/mod_factor"
 msgstr ""
 
-#: src/gausspol.cc:5475
+#: src/gausspol.cc:5567
 msgid "Factor: Only one algebraic extension allowed"
 msgstr "Factor: Μόνο μία αλγεβρική επέκταση επιτρέπεται"
 
-#: src/gausspol.cc:5501
+#: src/gausspol.cc:5593
 msgid "Modular factorization not yet accessible"
 msgstr ""
 
-#: src/gausspol.cc:5594
+#: src/gausspol.cc:5686
 msgid "To be implemented"
 msgstr "Για υλοποίηση"
 
-#: src/gausspol.cc:7337 src/gausspol.cc:7339
+#: src/gausspol.cc:7429 src/gausspol.cc:7431
 msgid "Too much substitution variables"
 msgstr ""
 
@@ -5717,23 +5721,23 @@ msgstr ""
 msgid "complex_smod"
 msgstr ""
 
-#: src/threaded.cc:3766 src/threaded.cc:3796 src/threaded.cc:3798
+#: src/threaded.cc:3766 src/threaded.cc:3802 src/threaded.cc:3804
 msgid "invmodext"
 msgstr ""
 
-#: src/threaded.cc:4353
+#: src/threaded.cc:4375
 msgid "interp_tk"
 msgstr ""
 
-#: src/threaded.cc:4573
+#: src/threaded.cc:4595
 msgid "vector<int> operator /"
 msgstr ""
 
-#: src/threaded.cc:4580
+#: src/threaded.cc:4602
 msgid "vector<int> operator %"
 msgstr ""
 
-#: src/threaded.cc:4587
+#: src/threaded.cc:4609
 msgid "vector<int> operator >"
 msgstr ""
 
@@ -5741,280 +5745,280 @@ msgstr ""
 msgid "moyal.cc/_moyal"
 msgstr ""
 
-#: src/moyal.cc:714
+#: src/moyal.cc:721
 msgid "Underflow"
 msgstr ""
 
-#: src/moyal.cc:1148
+#: src/moyal.cc:1155
 msgid "Overflow"
 msgstr ""
 
-#: src/moyal.cc:2542
+#: src/moyal.cc:2549
 #, fuzzy
 msgid "Invalid median"
 msgstr "Μη έγκυρη συνθήκη"
 
-#: src/moyal.cc:2628
+#: src/moyal.cc:2635
 #, fuzzy
 msgid "Invalid sample"
 msgstr "Μη έγκυρο όνομα συνάρτησης"
 
-#: src/moyal.cc:2646
+#: src/moyal.cc:2653
 #, fuzzy
 msgid "Invalid confidence level"
 msgstr "Μη έγκυρη συνθήκη"
 
-#: src/moyal.cc:2725
+#: src/moyal.cc:2732
 msgid "Wilcoxon statistic: "
 msgstr ""
 
-#: src/moyal.cc:2725
+#: src/moyal.cc:2732
 #, fuzzy
 msgid ", p-value: "
 msgstr "τιμή"
 
-#: src/moyal.cc:2725
+#: src/moyal.cc:2732
 msgid ", confidence level: "
 msgstr ""
 
-#: src/moyal.cc:2811
+#: src/moyal.cc:2818
 msgid ""
 "Guessing data is a list of values, adequation to uniform discret "
 "distribution between "
 msgstr ""
 
-#: src/moyal.cc:2811 src/quater.cc:330
+#: src/moyal.cc:2818 src/quater.cc:337
 msgid " and "
 msgstr ""
 
-#: src/moyal.cc:2814
+#: src/moyal.cc:2821
 msgid ""
 "Guessing data is the list of number of elements in each class, adequation to "
 "uniform distribution"
 msgstr ""
 
-#: src/moyal.cc:2895
+#: src/moyal.cc:2902
 msgid " samples Chi2 test result "
 msgstr ""
 
-#: src/moyal.cc:2895 src/moyal.cc:2936 src/moyal.cc:3096 src/moyal.cc:3135
+#: src/moyal.cc:2902 src/moyal.cc:2943 src/moyal.cc:3103 src/moyal.cc:3142
 msgid ""
 ",\n"
 "reject adequation if superior to chisquare_icdf("
 msgstr ""
 
-#: src/moyal.cc:2928
+#: src/moyal.cc:2935
 msgid "Data should be a class number between 0 and "
 msgstr ""
 
-#: src/moyal.cc:2936
+#: src/moyal.cc:2943
 msgid ""
 "Sample adequation to a finite discrete probability distribution\n"
 "Chi2 test result "
 msgstr ""
 
-#: src/moyal.cc:2990
+#: src/moyal.cc:2997
 msgid "Normal density, estimating mean and stddev from data "
 msgstr ""
 
-#: src/moyal.cc:3001
+#: src/moyal.cc:3008
 msgid "Binomial: estimating n and p from data "
 msgstr ""
 
-#: src/moyal.cc:3011
+#: src/moyal.cc:3018
 msgid "Negative binomial: estimating n and p from data "
 msgstr ""
 
-#: src/moyal.cc:3026
+#: src/moyal.cc:3033
 msgid "Uniform density, estimating interval boundaries from data "
 msgstr ""
 
-#: src/moyal.cc:3041
+#: src/moyal.cc:3048
 msgid "Normal density, estimating std deviation from data "
 msgstr ""
 
-#: src/moyal.cc:3047
+#: src/moyal.cc:3054
 msgid "Normal density, estimating mean from data "
 msgstr ""
 
-#: src/moyal.cc:3054
+#: src/moyal.cc:3061
 msgid "Poisson distribution, estimating parameter from data mean "
 msgstr ""
 
-#: src/moyal.cc:3096 src/moyal.cc:3135
+#: src/moyal.cc:3103 src/moyal.cc:3142
 msgid "Sample adequation to "
 msgstr ""
 
-#: src/moyal.cc:3096 src/moyal.cc:3135
+#: src/moyal.cc:3103 src/moyal.cc:3142
 msgid ", Chi2 test result "
 msgstr ""
 
-#: src/moyal.cc:3096
+#: src/moyal.cc:3103
 msgid " or chisquare_icdf("
 msgstr ""
 
-#: src/moyal.cc:3096
+#: src/moyal.cc:3103
 msgid ",1-alpha) if alpha!=5%"
 msgstr ""
 
-#: src/moyal.cc:3100
+#: src/moyal.cc:3107
 msgid "Non integer values for adequation to a discrete distribution"
 msgstr ""
 
-#: src/moyal.cc:3109
+#: src/moyal.cc:3116
 msgid ""
 "Not enough degree of freedom with default values. Add classes,classmin,"
 "classsize parameters"
 msgstr ""
 
-#: src/moyal.cc:3174
+#: src/moyal.cc:3181
 msgid "Estimated mean from sample(s)"
 msgstr ""
 
-#: src/moyal.cc:3212
+#: src/moyal.cc:3219
 msgid "Unable to guess sigma using data"
 msgstr ""
 
-#: src/moyal.cc:3214
+#: src/moyal.cc:3221
 msgid "Estimated sigma from sample(s)"
 msgstr ""
 
-#: src/moyal.cc:3247
+#: src/moyal.cc:3254
 msgid "Bad alternative hypothesis, should be '>', '<' or '!='"
 msgstr ""
 
-#: src/moyal.cc:3270
+#: src/moyal.cc:3277
 msgid "*** TEST RESULT "
 msgstr ""
 
-#: src/moyal.cc:3271
+#: src/moyal.cc:3278
 msgid "Test returns 0 if probability to observe data is less than "
 msgstr ""
 
-#: src/moyal.cc:3272
+#: src/moyal.cc:3279
 msgid "(null hyp. mu1=mu2 rejected with less than alpha probability error)"
 msgstr ""
 
-#: src/moyal.cc:3273
+#: src/moyal.cc:3280
 msgid "Test returns 1 otherwise (can not reject null hypothesis)"
 msgstr ""
 
-#: src/moyal.cc:3274
+#: src/moyal.cc:3281
 msgid "Data mean mu1="
 msgstr ""
 
-#: src/moyal.cc:3274
+#: src/moyal.cc:3281
 #, fuzzy
 msgid ", population mean mu2="
 msgstr "Μενού Εξίσωσης"
 
-#: src/moyal.cc:3276
+#: src/moyal.cc:3283
 msgid ", degrees of freedom "
 msgstr ""
 
-#: src/moyal.cc:3624
+#: src/moyal.cc:3631
 msgid "Bessel not implemented"
 msgstr ""
 
-#: src/moyal.cc:3654
+#: src/moyal.cc:3661
 msgid "Bessel"
 msgstr ""
 
-#: src/maple.cc:202 src/vecteur.cc:11077
+#: src/maple.cc:202 src/vecteur.cc:11096
 msgid "Option keep_pivot not applicable"
 msgstr ""
 
-#: src/maple.cc:869 src/plot.cc:7489 src/plot.cc:7537
+#: src/maple.cc:871 src/plot.cc:7492 src/plot.cc:7540
 msgid "not implemented"
 msgstr ""
 
-#: src/maple.cc:879
+#: src/maple.cc:881
 msgid "Could not open file"
 msgstr ""
 
-#: src/maple.cc:910
+#: src/maple.cc:912
 msgid "1st arg=open result, then other args"
 msgstr ""
 
-#: src/maple.cc:1193
+#: src/maple.cc:1195
 msgid "Solution may be wrong since a and b are not prime together: "
 msgstr ""
 
-#: src/maple.cc:1645 src/maple.cc:1700
+#: src/maple.cc:1647 src/maple.cc:1702
 #, fuzzy
 msgid "Invalid sound data"
 msgstr "Μη έγκυρη συνθήκη"
 
-#: src/maple.cc:1648 src/maple.cc:1703
+#: src/maple.cc:1650 src/maple.cc:1705
 msgid "Using sound parameters: channels, rate, bits, records "
 msgstr ""
 
-#: src/maple.cc:1651
+#: src/maple.cc:1653
 msgid "Error opening audio device."
 msgstr ""
 
-#: src/maple.cc:1777
+#: src/maple.cc:1779
 #, fuzzy
 msgid "Invalid sound parameters"
 msgstr "Μη έγκυρος μετρητής"
 
-#: src/maple.cc:1897
+#: src/maple.cc:1899
 msgid "File not found or unrecognized wav file format"
 msgstr ""
 
-#: src/maple.cc:1976
+#: src/maple.cc:1978
 msgid "Unable to open file or unable to code data"
 msgstr ""
 
-#: src/maple.cc:2168 src/maple.cc:2196
+#: src/maple.cc:2170 src/maple.cc:2198
 msgid "File not found or unrecognized image file format"
 msgstr ""
 
-#: src/maple.cc:2207 src/intg.cc:248
+#: src/maple.cc:2209 src/intg.cc:248
 msgid "in linear_apply"
 msgstr ""
 
-#: src/maple.cc:2233 src/intg.cc:274
+#: src/maple.cc:2235 src/intg.cc:274
 msgid "in linear_apply 2"
 msgstr ""
 
-#: src/maple.cc:2314 src/maple.cc:2499
+#: src/maple.cc:2316 src/maple.cc:2501
 msgid "Cst part must be hypergeometric"
 msgstr ""
 
-#: src/maple.cc:2319
+#: src/maple.cc:2321
 msgid "Cst part must be of type a^n*P(n)"
 msgstr ""
 
-#: src/maple.cc:2508
+#: src/maple.cc:2510
 msgid "Unable to handle coeff of homogeneous part"
 msgstr ""
 
-#: src/maple.cc:2548
+#: src/maple.cc:2550
 msgid "Unable to find a particular solution for inhomogeneous part"
 msgstr ""
 
-#: src/maple.cc:2553 src/maple.cc:2589
+#: src/maple.cc:2555 src/maple.cc:2591
 msgid "Unable to solve recurrence"
 msgstr ""
 
-#: src/maple.cc:2666
+#: src/maple.cc:2668
 msgid "Unable to handle this kind of recurrence"
 msgstr ""
 
-#: src/maple.cc:2684
+#: src/maple.cc:2686
 msgid "Bad indexes in recurrence"
 msgstr ""
 
-#: src/maple.cc:2688
+#: src/maple.cc:2690
 msgid "Multi-recurrences implemented only for 1 step"
 msgstr ""
 
-#: src/maple.cc:2799
+#: src/maple.cc:2801
 msgid "Not yet implemented"
 msgstr ""
 
-#: src/maple.cc:2941
+#: src/maple.cc:2943
 msgid "Array too large"
 msgstr ""
 
@@ -6023,7 +6027,7 @@ msgstr ""
 msgid "Selecting last arc"
 msgstr "Περιοχή επιλογής"
 
-#: src/ti89.cc:1900 src/vecteur.cc:10185
+#: src/ti89.cc:1900 src/vecteur.cc:10204
 msgid "minor_det option applies only to det"
 msgstr ""
 
@@ -6127,7 +6131,7 @@ msgstr ""
 msgid "No mathml support"
 msgstr ""
 
-#: src/mathml.cc:1442
+#: src/mathml.cc:1525
 msgid "MathMl convert "
 msgstr ""
 
@@ -6143,7 +6147,7 @@ msgstr ""
 msgid "Not a vector potential"
 msgstr ""
 
-#: src/misc.cc:1652 src/vecteur.cc:14146 src/vecteur.cc:14167
+#: src/misc.cc:1652 src/vecteur.cc:14229 src/vecteur.cc:14250
 msgid "Low accuracy"
 msgstr ""
 
@@ -6187,168 +6191,168 @@ msgstr ""
 msgid "Invalid class size (replaced by 1) "
 msgstr ""
 
-#: src/misc.cc:4435
+#: src/misc.cc:4439
 msgid "Negative value encoutered"
 msgstr ""
 
-#: src/misc.cc:4464
+#: src/misc.cc:4468
 msgid "graham_sort_function"
 msgstr ""
 
-#: src/misc.cc:4926
+#: src/misc.cc:4930
 msgid "binop"
 msgstr ""
 
-#: src/misc.cc:5013
+#: src/misc.cc:5017
 msgid "plotarea(f(x),x=a..b[,n,method])"
 msgstr ""
 
-#: src/misc.cc:5232
+#: src/misc.cc:5236
 msgid "Warning: not a graph matrix!"
 msgstr ""
 
-#: src/misc.cc:5495
+#: src/misc.cc:5499
 msgid ""
 "Warning! Leaving conjugate gradient algorithm after dimension of matrix "
 "iterations. Check that your matrix is hermitian/symmetric definite."
 msgstr ""
 
-#: src/misc.cc:5525
+#: src/misc.cc:5529
 msgid ""
 "Warning! Leaving Jacobi iterative algorithm after maximal number of "
 "iterations. Check that your matrix is diagonal dominant."
 msgstr ""
 
-#: src/misc.cc:5557
+#: src/misc.cc:5561
 msgid ""
 "Warning! Leaving Gauss-Seidel iterative algorithm after maximal number of "
 "iterations. Check that your matrix is diagonal dominant."
 msgstr ""
 
-#: src/permu.cc:1645 src/permu.cc:1653 src/permu.cc:1664 src/permu.cc:1666
+#: src/permu.cc:1754 src/permu.cc:1762 src/permu.cc:1773 src/permu.cc:1775
 msgid "Probably not a Riemann sum"
 msgstr ""
 
-#: src/quater.cc:57
+#: src/quater.cc:58
 msgid "Quaternion has 1 or 4 arguments"
 msgstr ""
 
-#: src/quater.cc:113
+#: src/quater.cc:114
 msgid ""
 "Warning, minimal polynomial is only irreducible, not necessarily primitive"
 msgstr ""
 
-#: src/quater.cc:214
+#: src/quater.cc:215
 msgid ""
 "Warning, random search for irreducible polynomial did not work, starting "
 "exhaustive search"
 msgstr ""
 
-#: src/quater.cc:228
+#: src/quater.cc:229
 msgid "No irreducible primitive polynomial found"
 msgstr ""
 
-#: src/quater.cc:236
+#: src/quater.cc:237
 msgid " already assigned. Trying "
 msgstr ""
 
-#: src/quater.cc:249
+#: src/quater.cc:256
 msgid ""
 "GF is used for non-prime finite field. Use % or mod for prime fields, e.g. 1 "
 "% "
 msgstr ""
 
-#: src/quater.cc:265
+#: src/quater.cc:272
 msgid "Not a power of a prime"
 msgstr ""
 
-#: src/quater.cc:298
+#: src/quater.cc:305
 msgid "Setting "
 msgstr ""
 
-#: src/quater.cc:298
+#: src/quater.cc:305
 msgid " as generator for Galois field "
 msgstr ""
 
-#: src/quater.cc:298
+#: src/quater.cc:305
 msgid "(auxiliary polynomial variable for addition representation "
 msgstr ""
 
-#: src/quater.cc:330
+#: src/quater.cc:337
 msgid "Assigning variables "
 msgstr ""
 
-#: src/quater.cc:331
+#: src/quater.cc:338
 msgid "Now e.g. "
 msgstr ""
 
-#: src/quater.cc:331
+#: src/quater.cc:338
 msgid "^200+1 will build an element of "
 msgstr ""
 
-#: src/quater.cc:339
+#: src/quater.cc:349
 msgid ""
 "galois_field has 1 or 4 arguments (charac p, irred poly P, var name x, value "
 "as a poly of x or as a vector)"
 msgstr ""
 
-#: src/quater.cc:353
+#: src/quater.cc:363
 msgid "Not irreducible or not primitive polynomial"
 msgstr ""
 
-#: src/quater.cc:355
+#: src/quater.cc:365
 msgid "Warning "
 msgstr ""
 
-#: src/quater.cc:355
+#: src/quater.cc:365
 msgid " is irreducible but not primitive. You could use "
 msgstr ""
 
-#: src/quater.cc:355
+#: src/quater.cc:365
 msgid " instead "
 msgstr ""
 
-#: src/quater.cc:409
+#: src/quater.cc:419
 msgid "Unable to convert user type to galois field"
 msgstr ""
 
-#: src/quater.cc:414
+#: src/quater.cc:424
 msgid "Expecting characteristic p, integer m"
 msgstr ""
 
-#: src/quater.cc:418
+#: src/quater.cc:428
 msgid "Bad characteristic: "
 msgstr ""
 
-#: src/quater.cc:422
+#: src/quater.cc:432
 msgid "Exponent must be >=2: "
 msgstr ""
 
-#: src/quater.cc:493 src/quater.cc:530 src/quater.cc:575
+#: src/quater.cc:585 src/quater.cc:627 src/quater.cc:672
 msgid "Incompatible characteristics"
 msgstr ""
 
-#: src/quater.cc:631
+#: src/quater.cc:731
 msgid "galois field inv"
 msgstr ""
 
-#: src/quater.cc:644
+#: src/quater.cc:744
 msgid "GF inv internal bug"
 msgstr ""
 
-#: src/quater.cc:706
+#: src/quater.cc:806
 msgid ") invalid, works only for integers or polynomials depending on "
 msgstr ""
 
-#: src/quater.cc:880
+#: src/quater.cc:980
 msgid "Warning: multivariate GF factorization is experimental and may fail"
 msgstr ""
 
-#: src/quater.cc:882
+#: src/quater.cc:982
 msgid "Multivariate GF factorization not yet implemented"
 msgstr ""
 
-#: src/quater.cc:886 src/quater.cc:895
+#: src/quater.cc:986 src/quater.cc:995
 msgid "GF polyfactor"
 msgstr "GF Παραγοντοποίηση πολυωνύμων"
 
@@ -6360,7 +6364,7 @@ msgstr ""
 msgid "desolve.cc/pf_ilaplace"
 msgstr ""
 
-#: src/desolve.cc:375 src/desolve.cc:1451
+#: src/desolve.cc:375 src/desolve.cc:1454
 msgid "Unable to solve differential equation"
 msgstr ""
 
@@ -6372,26 +6376,26 @@ msgstr ""
 msgid "Boundary conditions for parametric curve not implemented"
 msgstr ""
 
-#: src/desolve.cc:1254
+#: src/desolve.cc:1257
 msgid "Incomplete"
 msgstr ""
 
-#: src/desolve.cc:1287
+#: src/desolve.cc:1290
 #, fuzzy
 msgid "Homogeneous differential equation"
 msgstr "desolve: Λύση διαφορικής εξίσωσης"
 
-#: src/desolve.cc:1600
+#: src/desolve.cc:1603
 msgid ""
 "Inverse z-transform of non rational functions not implemented or unable to "
 "fully factor rational function"
 msgstr ""
 
-#: src/desolve.cc:1630 src/desolve.cc:1633
+#: src/desolve.cc:1633 src/desolve.cc:1636
 msgid "desolve.cc/invztrans"
 msgstr ""
 
-#: src/desolve.cc:1662
+#: src/desolve.cc:1665
 msgid "Warning, z*argument has a non-zero integral part"
 msgstr ""
 
@@ -6399,7 +6403,7 @@ msgstr ""
 msgid "For: Unable to check test"
 msgstr ""
 
-#: src/symbolic.cc:1219 src/prog.cc:1529
+#: src/symbolic.cc:1219 src/prog.cc:1536
 msgid "Ifte: Unable to check test"
 msgstr ""
 
@@ -6475,11 +6479,11 @@ msgstr ""
 msgid "modpoly.cc/DivRem"
 msgstr ""
 
-#: src/modpoly.cc:4181
+#: src/modpoly.cc:4182
 msgid "Argument must be a vector of even size"
 msgstr ""
 
-#: src/modpoly.cc:4306
+#: src/modpoly.cc:4307
 msgid "modpoly.cc/powmod"
 msgstr ""
 
@@ -6571,77 +6575,77 @@ msgstr ""
 msgid "Expecting an expression, not a function"
 msgstr ""
 
-#: src/derive.cc:434 src/derive.cc:452 src/derive.cc:471 src/derive.cc:474
+#: src/derive.cc:442 src/derive.cc:460 src/derive.cc:479 src/derive.cc:482
 msgid "derive.cc/derive_SYMB"
 msgstr ""
 
-#: src/derive.cc:599 src/derive.cc:601
+#: src/derive.cc:616 src/derive.cc:618
 msgid "derive.cc/derive"
 msgstr ""
 
-#: src/derive.cc:642
+#: src/derive.cc:659
 #, c-format
 msgid "===== Derive %gen with respect to %gen ====="
 msgstr ""
 
-#: src/derive.cc:769
+#: src/derive.cc:786
 #, c-format
 msgid "===== Critical points for %gen ====="
 msgstr ""
 
-#: src/derive.cc:778
+#: src/derive.cc:795
 #, c-format
 msgid ""
 "Derivative of %gen with respect to %gen is %gen\n"
 "Solving %gen with respect to %gen answer %gen"
 msgstr ""
 
-#: src/derive.cc:790 src/derive.cc:796
+#: src/derive.cc:807 src/derive.cc:813
 #, c-format
 msgid "Hessian at %gen : %gen"
 msgstr ""
 
-#: src/derive.cc:801 src/derive.cc:807
+#: src/derive.cc:818 src/derive.cc:824
 #, c-format
 msgid "%gen critical point (unknown type)"
 msgstr ""
 
-#: src/derive.cc:814
+#: src/derive.cc:831
 #, c-format
 msgid "%gen critical point (0 as eigenvalue) %gen"
 msgstr ""
 
-#: src/derive.cc:819
+#: src/derive.cc:836
 #, c-format
 msgid "%gen is a saddle point (2 eigenvalues with opposite sign) %gen"
 msgstr ""
 
-#: src/derive.cc:827
+#: src/derive.cc:844
 #, c-format
 msgid "%gen is a local minimum %gen"
 msgstr ""
 
-#: src/derive.cc:831
+#: src/derive.cc:848
 #, c-format
 msgid "%gen is a local maximum %gen"
 msgstr ""
 
-#: src/derive.cc:848
+#: src/derive.cc:865
 #, c-format
 msgid "%gen is a local minimum"
 msgstr ""
 
-#: src/derive.cc:854
+#: src/derive.cc:871
 #, c-format
 msgid "%gen is a local maximum"
 msgstr ""
 
-#: src/derive.cc:860
+#: src/derive.cc:877
 #, c-format
 msgid "%gen is a critical point (unknown type)"
 msgstr ""
 
-#: src/derive.cc:864
+#: src/derive.cc:881
 #, fuzzy, c-format
 msgid "%gen is an inflection point"
 msgstr "συνιστώσα x της κατεύθυνσης του προβολέα"
@@ -6669,179 +6673,179 @@ msgstr ""
 msgid "Bad equal in"
 msgstr ""
 
-#: src/solve.cc:640 src/solve.cc:648 src/solve.cc:659 src/solve.cc:676
-#: src/solve.cc:1865
+#: src/solve.cc:640 src/solve.cc:648 src/solve.cc:664 src/solve.cc:681
+#: src/solve.cc:1874
 msgid "Unable to isolate "
 msgstr ""
 
-#: src/solve.cc:640 src/solve.cc:648
+#: src/solve.cc:640 src/solve.cc:653
 msgid ", switching to approx. solutions"
 msgstr ""
 
-#: src/solve.cc:700 src/solve.cc:702
+#: src/solve.cc:705 src/solve.cc:707
 msgid "Unable to isolate function "
 msgstr ""
 
-#: src/solve.cc:940
+#: src/solve.cc:945
 msgid "Warning! Algebraic extension not implemented yet for poly "
 msgstr ""
 
-#: src/solve.cc:1114 src/plot3d.cc:475
+#: src/solve.cc:1119 src/plot3d.cc:475
 msgid "Unable to check sign "
 msgstr ""
 
-#: src/solve.cc:1143
+#: src/solve.cc:1148
 msgid "Unable to check test at x="
 msgstr ""
 
-#: src/solve.cc:1243
+#: src/solve.cc:1248
 msgid "Unable to solve inequations with approx coeffs "
 msgstr ""
 
-#: src/solve.cc:1254
+#: src/solve.cc:1259
 msgid "Inequation inside inequation not implemented "
 msgstr ""
 
-#: src/solve.cc:1256
+#: src/solve.cc:1261
 msgid "Inequation is constant with respect to "
 msgstr ""
 
-#: src/solve.cc:1276
+#: src/solve.cc:1281
 msgid ""
 "Unable to find numeric values solving equation. For trigonometric equations "
 "this may be solved using assumptions, e.g. assume(x>-pi && x<pi)"
 msgstr ""
 
-#: src/solve.cc:1277
+#: src/solve.cc:1282
 msgid ""
 "Warning! Solving parametric inequation requires assumption on parameters "
 "otherwise solutions may be missed. The solutions of the equation are "
 msgstr ""
 
-#: src/solve.cc:1285 src/prog.cc:5769 src/prog.cc:5771
+#: src/solve.cc:1290 src/prog.cc:5779 src/prog.cc:5781
 msgid "Unable to sort "
 msgstr ""
 
-#: src/solve.cc:1580
+#: src/solve.cc:1589
 msgid "Solve with fractional power:"
 msgstr ""
 
-#: src/solve.cc:1580
+#: src/solve.cc:1589
 msgid " is not rationnal w.r.t. "
 msgstr ""
 
-#: src/solve.cc:1731 src/solve.cc:1758
+#: src/solve.cc:1740 src/solve.cc:1767
 msgid "Warning, trying to solve "
 msgstr ""
 
-#: src/solve.cc:1835
+#: src/solve.cc:1844
 msgid "Warning: solving in "
 msgstr ""
 
-#: src/solve.cc:1835
+#: src/solve.cc:1844
 msgid " equation "
 msgstr ""
 
-#: src/solve.cc:1865
+#: src/solve.cc:1874
 #, fuzzy
 msgid " solving equation "
 msgstr "Μη γραμμικές εξισώσεις"
 
-#: src/solve.cc:1920
+#: src/solve.cc:1932
 msgid "Warning, solutions were not checked!"
 msgstr ""
 
-#: src/solve.cc:2101
+#: src/solve.cc:2114
 msgid "Modulo too large"
 msgstr ""
 
-#: src/solve.cc:2384
+#: src/solve.cc:2402
 msgid "Warning, argument is not an equation, solving "
 msgstr ""
 
-#: src/solve.cc:3066
+#: src/solve.cc:3084
 msgid "solve.cc/my_f"
 msgstr ""
 
-#: src/solve.cc:3087
+#: src/solve.cc:3105
 msgid "solve.cc/my_df"
 msgstr ""
 
-#: src/solve.cc:3106
+#: src/solve.cc:3124
 msgid "solve.cc/my_fdf"
 msgstr ""
 
-#: src/solve.cc:3127
+#: src/solve.cc:3145
 msgid "solve.cc/my_F"
 msgstr ""
 
-#: src/solve.cc:3141
+#: src/solve.cc:3159
 msgid "solve.cc/my_dF"
 msgstr ""
 
-#: src/solve.cc:3156
+#: src/solve.cc:3174
 msgid "solve.cc/my_FdF"
 msgstr ""
 
-#: src/solve.cc:3372
+#: src/solve.cc:3390
 msgid "fsolve([equations],[variables],[guesses])"
 msgstr ""
 
-#: src/solve.cc:3436
+#: src/solve.cc:3454
 msgid ""
 "Solving by bisection with change of variable x=tan(t) and t=-1.57..1.57. Try "
 "fsolve(equation,x=guess) for iterative solver or fsolve(equation,x=xmin.."
 "xmax) for bisection."
 msgstr ""
 
-#: src/solve.cc:3444
+#: src/solve.cc:3462
 msgid "No solution found by bisection. Trying iterative method starting at 0"
 msgstr ""
 
-#: src/solve.cc:3450
+#: src/solve.cc:3468
 msgid ""
 "Solving with initial guess 0. Try fsolve(equation,x=guess) for iterative "
 "solver or fsolve(equation,x=xmin..xmax) for bisection."
 msgstr ""
 
-#: src/solve.cc:3556
+#: src/solve.cc:3574
 msgid "Warning: undefined"
 msgstr ""
 
-#: src/solve.cc:3556
+#: src/solve.cc:3574
 msgid "Warning: sign reversal"
 msgstr ""
 
-#: src/solve.cc:3685
+#: src/solve.cc:3703
 msgid "Not linked with GSL"
 msgstr ""
 
-#: src/solve.cc:5815
+#: src/solve.cc:5834
 msgid "Unable to compute gbasis with giac, perhaps dimension is too large"
 msgstr ""
 
-#: src/solve.cc:5886
+#: src/solve.cc:5905
 msgid ""
 "Warning: solving by reducing number of unknowns to number of equations: "
 msgstr ""
 
-#: src/solve.cc:6050
+#: src/solve.cc:6069
 msgid "Bad var "
 msgstr ""
 
-#: src/solve.cc:6053
+#: src/solve.cc:6072
 msgid " is not rational w.r.t. "
 msgstr ""
 
-#: src/solve.cc:7195
+#: src/solve.cc:7214
 msgid "Error solving equations. Check that your variables are purged"
 msgstr ""
 
-#: src/solve.cc:7201
+#: src/solve.cc:7220
 msgid "Warning: algsubs selected one branch"
 msgstr ""
 
-#: src/solve.cc:7398
+#: src/solve.cc:7417
 msgid "Unable to minimize at given precision, last value "
 msgstr ""
 
@@ -6893,7 +6897,7 @@ msgid ""
 "leading to integral of %gen"
 msgstr ""
 
-#: src/intg.cc:1273 src/intg.cc:1291 src/intg.cc:2237
+#: src/intg.cc:1273 src/intg.cc:1291 src/intg.cc:2249
 #, c-format
 msgid "Back substitution %gen->%gen in %gen"
 msgstr ""
@@ -6934,126 +6938,126 @@ msgstr ""
 msgid "Partial fraction integration of %gen"
 msgstr "προκαθορισμένη ολοκλήρωση"
 
-#: src/intg.cc:2141
+#: src/intg.cc:2153
 msgid ""
 "Warning, integration of abs or sign assumes constant sign by intervals "
 "(correct if the argument is real):\n"
 "Check "
 msgstr ""
 
-#: src/intg.cc:2167
+#: src/intg.cc:2179
 msgid "Unable to cancel step at "
 msgstr ""
 
-#: src/intg.cc:2172
+#: src/intg.cc:2184
 msgid "Discontinuities at zeroes of "
 msgstr ""
 
-#: src/intg.cc:2234
+#: src/intg.cc:2246
 #, c-format
 msgid "Integrate %gen, change of variable %gen->%gen, new integral %gen"
 msgstr ""
 
-#: src/intg.cc:2282
+#: src/intg.cc:2294
 msgid "Temporary replacing surd/NTHROOT by fractional powers"
 msgstr ""
 
-#: src/intg.cc:2299
+#: src/intg.cc:2311
 msgid "integrate id_rem "
 msgstr ""
 
-#: src/intg.cc:2319
+#: src/intg.cc:2331
 msgid ""
 "Warning: piecewise indefinite integration does not return a continuous "
 "antiderivative"
 msgstr ""
 
-#: src/intg.cc:2325
+#: src/intg.cc:2337
 msgid "integrate step -2 "
 msgstr ""
 
-#: src/intg.cc:2338
+#: src/intg.cc:2350
 msgid "Bad when "
 msgstr ""
 
-#: src/intg.cc:2356
+#: src/intg.cc:2368
 msgid "integrate step 0 "
 msgstr ""
 
-#: src/intg.cc:2374
+#: src/intg.cc:2386
 #, c-format
 msgid ""
 "Integrate %gen, a linear expression u=%gen to a constant power n=%gen,\n"
 "If n=-1 then ln(u)/a else u^(n+1)/((n+1)*%gen)"
 msgstr ""
 
-#: src/intg.cc:2382 src/intg.cc:2390
+#: src/intg.cc:2394 src/intg.cc:2402
 #, c-format
 msgid ""
 "Integrate %gen, a linear expression u=%gen to a constant power n=1/%gen,\n"
 "If n=-1 then ln(u)/a else u^(n+1)/((n+1)*%gen)"
 msgstr ""
 
-#: src/intg.cc:2408
+#: src/intg.cc:2420
 msgid "integrate step 1 "
 msgstr ""
 
-#: src/intg.cc:2428
+#: src/intg.cc:2440
 #, c-format
 msgid ""
 "Integrate %gen: function %gen applied to a linear expression u=%gen, result "
 "%gen"
 msgstr ""
 
-#: src/intg.cc:2475 src/intg.cc:2529 src/intg.cc:2549 src/intg.cc:2616
-#: src/intg.cc:2638
+#: src/intg.cc:2495 src/intg.cc:2561 src/intg.cc:2581 src/intg.cc:2648
+#: src/intg.cc:2670
 #, c-format
 msgid "Integration of %gen: f(u)*u' where f=%gen->%gen and u=%gen"
 msgstr ""
 
-#: src/intg.cc:2557
+#: src/intg.cc:2589
 msgid "integrate step 2 "
 msgstr ""
 
-#: src/intg.cc:2647
+#: src/intg.cc:2679
 msgid "integrate step 3 "
 msgstr ""
 
-#: src/intg.cc:2706
+#: src/intg.cc:2738
 #, c-format
 msgid "Integration of %gen: by part, u*v'=%gen*(%gen)'"
 msgstr ""
 
-#: src/intg.cc:2740
+#: src/intg.cc:2772
 #, c-format
 msgid "Integration of %gen by part of u*v' where u=1 and v=%gen'"
 msgstr ""
 
-#: src/intg.cc:2836
+#: src/intg.cc:2868
 #, c-format
 msgid "Integrate %gen, no heuristic found, running Risch algorithm"
 msgstr ""
 
-#: src/intg.cc:2905
+#: src/intg.cc:2937
 #, c-format
 msgid "===== Step/step primitive of %gen with respect to %gen ====="
 msgstr ""
 
-#: src/intg.cc:2918
+#: src/intg.cc:2950
 #, c-format
 msgid "Hence primitive of %gen with respect to %gen is %gen"
 msgstr ""
 
-#: src/intg.cc:2965
+#: src/intg.cc:3005
 msgid "Checking exact value of integral with numeric approximation"
 msgstr ""
 
-#: src/intg.cc:2975
+#: src/intg.cc:3015
 msgid ""
 "Error while checking exact value with approximate value, returning both!"
 msgstr ""
 
-#: src/intg.cc:3009
+#: src/intg.cc:3049
 msgid ""
 "Warning, complex variables is set, this can lead to fairly complex answers. "
 "It is recommended to switch off complex variables in the settings or by "
@@ -7061,84 +7065,88 @@ msgid ""
 "assume(a,complex)."
 msgstr ""
 
-#: src/intg.cc:3011
+#: src/intg.cc:3051
 msgid "integrate begin"
 msgstr ""
 
-#: src/intg.cc:3226
+#: src/intg.cc:3269
 msgid "Floor definite integration: can only handle linear < or > condition"
 msgstr ""
 
-#: src/intg.cc:3285 src/plot.cc:1272 src/prog.cc:9572
+#: src/intg.cc:3275
+msgid "Floor definite integration: unable to handle infinite boundaries"
+msgstr ""
+
+#: src/intg.cc:3333 src/plot.cc:1272 src/prog.cc:9588
 msgid "Assuming false condition "
 msgstr ""
 
-#: src/intg.cc:3289 src/plot.cc:1276 src/prog.cc:9576
+#: src/intg.cc:3337 src/plot.cc:1276 src/prog.cc:9592
 msgid "Assuming true condition "
 msgstr ""
 
-#: src/intg.cc:3304
+#: src/intg.cc:3352
 msgid "Piecewise definite integration: can only handle linear < or > condition"
 msgstr ""
 
-#: src/intg.cc:3454
+#: src/intg.cc:3505
 msgid "No check were made for singular points of antiderivative "
 msgstr ""
 
-#: src/intg.cc:3454
+#: src/intg.cc:3505
 msgid " for definite integration in ["
 msgstr ""
 
-#: src/intg.cc:3473
+#: src/intg.cc:3524
 msgid "Unable to find singular points of antiderivative"
 msgstr ""
 
-#: src/intg.cc:3484
+#: src/intg.cc:3535
 msgid "Unable to handle approx. or algebraic extension singular point "
 msgstr ""
 
-#: src/intg.cc:3484
+#: src/intg.cc:3535
 msgid " of antiderivative"
 msgstr ""
 
-#: src/intg.cc:3836
+#: src/intg.cc:3887
 msgid ""
 "Infinity or undefined limit at bounds.\n"
 "Using middle point Romberg method"
 msgstr ""
 
-#: src/intg.cc:3889 src/intg.cc:3931
+#: src/intg.cc:3940 src/intg.cc:3982
 msgid ""
 "Unable to find numeric integral using Romberg method, returning the last "
 "approximations"
 msgstr ""
 
-#: src/intg.cc:4566
+#: src/intg.cc:4617
 msgid "prodsum"
 msgstr ""
 
-#: src/intg.cc:4695
+#: src/intg.cc:4746
 #, fuzzy
 msgid "Unable to sort boundaries "
 msgstr "Αδύνατη η μετατροπή σε ακέραιο"
 
-#: src/intg.cc:4758
+#: src/intg.cc:4809
 msgid "Bad step"
 msgstr ""
 
-#: src/intg.cc:4885
+#: src/intg.cc:4936
 msgid "i=sqrt(-1), please use a valid identifier name"
 msgstr ""
 
-#: src/intg.cc:5073 src/intg.cc:5080 src/intg.cc:5105
+#: src/intg.cc:5124 src/intg.cc:5131 src/intg.cc:5156
 msgid "bernoulli"
 msgstr ""
 
-#: src/intg.cc:5435
+#: src/intg.cc:5486
 msgid "RK8 evolve not successfull"
 msgstr ""
 
-#: src/intg.cc:5669
+#: src/intg.cc:5720
 msgid "Warning time reversal"
 msgstr ""
 
@@ -7150,7 +7158,7 @@ msgstr ""
 msgid "Syntax residue(expr,x=a)"
 msgstr ""
 
-#: src/intgab.cc:494 src/intgab.cc:503 src/usual.cc:1001 src/usual.cc:1010
+#: src/intgab.cc:494 src/intgab.cc:503 src/usual.cc:1005 src/usual.cc:1014
 msgid "Unable to factor "
 msgstr ""
 
@@ -7158,31 +7166,31 @@ msgstr ""
 msgid "Warning: pole at "
 msgstr ""
 
-#: src/intgab.cc:871
+#: src/intgab.cc:870
 msgid "Please use +infinity or -infinity since infinity is unsigned"
 msgstr ""
 
-#: src/intgab.cc:1008
+#: src/intgab.cc:1007
 msgid "Negative second Dirac argument"
 msgstr ""
 
-#: src/intgab.cc:1026 src/intgab.cc:1947
+#: src/intgab.cc:1025 src/intgab.cc:1951
 msgid "Warning, Dirac function outside summation interval"
 msgstr ""
 
-#: src/intgab.cc:1338
+#: src/intgab.cc:1337
 msgid "Searching int of "
 msgstr ""
 
-#: src/intgab.cc:1338
+#: src/intgab.cc:1337
 msgid " where "
 msgstr ""
 
-#: src/intgab.cc:1338
+#: src/intgab.cc:1337
 msgid " is on the unit circle, using residues"
 msgstr ""
 
-#: src/intgab.cc:1621
+#: src/intgab.cc:1625
 msgid "Unable to sum "
 msgstr ""
 
@@ -7194,100 +7202,100 @@ msgstr ""
 msgid "risch.cc/hermite_reduce"
 msgstr ""
 
-#: src/series.cc:95
+#: src/series.cc:103
 msgid "non tractable function "
 msgstr ""
 
-#: src/series.cc:1070
+#: src/series.cc:1083
 msgid "Warning: vanishing non integral power expansion"
 msgstr ""
 
-#: src/series.cc:1262
+#: src/series.cc:1281
 msgid "unknown rational operator"
 msgstr ""
 
-#: src/series.cc:1517 src/series.cc:2727
+#: src/series.cc:1536 src/series.cc:2758
 msgid "no taylor method for "
 msgstr ""
 
-#: src/series.cc:1546 src/series.cc:1574
+#: src/series.cc:1565 src/series.cc:1593
 msgid "Summation variable must be != from series expansion variable"
 msgstr ""
 
-#: src/series.cc:1568 src/series.cc:1698
+#: src/series.cc:1587 src/series.cc:1717
 msgid "Integral must be definite"
 msgstr ""
 
-#: src/series.cc:1608 src/series.cc:1644
+#: src/series.cc:1627 src/series.cc:1663
 msgid "igamma: bad arg number"
 msgstr ""
 
-#: src/series.cc:1704
+#: src/series.cc:1723
 msgid "Integration variable must be != from series expansion variable"
 msgstr ""
 
-#: src/series.cc:1728
+#: src/series.cc:1758
 msgid "Can not expand remainder of integrand"
 msgstr ""
 
-#: src/series.cc:1772
+#: src/series.cc:1802
 msgid " multiargs not implemented"
 msgstr ""
 
-#: src/series.cc:1822
+#: src/series.cc:1852
 msgid "Sign error "
 msgstr ""
 
-#: src/series.cc:1855
+#: src/series.cc:1885
 msgid "Not expandable "
 msgstr ""
 
-#: src/series.cc:1865
+#: src/series.cc:1895
 msgid "Psi/Zeta/Eta: bad second argument"
 msgstr ""
 
-#: src/series.cc:2224
+#: src/series.cc:2255
 msgid "ln of unsigned or minus infinity"
 msgstr ""
 
-#: src/series.cc:2242
+#: src/series.cc:2273
 #, fuzzy
 msgid "Unable to convert sum to Euler Mac-Laurin "
 msgstr "Αδύνατη η μετατροπή σε ακέραιο"
 
-#: src/series.cc:2400
+#: src/series.cc:2431
 msgid "Undefined integral"
 msgstr ""
 
-#: src/series.cc:2402
+#: src/series.cc:2433
 msgid "Integration variable and limit variable are the same"
 msgstr ""
 
-#: src/series.cc:2404
+#: src/series.cc:2435
 msgid "Integral in limit not implemented yet"
 msgstr ""
 
-#: src/series.cc:2456
+#: src/series.cc:2487
 msgid "Warning, infinity is unsigned, perhaps you meant +infinity"
 msgstr ""
 
-#: src/series.cc:2573
+#: src/series.cc:2604
 msgid "Try unidirectional series"
 msgstr ""
 
-#: src/series.cc:2580
+#: src/series.cc:2611
 msgid "Series internal bug"
 msgstr ""
 
-#: src/series.cc:2703
+#: src/series.cc:2734
 msgid "Limit probably undefined, algorithm unable to handle "
 msgstr ""
 
-#: src/series.cc:2708
+#: src/series.cc:2739
 msgid "Undef/Unsigned Inf encountered in limit"
 msgstr ""
 
-#: src/series.cc:3410
+#: src/series.cc:3441
 msgid "Unable to convert to euler mac laurin"
 msgstr ""
 
@@ -7295,233 +7303,233 @@ msgstr ""
 msgid "This function works only in radian mode"
 msgstr ""
 
-#: src/subst.cc:420 src/plot.cc:9351
+#: src/subst.cc:420 src/plot.cc:9368
 msgid "Unable to solve"
 msgstr ""
 
-#: src/subst.cc:528 src/subst.cc:752
+#: src/subst.cc:530 src/subst.cc:754
 msgid "Warning, replacing "
 msgstr ""
 
-#: src/subst.cc:528 src/subst.cc:752
+#: src/subst.cc:530 src/subst.cc:754
 msgid " by "
 msgstr ""
 
-#: src/subst.cc:528 src/subst.cc:752
+#: src/subst.cc:530 src/subst.cc:754
 #, fuzzy
 msgid ", a substitution variable should perhaps be purged."
 msgstr "Εκκαθάριση της μεταβλητής x"
 
-#: src/subst.cc:1512 src/subst.cc:1530
+#: src/subst.cc:1519 src/subst.cc:1537
 msgid "Simplification assuming "
 msgstr ""
 
-#: src/subst.cc:2381
+#: src/subst.cc:2424
 msgid "simplify preserving "
 msgstr ""
 
-#: src/vecteur.cc:794 src/vecteur.cc:802
+#: src/vecteur.cc:802 src/vecteur.cc:810
 msgid "pos2cell"
 msgstr ""
 
-#: src/vecteur.cc:947
+#: src/vecteur.cc:955
 msgid "matrice_extract"
 msgstr ""
 
-#: src/vecteur.cc:1029
+#: src/vecteur.cc:1037
 msgid "Bad cell"
 msgstr ""
 
-#: src/vecteur.cc:1086
+#: src/vecteur.cc:1094
 msgid "Interrupted "
 msgstr ""
 
-#: src/vecteur.cc:1169 src/vecteur.cc:1170
+#: src/vecteur.cc:1177 src/vecteur.cc:1178
 msgid "Spreadsheet matrix argument max size 4000 exceeded"
 msgstr ""
 
-#: src/vecteur.cc:1225
+#: src/vecteur.cc:1233
 msgid "Spreadsheet evaluation interrupted"
 msgstr ""
 
-#: src/vecteur.cc:1320 src/vecteur.cc:1327 src/vecteur.cc:1331
+#: src/vecteur.cc:1328 src/vecteur.cc:1335 src/vecteur.cc:1339
 msgid "mergematrice"
 msgstr ""
 
-#: src/vecteur.cc:1351 src/vecteur.cc:1356
+#: src/vecteur.cc:1359 src/vecteur.cc:1364
 msgid "a_root"
 msgstr ""
 
-#: src/vecteur.cc:1681 src/vecteur.cc:1692 src/vecteur.cc:1708
+#: src/vecteur.cc:1689 src/vecteur.cc:1700 src/vecteur.cc:1716
 msgid "schur row "
 msgstr ""
 
-#: src/vecteur.cc:2671
+#: src/vecteur.cc:2679
 msgid "Proot error : no root found for "
 msgstr ""
 
-#: src/vecteur.cc:2974
+#: src/vecteur.cc:2982
 msgid "dotvector"
 msgstr ""
 
-#: src/vecteur.cc:3135
+#: src/vecteur.cc:3143
 msgid "dotvecteur"
 msgstr ""
 
-#: src/vecteur.cc:4809
+#: src/vecteur.cc:4817
 msgid "mmultck"
 msgstr ""
 
-#: src/vecteur.cc:6457
+#: src/vecteur.cc:6476
 msgid ""
 "Probabilistic algorithm for determinant\n"
 "(run proba_epsilon:=0 for a deterministic answer, this is slower).\n"
 "Error probability is less than "
 msgstr ""
 
-#: src/vecteur.cc:6579
+#: src/vecteur.cc:6598
 msgid " Early termination"
 msgstr ""
 
-#: src/vecteur.cc:6596
+#: src/vecteur.cc:6615
 msgid " dividing by determinant"
 msgstr ""
 
-#: src/vecteur.cc:6599
+#: src/vecteur.cc:6618
 msgid " end dividing by determinant"
 msgstr ""
 
-#: src/vecteur.cc:6703
+#: src/vecteur.cc:6722
 #, c-format
 msgid ""
 "%gen\n"
 "Reduce column %gen with pivot %gen at row %gen"
 msgstr ""
 
-#: src/vecteur.cc:6711
+#: src/vecteur.cc:6730
 #, c-format
 msgid "Exchange row %gen and row %gen"
 msgstr ""
 
-#: src/vecteur.cc:6736 src/vecteur.cc:6761
+#: src/vecteur.cc:6755 src/vecteur.cc:6780
 #, c-format
 msgid "L%gen <- (%gen)*L%gen-(%gen)*L%gen on %gen"
 msgstr ""
 
-#: src/vecteur.cc:7321
+#: src/vecteur.cc:7340
 #, c-format
 msgid "End reduction %gen"
 msgstr ""
 
-#: src/vecteur.cc:10007
+#: src/vecteur.cc:10026
 msgid "Unable to find a modulus to solve"
 msgstr ""
 
-#: src/vecteur.cc:10013
+#: src/vecteur.cc:10032
 msgid "Incompatible system"
 msgstr ""
 
-#: src/vecteur.cc:10237
+#: src/vecteur.cc:10256
 msgid "idn"
 msgstr "idn"
 
-#: src/vecteur.cc:10942 src/cocoa.cc:3335 src/gen.cc:4143 src/gen.cc:9626
+#: src/vecteur.cc:10961 src/cocoa.cc:3341 src/gen.cc:4145 src/gen.cc:9660
 msgid "Not invertible"
 msgstr ""
 
-#: src/vecteur.cc:11081
+#: src/vecteur.cc:11100
 msgid "Warning: non-square matrix!"
 msgstr ""
 
-#: src/vecteur.cc:13028
+#: src/vecteur.cc:13047
 msgid ""
 "Probabilistic answer. Run proba_epsilon:=0 for a certified result. Error <"
 msgstr ""
 
-#: src/vecteur.cc:13230
+#: src/vecteur.cc:13265
 msgid "polymat2matpoly"
 msgstr ""
 
-#: src/vecteur.cc:13262
+#: src/vecteur.cc:13297
 msgid "polymat2mat"
 msgstr ""
 
-#: src/vecteur.cc:13307
+#: src/vecteur.cc:13342
 msgid "rat_jordan_block"
 msgstr ""
 
-#: src/vecteur.cc:13353
+#: src/vecteur.cc:13388
 msgid "pseudo_rat_ro_rat"
 msgstr ""
 
-#: src/vecteur.cc:13418
+#: src/vecteur.cc:13453
 msgid "Low accuracy for Schur row "
 msgstr ""
 
-#: src/vecteur.cc:13957
+#: src/vecteur.cc:14040
 msgid "Unable to find exact eigenvalues. Trying approx"
 msgstr ""
 
-#: src/vecteur.cc:14118
+#: src/vecteur.cc:14201
 msgid ""
 "Low accuracy or not diagonalizable at some eigenvalue. Try jordan if the "
 "matrix is exact."
 msgstr ""
 
-#: src/vecteur.cc:14242
+#: src/vecteur.cc:14325
 msgid "Unable to find all eigenvalues"
 msgstr ""
 
-#: src/vecteur.cc:14266
+#: src/vecteur.cc:14349
 msgid " is not analytic"
 msgstr ""
 
-#: src/vecteur.cc:14422 src/vecteur.cc:14469
+#: src/vecteur.cc:14505 src/vecteur.cc:14552
 msgid "cross"
 msgstr "σταυρός"
 
-#: src/vecteur.cc:14537
+#: src/vecteur.cc:14620
 msgid "vecteur.cc vecteur2gsl_vector"
 msgstr ""
 
-#: src/vecteur.cc:14769 src/vecteur.cc:14793
+#: src/vecteur.cc:14852 src/vecteur.cc:14876
 msgid "LAPACK LU error"
 msgstr ""
 
-#: src/vecteur.cc:14816
+#: src/vecteur.cc:14899
 msgid "Expecting a square matrix"
 msgstr ""
 
-#: src/vecteur.cc:14939 src/vecteur.cc:15186
+#: src/vecteur.cc:15022 src/vecteur.cc:15269
 msgid "LAPACK not available"
 msgstr "LAPACK δεν είναι διαθέσιμο"
 
-#: src/vecteur.cc:14945
+#: src/vecteur.cc:15028
 msgid "Lapack conversion error"
 msgstr ""
 
-#: src/vecteur.cc:14957 src/vecteur.cc:14969 src/vecteur.cc:14988
-#: src/vecteur.cc:15211 src/vecteur.cc:15225
+#: src/vecteur.cc:15040 src/vecteur.cc:15052 src/vecteur.cc:15071
+#: src/vecteur.cc:15294 src/vecteur.cc:15308
 msgid "LAPACK error "
 msgstr ""
 
-#: src/vecteur.cc:15178
+#: src/vecteur.cc:15261
 msgid "Warning: svd is implemented for numeric matrices"
 msgstr ""
 
-#: src/vecteur.cc:15447
+#: src/vecteur.cc:15530
 msgid "Non positive definite"
 msgstr ""
 
-#: src/vecteur.cc:15467
+#: src/vecteur.cc:15550
 msgid "Not invertible matrice"
 msgstr ""
 
-#: src/vecteur.cc:15831 src/vecteur.cc:15993
+#: src/vecteur.cc:16013 src/vecteur.cc:16191
 msgid "Integer matrix expected"
 msgstr ""
 
-#: src/vecteur.cc:16140
+#: src/vecteur.cc:16345
 msgid "Expecting file name to convert"
 msgstr ""
 
@@ -7537,22 +7545,22 @@ msgstr ""
 msgid "Square is flat!"
 msgstr ""
 
-#: src/global.cc:3542
+#: src/global.cc:3559
 #, fuzzy
 msgid ""
 "\n"
 "Evaluation time: "
 msgstr "Χρόνος Υπολογισμού: "
 
-#: src/global.cc:3558
+#: src/global.cc:3575
 msgid "Thread "
 msgstr "Νήμα"
 
-#: src/global.cc:3624
+#: src/global.cc:3641
 msgid "Cancel thread "
 msgstr "Ακύρωση νήματος"
 
-#: src/global.cc:3646
+#: src/global.cc:3663
 msgid "Evaluation time: "
 msgstr "Χρόνος Υπολογισμού: "
 
@@ -7949,268 +7957,268 @@ msgstr "Δεν είναι ευθεία"
 msgid "2-d instruction"
 msgstr ""
 
-#: src/plot.cc:3164
+#: src/plot.cc:3167
 msgid "3-d instruction"
 msgstr ""
 
-#: src/plot.cc:3513
+#: src/plot.cc:3516
 msgid "milieu"
 msgstr "χώρος"
 
-#: src/plot.cc:3588
+#: src/plot.cc:3591
 msgid "3 points expected"
 msgstr ""
 
-#: src/plot.cc:3620
+#: src/plot.cc:3623
 msgid "midpoint"
 msgstr "μέσο"
 
-#: src/plot.cc:4679
+#: src/plot.cc:4682
 msgid "Sum of coeff is 0"
 msgstr ""
 
-#: src/plot.cc:4919
+#: src/plot.cc:4922
 msgid "line2curve"
 msgstr ""
 
-#: src/plot.cc:4938
+#: src/plot.cc:4941
 msgid "Distance curve/curve not implemented"
 msgstr ""
 
-#: src/plot.cc:5356 src/plot.cc:5368
+#: src/plot.cc:5359 src/plot.cc:5371
 msgid "area(f(x),x=a..b,n,method])"
 msgstr ""
 
-#: src/plot.cc:5508
+#: src/plot.cc:5511
 msgid "angle plan with unknown"
 msgstr ""
 
-#: src/plot.cc:5518 src/plot.cc:5544 src/plot.cc:5558
+#: src/plot.cc:5521 src/plot.cc:5547 src/plot.cc:5561
 msgid "angle"
 msgstr "γωνία"
 
-#: src/plot.cc:5525
+#: src/plot.cc:5528
 msgid "Lines must intersect"
 msgstr ""
 
-#: src/plot.cc:5870 src/plot.cc:5882 src/plot.cc:5894 src/plot.cc:5897
-#: src/plot.cc:5903
+#: src/plot.cc:5873 src/plot.cc:5885 src/plot.cc:5897 src/plot.cc:5900
+#: src/plot.cc:5906
 msgid "plot.cc/parameter2point"
 msgstr ""
 
-#: src/plot.cc:6074
+#: src/plot.cc:6077
 msgid "Line "
 msgstr ""
 
-#: src/plot.cc:6395
+#: src/plot.cc:6398
 msgid "Locus on an unknown parametric curve type"
 msgstr ""
 
-#: src/plot.cc:6430
+#: src/plot.cc:6433
 msgid "3-d enveloppe not implemented"
 msgstr ""
 
-#: src/plot.cc:6478
+#: src/plot.cc:6481
 msgid "Equation 0 = "
 msgstr ""
 
-#: src/plot.cc:6670 src/plot.cc:6673 src/plot.cc:6687
+#: src/plot.cc:6673 src/plot.cc:6676 src/plot.cc:6690
 msgid "sommet"
 msgstr ""
 
-#: src/plot.cc:7263
+#: src/plot.cc:7266
 msgid "gen2complex"
 msgstr ""
 
-#: src/plot.cc:7458
+#: src/plot.cc:7461
 msgid "Not implemented or bad argument type/value"
 msgstr ""
 
-#: src/plot.cc:7702
+#: src/plot.cc:7705
 msgid "First arg of translation should not be a point"
 msgstr ""
 
-#: src/plot.cc:7762
+#: src/plot.cc:7765
 msgid "Plotparam: unable to discretize: tmin, tmax, tstep="
 msgstr ""
 
-#: src/plot.cc:7762
+#: src/plot.cc:7765
 msgid ""
 "\n"
 "Try a larger value for tstep"
 msgstr ""
 
-#: src/plot.cc:8036 src/plot.cc:8203
+#: src/plot.cc:8039 src/plot.cc:8206
 msgid "2nd arg must be a free variable"
 msgstr ""
 
-#: src/plot.cc:8223
+#: src/plot.cc:8226
 msgid "Variable x should be purged"
 msgstr "Εκκαθάριση της μεταβλητής x"
 
-#: src/plot.cc:8230
+#: src/plot.cc:8233
 msgid "Variable y should be purged"
 msgstr "Εκκαθάριση της μεταβλητής y"
 
-#: src/plot.cc:8237
+#: src/plot.cc:8240
 msgid "Variable z should be purged"
 msgstr "Εκκαθάριση της μεταβλητής z"
 
-#: src/plot.cc:8244
+#: src/plot.cc:8247
 msgid "Variable "
 msgstr "Μεταβλητή"
 
-#: src/plot.cc:8244
+#: src/plot.cc:8247
 msgid " should be purged"
 msgstr ""
 
-#: src/plot.cc:8251
+#: src/plot.cc:8254
 msgid "Variable t should be purged"
 msgstr "Εκκαθάριση της μεταβλητής t "
 
-#: src/plot.cc:8258
+#: src/plot.cc:8261
 msgid "Variable u should be purged"
 msgstr "Εκκαθάριση της μεταβλητής u"
 
-#: src/plot.cc:8265
+#: src/plot.cc:8268
 msgid "Variable v should be purged"
 msgstr "Εκκαθάριση της μεταβλητής v"
 
-#: src/plot.cc:8524
+#: src/plot.cc:8527
 msgid "Wrong parameter type "
 msgstr ""
 
-#: src/plot.cc:8542
+#: src/plot.cc:8545
 msgid "Can't isolate"
 msgstr ""
 
-#: src/plot.cc:8651
+#: src/plot.cc:8654
 msgid "3-d line/2-d circle"
 msgstr ""
 
-#: src/plot.cc:8653
+#: src/plot.cc:8656
 msgid "2-d line/sphere"
 msgstr ""
 
-#: src/plot.cc:8797
+#: src/plot.cc:8800
 msgid "Unable to solve intersection equation "
 msgstr ""
 
-#: src/plot.cc:9143
+#: src/plot.cc:9151
 msgid "Point is not on curve"
 msgstr "Το σημείο δεν είναι στην καμπύλη"
 
-#: src/plot.cc:9145
+#: src/plot.cc:9153
 msgid "2-d point expected"
 msgstr ""
 
-#: src/plot.cc:9227
+#: src/plot.cc:9235
 msgid "Hypersurface w/o equation not implemented"
 msgstr ""
 
-#: src/plot.cc:9232
+#: src/plot.cc:9240
 msgid "f(t)!=0:"
 msgstr ""
 
-#: src/plot.cc:9722
+#: src/plot.cc:9739
 msgid "Bug in conique reducing "
 msgstr ""
 
-#: src/plot.cc:9730
+#: src/plot.cc:9747
 msgid "Bug in conique, equation "
 msgstr ""
 
-#: src/plot.cc:10335
+#: src/plot.cc:10211
 msgid "Time"
 msgstr ""
 
-#: src/plot.cc:10452
+#: src/plot.cc:10504
 msgid "End interactive_plotode"
 msgstr "Τερματισμός της interactive_plotode"
 
-#: src/plot.cc:10638
+#: src/plot.cc:10690
 msgid "End of stream"
 msgstr ""
 
-#: src/plot.cc:10969
+#: src/plot.cc:11021
 msgid "Error writing "
 msgstr ""
 
-#: src/plot.cc:10991
+#: src/plot.cc:11043
 #, fuzzy
 msgid "Unable to read file"
 msgstr "Αδύνατος ο χειρισμός"
 
-#: src/plot.cc:11160
+#: src/plot.cc:11214
 msgid "Bad iteration"
 msgstr ""
 
-#: src/plot.cc:11412
+#: src/plot.cc:11466
 msgid "Near "
 msgstr ""
 
-#: src/plot.cc:11519
+#: src/plot.cc:11573
 msgid ""
 "Singular points directions: [cell_i, cell_j, singularity, next solution] "
 msgstr ""
 
-#: src/plot.cc:11721
+#: src/plot.cc:11775
 msgid "Bad branch, questionnable accuracy"
 msgstr ""
 
-#: src/plot.cc:11791 src/plot.cc:11833 src/plot.cc:11895
+#: src/plot.cc:11845 src/plot.cc:11887 src/plot.cc:11949
 msgid "Warning! Could not loop or reach boundaries "
 msgstr ""
 
-#: src/plot.cc:11889
+#: src/plot.cc:11943
 msgid "Implicitplot "
 msgstr ""
 
-#: src/plot.cc:11913 src/plot3d.cc:2146
+#: src/plot.cc:11967 src/plot3d.cc:2146
 msgid "Variables must be free"
 msgstr ""
 
-#: src/plot.cc:11917
+#: src/plot.cc:11971
 msgid "Impliciplot: temporarily swtiching to real mode"
 msgstr ""
 
-#: src/plot.cc:13182
+#: src/plot.cc:13236
 msgid "vecteur2turtle"
 msgstr ""
 
-#: src/plot.cc:13481
+#: src/plot.cc:13535
 msgid "Give a name to the procedure, e.g. test"
 msgstr ""
 
-#: src/plot.cc:13486
+#: src/plot.cc:13540
 msgid "Give a name to thr procedure, e.g. \"test\""
 msgstr ""
 
-#: src/plot.cc:13504
+#: src/plot.cc:13558
 msgid "Give a filename, e.g. \"test\""
 msgstr ""
 
-#: src/plot.cc:13512
+#: src/plot.cc:13566
 msgid "Instruction debut_enregistrement not found"
 msgstr ""
 
-#: src/plot.cc:13736
+#: src/plot.cc:13790
 msgid "Integer argument >= 2"
 msgstr ""
 
-#: src/plot.cc:13866
+#: src/plot.cc:13920
 msgid "Collinear points"
 msgstr ""
 
-#: src/plot.cc:14181
+#: src/plot.cc:14235
 msgid "Circle centers are identical"
 msgstr ""
 
-#: src/plot.cc:14564 src/plot.cc:14568 src/plot.cc:14583
+#: src/plot.cc:14618 src/plot.cc:14622 src/plot.cc:14637
 msgid "conj_harmonique"
 msgstr ""
 
-#: src/plot.cc:14845
+#: src/plot.cc:14899
 msgid "enveloppe"
 msgstr ""
 
@@ -8258,11 +8266,11 @@ msgstr ""
 msgid "Bug in quadrique, equation "
 msgstr ""
 
-#: src/rpn.cc:896 src/gen.cc:8916
+#: src/rpn.cc:896 src/gen.cc:8950
 msgid "Bad index"
 msgstr ""
 
-#: src/rpn.cc:905 src/rpn.cc:910 src/usual.cc:3264
+#: src/rpn.cc:905 src/rpn.cc:910 src/usual.cc:3272
 msgid "Bad rootof"
 msgstr ""
 
@@ -8270,310 +8278,310 @@ msgstr ""
 msgid "Non-empty folder"
 msgstr ""
 
-#: src/rpn.cc:1863
+#: src/rpn.cc:1865
 msgid "Invalid step value"
 msgstr ""
 
-#: src/rpn.cc:1924
+#: src/rpn.cc:1926
 msgid "∂(expression,variable=value)"
 msgstr ""
 
-#: src/rpn.cc:1929
+#: src/rpn.cc:1931
 msgid "Order of derivation must be positive"
 msgstr ""
 
-#: src/rpn.cc:1983
+#: src/rpn.cc:1988
 msgid "∫(expression,var,lower,upper)"
 msgstr ""
 
-#: src/rpn.cc:2218
+#: src/rpn.cc:2223
 msgid "SVD is implemented for numeric matrices, running evalf first"
 msgstr ""
 
-#: src/prog.cc:153
+#: src/prog.cc:160
 msgid "Running in secure mode"
 msgstr ""
 
-#: src/prog.cc:401
+#: src/prog.cc:408
 msgid "Warning, =< is in-place assign, check "
 msgstr ""
 
-#: src/prog.cc:481
+#: src/prog.cc:488
 msgid " compiling "
 msgstr ""
 
-#: src/prog.cc:492
+#: src/prog.cc:499
 msgid "// Warning, duplicate argument name: "
 msgstr ""
 
-#: src/prog.cc:504
+#: src/prog.cc:511
 msgid "// Warning, assignation is :=, check the lines below:\n"
 msgstr ""
 
-#: src/prog.cc:513
+#: src/prog.cc:520
 msgid "// Warning: "
 msgstr ""
 
-#: src/prog.cc:519
+#: src/prog.cc:526
 msgid ""
 " declared as global variable(s). If symbolic variables are required, declare "
 "them as local and run purge\n"
 msgstr ""
 
-#: src/prog.cc:522
+#: src/prog.cc:529
 msgid "// Error(s)\n"
 msgstr ""
 
-#: src/prog.cc:522
+#: src/prog.cc:529
 msgid "// Success\n"
 msgstr ""
 
-#: src/prog.cc:541
+#: src/prog.cc:548
 msgid "check_type must have 2 args"
 msgstr ""
 
-#: src/prog.cc:575
+#: src/prog.cc:582
 msgid "Argument should be of type "
 msgstr ""
 
-#: src/prog.cc:678
+#: src/prog.cc:685
 msgid "Proc Parameters"
 msgstr ""
 
-#: src/prog.cc:836
+#: src/prog.cc:843
 #, fuzzy
 msgid "Unitialized parameter "
 msgstr "Προσθήκη παραμέτρου"
 
-#: src/prog.cc:955
+#: src/prog.cc:962
 msgid "// Parsing "
 msgstr ""
 
-#: src/prog.cc:957
+#: src/prog.cc:964
 msgid ""
 "Warning, defining a derivative function should be done with function_diff or "
 "unapply: "
 msgstr ""
 
-#: src/prog.cc:967
+#: src/prog.cc:974
 msgid ""
 "Warning: algebraic function defined in term of others functions may lead to "
 "evaluation errors"
 msgstr ""
 
-#: src/prog.cc:969
+#: src/prog.cc:976
 msgid "Perhaps you meant "
 msgstr ""
 
-#: src/prog.cc:991
+#: src/prog.cc:998
 msgid "Warning: Local variables shadow function arguments "
 msgstr ""
 
-#: src/prog.cc:1138 src/prog.cc:1152 src/prog.cc:1158
+#: src/prog.cc:1145 src/prog.cc:1159 src/prog.cc:1165
 msgid "Too many recursions"
 msgstr ""
 
-#: src/prog.cc:1146 src/gen.cc:2060 src/gen.cc:2072 src/gen.cc:11156
+#: src/prog.cc:1153 src/gen.cc:2060 src/gen.cc:2072 src/gen.cc:11192
 msgid "Too many recursion levels"
 msgstr ""
 
-#: src/prog.cc:1520
+#: src/prog.cc:1527
 msgid "Ifte must have 3 args"
 msgstr ""
 
-#: src/prog.cc:1635
+#: src/prog.cc:1642
 msgid "3 or 4 arguments expected"
 msgstr ""
 
-#: src/prog.cc:1665
+#: src/prog.cc:1672
 msgid "from_increment"
 msgstr ""
 
-#: src/prog.cc:1900
+#: src/prog.cc:1907
 msgid "Unable to eval test in loop : "
 msgstr ""
 
-#: src/prog.cc:1937
+#: src/prog.cc:1944
 msgid "For must have 4 args"
 msgstr ""
 
-#: src/prog.cc:1956 src/prog.cc:1958
+#: src/prog.cc:1963 src/prog.cc:1965
 msgid "Invalid loop index (hint: i=sqrt(-1)!)"
 msgstr ""
 
-#: src/prog.cc:2174
+#: src/prog.cc:2181
 msgid "Invalid variable "
 msgstr ""
 
-#: src/prog.cc:2174
+#: src/prog.cc:2181
 msgid " using "
 msgstr ""
 
-#: src/prog.cc:2174
+#: src/prog.cc:2181
 msgid " instead."
 msgstr ""
 
-#: src/prog.cc:2192 src/prog.cc:2194
+#: src/prog.cc:2199 src/prog.cc:2201
 msgid "Reserved word:"
 msgstr ""
 
-#: src/prog.cc:2200 src/prog.cc:2202
+#: src/prog.cc:2207 src/prog.cc:2209
 msgid "Not bindable"
 msgstr ""
 
-#: src/prog.cc:2240
+#: src/prog.cc:2247
 msgid "prog.cc/leave"
 msgstr ""
 
-#: src/prog.cc:2381
+#: src/prog.cc:2388
 msgid "Local must have 2 args"
 msgstr ""
 
-#: src/prog.cc:2396
+#: src/prog.cc:2403
 msgid "Unitialized local variable "
 msgstr ""
 
-#: src/prog.cc:2558
+#: src/prog.cc:2565
 msgid "Try_catch must have 3 or 4 args"
 msgstr ""
 
-#: src/prog.cc:2737
+#: src/prog.cc:2744
 msgid "Unknown subsop rule "
 msgstr ""
 
-#: src/prog.cc:3436
+#: src/prog.cc:3443
 msgid "asc"
 msgstr "Cas"
 
-#: src/prog.cc:3587
+#: src/prog.cc:3594
 msgid "apply"
 msgstr ""
 
-#: src/prog.cc:3662
+#: src/prog.cc:3669
 msgid "Invalid null step"
 msgstr ""
 
-#: src/prog.cc:3786
+#: src/prog.cc:3793
 msgid "Union"
 msgstr ""
 
-#: src/prog.cc:3870
+#: src/prog.cc:3877
 msgid "Minus"
 msgstr ""
 
-#: src/prog.cc:4041
+#: src/prog.cc:4051
 msgid "makemat"
 msgstr ""
 
-#: src/prog.cc:4045
+#: src/prog.cc:4055
 msgid "interval"
 msgstr ""
 
-#: src/prog.cc:4049
+#: src/prog.cc:4059
 msgid "Boundaries not integer"
 msgstr ""
 
-#: src/prog.cc:4281
+#: src/prog.cc:4291
 msgid "Program killed"
 msgstr ""
 
-#: src/prog.cc:4739
+#: src/prog.cc:4749
 msgid "Sorry! Debugging requires a true operating system"
 msgstr ""
 
-#: src/prog.cc:4740
+#: src/prog.cc:4750
 msgid "Please try xcas on Linux or an Unix"
 msgstr ""
 
-#: src/prog.cc:4783 src/prog.cc:7410
+#: src/prog.cc:4793 src/prog.cc:7426
 msgid "Archiving "
 msgstr ""
 
-#: src/prog.cc:4792
+#: src/prog.cc:4802
 msgid "Click reads "
 msgstr ""
 
-#: src/prog.cc:4944
+#: src/prog.cc:4954
 msgid "check_binary"
 msgstr ""
 
-#: src/prog.cc:5103
+#: src/prog.cc:5113
 msgid "No such user "
 msgstr ""
 
-#: src/prog.cc:5433
+#: src/prog.cc:5443
 msgid "Cas_setup "
 msgstr ""
 
-#: src/prog.cc:5697
+#: src/prog.cc:5707
 msgid "Parent insmod"
 msgstr ""
 
-#: src/prog.cc:6004
+#: src/prog.cc:6020
 msgid "Float too large"
 msgstr ""
 
-#: src/prog.cc:6040
+#: src/prog.cc:6056
 msgid "Incompatible units"
 msgstr ""
 
-#: src/prog.cc:6178
+#: src/prog.cc:6194
 msgid "Some units could not be converted to MKSA"
 msgstr ""
 
-#: src/prog.cc:6204
+#: src/prog.cc:6220
 msgid "Bad conversion basis"
 msgstr ""
 
-#: src/prog.cc:6566
+#: src/prog.cc:6582
 msgid "Running maple text translation __.map"
 msgstr "Εκτελείται μετάφραση κειμένου maple __.map"
 
-#: src/prog.cc:6586
+#: src/prog.cc:6602
 msgid "Running TI89 text translation __.ti"
 msgstr ""
 
-#: src/prog.cc:6801
+#: src/prog.cc:6817
 msgid "No help file found"
 msgstr ""
 
-#: src/prog.cc:6987
+#: src/prog.cc:7003
 msgid "Restoring epsilon to 1e-6 from "
 msgstr ""
 
-#: src/prog.cc:6991
+#: src/prog.cc:7007
 msgid "Restoring proba epsilon to 1e-6 from "
 msgstr ""
 
-#: src/prog.cc:7308
+#: src/prog.cc:7324
 msgid "Invalid |"
 msgstr ""
 
-#: src/prog.cc:7394
+#: src/prog.cc:7410
 msgid "inputform may be used in a window environment only"
 msgstr ""
 
-#: src/prog.cc:7422
+#: src/prog.cc:7438
 msgid "Inputform reads "
 msgstr ""
 
-#: src/prog.cc:9004
+#: src/prog.cc:9020
 msgid "Invalid unit exponent"
 msgstr ""
 
-#: src/prog.cc:9305
+#: src/prog.cc:9321
 msgid "User operator not available on this architecture"
 msgstr ""
 
-#: src/prog.cc:9405
+#: src/prog.cc:9421
 msgid "Non existent Folder"
 msgstr ""
 
-#: src/prog.cc:9453
+#: src/prog.cc:9469
 msgid "No case applies"
 msgstr ""
 
-#: src/prog.cc:9589
+#: src/prog.cc:9605
 msgid "Unable to handle when condition "
 msgstr ""
 
@@ -8592,25 +8600,25 @@ msgstr ""
 msgid "Not implemented, please recompile giac with PARI"
 msgstr ""
 
-#: src/cocoa.cc:121 src/cocoa.cc:144
+#: src/cocoa.cc:123 src/cocoa.cc:146
 msgid "Invalid giac gen -> CoCoA ZZ conversion"
 msgstr ""
 
-#: src/cocoa.cc:133 src/cocoa.cc:156
+#: src/cocoa.cc:135 src/cocoa.cc:158
 msgid "Unable to convert CoCoA data"
 msgstr ""
 
-#: src/cocoa.cc:13816 src/cocoa.cc:13970
+#: src/cocoa.cc:13829 src/cocoa.cc:13983
 msgid ""
 "Running a probabilistic check for the reconstructed Groebner basis. If "
 "successfull, error probability is less than "
 msgstr ""
 
-#: src/cocoa.cc:13816 src/cocoa.cc:13970
+#: src/cocoa.cc:13829 src/cocoa.cc:13983
 msgid " and is estimated to be less than 10^-"
 msgstr ""
 
-#: src/cocoa.cc:13816 src/cocoa.cc:13970
+#: src/cocoa.cc:13829 src/cocoa.cc:13983
 msgid ". Use proba_epsilon:=0 to certify (this takes more time)."
 msgstr ""
 
@@ -8626,78 +8634,78 @@ msgstr ""
 msgid "apply_to_equal"
 msgstr ""
 
-#: src/usual.cc:1051
+#: src/usual.cc:1055
 msgid "sqrt_noabs of "
 msgstr ""
 
-#: src/usual.cc:2897
+#: src/usual.cc:2905
 msgid "Taylor sign with unsigned limit"
 msgstr ""
 
-#: src/usual.cc:2933
+#: src/usual.cc:2941
 msgid "Taylor abs with unsigned limit"
 msgstr ""
 
-#: src/usual.cc:3453 src/usual.cc:3473
+#: src/usual.cc:3461 src/usual.cc:3481
 msgid " is locked by thread "
 msgstr ""
 
-#: src/usual.cc:3463 src/usual.cc:3465 src/usual.cc:3488 src/usual.cc:3490
+#: src/usual.cc:3471 src/usual.cc:3473 src/usual.cc:3496 src/usual.cc:3498
 msgid ": recursive definition"
 msgstr ""
 
-#: src/usual.cc:3572 src/usual.cc:3915
+#: src/usual.cc:3580 src/usual.cc:3923
 msgid "sto "
 msgstr ""
 
-#: src/usual.cc:3612 src/usual.cc:3754 src/usual.cc:3840 src/usual.cc:3866
-#: src/usual.cc:3884
+#: src/usual.cc:3620 src/usual.cc:3762 src/usual.cc:3848 src/usual.cc:3874
+#: src/usual.cc:3892
 msgid "Bad index "
 msgstr ""
 
-#: src/usual.cc:3705
+#: src/usual.cc:3713
 msgid "Index outside of range"
 msgstr ""
 
-#: src/usual.cc:3910
+#: src/usual.cc:3918
 msgid " is a reserved word, sto not allowed:"
 msgstr ""
 
-#: src/usual.cc:3915
+#: src/usual.cc:3923
 msgid " not allowed!"
 msgstr " μη επιτρεπτό!"
 
-#: src/usual.cc:4009
+#: src/usual.cc:4017
 msgid "Increment"
 msgstr ""
 
-#: src/usual.cc:4041
+#: src/usual.cc:4049
 msgid "Non assigned variable"
 msgstr ""
 
-#: src/usual.cc:4603
+#: src/usual.cc:4622
 msgid "bad pow "
 msgstr ""
 
-#: src/usual.cc:4775
+#: src/usual.cc:4794
 msgid "Too many variables "
 msgstr "Πολλές μεταβλητές"
 
-#: src/usual.cc:4958
+#: src/usual.cc:4977
 msgid "Implicit multiplication does not work with complex numbers."
 msgstr ""
 
-#: src/usual.cc:4960
+#: src/usual.cc:4979
 msgid "Warning : using implicit multiplication for ("
 msgstr ""
 
-#: src/usual.cc:5639
+#: src/usual.cc:5659
 msgid ""
 "Warning, the test a==b is performed by checking\n"
 "that the internal representation of "
 msgstr ""
 
-#: src/usual.cc:5639
+#: src/usual.cc:5659
 msgid ""
 "(a-b) is not 0.\n"
 "Therefore a==b may return false even if a and b are mathematically equal,\n"
@@ -8706,81 +8714,81 @@ msgid ""
 "avoid this."
 msgstr ""
 
-#: src/usual.cc:5819
+#: src/usual.cc:5842
 msgid "Iquo"
 msgstr ""
 
-#: src/usual.cc:5862 src/gen.cc:7250
+#: src/usual.cc:5885 src/gen.cc:7263
 msgid "Division by 0"
 msgstr ""
 
-#: src/usual.cc:6119
+#: src/usual.cc:6144
 msgid "Taylor of floor with unsigned limit"
 msgstr ""
 
-#: src/usual.cc:6173
+#: src/usual.cc:6198
 msgid "Taylor of ceil with unsigned limit"
 msgstr ""
 
-#: src/usual.cc:6258
+#: src/usual.cc:6283
 msgid "Taylor of round with unsigned limit"
 msgstr ""
 
-#: src/usual.cc:6282
+#: src/usual.cc:6307
 msgid "Local var protected "
 msgstr ""
 
-#: src/usual.cc:6408
+#: src/usual.cc:6433
 msgid "Vector of 2 integer arguments expected"
 msgstr ""
 
-#: src/usual.cc:6416
+#: src/usual.cc:6441
 msgid "Non integer argument"
 msgstr ""
 
-#: src/usual.cc:6418
+#: src/usual.cc:6443
 msgid "Bad mod value"
 msgstr ""
 
-#: src/usual.cc:6433
+#: src/usual.cc:6458
 msgid "ichinrem2 1"
 msgstr ""
 
-#: src/usual.cc:6436
+#: src/usual.cc:6461
 msgid "Null polynomial"
 msgstr ""
 
-#: src/usual.cc:6449 src/usual.cc:6453
+#: src/usual.cc:6474 src/usual.cc:6478
 msgid "Expecting modular coeff"
 msgstr ""
 
-#: src/usual.cc:6471
+#: src/usual.cc:6496
 msgid "ichinrem2 2"
 msgstr ""
 
-#: src/usual.cc:6479 src/usual.cc:6485 src/usual.cc:6491
+#: src/usual.cc:6504 src/usual.cc:6510 src/usual.cc:6516
 msgid "ichinrem2 3"
 msgstr ""
 
-#: src/usual.cc:6498
+#: src/usual.cc:6523
 msgid "ichinrem2 4"
 msgstr ""
 
-#: src/usual.cc:6503
+#: src/usual.cc:6528
 msgid "[a % p, b % q,...]"
 msgstr ""
 
-#: src/usual.cc:6733
+#: src/usual.cc:6758
 msgid "Longfloat library not available"
 msgstr ""
 
-#: src/usual.cc:6952
+#: src/usual.cc:6977
 msgid ""
 "Powered by Giac 1.1.3, B. Parisse and R. De Graeve, Institut Fourier, "
 "Universite Grenoble I, France"
 msgstr ""
 
-#: src/usual.cc:9606
+#: src/usual.cc:9645
 msgid "Warning, Ei(x,1) is defined as -Ei(-x), not as Ei(x)"
 msgstr ""
 
@@ -8976,228 +8984,228 @@ msgstr ""
 msgid "addpoly"
 msgstr ""
 
-#: src/gen.cc:4079 src/gen.cc:4081
+#: src/gen.cc:4081 src/gen.cc:4083
 msgid "Bad mod:"
 msgstr ""
 
-#: src/gen.cc:4107 src/gen.cc:4116 src/gen.cc:4124
+#: src/gen.cc:4109 src/gen.cc:4118 src/gen.cc:4126
 msgid "Mod are different"
 msgstr ""
 
-#: src/gen.cc:4876 src/gen.cc:4878
+#: src/gen.cc:4878 src/gen.cc:4880
 msgid "subpoly"
 msgstr ""
 
-#: src/gen.cc:5440 src/gen.cc:5442
+#: src/gen.cc:5442 src/gen.cc:5444
 msgid "mulpoly"
 msgstr ""
 
-#: src/gen.cc:6228
+#: src/gen.cc:6241
 msgid ""
 "Warning, ^ is ambiguous on non square matrices. Use .^ to apply ^ element by "
 "element."
 msgstr ""
 
-#: src/gen.cc:6459
+#: src/gen.cc:6472
 msgid "Use matpow to force computation of a power of matrix via jordanisation"
 msgstr ""
 
-#: src/gen.cc:6500
+#: src/gen.cc:6513
 msgid "Negative to a fractional power"
 msgstr ""
 
-#: src/gen.cc:6754
+#: src/gen.cc:6767
 msgid "Unable to multiply two graphic objects"
 msgstr ""
 
-#: src/gen.cc:7010
+#: src/gen.cc:7023
 msgid "Inv of non-square matrix"
 msgstr ""
 
-#: src/gen.cc:7140
+#: src/gen.cc:7153
 msgid "Pow"
 msgstr ""
 
-#: src/gen.cc:7267
+#: src/gen.cc:7280
 msgid "iquo"
 msgstr "iquo"
 
-#: src/gen.cc:7423
+#: src/gen.cc:7436
 msgid ""
 "Warning: A/B with B a square matrix is a misleading notation interpreted as "
 "inv(B)*A"
 msgstr ""
 
-#: src/gen.cc:7426
+#: src/gen.cc:7439
 msgid ""
 "Warning, pointwise division of a by b. For matrix division, please use inv(b)"
 "*a or a*inv(b)"
 msgstr ""
 
-#: src/gen.cc:7626
+#: src/gen.cc:7639
 msgid "rdiv"
 msgstr ""
 
-#: src/gen.cc:8185
+#: src/gen.cc:8214
 msgid ""
 "Warning, sign might return 0 incorrectly because the value of eps is too "
 "large "
 msgstr ""
 
-#: src/gen.cc:8617
+#: src/gen.cc:8646
 msgid "Gen [int]"
 msgstr ""
 
-#: src/gen.cc:8622
+#: src/gen.cc:8651
 msgid "Index outside range : "
 msgstr ""
 
-#: src/gen.cc:8893
+#: src/gen.cc:8927
 msgid "Warning, evaluating ("
 msgstr ""
 
-#: src/gen.cc:8918
+#: src/gen.cc:8952
 msgid "Index out of range"
 msgstr "Δείκτης εκτός πεδίου τιμών"
 
-#: src/gen.cc:9013
+#: src/gen.cc:9047
 msgid "islesscomplexthan mod"
 msgstr ""
 
-#: src/gen.cc:9288
+#: src/gen.cc:9322
 msgid "power_basis_exp"
 msgstr ""
 
-#: src/gen.cc:9868
+#: src/gen.cc:9902
 msgid "symgcd"
 msgstr ""
 
-#: src/gen.cc:9950
+#: src/gen.cc:9984
 msgid "simplify: Polynomials do not have the same dimension"
 msgstr ""
 
-#: src/gen.cc:9998
+#: src/gen.cc:10032
 #, fuzzy
 msgid "gen.cc:simplify"
 msgstr "Απλοποίηση"
 
-#: src/gen.cc:10002
+#: src/gen.cc:10036
 msgid "gen.cc:simplify/tmp.type!=_EXT"
 msgstr ""
 
-#: src/gen.cc:10270
+#: src/gen.cc:10304
 msgid "irem"
 msgstr ""
 
-#: src/gen.cc:10441
+#: src/gen.cc:10475
 msgid "Not invertible "
 msgstr ""
 
-#: src/gen.cc:10464 src/gen.cc:10467
+#: src/gen.cc:10500 src/gen.cc:10503
 msgid "invmod"
 msgstr ""
 
-#: src/gen.cc:10605
+#: src/gen.cc:10641
 msgid "Reconstructed denominator is not prime with modulo"
 msgstr ""
 
-#: src/gen.cc:10653 src/gen.cc:10670
+#: src/gen.cc:10689 src/gen.cc:10706
 msgid "powmod"
 msgstr ""
 
-#: src/gen.cc:10691
+#: src/gen.cc:10727
 msgid "No Integer Solution"
 msgstr "Δεν υπάρχει ακέραιη λύση"
 
-#: src/gen.cc:10698
+#: src/gen.cc:10734
 msgid "isqrt"
 msgstr ""
 
-#: src/gen.cc:10740
+#: src/gen.cc:10776
 msgid "is_probab_prime_p"
 msgstr ""
 
-#: src/gen.cc:10774
+#: src/gen.cc:10810
 msgid "nextprime"
 msgstr ""
 
-#: src/gen.cc:10783 src/gen.cc:10804
+#: src/gen.cc:10819 src/gen.cc:10840
 #, fuzzy
 msgid "Interrupted"
 msgstr "Διαδίκτυο"
 
-#: src/gen.cc:10791
+#: src/gen.cc:10827
 msgid "prevprime"
 msgstr ""
 
-#: src/gen.cc:10814
+#: src/gen.cc:10850
 msgid "jacobi"
 msgstr ""
 
-#: src/gen.cc:10850
+#: src/gen.cc:10886
 msgid "legendre"
 msgstr "υπόμνημα"
 
-#: src/gen.cc:10891
+#: src/gen.cc:10927
 msgid "has_denominator"
 msgstr ""
 
-#: src/gen.cc:11186 src/gen.cc:11197 src/gen.cc:11205
+#: src/gen.cc:11222 src/gen.cc:11233 src/gen.cc:11241
 msgid ""
 "Warning, i is usually sqrt(-1), I'm using a symbolic variable instead but "
 "you should check your input"
 msgstr ""
 
-#: src/gen.cc:11548
+#: src/gen.cc:11584
 msgid "Empty array"
 msgstr ""
 
-#: src/gen.cc:11553
+#: src/gen.cc:11589
 msgid "Bad array indexes"
 msgstr ""
 
-#: src/gen.cc:13716 src/gen.cc:13775
+#: src/gen.cc:13776 src/gen.cc:13835
 msgid "Unable to convert to real "
 msgstr ""
 
-#: src/gen.cc:13861 src/gen.cc:13882 src/gen.cc:13988 src/gen.cc:14007
+#: src/gen.cc:13921 src/gen.cc:13942 src/gen.cc:14048 src/gen.cc:14067
 msgid "real_object + gen"
 msgstr ""
 
-#: src/gen.cc:14144
+#: src/gen.cc:14204
 msgid ""
 "Compile with MPFR or USE_GMP_REPLACEMENTS if you want transcendental long "
 "float support"
 msgstr ""
 
-#: src/gen.cc:14432
+#: src/gen.cc:14492
 msgid "real_interval inv"
 msgstr ""
 
-#: src/gen.cc:14448 src/gen.cc:14470 src/gen.cc:14481 src/gen.cc:14492
-#: src/gen.cc:14503 src/gen.cc:14514 src/gen.cc:14525 src/gen.cc:14536
-#: src/gen.cc:14547 src/gen.cc:14558 src/gen.cc:14569 src/gen.cc:14580
-#: src/gen.cc:14591 src/gen.cc:14602 src/gen.cc:14613
+#: src/gen.cc:14508 src/gen.cc:14530 src/gen.cc:14541 src/gen.cc:14552
+#: src/gen.cc:14563 src/gen.cc:14574 src/gen.cc:14585 src/gen.cc:14596
+#: src/gen.cc:14607 src/gen.cc:14618 src/gen.cc:14629 src/gen.cc:14640
+#: src/gen.cc:14651 src/gen.cc:14662 src/gen.cc:14673
 msgid "real_interval sqrt"
 msgstr ""
 
-#: src/gen.cc:14459
+#: src/gen.cc:14519
 msgid "real_interval abs"
 msgstr ""
 
-#: src/gen.cc:14689
+#: src/gen.cc:14749
 msgid "real_interval mul"
 msgstr ""
 
-#: src/gen.cc:14719
+#: src/gen.cc:14779
 msgid "real_interval mul 2"
 msgstr ""
 
-#: src/gen.cc:14821
+#: src/gen.cc:14881
 msgid "MPFR error reading binary "
 msgstr ""
 
-#: src/gen.cc:14823
+#: src/gen.cc:14883
 msgid "Error no MPFR reading "
 msgstr ""
 

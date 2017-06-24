@@ -139,7 +139,12 @@ namespace giac {
 	a.type==_CPLX || b.type==_CPLX ){
       gen A=evalf_double(a,1,contextptr);
       gen B=evalf_double(b,1,contextptr);
-      return exp(lngamma(A,contextptr)+lngamma(B,contextptr)-lngamma(A+B,contextptr),contextptr);
+      gen C=lngamma(A+B,contextptr);
+      A=lngamma(A,contextptr);
+      B=lngamma(B,contextptr);
+      C=A+B-C;
+      C=exp(C,contextptr);
+      return C;
     }
     gen n;
     if (a.type==_FRAC && b.type==_FRAC && is_positive(a,contextptr) && is_positive(b,contextptr) && is_integer( (n=a+b) )){
@@ -553,8 +558,10 @@ namespace giac {
 #endif
     }
     if (!is_positive(p,contextptr) || !is_greater(1,p,contextptr)){
-      if (calc_mode(contextptr)!=1)
+      if (abs_calc_mode(contextptr)==38)
 	return gensizeerr(contextptr);
+      if (calc_mode(contextptr)!=1)
+	*logptr(contextptr) << "Assuming probability=" << p << endl; 
     }
     return comb(n,k,contextptr)*pow(p,k,contextptr)*pow(1-p,n-k,contextptr);
   }

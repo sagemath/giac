@@ -353,10 +353,35 @@ void split(std::string & s,int cut){
   s = s+remains;
 }
 
+string ltgt(const string & s){
+  int ss=s.size(),i;
+  string res;
+  for (i=0;i<ss-4;i++){
+    if (s[i]!='&' || s[i+2]!='t' || s[i+3]!=';'){
+      res += s[i];
+      continue;
+    }
+    if (s[i+1]=='l'){
+      res += '<';
+      i +=3;
+      continue;
+    }
+    if (s[i+1]=='g'){
+      res += '>';
+      i +=3;
+      continue;
+    }
+    res += s[i];
+  }
+  for (;i<ss;i++) res+=s[i];
+  return res;
+}
+
 void verb(std::string & warn,int line,ostream & out,std::string cmd,const std::string & infile,int & texmacs_counter,bool slider,giac::context * contextptr,ostream * checkptr,std::ostream * checkptrin){
   giac::gen g(cmd,contextptr),gg;
   string gs=cmd;
   split(cmd,50);
+  cmd=ltgt(cmd);
   int pos=cmd.find('\n');
   if (pos<0 || pos>=cmd.size())
     pos=cmd.find('|');
@@ -401,13 +426,13 @@ void verb(std::string & warn,int line,ostream & out,std::string cmd,const std::s
       // giac::attributs attr(14,0,1);
       // giac::gen data=xcas::Equation_compute_size(g,attr,600,contextptr);
     }
-    gg=giac::_latex(gg,contextptr);
+    gg=giac::string2gen(giac::gen2tex(gg,contextptr),false);
     std::string s=(gg.type==giac::_STRNG)?(*gg._STRNGptr):gg.print(contextptr);
     out << "$$" << s << "$$" << std::endl;
   }  
 }
 
-void pgiac(std::string infile,std::string outfile,std::ostream * checkptr,std::ostream * checkptrin){
+void pgiac(std::string infile,std::string outfile,std::ostream * checkptr,std::ostream * checkptrin,bool dohevea){
   COUT << "Giac pdflatex and HTML5 output" << endl;
   COUT << "Partly inspired from pgiac by Jean-Michel Sarlat" << endl;
   if (!giac::is_file_available("giac.tex")){
@@ -475,6 +500,8 @@ void pgiac(std::string infile,std::string outfile,std::ostream * checkptr,std::o
 	}
       }
       pos=s.find("%");
+      while (pos>0 && s[pos-1]=='\\')
+	pos=s.find("%",pos+1);
       if (pos>=0 && pos<ss){
 	int pos1=s.find("{"),pos2=s.find("}");
 	if (pos1<0 || pos1>=pos || pos2<0 || pos2>=ss){ 
@@ -494,10 +521,15 @@ void pgiac(std::string infile,std::string outfile,std::ostream * checkptr,std::o
 	if (pos>=0 && pos<ss){
 	  out << s << endl;
 	  out.close();
-	  COUT << "File " << outfile << " created, now running hevea in background and pgiac " << outfile << endl << "Then I will run pdflatex " << giac::remove_extension(outfile) << endl << "For HTML5 output, you can run\nhevea -fix " << infile_ << endl;
-	  std::string cmd="hevea -fix "+infile_+" &";
-	  system(cmd.c_str());
-	  cmd="makeindex "+giac::remove_extension(outfile);
+	  COUT << "File " << outfile << " created" << outfile << endl << "Then I will run pdflatex " << giac::remove_extension(outfile) << endl ;
+	  if (dohevea){
+	    std::string cmd="hevea -fix "+infile_+" &";
+	    COUT << "Running " << cmd << endl;
+	    system(cmd.c_str());
+	  }
+	  else
+	    COUT << "For HTML5 output, you can run\nhevea -fix " << infile_ << endl;
+	  std::string cmd="makeindex "+giac::remove_extension(outfile);
 	  system(cmd.c_str());
 	  cmd=("pdflatex "+giac::remove_extension(outfile)+" && mv "+giac::remove_extension(outfile)+".pdf "+infile_+".pdf");
 	  COUT << cmd << endl;
@@ -514,6 +546,11 @@ void pgiac(std::string infile,std::string outfile,std::ostream * checkptr,std::o
       }
       if (inprog){
 	pos=s.find("\\end{giacprog}");
+	int decal=16;
+	if (pos<0 || pos>=ss)
+	  pos=s.find("\\end{giaconload}");
+	else
+	  decal=14;
 	if (pos>=0 && pos<ss){
 	  prg += s.substr(0,pos);
 	  out << "\\begin{verbatim}\n" << prg << "\\end{verbatim}" << endl;
@@ -533,7 +570,7 @@ void pgiac(std::string infile,std::string outfile,std::ostream * checkptr,std::o
 	    *checkptrin << gs << endl ;
 	  }
 	  if (checkptr) *checkptr << gg << endl;
-	  s=s.substr(pos+14,ss-14-pos);
+	  s=s.substr(pos+decal,ss-decal-pos);
 	  inprog=false;
 	  continue;
 	}
@@ -544,6 +581,13 @@ void pgiac(std::string infile,std::string outfile,std::ostream * checkptr,std::o
       if (pos>=0 && pos<ss){
 	prg = "";
 	s=s.substr(pos+16,ss-16-pos);
+	inprog=true;
+	continue;
+      }
+      pos=s.find("\\begin{giaconload}");
+      if (pos>=0 && pos<ss){
+	prg = "";
+	s=s.substr(pos+18,ss-18-pos);
 	inprog=true;
 	continue;
       }
@@ -648,7 +692,7 @@ void pgiac(std::string infile,std::string outfile,std::ostream * checkptr,std::o
 }
 
 #else
-void pgiac(std::string infile,std::string outfile,std::ostream * checkptr,std::ostream * checkptrin){
+void pgiac(std::string infile,std::string outfile,std::ostream * checkptr,std::ostream * checkptrin,bool dohevea){
   ifstream in(infile.c_str());
   ofstream out(outfile.c_str());
   const int BUFFER_SIZE=32768-1;
@@ -841,6 +885,9 @@ int main(int ARGC, char *ARGV[]){
   giac::context * contextptr = 
     //  (giac::context *) giac::context0 ; 
     &giac_context;
+  bool dohevea=true;
+  if (ARGC>1 && strcmp(ARGV[ARGC-1],"--pdf")==0)
+    dohevea=false;
 #if !defined EMCC && !defined NSPIRE_NEWLIB
   giac::xcasroot()=giac::xcasroot_dir(ARGV[0]);
 #endif
@@ -972,7 +1019,7 @@ int main(int ARGC, char *ARGV[]){
 	COUT << "Unable to read " << infile << endl;
 	return 1;
       }
-      pgiac(infile,outfile,checkptr,checkptrin);
+      pgiac(infile,outfile,checkptr,checkptrin,dohevea);
       if (checkptr) delete checkptr;
       if (checkptrin) delete checkptrin;
       return 0;
@@ -1008,7 +1055,7 @@ int main(int ARGC, char *ARGV[]){
       COUT << "Unable to read " << infile << endl;
       return 1;
     }
-    pgiac(infile,outfile,checkptr,checkptrin);
+    pgiac(infile,outfile,checkptr,checkptrin,dohevea);
     if (checkptr) delete checkptr;
     if (checkptrin) delete checkptrin;
     return 0;

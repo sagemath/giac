@@ -3955,7 +3955,7 @@ namespace giac {
     case _USER:
       return a._USERptr->arg(contextptr);
     case _FRAC:
-      return arg(a._FRACptr->num,contextptr)-arg(a._FRACptr->den,contextptr);
+      return arg(a._FRACptr->num*conj(a._FRACptr->den,contextptr),contextptr);
     default:
       return gentypeerr(gettext("Arg"));
     }
@@ -4067,6 +4067,8 @@ namespace giac {
       if (*(a._MODptr+1)==b) // avoid e.g. 7 % 5 % 5
 	return a;
     }
+    if (a.type==_USER)
+      return a;
     if (is_exactly_zero(b)) 
       return a;
     gen res=makemodquoted(0,0);
@@ -6144,8 +6146,12 @@ namespace giac {
       return undef;
     if (is_undef(exponent))
       return exponent;
-    if (exponent.is_symb_of_sommet(at_neg))
-      return minus1pow(exponent._SYMBptr->feuille,contextptr);
+    if (exponent.is_symb_of_sommet(at_neg)){
+      gen tmp=minus1pow(exponent._SYMBptr->feuille,contextptr);
+      if (is_assumed_integer(exponent,contextptr))
+	return tmp;
+      //else return symb_inv(tmp);
+    }
     if (exponent.is_symb_of_sommet(at_plus)){
       gen res(1);
       gen & f=exponent._SYMBptr->feuille;
@@ -6174,10 +6180,17 @@ namespace giac {
 	  if (!is_assumed_integer(v[i],contextptr))
 	    perhapsone=false;
 	}
-	if (allow_recursion){
-	  gen num1=_irem(makesequence(num,2*den),contextptr);
-	  if (num1!=num) return minus1pow(symb_prod(num1,symb_inv(den)),contextptr,false);
+#ifndef NO_STDEXCEPT
+	if (allow_recursion && perhapsone){
+	  gen num1=undef;
+	  try {
+	    num1=_irem(makesequence(num,2*den),contextptr);
+	  } catch (std::runtime_error & err){
+	    num1=undef;
+	  }
+	  if (!is_undef(num1) && num1!=num) return minus1pow(symb_prod(num1,symb_inv(den)),contextptr,false);
 	}
+#endif
 	if (even && perhapsone)
 	  return 1;
 	if (num.type==_INT_ && den.type==_INT_ && den.val<=MAX_ALG_EXT_ORDER_SIZE){
@@ -7574,7 +7587,7 @@ namespace giac {
 	return rdiv(_FRAC2_SYMB(a),b,contextptr);
       }
       if (b.type==_FRAC){
-	if ( (a.type!=_SYMB) && (a.type!=_IDNT) )
+	if ( a.type!=_SYMB && a.type!=_IDNT && !(a.type==_VECT && a.subtype==_POLY1__VECT) ) // POLY1__VECT check added feb 2017 for poly hermite normal form
 	  return a/(*b._FRACptr);
 	//return rdiv(a,_FRAC2_SYMB(b),contextptr);
 	// return symbolic(at_prod,makesequence(a,b._FRACptr->den,symbolic(at_inv,b._FRACptr->num)));
@@ -7922,6 +7935,14 @@ namespace giac {
 	  return symbolic(ae?at_superieur_strict:at_superieur_egal,makesequence(f._VECTptr->back(),f._VECTptr->front()));
 	}
       }
+      if (a.is_symb_of_sommet(at_and)){
+	gen f=_not(a._SYMBptr->feuille,context0);
+	return symbolic(at_ou,f);
+      }
+      if (a.is_symb_of_sommet(at_ou)){
+	gen f=_not(a._SYMBptr->feuille,context0);
+	return symbolic(at_and,f);
+      }
       return symb_not(a);
     }
   }
@@ -8079,6 +8100,14 @@ namespace giac {
 	return *a._USERptr==b;
       if (b.type==_USER)
 	return *b._USERptr==a;
+      if (a.type==_INT_ && a.subtype==_INT_TYPE && b.type==_FUNC){
+	if (a==_STRNG && b==at_string) return true;
+	if (a==_VECT && b==at_vector) return true;
+	if (a==_FLOAT_ && b==at_float) return true;
+	if (a==_DOUBLE_ && b==at_real) return true;
+      }
+      if (b.type==_INT_ && b.subtype==_INT_TYPE && a.type==_FUNC)
+	return operator_equal(b,a,contextptr);
       return false;
     }
   }
@@ -8841,9 +8870,14 @@ namespace giac {
 	  return gensizeerr(contextptr);
 	if (!n)
 	  return i;
+	int ratnormal_test=MAX_RECURSION_LEVEL/2;
+	// otherwise f(x):=-3x+2; g:=(f@@300)(x):; simplifier(g); might segfault
 	tmp=tmp._VECTptr->front();
-	for (int j=0;j<n;++j)
+	for (int j=0;j<n;++j){
 	  res=tmp(res,contextptr);
+	  if (j%ratnormal_test==ratnormal_test-1)
+	    res=ratnormal(res);
+	}
 	return res;
       }
       if (_SYMBptr->sommet==at_function_diff || _SYMBptr->sommet==at_of || _SYMBptr->sommet==at_at)
@@ -10448,6 +10482,8 @@ namespace giac {
   }
 
   gen invmod(const gen & a,const gen & modulo){
+    if (a.type==_USER)
+      return a._USERptr->inv();
     if (a.type==_CPLX){
       gen r=re(a,context0),i=im(a,context0); // ok
       gen n=invmod(r*r+i*i,modulo);
@@ -11464,7 +11500,7 @@ namespace giac {
   /* I/O: Print routines */
   string print_DOUBLE_(double d,GIAC_CONTEXT){
     if (my_isnan(d))
-      return calc_mode(contextptr)?"?":"undef";
+      return calc_mode(contextptr)==1?"?":"undef";
     if (my_isinf(d))
       return "infinity";
 #ifdef BCD
@@ -12044,6 +12080,28 @@ namespace giac {
 	return "rational";
       case _MAPLE_LIST:
 	return "list";
+      }
+    }
+    if (abs_calc_mode(contextptr)!=38){
+      switch(val){
+      case _DOUBLE_:
+	return "real";
+      case _ZINT:
+	return "integer";
+      case _CPLX:
+	return "complex";
+      case _VECT:
+	return "vector";
+      case _IDNT:
+	return "identifier";
+      case _SYMB:
+	return "expression";
+      case _FRAC:
+	return "rational";
+      case _STRNG:
+	return "string";
+      case _FUNC:
+	return "func";
       }
     }
     switch(val){
@@ -12853,6 +12911,7 @@ namespace giac {
       // if (abs_calc_mode(contextptr)==38) return "("+_CPLXptr->print(contextptr)+","+(_CPLXptr+1)->print(contextptr)+")";
       if (is_exactly_zero(*(_CPLXptr+1)))
 	return _CPLXptr->print(contextptr);
+#ifndef GIAC_GGB
       if (*complex_display_ptr(*this) &1){
 #ifdef BCD
 	if (_CPLXptr->type==_FLOAT_ && (_CPLXptr+1)->type==_FLOAT_)
@@ -12866,6 +12925,7 @@ namespace giac {
 	// return abs(*this,contextptr).print(contextptr)+"\xe2\x88\xa1"+(angle_radian(contextptr)?arg(*this,contextptr):arg(*this,contextptr)*rad2deg_g).print(contextptr);
 	return abs(*this,contextptr).print(contextptr)+"\xe2\x88\xa1"+arg(*this,contextptr).print(contextptr);
       }
+#endif // GIAC_GGB
       if (is_exactly_zero(*_CPLXptr)){
 	if (is_one(*(_CPLXptr+1)))
 	  return printi(contextptr);
@@ -15123,7 +15183,7 @@ namespace giac {
 	S="gl3d "+print_INT_(n);
 	return S.c_str();
       }
-#endif
+#endif // GIAC_GGB
       bool fullview=true;
       vector<double> vx,vy,vz;
       double window_xmin,window_xmax,window_ymin,window_ymax,window_zmin,window_zmax;
@@ -15141,9 +15201,10 @@ namespace giac {
 	  else
 	    return hw/60.0;
 	});
-#endif
+#endif // GIAC_GGB
       //CERR << gwidth << endl;
-      if (ratio<gratio/3 || ratio>3*gratio) ortho=false; else ortho=true;
+      int maxgratio=ortho?10:3;
+      if (ratio<gratio/maxgratio || ratio>maxgratio*gratio) ortho=false; else ortho=true;
       if (ortho){
 	if (ratio>gratio){ // yscale>gratio*xscale, use yscale for x
 	  double xc=(window_xmax+window_xmin)/2;
@@ -15155,17 +15216,20 @@ namespace giac {
 	  window_ymin=yc-gratio*xscale/2;
 	  window_ymax=yc+gratio*xscale/2;
 	}
+	ratio=gratio;
 	ortho=false;
       }
       overwrite_viewbox(g,window_xmin,window_xmax,window_ymin,window_ymax,window_zmin,window_zmax);
+      xscale=window_xmax-window_xmin;yscale=window_ymax-window_ymin;
+      ratio=yscale/xscale;
       //COUT << window_xmin << " " << window_xmax << " " << window_ymin << " " << window_ymax << endl;
       //g=_symetrie(makesequence(_droite(makesequence(0,1),&C),g),&C);
       //S='"'+svg_preamble(7,7,gnuplot_xmin,gnuplot_xmax,gnuplot_ymin,gnuplot_ymax,ortho,false)+gen2svg(g,&C)+svg_grid(gnuplot_xmin,gnuplot_xmax,gnuplot_ymin,gnuplot_ymax)+"</svg>\"";
       S='"'+svg_preamble(gwidth,gwidth*gratio,window_xmin,window_xmax,window_ymin,window_ymax,ortho,false);
-      S= S+(gen2svg(g,window_xmin,window_xmax,window_ymin,window_ymax,&C)+svg_grid(window_xmin,window_xmax,window_ymin,window_ymax)+"</svg>\"");
+      S= S+(gen2svg(g,window_xmin,window_xmax,window_ymin,window_ymax,ratio/gratio,&C)+svg_grid(window_xmin,window_xmax,window_ymin,window_ymax)+"</svg>\"");
       return S.c_str();
     }
-#endif
+#endif // EMCC
     if (calc_mode(&C)==1 && !lop(g,at_rootof).empty())
       g=evalf(g,1,&C);
     if (has_undef_stringerr(g,S))
