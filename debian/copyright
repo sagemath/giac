@@ -9,10 +9,14 @@ Files-Excluded:
  src/gl2ps.*
  doc/codemirror.*
  doc/giac.js
+ doc/show-hint.js
+ doc/show-hint.css
+ doc/w3data.js
 # Autoconf intermediate files and other irrelevant cruft
  */*iphone* */Makefile.osx */Makefile.win*
  configure config.guess config.sub config.h.* config/* aclocal.m4 m4/* */Makefile.in
  po/Makefile.in.in
+ po/*.gmo
  intl/*
  src/mk*
  mkdebian mkdebian2 debian debianold
@@ -31,6 +35,7 @@ Files-Excluded:
  doc/*/casinter/*
  doc/*/tutoriel/*
  doc/testfr.html
+ doc/algoseconde.html
 # Non DFSG-free doc/fr (C) Renée de Graeve
 # Unfortunately mk-origtargz(1) doesn't support anti-excludes so we are forced
 # to maintain a debian/upstream-doc-fr for the stuff that is OK to distribute; see
