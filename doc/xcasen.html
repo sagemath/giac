@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html id="fulldocument" manifest="xcas.appcache">
+<html id="fulldocument" >
 <head>
 <meta charset="utf-8">
 <meta name=viewport content="width=device-width, initial-scale=1">
@@ -16,7 +16,7 @@ div.emscripten { text-align: center; }
 </style>
 
 <style id="document_style" type="text/css">
-h1,h2,h3 { display:inline; }
+h1,h2,h3 { display:inline; font-size:1em;}
 input[type="number"] {
    width:40px;
 }
@@ -32,12 +32,16 @@ height:20px
 .historyinput {
 width:400px;
 }
+
 </style>
 
 </head>
 
 <body>
 <script language="javascript">
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker.js');
+}
 
 KEY_DOWN	= 40;
 KEY_UP		= 38;
@@ -163,30 +167,26 @@ document.onkeydown = applyKey;
   var ua = window.navigator.userAgent;
   var old_ie = ua.indexOf('MSIE ');
   var new_ie = ua.indexOf('Trident/');
-  if ((old_ie > -1) || (new_ie > -1) || window.chrome){
+  if ((old_ie > -1) || (new_ie > -1) || Boolean(window.chrome)){
  (function () {
   var script = document.createElement("script");
   script.type = "text/javascript";
-  script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+  script.src  = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
   document.getElementsByTagName("head")[0].appendChild(script);
 })();
 }
 </script>
 
 <div id="startup1" style="display:none">
-  You can display the tutorial by clicking on the Tutorial button below.
-  <br>You can install Xcas on Android devices
-  by unzipping 
-  <a href="http://www-fourier.ujf-grenoble.fr/~parisse/giac/xcashtml.zip">
-  xcashtml.zip</a> in the <tt>/sdcard</tt> directory, then search
-  <tt>xcasfr</tt>, it might be
-  <a href="file:///sdcard/xcasoffline/xcasfr.html"><tt>/sdcard/xcasoffline/xcasfr.html</tt></a>
-  or <a
-  href="file:///sdcard/xcasoffline/AndroZip/xcasfr.html"><tt>/sdcard/xcasoffline/AndroZip/xcasfr.html</tt></a>
-  </div>
+  To display the <strong>tutorial</strong>, click on <button style="height:25px"  
+  onclick="if(document.getElementById('help').style.display=='none')
+  document.getElementById('help').style.display='block';
+  else document.getElementById('help').style.display='none';"
+  title="Show or hide tutorial">Tuto</button>.
+</div>
 <div id="startup">
-  If Xcas does not work correctly, clear your browser cache and reload
-  the page, with Firefox if possible.
+  If Xcas does not work correctly, <a href="https://en.wikipedia.org/wiki/Wikipedia:Bypass_your_cache#Cache_clearing_and_disabling">clear your browser cache</a> and reload.
+<hr>
 </div>
 
 <span id="apropos" style="display:none">
@@ -245,7 +245,7 @@ Initial Mathml and SVG code by J.P. Branchard.
       <input style="height:25px" type="button" value="Q/A on same line" onclick="qa.checked=!qa.checked">  <input style="height:25px" type="checkbox" name="qa"
   title="Check to display commands and results on the same level">,
       <input style="height:25px" type="button" value="Syntax highlight" onclick="usecm.checked=!usecm.checked"> <input style="height:25px" type="checkbox" name="usecm"
-  title="Syntax highlight during edit of history levels"> (does not work on mobiles),
+  title="Syntax highlight during edit of history levels">,
     </td>
   </tr>
   <tr>
@@ -291,46 +291,46 @@ Initial Mathml and SVG code by J.P. Branchard.
 <table>
   <tr>
     <th rowspan=2>
-<button onclick="if(document.getElementById('apropos').style.display=='none')
-  document.getElementById('apropos').style.display='block';
-  else document.getElementById('apropos').style.display='none';"
-title="Show/hide informations about Xcas in your browser">
-<img WIDTH="64" HEIGHT="64" SRC="logo.png" alt="Xcas">
-</button>
-      </th>
-      <td>
-	
-<button style="height:25px" title="Click here to append a saved session to the current history" onclick='document.getElementById("loadfile").reset();document.getElementById("loadfile").style.display="block";'>Insert</button>
-<form id="loadfile" style="display:none">
-<input id="loadfileinput" accept=".xw" type="file" onchange="UI.loadfile(this.files);document.getElementById('loadfile').style.display='none'">
-<input type="text" value="cancel" onclick="form.style.display='none'">
-<input type="submit" value="ok" style="display:none">
-</form>
-    <span id="history1" style="visibility:hidden">
-<button style="height:25px" title="Click here to export the session as a HTML file (filename in the next text field)" onclick='UI.savesession(1);'>Export</button>
-<button style="height:25px" title="Click here to save the session (filename in the next text field)" onclick='UI.savesession(0);'>Save</button>
-<textarea id="outputfilename" class="filenamecss"
-	style="font-size:large" title="Filename. If you want to overwrite files with Firefox, check Ask always... in Settings, General, Download">session</textarea>
-<span id='thelink'></span>
-<span id='themailto'></span>
-	</span>
+      <button onclick="if(document.getElementById('apropos').style.display=='none')
+      document.getElementById('apropos').style.display='block';
+      else document.getElementById('apropos').style.display='none';"
+      title="Show/hide informations about Xcas in your browser">
+      <img WIDTH="48" HEIGHT="48" SRC="logo.png" alt="Xcas">
+      </button>
+    </th>
+    <td>
+      <button style="height:25px" onclick="UI.show_config()"
+      title="Change configuration">Config</button>
+      <h3>Session</h3>
+      <span id='thelink'></span>
+      <span id='themailto'></span>
     </td>
   </tr>
-<tr>
-  <td>
-<button style="height:25px"  
-  onclick="if(document.getElementById('help').style.display=='none')
-  document.getElementById('help').style.display='block';
-  else document.getElementById('help').style.display='none';"
-title="Show or hide tutorial">Tutorial</button>
-<button style="height:25px" 
-  onclick="document.getElementById('manuels').style.display='block';"
-title="Show or hide the list of manuals">Manuals</button>
-    <button style="height:25px" onclick="UI.show_config()" title="Change configuration">Configure</button>
-</td>
-</tr>
+  <tr>
+    <td>
+      <button id="loadbutton_cookie" style="height:25px" title=""Click here to append a saved session to the current history" onclick="document.getElementById('loadfile_cookie').innerHTML=UI.listCookies();">Load</button>
+      <span id="startup_restore" style="display:none">
+      Previous session inputs 
+      <button style="height:25px" onclick="var s=UI.readCookie('xcas_session');UI.restoresession(s,document.getElementById('mathoutput'),true,false);">without</button>
+      or <button style="height:25px" onclick="var s=UI.readCookie('xcas_session');UI.restoresession(s,document.getElementById('mathoutput'),false,false);">with</button> evaluation
+      </span>
+      <span id="loadfile_cookie"></span>	
+      <button id="loadbutton_file" style="height:25px;display:none" title="Click here to append a saved session to the current history" onclick='document.getElementById("loadfile").reset();document.getElementById("loadfile").style.display="block";'>Insert</button>
+      <form id="loadfile" style="display:none">
+      <input id="loadfileinput" accept=".xw" type="file" onchange="UI.loadfile(this.files);document.getElementById('loadfile').style.display='none'">
+      <input type="text" value="cancel" onclick="form.style.display='none'">
+      <input type="submit" value="ok" style="display:none">
+      </form>
+      <span id="history1" style="visibility:hidden">
+      <button id="exportbutton" style="height:25px" title="Click here to export the session as a HTML file (filename in the next text field)" onclick='UI.savesession(1);'>Export</button>
+      <button style="height:25px" title="Click here to save the session (filename in the next text field)" onclick="if (document.getElementById('loadbutton_file').style.display=='none') UI.savesession(2); else UI.savesession(0);">Save</button>
+      <textarea id="outputfilename" class="filenamecss"
+      style="font-size:large" title="Filename. If you want to overwrite files with Firefox, check Ask always... in Settings, General, Download">session</textarea>
+      </span>
+    </td>
+  </tr>
 </table>
-<span id="help">
+<span id="help" style="display:none">
 <button style="height:25px" 
 onclick="document.getElementById('help').style.display='none';">Hide tutorial</button>
 <br>
@@ -359,13 +359,21 @@ The screen is divided in
   </li>
   <li> A <b>commandline</b> with buttons that will help you fill the
   commandline. You can show a <b>scientific or/and tool keyboard</b> (press the
-  123+ or tools button), then move the mouse near a button to have
+  123 or menu button), then move the mouse near a button to have
   a short explanation on the corresponding command. You can enter
   the beginning of a command then press Tab or hit the ? button, this
   will show <b>completions</b> in the history. If you entered a valid Xcas command,
   a short online help will be displayed with examples, hit the
   corresponding buttons to copy one example, modify arguments and hit
-  Enter to run the commandline. Additionnaly, in Firefox, right-click will show a
+  Enter to run the commandline.
+  <br>
+  Example of simple computation <tt>1/2+1/3</tt> or <tt>sin(pi/4)</tt>
+  or <tt>sin(pi/4.0)</tt>.
+  <br> Example of CAS computation, press <tt>menu</tt> then
+  <tt>factor</tt> then <tt>?</tt>, observe the online help on the top
+  of the page, you can click one example and modify it or just enter
+  your expression to factor like <tt>x^4-1</tt>, then press Enter.
+  <br>Additionnaly, inside Firefox on a PC, right-click will show a
   menu of many Xcas commands. See also <a href="#examples">below</a>
   for a few examples.
   </li>
@@ -411,22 +419,45 @@ The screen is divided in
   </tt>
 </ul>
 <br>
-Some features are disabled by default on mobile devices because
-Firefox mobile does not support them, like syntax highlighting during
-edition of existing levels. Note also that Chrome mobile (default
+Some features are disabled by default on mobile devices.
+Note also that Chrome mobile (default
 browser on Android devices) is much
-slower than Firefox (about 5 times slower), it freezes a long time during
-the first evaluation. Moreover Chrome mobile does not support mathml
+slower than Firefox (about 5 times slower), it freezes about ten seconds during
+the first evaluation. Moreover Chrome does not support mathml
 natively, it requires Mathjax to display 2d formula, this requires
-net access and does not always succeed.
+net access and works only if Xcas is installed on the device.
 <br><b>It is highly recommended to download Firefox and run Xcas from Firefox.</b>
 <br>
+  If you want to <strong>install</strong> Xcas on your device, unzip
+  <a href="http://www-fourier.ujf-grenoble.fr/~parisse/giac/xcashtml.zip">
+  xcashtml.zip</a> and search
+  <tt>xcasen.html</tt>, from
+  <a href="file:///sdcard/">here</tt></a> (Android).
+  <br>
 <b>On mobile devices, the builtin keyboard delete key is incompatible
 with the commandline, please use the del key above.</b><br>
 <button
 onclick="document.getElementById('help').style.display='none';">Hide tutorial</button>
 </span>
 
+<div>
+<button style="height:25px"  
+  onclick="if(document.getElementById('help').style.display=='none')
+  document.getElementById('help').style.display='block';
+  else document.getElementById('help').style.display='none';"
+title="Show or hide tutorial">Tuto</button>
+<button style="height:25px" 
+  onclick="document.getElementById('manuels').style.display='block';"
+title="Show or hide the list of manuals">Docs</button>
+  <button style="width:45px;height:25px;vertical-align:top" onclick="UI.addhelp('?',document.getElementById('helptxt').value)">?</button>
+  <textarea cols="12" style="height:25px;font-size:large" id="helptxt" rows=1 onclick="UI.focused=this;" onkeypress="if (event.keyCode!=13) return true;UI.addhelp('?',value); return false;"></textarea>
+  <button style="width:45px;height:25px;vertical-align:top" onclick="helpoutput.innerHTML='';document.getElementById('helptxt').value='';document.getElementById('helptxt').focus();">Del</button>
+</div>
+  
+<div id="divhelpoutput" style="max-height: 200px; overflow:auto">
+<table id="helpoutput" title="Aide"
+  style="max-width:1000px "></table>
+</div>
 <div id="history4" style="display:none">
   <h3>Variables</h3>
   <button style="height:25px"  name="add_purge" 
@@ -434,17 +465,6 @@ onclick="document.getElementById('help').style.display='none';">Hide tutorial</b
   onClick="UI.insert(UI.focused,'purge(')" title="Clear content of one or more variables, for example purge(a) or purge(a,b,c)">purge</button>
   <button style="height:25px" onclick="UI.addhelp(' ','VARS(1)')" title="Show list of variables/values">List</button>
   <button style="height:25px" onclick="UI.addhelp(' ','rm_all_vars(1)')" title="Erase content for all variables">Erase</button>
-</div>
-<div>
-  <h3>Help</h3>
-  <button style="width:45px;height:25px;vertical-align:top" onclick="UI.addhelp('?',document.getElementById('helptxt').value)">?</button>
-  <textarea style="height:25px;font-size:large" id="helptxt" columns=15 rows=1 onkeypress="if (event.keyCode!=13) return true;UI.addhelp('?',value); return false;"></textarea>
-  <button style="width:45px;height:25px;vertical-align:top" onclick="helpoutput.innerHTML='';document.getElementById('helptxt').value='';document.getElementById('helptxt').focus();">Clear</button>
-</div>
-  
-<div id="divhelpoutput" style="max-height: 200px; overflow:auto">
-<table id="helpoutput" title="Aide"
-  style="max-width:1000px "></table>
 </div>
 <hr>
 
@@ -504,7 +524,9 @@ id="add_y"
       <input type="button" style="width:30px;height:35px"
   name="add_left_[" id="add_left_[" value="[]" onmousedown="event.preventDefault()" onClick="UI.insert(UI.focused,'[]');UI.moveCaret(UI.focused,-1);"
   title="[ is an open delimiter for vectors, lists and matrices, for example [1,2,3] or [[1,2],[3,4]]">  
-      <input type="button" style="width:30px;height:35px" name="add_%" id="add_%" value="%" onmousedown="event.preventDefault()" onClick="UI.insert(UI.focused,'%')" title="Sert a calculer dans Z/nZ, for example (3 % 7)^6">  
+      <input type="button" style="width:29px;height:35px;"
+  id="add_abs" value="|.|" onmousedown="event.preventDefault()"
+  onClick="UI.insert(UI.focused,'abs(')" title="Absolute value">  
       <input type="button" style="width:30px;height:35px" name="add_pi" id="add_pi" value="π" onmousedown="event.preventDefault()" onClick="UI.insert(UI.focused,'pi')">
       <input type="button" style="width:30px;height:35px" name="add_4" id="add_4" value="4" onmousedown="event.preventDefault()" onClick="UI.insert(UI.focused,'4')">  
       <input type="button" style="width:30px;height:35px" name="add_5" id="add_5" value="5" onmousedown="event.preventDefault()" onClick="UI.insert(UI.focused,'5')">  
@@ -514,12 +536,14 @@ id="add_y"
   </tr>
   <tr>
     <td>
-      <input type="button" style="width:30px;height:35px" name="add_z"
-id="add_z"
-  value="z" onmousedown="event.preventDefault()" onClick="UI.insert(UI.focused,'z')" title="z">  
-      <input type="button" style="width:30px;height:35px" name="add_t"
-id="add_t"
-  value="t" onmousedown="event.preventDefault()" onClick="UI.insert(UI.focused,'t')" title="t">  
+      <input type="button" style="width:29px;height:35px;"
+  id="add_beg"
+  value="beg" onmousedown="event.preventDefault()"
+  onClick="UI.setselbeg(UI.focused);" title="Selection begin">  
+      <input type="button" style="width:29px;height:35px;"
+  id="add_end"
+  value="end" onmousedown="event.preventDefault()"
+  onClick="UI.setselend(UI.focused)" title="Selection end">  
       <input type="button" style="width:30px;height:35px" name="add_:"
 id="add_:"
   value=":" onmousedown="event.preventDefault()" onClick="UI.insert(UI.focused,' :=')" title=":= is the affectation operator, for example a:=pi/2; sin(a)">
@@ -560,16 +584,18 @@ id="add_e"
   </tr>
   <tr>
     <td>
-      <input type="button" id="curseur_gauche" style="width:30px;height:35px"
-  onmousedown="event.preventDefault()" onClick="if (UI.focusaftereval) UI.focused.focus(); UI.moveCaret(UI.focused,-1)" value=" ← "
-  title="Move caret or focus to the left (useful for tablets)">
+      <input type="button" style="width:29px;height:35px;"
+  onmousedown="event.preventDefault()"
+  onClick="UI.insert(UI.focused,'<');" id="add_inferieur" value="<"
+  title="Insert <">
       <input type="button" style="width:30px;height:35px;" name="curseur_down"
 id="curseur_down"
       value="↓" onmousedown="event.preventDefault()"
   onClick="UI.moveCaretUpDown(UI.focused,1)" title="caret down">
-      <input type="button" id="curseur_droit" style="width:30px;height:35px"
-  onmousedown="event.preventDefault()" onClick="if (UI.focusaftereval) UI.focused.focus(); UI.moveCaret(UI.focused,1)" value=" → "
-  title="Move caret to the right (useful for tablets)">
+      <input type="button" style="width:29px;height:35px;"
+  onmousedown="event.preventDefault()"
+  onClick="UI.insert(UI.focused,'>');" id="add_superieur" value=">"
+  title="Insert >">
       <input type="button" style="width:30px;height:35px;" name="add_a" id="add_a" value="a" onmousedown="event.preventDefault()" onClick ="UI.insert(UI.focused,'a')">  
       <input type="button" style="width:30px;height:35px" name="add_sin"
 id="add_sin"
@@ -664,17 +690,17 @@ id="add_limit"
       <input type="button" style="width:60px;height:35px"
   name="add_series" id="add_series" value="series"
   onmousedown="event.preventDefault()" onClick="UI.insert(UI.focused,'series(') ;UI.kbdonfuncoff();" title="series computes the Taylor expansion of an expression as a variable tends to a limit-point, for example series(sin(x),x=0,5,polynom). Without polynom, a remainder term is returned. For unidirectional expansion, add 1 or -1 before polynom">        
-         <input type="button" style="width:30px;height:35px" name="add_space"
-id="add_space"
-  value=" " onmousedown="event.preventDefault()"
-  onClick="UI.insert(UI.focused,' ')" title="add space">        
+         <input type="button" style="width:30px;height:35px" name="add_seq"
+id="add_seq"
+  value="seq" onmousedown="event.preventDefault()"
+  onClick="UI.insert(UI.focused,'seq(')" title="Create sequence, for example seq(j^2,j,1,n) create the sequence of square from 1 to n">        
     </td>
   </tr>
   <tr>
     <td>
       <input type="button" style="width:60px;height:35px" name="add_tabvar"
 id="add_tabvar"
-  value="tabvar" onmousedown="event.preventDefault()" onClick="UI.insert(UI.focused,'tabvar(') ;UI.kbdonfuncoff();"
+  value="tabvar" onmousedown="event.preventDefault()" onClick="UI.insert(UI.focused,'tabvar(,plot)');UI.moveCaret(UI.focused,-6);UI.kbdonfuncoff();"
   title="Function or parametric plot study, for example tabvar(sin(x)) ou tabvar([cos(2t),sin(3t)])">  
       <input type="button" style="width:60px;height:35px" name="add_plot"
 id="add_plot"
@@ -697,17 +723,28 @@ id="add_plot"
         <input type="button" style="width:30px;height:35px" name="add_//"
 id="add_//"
   value="//" onmousedown="event.preventDefault()" onClick="UI.insert(UI.focused,'//')" title="comment">        
+      <input type="button" style="width:29px;height:35px" name="add_space"
+id="add_space"
+  value=" " onmousedown="event.preventDefault()"
+  onClick="UI.insert(UI.focused,' ')" title="Add space">        
+      <input type="button" style="width:29px;height:35px" id="add_nlprog"
+      value="\n" onmousedown="event.preventDefault()"
+      onClick="UI.insert(UI.focused,'\n')" title="Add newline">        
+      <input type="button" style="width:29px;height:35px" 
+      id="add_indent"
+      value="->/" onmousedown="event.preventDefault()"
+      onClick="UI.indentline(UI.focused);" title="Indent current line">        
       <input type="button" style="width:45px;height:35px" name="add_test"
 id="add_test"
   value="if" onmousedown="event.preventDefault()"
-  onClick="UI.insert(UI.focused,'\nif  then  else  end;\n   ');UI.moveCaretUpDown(UI.focused,-1); " title="Test">        
+  onClick="UI.insert(UI.focused,'\nif  then  else  end;');UI.moveCaret(UI.focused,-17); " title="Test">        
       <input type="button" style="width:45px;height:35px" name="add_pour"
 id="add_pour"
   value="for" onmousedown="event.preventDefault()"
-  onClick="UI.insert(UI.focused,'\nfor  from  to  do \n    \n  od;\n  ');UI.moveCaretUpDown(UI.focused,-3);UI.moveCaret(UI.focused,2);" title="Loop">         <input type="button" style="width:45px;height:35px" name="add_tantque"
+  onClick="UI.insert(UI.focused,'\nfor  from  to  do\n\nod;');UI.indentline(UI.focused);UI.moveCaretUpDown(UI.focused,-1);UI.indentline(UI.focused);UI.moveCaretUpDown(UI.focused,-1);UI.moveCaret(UI.focused,2);UI.indentline(UI.focused);UI.kbdonfuncoff();" title="Loop">         <input type="button" style="width:45px;height:35px" name="add_tantque"
 id="add_tantque"
   value="while" onmousedown="event.preventDefault()"
-  onClick="UI.insert(UI.focused,'\nwhile  do\n    \n end;\n  ');UI.moveCaretUpDown(UI.focused,-3);UI.moveCaret(UI.focused,4)" title="Loop">        
+  onClick="UI.insert(UI.focused,'\nwhile  do\n\nend;');UI.indentline(UI.focused);UI.moveCaretUpDown(UI.focused,-1);UI.indentline(UI.focused);UI.moveCaretUpDown(UI.focused,-1);UI.indentline(UI.focused);UI.moveCaret(UI.focused,4)" title="Loop">        
       <input type="button" id="add_function" style="height:35px" value="function" onclick="if(document.getElementById('assistant_prog').style.display=='none'){
       document.getElementById('assistant_prog').style.display='block';
      }      
@@ -722,50 +759,47 @@ id="add_debug"
     </td>
   </tr>
 </table>
-      <div id="assistant_prog" style="display:none">
-	  <b>New function</b><br>
-	  function name <textarea id="funcname" rows=1>f</textarea><br>
-	  list of arguments <textarea id="argsname" rows=1>x,y</textarea><br>
-	  local variables <textarea id="localvars" rows=1>z</textarea><br>
-	  returned value <textarea id="returnedvar" rows=1>z</textarea><br>
-	  <button style="height:25px" onclick="UI.insert(UI.focused,'function '+document.getElementById('funcname').value+'('+document.getElementById('argsname').value+'){\n  var '+document.getElementById('localvars').value+';\n  \n  return '+document.getElementById('returnedvar').value+';\n}:;\n');UI.moveCaretUpDown(UI.focused,-3);UI.moveCaret(UI.focused,2);document.getElementById('assistant_prog').style.display='none';">Create</button> <button style="height:25px" onclick="document.getElementById('assistant_prog').style.display='none'">Cancel</button>
-      </div>
+<div id="assistant_prog" style="display:none">
+  <b>New function</b><br>
+  function name <textarea id="funcname" rows=1>f</textarea><br>
+  list of arguments <textarea id="argsname" rows=1>x,y</textarea><br>
+  local variables <textarea id="localvars" rows=1>z</textarea><br>
+  returned value <textarea id="returnedvar" rows=1>z</textarea><br>
+  <button style="height:25px" onclick="UI.insert(UI.focused,'function '+document.getElementById('funcname').value+'('+document.getElementById('argsname').value+'){\n  var '+document.getElementById('localvars').value+';\n  \n  return '+document.getElementById('returnedvar').value+';\n}:;\n');UI.moveCaretUpDown(UI.focused,-3);UI.moveCaret(UI.focused,2);document.getElementById('assistant_prog').style.display='none';">Create</button> <button style="height:25px" onclick="document.getElementById('assistant_prog').style.display='none'">Cancel</button>
+</div>
 
-<br>
-  <span contextmenu="cmdmenu" title="F1: help on keyword before caret. Right-click (Firefox): commands menu" >
+
+<div contextmenu="cmdmenu" title="F1: help on keyword before caret. Right-click (Firefox): commands menu" >
 <button id="button_ok" onclick="if (UI.focused==cmentree) UI.eval_cmdline(); else {UI.reeval(UI.focused,'');}" style="color:green;width:35px;height:35px" title="Eval commandline">
-ok</button>
- <button id="button_help" style="width:35px;height:35px" onmousedown="event.preventDefault()" onClick="UI.completion(cmentree)" title="Short online help and examples for a command, or completion suggestions">?</button>
+  <strong>ok</strong></button>
+  <button id="button_gauche" style="width:32px;height:35px"
+  onmousedown="event.preventDefault()" onClick="UI.move_caret_or_focus(UI.focused,-1)"  title="Move caret to the left"> ← </button>
+  <button id="button_droit" style="width:32px;height:35px" onmousedown="event.preventDefault()" onClick="UI.move_caret_or_focus(UI.focused,1)" title="Move caret to the right"> → </button>
+  <button id="button_cmd" style="width:37px;height:35px" onmousedown="event.preventDefault()" onclick="document.getElementById('keyboardfunc').style.display='none'; document.getElementById('keyboard').style.display='none'; UI.focused=cmentree;cmentree.focus(); UI.resizetextarea(cmentree);//if (UI.prettyprint && UI.usemathjax && UI.histcount>0) MathJax.Hub.Queue(["Typeset",MathJax.Hub]);"
+  title="Focus on commandline">cmd</button>
+  <button id="select_button" style="width:32px;height:35px" name="select_button" onmousedown="event.preventDefault()" onClick="if (UI.focusaftereval) UI.focused.focus(); if (UI.focused.type!='textarea'){UI.focused.execCommand('selectAll'); } else {UI.focused.select(); UI.selection=UI.focused.value;}" title="Select commandline"> sel</button>
+  <button id="button_del" style="width:30px;height:35px" onmousedown="event.preventDefault()" onclick="UI.backspace(UI.focused)" title="Erase 1 char">del</button>
+  <button id="button_help" style="width:35px;height:35px" onmousedown="event.preventDefault()" onClick="UI.completion(cmentree)" title="Short online help and examples for a command, or completion suggestions">?</button>
   <button id="button_123" style="width:37px;height:35px" onmousedown="event.preventDefault()"
   onclick="if (document.getElementById('keyboard').style.display=='inline') document.getElementById('keyboard').style.display='none'; else { document.getElementById('keyboard').style.display='inline'; document.getElementById('keyboardfunc').style.display='none';} if (UI.focusaftereval){ UI.focused.focus(); UI.focused.blur();}"
-  title="Show or hide scientific keyboard">123</button>
-  <button id="button_util" style="width:37px;height:35px" onmousedown="event.preventDefault()"
-  onclick="UI.show_menu();"
-  title="Show or hide frequently used commands">menu</button>
-   <button id="button_cmd" style="width:37px;height:35px" onmousedown="event.preventDefault()" onclick="document.getElementById('keyboardfunc').style.display='none'; document.getElementById('keyboard').style.display='none'; UI.focused=cmentree;cmentree.focus(); UI.resizetextarea(cmentree);//if (UI.prettyprint && UI.usemathjax && UI.histcount>0) MathJax.Hub.Queue(["Typeset",MathJax.Hub]);"
-  title="Focus on commandline">cmd</button>
-      <button id="button_gauche" style="width:32px;height:35px"
-  onmousedown="event.preventDefault()" onClick="UI.move_caret_or_focus(UI.focused,-1)"  title="Move caret (tablets) or focus (PC) to the left"> ← </button>
-      <button id="button_droit" style="width:32px;height:35px" onmousedown="event.preventDefault()" onClick="UI.move_caret_or_focus(UI.focused,1)" title="Move caret (tablets) or focus (PC) to the right"> → </button>
-<button id="select_button" style="width:32px;height:35px" name="select_button" onmousedown="event.preventDefault()" onClick="if (UI.focusaftereval) UI.focused.focus(); if (UI.focused.type!='textarea'){UI.focused.execCommand('selectAll'); } else {UI.focused.select(); UI.selection=UI.focused.value;}" title="Select commandline"> sel</button>
-<button id="button_del" style="width:30px;height:35px" onmousedown="event.preventDefault()" onclick="UI.backspace(UI.focused)" title="Erase 1 char">del</button>
+title="Show or hide scientific keyboard">123</button>
+<button id="button_util" style="width:37px;height:35px" onmousedown="event.preventDefault()"
+onclick="UI.show_menu();"
+title="Show or hide frequently used commands">menu</button>
 &nbsp;
 <button style="height:35px" id="stop_button" style="height:35px;visibility:hidden" onclick="if (UI.webworker && confirm('Really kill current session ?')){ UI.webworker.terminate(); UI.busy=0; UI.webworker=0;alert('Session restarted. Everything has been cleared.');}" title="End current session">STOP</button>
+
 <br>
-<div id="startup_restore" style="display:none">
-  You can load your previous session inputs 
-  <button style="height:25px" onclick="var s=UI.readCookie('xcas_session');UI.restoresession(s,document.getElementById('mathoutput'),true,false);">without evaluation</button>
-  or <button style="height:25px" onclick="var s=UI.readCookie('xcas_session');UI.restoresession(s,document.getElementById('mathoutput'),false,false);">with evaluation</button>
-</div>
 
 <textarea name="entree" id="entree"  style="font-size:18px;width:98%" rows=1
   onkeypress="UI.focused=this;if (event.keyCode!=13 || event.shiftKey) return true;UI.eval_cmdline1(value,true); return false;" ></textarea>
-</span>
-<br>
-<b>Console</b>
-<button style="height:35px" title="Clear console" onclick="var field=document.getElementById('output');field.innerHTML=''">Clear</button>
-<button style="height:35px" title="Increase line number" onclick="var field=document.getElementById('output');var s=field.style.maxHeight; s=s.substr(0,s.length-2);s=eval(s)+20 ;s=s+'px';field.style.maxHeight =s ;">+</button>
-<button style="height:35px" title="Decrease line number" onclick="var field=document.getElementById('output');var s=field.style.maxHeight; s=s.substr(0,s.length-2);s=Math.max(eval(s)-20,40) ;s=s+'px';field.style.maxHeight =s ;">-</button>
+</div>
+
+<hr>
+<strong>Console</strong>
+<button style="height:25px" title="Clear console" onclick="var field=document.getElementById('output');field.innerHTML=''">Clear</button>
+<button style="height:25px" title="Increase line number" onclick="var field=document.getElementById('output');var s=field.style.maxHeight; s=s.substr(0,s.length-2);s=eval(s)+20 ;s=s+'px';field.style.maxHeight =s ;">+</button>
+<button style="height:25px" title="Decrease line number" onclick="var field=document.getElementById('output');var s=field.style.maxHeight; s=s.substr(0,s.length-2);s=Math.max(eval(s)-20,40) ;s=s+'px';field.style.maxHeight =s ;">-</button>
 <div id="output" style="max-height: 200px; overflow:auto"></div>
 <hr>
 
@@ -812,498 +846,17 @@ ok</button>
 </div>
 
 
-
-<menu type="context" id="cmdmenu">
-  <menu label="Expressions">
-<menuitem label="factor" onclick="UI.insert(UI.focused,'factor(')"></menuitem>
-<menuitem label="simplify" onclick="UI.insert(UI.focused,'simplify(')"></menuitem>
-<menuitem label="subst"  onclick="UI.insert(UI.focused,'subst(')"></menuitem>
-  <menu label="Exp et ln">
-<menuitem label="exp2pow: exp(n*ln(x)) -> x^n" onclick="UI.insert(UI.focused,'exp2pow(')"></menuitem>
-<menuitem label="hyp2exp: hyperbolic to exp" onclick="UI.insert(UI.focused,'hyp2exp(')"></menuitem>
-<menuitem label="expexpand: expand exp" onclick="UI.insert(UI.focused,'expexpand(')"></menuitem>
-<menuitem label="lin: linearize exp" onclick="UI.insert(UI.focused,'lin(')"></menuitem>
-<menuitem label="lncollect: regroup log" onclick="UI.insert(UI.focused,'lncollect(')"></menuitem>
-<menuitem label="lnexpand: expand log" onclick="UI.insert(UI.focused,'lnexpand(')"></menuitem>
-<menuitem label="powexpand: expand ^" onclick="UI.insert(UI.focused,'powexpand(')"></menuitem>
-<menuitem label="pow2exp: ^ -> exp" onclick="UI.insert(UI.focused,'pow2exp(')"></menuitem>
-  </menu>
-  <menu label="Trigonometry">
-<menuitem label="trigexpand: expand sin,cos,tan" onclick="UI.insert(UI.focused,'trigexpand(')"></menuitem>
-<menuitem label="tlin: linearization (trigonometry)" onclick="UI.insert(UI.focused,'tlin(')"></menuitem>
-<menuitem label="tcollect: regroup cos and sin" onclick="UI.insert(UI.focused,'tcollect(')"></menuitem>
-<menuitem label="halftan: in terms of tan(x sur 2)" onclick="UI.insert(UI.focused,'halftan(')"></menuitem>
-<menuitem label="cos2sintan: cos -> sin over tan" onclick="UI.insert(UI.focused,'cos2sintan(')"></menuitem>
-<menuitem label="sin2costan: sin -> cos*tan" onclick="UI.insert(UI.focused,'sin2costan(')"></menuitem>
-<menuitem label="tan2sincos: tan -> sin over cos" onclick="UI.insert(UI.focused,'tan2sincos(')"></menuitem>
-<menuitem label="tan2cossin2: tan -> cos, sin 2*angle" onclick="UI.insert(UI.focused,'tan2cossin2(')"></menuitem>
-<menuitem label="tan2sincos2: tan -> sin. cos 2*angle" onclick="UI.insert(UI.focused,'tan2sincos2(')"></menuitem>
-<menuitem label="trigcos: sin^2 -> 1-cos^2" onclick="UI.insert(UI.focused,'trigcos(')"></menuitem>
-<menuitem label="trigsin: cos^2 -> 1-sin^2" onclick="UI.insert(UI.focused,'trigsin(')"></menuitem>
-<menuitem label="trigtan: cos^2 et sin^2 -> tan^2" onclick="UI.insert(UI.focused,'trigtan(')"></menuitem>
-<menuitem label="shift_phase" onclick="UI.insert(UI.focused,'shift_phase(')"></menuitem>
-<menuitem label="exp2trig: exp(i*x) -> cos(x)+i*sin(x)" onclick="UI.insert(UI.focused,'exp2trig(')"></menuitem>
-<menuitem label="trig2exp: cos and sin -> exp(i*angle)" onclick="UI.insert(UI.focused,'trig2exp(')"></menuitem>
-<menuitem label="tsimplify: simplify transcendent" onclick="UI.insert(UI.focused,'tsimplify(')"></menuitem>
-<menuitem label="texpand: expand trig, exp, ln" onclick="UI.insert(UI.focused,'texpand(')"></menuitem>
-<menuitem label="atrig2ln: trig inverse -> complex ln" onclick="UI.insert(UI.focused,'atrig2ln(')"></menuitem>
-<menuitem label="acos2asin: acos -> asin" onclick="UI.insert(UI.focused,'acos2asin(')"></menuitem>
-<menuitem label="acos2atan: acos -> atan" onclick="UI.insert(UI.focused,'acos2atan(')"></menuitem>
-<menuitem label="asin2acos: asin -> acos" onclick="UI.insert(UI.focused,'asin2acos(')"></menuitem>
-<menuitem label="asin2atan: asin -> atan" onclick="UI.insert(UI.focused,'asin2atan(')"></menuitem>
-<menuitem label="atan2acos: atan -> acos" onclick="UI.insert(UI.focused,'atan2acos(')"></menuitem>
-<menuitem label="atan2asin: atan -> asin"  onclick="UI.insert(UI.focused,'atan2asin(')"></menuitem>
-  </menu>
-  <menu label="Rational">
-<menuitem label="collect" onclick="UI.insert(UI.focused,'collect(')"></menuitem>
-<menuitem label="normal" onclick="UI.insert(UI.focused,'normal(')"></menuitem>
-<menuitem label="eval" onclick="UI.insert(UI.focused,'eval(')"></menuitem>
-<menuitem label="equal2diff" onclick="UI.insert(UI.focused,'equal2diff(')"></menuitem>
-<menuitem label="f2nd" onclick="UI.insert(UI.focused,'f2nd(')"></menuitem>
-<menuitem label="ratnormal" onclick="UI.insert(UI.focused,'ratnormal(')"></menuitem>
-<menuitem label="reorder: variables" onclick="UI.insert(UI.focused,'reorder(')"></menuitem>
-<menuitem label="partfrac: partial fraction" onclick="UI.insert(UI.focused,'partfrac(')"></menuitem>
-<menuitem label="cpartfrac: partial fraction over C" onclick="UI.insert(UI.focused,'cpartfrac(')"></menuitem>
-<menuitem label="simp2" onclick="UI.insert(UI.focused,'simp2(')"></menuitem>
-<menuitem label="collect" onclick="UI.insert(UI.focused,'regroup(')"></menuitem>
-<menuitem label="factor" onclick="UI.insert(UI.focused,'factor(')"></menuitem>
-<menuitem label="expand" onclick="UI.insert(UI.focused,'expand(')"></menuitem>
-<menuitem label="simplify" onclick="UI.insert(UI.focused,'simplify(')"></menuitem>
-<menuitem label="mult_conjugate" onclick="UI.insert(UI.focused,'mult_conjugate(')"></menuitem>
-<menuitem label="mult_c_conjugate"  onclick="UI.insert(UI.focused,'mult_c_conjugate(')"></menuitem>
-  </menu>
-  <menu label="Reals">
-<menuitem label="epsilon2zero" onclick="UI.insert(UI.focused,'epsilon2zero(')"></menuitem>
-<menuitem label="evalf: approx evaluation" onclick="UI.insert(UI.focused,'evalf(')"></menuitem>
-<menuitem label="float2rational"
-  onclick="UI.insert(UI.focused,'float2rational(')"></menuitem>
-  </menu>
-  </menu>
-
-  <menu label="Solve">
-<menuitem label="linsolve: linear system" onclick="UI.insert(UI.focused,'linsolve(')"></menuitem>
-<menuitem label="solve: equation or system" onclick="UI.insert(UI.focused,'solve(')"></menuitem>
-<menuitem label="fsolve: numerically" onclick="UI.insert(UI.focused,'fsolve(')"></menuitem>
-<menuitem label="newton: solve by Newton method" onclick="UI.insert(UI.focused,'newton(')"></menuitem>
-<menuitem label="csolve: solve over C" onclick="UI.insert(UI.focused,'csolve(')"></menuitem>
-<menuitem label="desolve: solve differential eq." onclick="UI.insert(UI.focused,'desolve(')"></menuitem>
-<menuitem label="rsolve: solve recurrence relation" onclick="UI.insert(UI.focused,'rsolve(')"></menuitem>
-<menuitem label="odesolve: numerical diff. eq." onclick="UI.insert(UI.focused,'odesolve(')"></menuitem>
-<menuitem label="greduce: reduction mod gbasis" onclick="UI.insert(UI.focused,'greduce(')"></menuitem>
-<menuitem label="gbasis: Groebner basis" onclick="UI.insert(UI.focused,'gbasis(')"></menuitem>
-  </menu>
-  <menu label="Calculus">
-<menuitem label="limit" onclick="UI.insert(UI.focused,'limit(')"></menuitem>
-<menuitem label="series: Taylor expansion" onclick="UI.insert(UI.focused,'series(')"></menuitem>
-<menuitem label="diff: derivative" onclick="UI.insert(UI.focused,'diff(')"></menuitem>
-<menuitem label="ibpdv: integration by parts" onclick="UI.insert(UI.focused,'ibpdv(')"></menuitem>
-<menuitem label="ibpu: integration by parts" onclick="UI.insert(UI.focused,'ibpu(')"></menuitem>
-<menuitem label="integrate: antiderivative" onclick="UI.insert(UI.focused,'integrate(')"></menuitem>
-<menuitem label="preval: antiderivative evaluation" onclick="UI.insert(UI.focused,'preval(')"></menuitem>
-<menuitem label="sum: discret sum" onclick="UI.insert(UI.focused,'sum(')"></menuitem>
-<menuitem label="curl" onclick="UI.insert(UI.focused,'curl(')"></menuitem>
-<menuitem label="diff: gradient" onclick="UI.insert(UI.focused,'gradient(')"></menuitem>
-<menuitem label="divergence: " onclick="UI.insert(UI.focused,'divergence(')"></menuitem>
-<menuitem label="hessian: " onclick="UI.insert(UI.focused,'hessian(')"></menuitem>
-<menuitem label="laplacian: " onclick="UI.insert(UI.focused,'laplacian(')"></menuitem>
-<menuitem label="potential: scalar potential" onclick="UI.insert(UI.focused,'potential(')"></menuitem>
-<menuitem label="vpotential: vector potential"  onclick="UI.insert(UI.focused,'vpotential(')"></menuitem>
-  <menu label="Transformations">
-<menuitem label="fft: Fast Fourier Transform" onclick="UI.insert(UI.focused,'fft(')"></menuitem>
-<menuitem label="fourier_an: an coeff" onclick="UI.insert(UI.focused,'fourier_an(')"></menuitem>
-<menuitem label="fourier_bn: bn coeff" onclick="UI.insert(UI.focused,'fourier_bn(')"></menuitem>
-<menuitem label="fourier_cn: cn coeff" onclick="UI.insert(UI.focused,'fourier_cn(')"></menuitem>
-<menuitem label="ifft: inverse fft" onclick="UI.insert(UI.focused,'ifft(')"></menuitem>
-<menuitem label="ilaplace: inverse Laplace" onclick="UI.insert(UI.focused,'ilaplace(')"></menuitem>
-<menuitem label="laplace: transform"
-  onclick="UI.insert(UI.focused,'laplace(')"></menuitem>
-  </menu>
-  </menu>
-  
-  <menu label="Integers">
-    <menuitem label="euler: indicatrix" onclick="UI.insert(UI.focused,'euler(')"></menuitem>
-    <menuitem label="fracmod: a mod p to n and d" onclick="UI.insert(UI.focused,'fracmod(')"></menuitem>
-    <menuitem label="gcd: greatest common divisor"  onclick="UI.insert(UI.focused,'gcd(')"></menuitem>
-    <menuitem label="iabcuv: a,b,c to u,v such that au+bv=c"  onclick="UI.insert(UI.focused,'iabcuv(')"></menuitem>
-    <menuitem label="ichinrem: chinese remainder over Z"  onclick="UI.insert(UI.focused,'ichinrem(')"></menuitem>
-    <menuitem label="idivis: integer divisors"  onclick="UI.insert(UI.focused,'idivis(')"></menuitem>
-    <menuitem label="iegcd: extended GCD over Z"  onclick="UI.insert(UI.focused,'iegcd(')"></menuitem>
-    <menuitem label="ifactor: integer factorization"  onclick="UI.insert(UI.focused,'ifactor(')"></menuitem>
-    <menuitem label="ifactors: factors and multiplicities"  onclick="UI.insert(UI.focused,'ifactors(')"></menuitem>
-    <menuitem label="iquo: quotient (integer division)"  onclick="UI.insert(UI.focused,'iquo(')"></menuitem>
-    <menuitem label="iquorem: quotient and remainder"  onclick="UI.insert(UI.focused,'iquorem(')"></menuitem>
-    <menuitem label="irem: remainder"  onclick="UI.insert(UI.focused,'irem(')"></menuitem>
-    <menuitem label="is_prime: primality testing"  onclick="UI.insert(UI.focused,'is_prime(')"></menuitem>
-    <menuitem label="is_pseudoprime"  onclick="UI.insert(UI.focused,'is_pseudoprime(')"></menuitem>
-    <menuitem label="lcm"  onclick="UI.insert(UI.focused,'lcm(')"></menuitem>
-    <menuitem label="mod: class of a in Z over nZ"  onclick="UI.insert(UI.focused,'mod(')"></menuitem>
-    <menuitem label="nextprime"  onclick="UI.insert(UI.focused,'nextprime(')"></menuitem>
-    <menuitem label="nprimes: # of prime numbers <="  onclick="UI.insert(UI.focused,'prevprime(')"></menuitem>
-    <menuitem label="pa2b2"  onclick="UI.insert(UI.focused,'pa2b2(')"></menuitem>
-    <menuitem label="powmod: fast power"  onclick="UI.insert(UI.focused,'powmod(')"></menuitem>
-    <menuitem label="prevprime"  onclick="UI.insert(UI.focused,'prevprime(')"></menuitem>
-    <menuitem label="smod: symmetric remainder"  onclick="UI.insert(UI.focused,'smod(')"></menuitem>
-  </menu>
-  <menu label="Polynomials">
-    <menu label="Base">
-<menuitem label="canonical_form" onclick="UI.insert(UI.focused,'canonical_form(')"></menuitem>
-<menuitem label="cfactor: factorization over C" onclick="UI.insert(UI.focused,'cfactor(')"></menuitem>
-<menuitem label="coeff: coefficients list" onclick="UI.insert(UI.focused,'coeff(')"></menuitem>
-<menuitem label="cyclotomic" onclick="UI.insert(UI.focused,'cyclotomic(')"></menuitem>
-<menuitem label="degree" onclick="UI.insert(UI.focused,'degree(')"></menuitem>
-<menuitem label="expand" onclick="UI.insert(UI.focused,'expand(')"></menuitem>
-<menuitem label="factor_xn" onclick="UI.insert(UI.focused,'factor_xn(')"></menuitem>
-<menuitem label="factor" onclick="UI.insert(UI.focused,'factor(')"></menuitem>
-<menuitem label="factors: factors list" onclick="UI.insert(UI.focused,'factors(')"></menuitem>
-<menuitem label="fcoeff" onclick="UI.insert(UI.focused,'fcoeff(')"></menuitem>
-<menuitem label="froot" onclick="UI.insert(UI.focused,'froot(')"></menuitem>
-<menuitem label="genpoly: P(a) -> P" onclick="UI.insert(UI.focused,'genpoly(')"></menuitem>
-<menuitem label="lcoeff: leading coefficient" onclick="UI.insert(UI.focused,'lcoeff(')"></menuitem>
-<menuitem label="normal: form" onclick="UI.insert(UI.focused,'normal(')"></menuitem>
-<menuitem label="pcoeff: roots -> coefficients" onclick="UI.insert(UI.focused,'pcoeff(')"></menuitem>
-<menuitem label="peval: P,a -> P(a)" onclick="UI.insert(UI.focused,'peval(')"></menuitem>
-<menuitem label="proot: coefficients -> roots" onclick="UI.insert(UI.focused,'proot(')"></menuitem>
-<menuitem label="poly2symb" onclick="UI.insert(UI.focused,'poly2symb(')"></menuitem>
-<menuitem label="randpoly: random polynomial" onclick="UI.insert(UI.focused,'randpoly(')"></menuitem>
-<menuitem label="symb2poly" onclick="UI.insert(UI.focused,'symb2poly(')"></menuitem>
-<menuitem label="tcoeff: lowest degree coefficient" onclick="UI.insert(UI.focused,'tcoeff(')"></menuitem>
-<menuitem label="valuation" onclick="UI.insert(UI.focused,'valuation(')"></menuitem>
-  </menu>
-  <menu label="Arithmetic">
-<menuitem label="abcuv: a,b,c -> u,v where au+bv=c" onclick="UI.insert(UI.focused,'abcuv(')"></menuitem>
-<menuitem label="chinrem: chinese remainder over Q[X]" onclick="UI.insert(UI.focused,'chinrem(')"></menuitem>
-<menuitem label="divis: divisors in Q[X]" onclick="UI.insert(UI.focused,'divis(')"></menuitem>
-<menuitem label="divpc: ascending power division" onclick="UI.insert(UI.focused,'divpc(')"></menuitem>
-<menuitem label="egcd: Bezout polynomials" onclick="UI.insert(UI.focused,'egcd(')"></menuitem>
-<menuitem label="factor" onclick="UI.insert(UI.focused,'factor(')"></menuitem>
-<menuitem label="gcd" onclick="UI.insert(UI.focused,'gcd(')"></menuitem>
-<menuitem label="horner: P,a -> P(a)" onclick="UI.insert(UI.focused,'horner(')"></menuitem>
-<menuitem label="lagrange: interpolation" onclick="UI.insert(UI.focused,'lagrange(')"></menuitem>
-<menuitem label="lcm" onclick="UI.insert(UI.focused,'lcm(')"></menuitem>
-<menuitem label="normal" onclick="UI.insert(UI.focused,'normal(')"></menuitem>
-<menuitem label="ptayl: Taylor for polynomials" onclick="UI.insert(UI.focused,'ptayl(')"></menuitem>
-<menuitem label="quo: quotient (euclidean division)" onclick="UI.insert(UI.focused,'quo(')"></menuitem>
-<menuitem label="quorem: quotient and remainder" onclick="UI.insert(UI.focused,'quorem(')"></menuitem>
-<menuitem label="rem: remainder" onclick="UI.insert(UI.focused,'rem(')"></menuitem>
-<menuitem label="resultant" onclick="UI.insert(UI.focused,'resultant(')"></menuitem>
-<menuitem label="spline" onclick="UI.insert(UI.focused,'spline(')"></menuitem>
-<menuitem label="sturm: sequence" onclick="UI.insert(UI.focused,'sturm(')"></menuitem>
-<menuitem label="sturmab: roots number" onclick="UI.insert(UI.focused,'sturmab(')"></menuitem>
-  </menu>
-  <menu label="Orthogonal">
-<menuitem label="hermite" onclick="UI.insert(UI.focused,'hermite(')"></menuitem>
-<menuitem label="laguerre" onclick="UI.insert(UI.focused,'laguerre(')"></menuitem>
-<menuitem label="legendre" onclick="UI.insert(UI.focused,'legendre(')"></menuitem>
-<menuitem label="tchebyshev1" onclick="UI.insert(UI.focused,'tchebyshev1(')"></menuitem>
-<menuitem label="tchebyshev2" onclick="UI.insert(UI.focused,'tchebyshev2(')"></menuitem>
-  </menu>
-    </menu>
-  <menu label="Linear algebra">
-    <menu label="Vectors">
-<menuitem label="abs: " onclick="UI.insert(UI.focused,'abs(')"></menuitem>
-<menuitem label="cross" onclick="UI.insert(UI.focused,'cross(')"></menuitem>
-<menuitem label="dot: product" onclick="UI.insert(UI.focused,'dot(')"></menuitem>
-<menuitem label="l1norm: sum of |x_i|" onclick="UI.insert(UI.focused,'l1norm(')"></menuitem>
-<menuitem label="l2norm: euclidean norm" onclick="UI.insert(UI.focused,'l2norm(')"></menuitem>
-<menuitem label="maxnorm: max norm" onclick="UI.insert(UI.focused,'maxnorm(')"></menuitem>
-      </menu>
-      <menu label="Matrice">
-<menuitem label="hadamard: product" onclick="UI.insert(UI.focused,'hadamard(')"></menuitem>
-<menuitem label="hilbert: matrix" onclick="UI.insert(UI.focused,'hilbert(')"></menuitem>
-<menuitem label="identity: matrix" onclick="UI.insert(UI.focused,'identity(')"></menuitem>
-<menuitem label="makemat" onclick="UI.insert(UI.focused,'makemat(')"></menuitem>
-<menuitem label="ncols: columns number" onclick="UI.insert(UI.focused,'ncols(')"></menuitem>
-<menuitem label="nrows: rows number" onclick="UI.insert(UI.focused,'nrows(')"></menuitem>
-<menuitem label="ranm: random matrix" onclick="UI.insert(UI.focused,'ranm(')"></menuitem>
-<menuitem label="syst2mat: system matrix" onclick="UI.insert(UI.focused,'syst2mat(')"></menuitem>
-<menuitem label="vandermonde: matrix" onclick="UI.insert(UI.focused,'vandermonde(')"></menuitem>
-<menuitem label="trace" onclick="UI.insert(UI.focused,'trace(')"></menuitem>
-<menuitem label="trn: transconjugate" onclick="UI.insert(UI.focused,'trn(')"></menuitem>
-<menuitem label="tran: transposed" onclick="UI.insert(UI.focused,'tran(')"></menuitem>
-<menuitem label="l1norm: triple l1 norm" onclick="UI.insert(UI.focused,'l1norm(')"></menuitem>
-<menuitem label="l2norm: triple l2 norm" onclick="UI.insert(UI.focused,'l2norm(')"></menuitem>
-<menuitem label="linfnorm: triple l inf norm" onclick="UI.insert(UI.focused,'linfnorm(')"></menuitem>
-<menuitem label="frobenius_norm" onclick="UI.insert(UI.focused,'frobenius_norm(')"></menuitem>
-	</menu>
-	<menu label="Gauss">
-<menuitem label="basis" onclick="UI.insert(UI.focused,'basis(')"></menuitem>
-<menuitem label="changebase: A,P -> P^-1*A*P" onclick="UI.insert(UI.focused,'changebase(')"></menuitem>
-<menuitem label="det: determinant" onclick="UI.insert(UI.focused,'det(')"></menuitem>
-<menuitem label="det_minor: by minor expansion" onclick="UI.insert(UI.focused,'det_minor(')"></menuitem>
-<menuitem label="inv: inverse" onclick="UI.insert(UI.focused,'inv(')"></menuitem>
-<menuitem label="ibasis: intersection vector space" onclick="UI.insert(UI.focused,'ibasis)')"></menuitem>
-<menuitem label="ihermite: Hermite form over Z" onclick="UI.insert(UI.focused,'ihermite(')"></menuitem>
-<menuitem label="ismith: Smith form over Z" onclick="UI.insert(UI.focused,'ismith(')"></menuitem>
-<menuitem label="ker" onclick="UI.insert(UI.focused,'ker(')"></menuitem>
-<menuitem label="image" onclick="UI.insert(UI.focused,'image(')"></menuitem>
-<menuitem label="linsolve: solve linear system" onclick="UI.insert(UI.focused,'linsolve(')"></menuitem>
-<menuitem label="rank" onclick="UI.insert(UI.focused,'rank(')"></menuitem>
-<menuitem label="rref: reduction to echelon form" onclick="UI.insert(UI.focused,'rref(')"></menuitem>
-<menuitem label="simplex_reduce" onclick="UI.insert(UI.focused,'simplex_reduce(')"></menuitem>
-<menuitem label="cond: condition number" onclick="UI.insert(UI.focused,'cond(')"></menuitem>
-	  </menu>
-	  <menu label="Diagonalization">
-<menuitem label="adjoint_matrix" onclick="UI.insert(UI.focused,'adjoint_matrix(')"></menuitem>
-<menuitem label="companion" onclick="UI.insert(UI.focused,'companion(')"></menuitem>
-<menuitem label="egv: eigenvectors P" onclick="UI.insert(UI.focused,'egv(')"></menuitem>
-<menuitem label="egvl: D=P^-1*A*P" onclick="UI.insert(UI.focused,'egvl(')"></menuitem>
-<menuitem label="eigenvalues" onclick="UI.insert(UI.focused,'eigenvalues(')"></menuitem>
-<menuitem label="hessenberg: factorization" onclick="UI.insert(UI.focused,'hessenberg(')"></menuitem>
-<menuitem label="jordan: form" onclick="UI.insert(UI.focused,'jordan(')"></menuitem>
-<menuitem label="pcar: characteristic polynomial" onclick="UI.insert(UI.focused,'pcar(')"></menuitem>
-<menuitem label="pcar_hessenberg" onclick="UI.insert(UI.focused,'pcar_hessenberg(')"></menuitem>
-<menuitem label="pmin: minimal polynomial" onclick="UI.insert(UI.focused,'pmin(')"></menuitem>
-<menuitem label="svl: singular values" onclick="UI.insert(UI.focused,'svl(')"></menuitem>
-	    </menu>
-	    <menu label="Factorization">
-<menuitem label="cholesky" onclick="UI.insert(UI.focused,'cholesky(')"></menuitem>
-<menuitem label="lll" onclick="UI.insert(UI.focused,'lll(')"></menuitem>
-<menuitem label="lu: P*A=L*U" onclick="UI.insert(UI.focused,'lu(')"></menuitem>
-<menuitem label="qr: A=Q*R" onclick="UI.insert(UI.focused,'qr(')"></menuitem>
-<menuitem label="svd: singular value decomposition" onclick="UI.insert(UI.focused,'svd(')"></menuitem>
-	      </menu>
-	      <menu label="Iterations">
-<menuitem label="jacobi_linsolve" onclick="UI.insert(UI.focused,'jacobi_linsolve(')"></menuitem>
-<menuitem label="gauss_seidel_linsolve" onclick="UI.insert(UI.focused,'gauss_seidel_linsolve(')"></menuitem>
-<menuitem label="conjugate_gradient" onclick="UI.insert(UI.focused,'conjugate_gradient(')"></menuitem>
-		</menu>
-		<menu label="Quadratic forms">
-<menuitem label="a2q: matrix -> quad. form" onclick="UI.insert(UI.focused,'a2q(')"></menuitem>
-<menuitem label="gauss: decomposition + and - of squares" onclick="UI.insert(UI.focused,'gauss(')"></menuitem>
-<menuitem label="gramschmidt: orthonormalization" onclick="UI.insert(UI.focused,'gramschmidt(')"></menuitem>
-<menuitem label="q2a: quad. form -> matrix" onclick="UI.insert(UI.focused,'q2a(')"></menuitem>
-		  </menu>
-		  <menu label="Isom&eacute;tries">		  
-<menuitem label="isom: isometry elements" onclick="UI.insert(UI.focused,'isom(')"></menuitem>
-<menuitem label="mkisom: create an isometry" onclick="UI.insert(UI.focused,'mkisom(')"></menuitem>
-		    </menu>
-		    </menu>
-<menu label="Geometry">
-<menu label="Points">
-  <menuitem label="barycenter" onclick="UI.insert(UI.focused,'barycenter(')"></menuitem>
-<menuitem label="center" onclick="UI.insert(UI.focused,'center(')"></menuitem>
-<menuitem label="element" onclick="UI.insert(UI.focused,'element(')"></menuitem>
-<menuitem label="single_inter: 1st intersection point" onclick="UI.insert(UI.focused,'single_inter(')"></menuitem>
-<menuitem label="inter: list of intersections" onclick="UI.insert(UI.focused,'inter(')"></menuitem>
-<menuitem label="isobarycenter" onclick="UI.insert(UI.focused,'isobarycenter(')"></menuitem>
-<menuitem label="midpoint" onclick="UI.insert(UI.focused,'midpoint(')"></menuitem>
-<menuitem label="orthocenter" onclick="UI.insert(UI.focused,'orthocenter(')"></menuitem>
-<menuitem label="point" onclick="UI.insert(UI.focused,'point(')"></menuitem>
-<menuitem label="point2d: random point" onclick="UI.insert(UI.focused,'point2d(')"></menuitem>
-<menuitem label="point3d: random point" onclick="UI.insert(UI.focused,'point3d(')"></menuitem>
-<menuitem label="vertices" onclick="UI.insert(UI.focused,'vertices(')"></menuitem>
-  </menu>
-  <menu label="Lines">
-<menuitem label="line_segments" onclick="UI.insert(UI.focused,'line_segments(')"></menuitem>
-<menuitem label="bisector" onclick="UI.insert(UI.focused,'bisector(')"></menuitem>
-<menuitem label="halfline" onclick="UI.insert(UI.focused,'halfline(')"></menuitem>
-<menuitem label="line" onclick="UI.insert(UI.focused,'line(')"></menuitem>
-<menuitem label="envelope" onclick="UI.insert(UI.focused,'envelope(')"></menuitem>
-<menuitem label="exbisector" onclick="UI.insert(UI.focused,'exbisector(')"></menuitem>
-<menuitem label="altitude" onclick="UI.insert(UI.focused,'altitude(')"></menuitem>
-<menuitem label="inter: list of intersection points" onclick="UI.insert(UI.focused,'inter(')"></menuitem>
-<menuitem label="locus" onclick="UI.insert(UI.focused,'locus(')"></menuitem>
-<menuitem label="LineTan: tangent to graph" onclick="UI.insert(UI.focused,'LineTan(')"></menuitem>
-<menuitem label="median" onclick="UI.insert(UI.focused,'median(')"></menuitem>
-<menuitem label="perpen_bisector" onclick="UI.insert(UI.focused,'perpen_bisector(')"></menuitem>
-<menuitem label="parallel" onclick="UI.insert(UI.focused,'parallel(')"></menuitem>
-<menuitem label="perpendicular" onclick="UI.insert(UI.focused,'perpendicular(')"></menuitem>
-<menuitem label="orthogonal" onclick="UI.insert(UI.focused,'orthogonal(')"></menuitem>
-<menuitem label="common_perpendicular" onclick="UI.insert(UI.focused,'common_perpendicular(')"></menuitem>
-<menuitem label="segment" onclick="UI.insert(UI.focused,'segment(')"></menuitem>
-<menuitem label="tangent" onclick="UI.insert(UI.focused,'tangent(')"></menuitem>
-<menuitem label="vector: graphic representation" onclick="UI.insert(UI.focused,'vector(')"></menuitem>
-<menuitem label="plotfunc" onclick="UI.insert(UI.focused,'plotfunc(')"></menuitem>
-<menuitem label="Ox_2d_unit_vector" onclick="UI.insert(UI.focused,'Ox_2d_unit_vector(')"></menuitem>
-<menuitem label="Oy_2d_unit_vector" onclick="UI.insert(UI.focused,'Oy_2d_unit_vector(')"></menuitem>
-<menuitem label="Ox_3d_unit_vector" onclick="UI.insert(UI.focused,'Ox_3d_unit_vector(')"></menuitem>
-<menuitem label="Oy_3d_unit_vector" onclick="UI.insert(UI.focused,'Oy_3d_unit_vector(')"></menuitem>
-<menuitem label="Oz_3d_unit_vector" onclick="UI.insert(UI.focused,'Oz_3d_unit_vector(')"></menuitem>
-<menuitem label="frame_2d" onclick="UI.insert(UI.focused,'frame_2d(')"></menuitem>
-<menuitem label="frame_3d" onclick="UI.insert(UI.focused,'frame_3d(')"></menuitem>
-  </menu>
-  <menu label="Polygons">
-<menuitem label="triangle" onclick="UI.insert(UI.focused,'triangle(')"></menuitem>
-<menuitem label="equilateral_triangle" onclick="UI.insert(UI.focused,'equilateral_triangle(')"></menuitem>
-<menuitem label="isosceles_triangle" onclick="UI.insert(UI.focused,'isosceles_triangle(')"></menuitem>
-<menuitem label="right_triangle" onclick="UI.insert(UI.focused,'right_triangle(')"></menuitem>
-<menuitem label="square" onclick="UI.insert(UI.focused,'square(')"></menuitem>
-<menuitem label="rhombus" onclick="UI.insert(UI.focused,'rhombus(')"></menuitem>
-<menuitem label="parallelogram" onclick="UI.insert(UI.focused,'parallelogram(')"></menuitem>
-<menuitem label="quadrilateral" onclick="UI.insert(UI.focused,'quadrilateral(')"></menuitem>
-<menuitem label="rectangle" onclick="UI.insert(UI.focused,'rectangle(')"></menuitem>
-<menuitem label="convexhull" onclick="UI.insert(UI.focused,'convexhull(')"></menuitem>
-<menuitem label="hexagon" onclick="UI.insert(UI.focused,'hexagon(')"></menuitem>
-<menuitem label="isopolygon" onclick="UI.insert(UI.focused,'isopolygon(')"></menuitem>
-<menuitem label="polygon" onclick="UI.insert(UI.focused,'polygon(')"></menuitem>
-<menuitem label="open_polygon" onclick="UI.insert(UI.focused,'open_polygon(')"></menuitem>
-  </menu>
-  <menu label="Conics, circles">
-<menuitem label="arc" onclick="UI.insert(UI.focused,'arc(')"></menuitem>
-<menuitem label="circle" onclick="UI.insert(UI.focused,'circle(')"></menuitem>
-<menuitem label="circumcircle" onclick="UI.insert(UI.focused,'circumcircle(')"></menuitem>
-<menuitem label="excircle" onclick="UI.insert(UI.focused,'excircle(')"></menuitem>
-<menuitem label="incircle" onclick="UI.insert(UI.focused,'incircle(')"></menuitem>
-<menuitem label="osculating_circle" onclick="UI.insert(UI.focused,'osculating_circle(')"></menuitem>
-<menuitem label="circle" onclick="UI.insert(UI.focused,'circle(')"></menuitem>
-<menuitem label="ellipse" onclick="UI.insert(UI.focused,'ellipse(')"></menuitem>
-<menuitem label="hyperbola" onclick="UI.insert(UI.focused,'hyperbola(')"></menuitem>
-<menuitem label="parabola" onclick="UI.insert(UI.focused,'parabola(')"></menuitem>
-<menuitem label="conic" onclick="UI.insert(UI.focused,'conic(')"></menuitem>
-  </menu>
-  <menu label="Surfaces">
-<menuitem label="quadric" onclick="UI.insert(UI.focused,'quadric(')"></menuitem>
-<menuitem label="cone" onclick="UI.insert(UI.focused,'cone(')"></menuitem>
-<menuitem label="cylinder" onclick="UI.insert(UI.focused,'cylinder(')"></menuitem>
-<menuitem label="half_cone" onclick="UI.insert(UI.focused,'half_cone(')"></menuitem>
-<menuitem label="plane" onclick="UI.insert(UI.focused,'plane(')"></menuitem>
-<menuitem label="sphere" onclick="UI.insert(UI.focused,'sphere(')"></menuitem>
-<menuitem label="plotfunc" onclick="UI.insert(UI.focused,'plotfunc(')"></menuitem>
-<menuitem label="perpen_bisector" onclick="UI.insert(UI.focused,'perpen_bisector(')"></menuitem>
-<menuitem label="tangent" onclick="UI.insert(UI.focused,'tangent(')"></menuitem>
-  </menu>
-  <menu label="Solids">
-<menuitem label="cube" onclick="UI.insert(UI.focused,'cube(')"></menuitem>
-<menuitem label="pyramid" onclick="UI.insert(UI.focused,'pyramid(')"></menuitem>
-<menuitem label="prism" onclick="UI.insert(UI.focused,'prism(')"></menuitem>
-<menuitem label="parallelepiped" onclick="UI.insert(UI.focused,'parallelepiped(')"></menuitem>
-<menuitem label="polyhedron" onclick="UI.insert(UI.focused,'polyhedron(')"></menuitem>
-<menuitem label="tetrahedron" onclick="UI.insert(UI.focused,'tetrahedron(')"></menuitem>
-<menuitem label="centered_tetrahedron" onclick="UI.insert(UI.focused,'centered_tetrahedron(')"></menuitem>
-<menuitem label="centered_cube" onclick="UI.insert(UI.focused,'centerd_cube(')"></menuitem>
-<menuitem label="octahedron" onclick="UI.insert(UI.focused,'octahedron(')"></menuitem>
-<menuitem label="dodecahedron" onclick="UI.insert(UI.focused,'dodecahedron(')"></menuitem>
-<menuitem label="icosahedron"  onclick="UI.insert(UI.focused,'icosahedron(')"></menuitem>
-  
-<menuitem label="abs" onclick="UI.insert(UI.focused,'abs(')"></menuitem>
-<menuitem label="abscissa" onclick="UI.insert(UI.focused,'abscissa(')"></menuitem>
-<menuitem label="affix" onclick="UI.insert(UI.focused,'affix(')"></menuitem>
-<menuitem label="area" onclick="UI.insert(UI.focused,'area(')"></menuitem>
-<menuitem label="angle" onclick="UI.insert(UI.focused,'angle(')"></menuitem>
-<menuitem label="arg" onclick="UI.insert(UI.focused,'arg(')"></menuitem>
-<menuitem label="coordinates" onclick="UI.insert(UI.focused,'coordinates(')"></menuitem>
-<menuitem label="reduced_conic" onclick="UI.insert(UI.focused,'reduced_conic(')"></menuitem>
-  </menu>
-  <menu label="Measures">
-  <menuitem label="curvature" onclick="UI.insert(UI.focused,'curvature(')"></menuitem>
-<menuitem label="cote" onclick="UI.insert(UI.focused,'cote(')"></menuitem>
-<menuitem label="equation: cartesian" onclick="UI.insert(UI.focused,'equation(')"></menuitem>
-<menuitem label="extract_measure" onclick="UI.insert(UI.focused,'extract_measure(')"></menuitem>
-<menuitem label="distance" onclick="UI.insert(UI.focused,'distamce(')"></menuitem>
-<menuitem label="distance2" onclick="UI.insert(UI.focused,'distance2(')"></menuitem>
-<menuitem label="ordinate" onclick="UI.insert(UI.focused,'ordinate(')"></menuitem>
-<menuitem label="parameq: parametric equation" onclick="UI.insert(UI.focused,'parameq(')"></menuitem>
-<menuitem label="slope" onclick="UI.insert(UI.focused,'slope(')"></menuitem>
-<menuitem label="perimeter" onclick="UI.insert(UI.focused,'perimeter(')"></menuitem>
-<menuitem label="reduced_quadric" onclick="UI.insert(UI.focused,'reduced_quadric(')"></menuitem>
-<menuitem label="radius" onclick="UI.insert(UI.focused,'radius(')"></menuitem>
-<menuitem label="scalar_product" onclick="UI.insert(UI.focused,'scalar_product(')"></menuitem>
-  </menu>
-  <menu label="Transformations">
-  <menuitem label="homothety" onclick="UI.insert(UI.focused,'homothety(')"></menuitem>
-<menuitem label="inversion" onclick="UI.insert(UI.focused,'inversion(')"></menuitem>
-<menuitem label="projection" onclick="UI.insert(UI.focused,'projection(')"></menuitem>
-<menuitem label="rotation" onclick="UI.insert(UI.focused,'rotation(')"></menuitem>
-<menuitem label="similarity" onclick="UI.insert(UI.focused,'similarity(')"></menuitem>
-<menuitem label="reflection" onclick="UI.insert(UI.focused,'reflection(')"></menuitem>
-<menuitem label="translation" onclick="UI.insert(UI.focused,'translation(')"></menuitem>
-  </menu>
-  <menu label="Properties">
-  <menuitem label="is_collinear" onclick="UI.insert(UI.focused,'is_collinear(')"></menuitem>
-<menuitem label="is_concyclic" onclick="UI.insert(UI.focused,'is_concyclic(')"></menuitem>
-<menuitem label="is_coplanar" onclick="UI.insert(UI.focused,'is_coplanar(')"></menuitem>
-<menuitem label="is_element" onclick="UI.insert(UI.focused,'is_element(')"></menuitem>
-<menuitem label="is_parallel" onclick="UI.insert(UI.focused,'is_parallel(')"></menuitem>
-<menuitem label="is_orthogonal" onclick="UI.insert(UI.focused,'is_orthogonal(')"></menuitem>
-<menuitem label="is_equilateral" onclick="UI.insert(UI.focused,'is_equilateral(')"></menuitem>
-<menuitem label="is_isosceles" onclick="UI.insert(UI.focused,'is_isosceles(')"></menuitem>
-<menuitem label="is_rectangle" onclick="UI.insert(UI.focused,'is_rectangle(')"></menuitem>
-<menuitem label="is_square" onclick="UI.insert(UI.focused,'is_square(')"></menuitem>
-<menuitem label="is_rhombus" onclick="UI.insert(UI.focused,'is_rhombus(')"></menuitem>
-<menuitem label="is_parallelogram" onclick="UI.insert(UI.focused,'is_parallelogram(')"></menuitem>
-<menuitem label="is_conjugate" onclick="UI.insert(UI.focused,'is_conjugate(')"></menuitem>
-<menuitem label="is_harmonic_circle_bundle" onclick="UI.insert(UI.focused,'is_harmonic_circle_bundle (')"></menuitem>
-<menuitem label="is_harmonic_line_bundle" onclick="UI.insert(UI.focused,'is_harmonic_line_bundle (')"></menuitem>
-  </menu>
-  <menu label="Display">
-<menuitem label="display" onclick="UI.insert(UI.focused,'display')"></menuitem>
-<menuitem label="hidden_name" onclick="UI.insert(UI.focused,'hidden_name')"></menuitem>
-<menuitem label="filled" onclick="UI.insert(UI.focused,'filled')"></menuitem>
-<menuitem label="white" onclick="UI.insert(UI.focused,'whilte')"></menuitem>
-<menuitem label="black" onclick="UI.insert(UI.focused,'black')"></menuitem>
-<menuitem label="red" onclick="UI.insert(UI.focused,'red')"></menuitem>
-<menuitem label="green" onclick="UI.insert(UI.focused,'green')"></menuitem>
-<menuitem label="blue" onclick="UI.insert(UI.focused,'blue')"></menuitem>
-<menuitem label="yellow" onclick="UI.insert(UI.focused,'yellow')"></menuitem>
-<menuitem label="magenta" onclick="UI.insert(UI.focused,'magenta')"></menuitem>
-<menuitem label="cyan" onclick="UI.insert(UI.focused,'cyan')"></menuitem>
-<menuitem label="solid_line" onclick="UI.insert(UI.focused,'ligne_trait_plein(')"></menuitem>
-<menuitem label="dash_line" onclick="UI.insert(UI.focused,'ligne_tiret(')"></menuitem>
-<menuitem label="dashdot_line" onclick="UI.insert(UI.focused,'ligne_tiret_point(')"></menuitem>
-<menuitem label="dashdotdot_line" onclick="UI.insert(UI.focused,'ligne_tiret_pointpoint(')"></menuitem>
-<menuitem label="cap_flat_line" onclick="UI.insert(UI.focused,'ligne_chapeau_plat(')"></menuitem>
-<menuitem label="cap_round_line" onclick="UI.insert(UI.focused,'ligne_chapeau_rond(')"></menuitem>
-<menuitem label="cap_square_line" onclick="UI.insert(UI.focused,'ligne_chapeau_carre(')"></menuitem>
-<menuitem label="line_width_1" onclick="UI.insert(UI.focused,'line_width_1')"></menuitem>
-<menuitem label="line_width_2" onclick="UI.insert(UI.focused,'line_width_2')"></menuitem>
-<menuitem label="line_width_3" onclick="UI.insert(UI.focused,'line_width_3')"></menuitem>
-<menuitem label="line_width_4" onclick="UI.insert(UI.focused,'line_width_4')"></menuitem>
-<menuitem label="line_width_5" onclick="UI.insert(UI.focused,'line_width_5')"></menuitem>
-<menuitem label="line_width_6" onclick="UI.insert(UI.focused,'line_width_6')"></menuitem>
-<menuitem label="line_width_7" onclick="UI.insert(UI.focused,'line_width_7')"></menuitem>
-<menuitem label="rhombus_point" onclick="UI.insert(UI.focused,'rhombus_point')"></menuitem>
-<menuitem label="plus_point" onclick="UI.insert(UI.focused,'plus_point')"></menuitem>
-<menuitem label="square_point" onclick="UI.insert(UI.focused,'square_point')"></menuitem>
-<menuitem label="cross_point" onclick="UI.insert(UI.focused,'cross_point')"></menuitem>
-<menuitem label="triangle_point" onclick="UI.insert(UI.focused,'triangle_point')"></menuitem>
-<menuitem label="star_point" onclick="UI.insert(UI.focused,'star_point')"></menuitem>
-<menuitem label="point_point" onclick="UI.insert(UI.focused,'point_point')"></menuitem>
-<menuitem label="point_width_1" onclick="UI.insert(UI.focused,'point_width_1')"></menuitem>
-<menuitem label="point_width_2" onclick="UI.insert(UI.focused,'point_width_2')"></menuitem>
-<menuitem label="point_width_3" onclick="UI.insert(UI.focused,'point_width_3')"></menuitem>
-<menuitem label="point_width_4" onclick="UI.insert(UI.focused,'point_width_4')"></menuitem>
-<menuitem label="point_width_5" onclick="UI.insert(UI.focused,'point_width_5')"></menuitem>
-<menuitem label="point_width_6" onclick="UI.insert(UI.focused,'point_width_6')"></menuitem>
-<menuitem label="point_width_7" onclick="UI.insert(UI.focused,'point_width_7')"></menuitem>
-<menuitem label="quadrant1" onclick="UI.insert(UI.focused,'quadrant1')"></menuitem>
-<menuitem label="quadrant2" onclick="UI.insert(UI.focused,'quadrant2')"></menuitem>
-<menuitem label="quadrant3" onclick="UI.insert(UI.focused,'quadrant3')"></menuitem>
-<menuitem label="quadrant4"  onclick="UI.insert(UI.focused,'quadrant4')"></menuitem>
-  </menu>
-  
-  <menu label="Advanced">
-<menuitem label="radical_axis" onclick="UI.insert(UI.focused,'radical_axis(')"></menuitem>
-<menuitem label="cross_ratio" onclick="UI.insert(UI.focused,'cross_ratio(')"></menuitem>
-<menuitem label="pole" onclick="UI.insert(UI.focused,'pole(')"></menuitem>
-<menuitem label="polar" onclick="UI.insert(UI.focused,'polar(')"></menuitem>
-<menuitem label="reciprocation" onclick="UI.insert(UI.focused,'reciprocation(')"></menuitem>
-<menuitem label="harmonic_conjugate" onclick="UI.insert(UI.focused,'harmonic_conjugate(')"></menuitem>
-<menuitem label="harmonic_division" onclick="UI.insert(UI.focused,'harmonic_division(')"></menuitem>
-<menuitem label="powerpc" onclick="UI.insert(UI.focused,'powerpc(')"></menuitem>
-<menuitem label="evolute" onclick="UI.insert(UI.focused,'evolute(')"></menuitem>
-  </menu>
-  </menu>
-  <menu label="Graphs">
-<menuitem label="plot" onclick="UI.insert(UI.focused,'plot(')"></menuitem>
-<menuitem label="plotcontour: isolevel" onclick="UI.insert(UI.focused,'plotcontour(')"></menuitem>
-<menuitem label="plotfield: tangent field" onclick="UI.insert(UI.focused,'plotfield(')"></menuitem>
-<menuitem label="plotfunc" onclick="UI.insert(UI.focused,'plotfunc(')"></menuitem>
-<menuitem label="plotimplicit" onclick="UI.insert(UI.focused,'plotimplicit(')"></menuitem>
-<menuitem label="plotode: integral curve" onclick="UI.insert(UI.focused,'plotode(')"></menuitem>
-<menuitem label="plotparam" onclick="UI.insert(UI.focused,'plotparam(')"></menuitem>
-<menuitem label="plotpolar" onclick="UI.insert(UI.focused,'plotpolar(')"></menuitem>
-<menuitem label="plotseq: recurrent sequence plot" onclick="UI.insert(UI.focused,'plotseq(')"></menuitem>
-<menuitem label="plotproba: probabilistic plot" onclick="UI.insert(UI.focused,'plotproba(')"></menuitem>
-  </menu>
-  
-</menu>
+<script src="w3data.js"></script>
+<div w3-include-html="menuen.js"></div>
 
 <script src="FileSaver.js"></script>
 
 <script src="codemirror.js"></script>
-  <link rel="stylesheet" href="codemirror.css">
-  <script src="xcasmode.js"></script>
-  <script src="matchbrackets.js"></script>
+<link rel="stylesheet" href="codemirror.css">
+<link rel="stylesheet" href="show-hint.css">
+<script src="xcasmode.js"></script>
+<script src="matchbrackets.js"></script>
+<script src="show-hint.js"></script>
   <style type="text/css">
   .CodeMirror {border: 1px solid black; height:auto;}
   dt {font-family: monospace; color: #666;}
@@ -1325,6 +878,17 @@ ok</button>
   canvas_lastx:0,
   canvas_lasty:0,
   canvas_pushed:false,
+  initconfigstring:'',
+  sleep:function(miliseconds) {
+     var currentTime = new Date().getTime();
+     while (currentTime + miliseconds >= new Date().getTime()) {
+     }
+  },
+  is_touch_device() {
+   return (('ontouchstart' in window)
+      || (navigator.MaxTouchPoints > 0)
+      || (navigator.msMaxTouchPoints > 0));
+  },
   switchcm:function(){
   if (UI.usecm){
     if (cmentree==entree){
@@ -1358,6 +922,28 @@ ok</button>
   kbdonfuncoff:function() {
     document.getElementById('keyboard').style.display='inline';
     document.getElementById('keyboardfunc').style.display='none';
+  },
+  restorefrom:function(c){
+    var s=UI.readCookie(c);
+    //console.log(s);
+    UI.restoresession(s,document.getElementById('mathoutput'),true,false);
+    document.getElementById('loadfile_cookie').innerHTML='';
+  },
+  listCookies:function() { // list cookies with name begin == ' xcas__'
+    var theCookies = document.cookie.split(';');
+    var aString = '';
+    for (var i = 0 ; i < theCookies.length; i++) {
+        // console.log(i,theCookies[i].substr(0,7));
+        var tmp=theCookies[i];
+        var pos=tmp.search('=');
+        if (pos>7 && tmp.substr(0,7)==' xcas__' ){
+          var tmpname=tmp.substr(7,pos-7);
+          aString += "<button onclick=\"UI.restorefrom('"+tmp.substr(1,pos-1)+"')\">"+tmpname+"</button>\n";
+        }
+    }
+    aString += "<button onclick=document.getElementById('loadfile_cookie').innerHTML=''>cancel</button>\n"
+    //console.log(aString);
+    return aString;
   },
   createCookie:function(name,value,days) {
 	if (days) {
@@ -1641,7 +1227,7 @@ show_menu:function(){
    var form=document.getElementById('config');
    var hw=window.innerWidth,hh=window.innerHeight;
    if (hw>=1000){ hw=hw-50; UI.focusaftereval=true;}
-   if (hw<=500){ UI.focusaftereval=false;}
+   if (hw<=500){ UI.focusaftereval=false; document.getElementById('exportbutton').style.display='none';}
    form.history_width.value=hw;
    form.outdiv_width.value=Math.floor(hw/2);
    document.getElementById('mathoutput').style.maxWidth=hw;
@@ -1655,21 +1241,22 @@ show_menu:function(){
    st.innerHTML=s;
 var kbd_l=["add_newline","add_'","add_,","add_left_paren",
 "add_right_paren" ,"add_i","add_7" ,"add_8" ,"add_9" ,"add_/",
-"add_x" ,"add_y","add_semi" ,"add_left_[" ,"add_%" ,"add_pi" ,
-"add_4" ,"add_5" ,"add_6" ,"add_*" ,"add_z","add_t","add_:",
+"add_x" ,"add_y","add_semi" ,"add_left_[" ,"add_abs" ,"add_pi" ,
+"add_4" ,"add_5" ,"add_6" ,"add_*" ,"add_beg","add_end","add_:",
 "add_left_{" ,"add_!" ,"add_∞","add_1" ,"add_2" ,
 "add_3" ,"add_-" ,"copy_button" ,"curseur_up","add-=" ,"add__" ,
 "add_exp","add_ln","add_e","add_0" ,"add_." ,
-"add_+" ,"curseur_gauche","curseur_down" ,"curseur_droit","add_a" ,"add_sin" ,"add_cos",
+"add_+" , "add_inferieur","curseur_down" ,"add_superieur","add_a" ,"add_sin" ,"add_cos",
 "add_tan","add_sq","add_sqrt","add_^"];
 var kbd_cmd=["button_ok","button_help","button_123","button_util","button_cmd",
-"button_gauche","button_droit","select_button","button_del"];
+"button_gauche","button_droit","select_button","button_del",
+"add_//","add_space","add_nlprog","add_indent","add_test",
+"add_pour","add_tantque","add_function","add_debug"];
 var kbd_util=["add_simplify" ,"add_normal",
 "add_factor" ,"add_partfrac","add_texpand","add_tcollect","add_solve","add_csolve",
 "add_linsolve","add_fsolve" ,"add_desolve" ,"add_rsolve" ,"add_sum","add_diff",
-"add_integrate" ,"add_limit","add_series" ,"add_tabvar","add_plot",
-"add_plotparam" ,"add_plotpolar","add_plotimplicit","add_//","add_space","add_test",
-"add_pour","add_tantque","add_function","add_debug","add_curseur"];
+"add_integrate" ,"add_limit","add_series" ,"add_seq","add_tabvar","add_plot",
+"add_plotparam" ,"add_plotpolar","add_plotimplicit","add_curseur"];
   w=Math.floor(hw/12)+"px"; 
    h=Math.floor(hh/20)+"px"; console.log(hw,w,hh,h);
    w=Math.floor(hw/12); w=w+"px"; 
@@ -1750,6 +1337,12 @@ var kbd_util=["add_simplify" ,"add_normal",
   },
   savesession:function(i){
     var s;
+    filename=document.getElementById("outputfilename").value;
+    if (i==2) {
+      UI.createCookie('xcas__'+filename,UI.makelink(0),9999);
+      console.log(UI.listCookies());
+      return;
+    }
     if (i==1){
       s=document.getElementById("fulldocument").innerHTML;
       s='<html id="fulldocument" manifest="xcas.appcache">'+s+'</html>';
@@ -1758,7 +1351,6 @@ var kbd_util=["add_simplify" ,"add_normal",
       s=document.getElementById("mathoutput").innerHTML;
     }
     var blob = new Blob([s], {type: "text/plain;charset=utf-8"});
-    filename=document.getElementById("outputfilename").value;
     if (i==1) filename += ".html"; else filename += ".xw";
     saveAs(blob,filename);
   },
@@ -1813,7 +1405,7 @@ var kbd_util=["add_simplify" ,"add_normal",
    if (UI.focusaftereval) UI.focused.focus();
   },
   is_alphan:function(c){
-    return (c>=48 && c<=57) || (c>=65 && c<=91) || (c>=97 && c<=123);
+    return (c>=48 && c<=57) || (c>=65 && c<=91) || (c>=97 && c<=123) ||c==95;
   },
   erase_button:function(){
     return '<td><button style="width:30px;height:30px;" onclick=\'UI.erase(this)\' title="move level to the trash">del</button></td></tr>';
@@ -1982,6 +1574,10 @@ var kbd_util=["add_simplify" ,"add_normal",
   if (UI.langue==-1){ 
     var out=UI.caseval('set_langage(0); ');
     UI.langue=1;
+  }
+  if (UI.initconfigstring!=''){
+    UI.caseval(UI.initconfigstring);
+    UI.initconfigstring=''    
   }
  },
   switch_buttons: function(field,onoff){
@@ -2176,7 +1772,7 @@ addcomment: function(text){
   },
   addinput: function(textin,textout,mathmlout){
  document.getElementById('startup_restore').style.display='none'  
-  if (textout.length>=12 && textout.substr(0,12)=='Done_graphic'){ document.getElementById('boutons_3d').style.display='inherit';document.getElementById('boutons_3d0').style.display='inherit';}
+  if (mathmlout.length>=5 && mathmlout.substr(0,5)=='gl3d '){ document.getElementById('boutons_3d').style.display='inherit';document.getElementById('boutons_3d0').style.display='inherit';}
   if (textin.length > 2 && textin.substr(0,2)=='//') return UI.addcomment(textin);
          UI.show_history123();
 // document.getElementById('mathoutput').style.listStyleType = 'none';
@@ -2240,6 +1836,42 @@ giac_renderer: function(text){
 var gr = Module.cwrap('_ZN4giac13giac_rendererEPKc','number', ['string']);
 gr(text);
 },
+  xcascmd:["ABS","ACOS","ACOSH","ACOT","ACSC","ADDCOL","ADDROW","ALOG","ARC","ARG","ASEC","ASIN","ASINH","ATAN","ATANH","Airy_Ai","Airy_Bi","Ans","Archive","BINOMIAL","BesselI","BesselJ","BesselK","BesselY","Beta","Bezier","BlockDiagonal","CEILING","CHOOSE","COLNORM","COMB","CONCAT","COND","CONJ","COS","COSH","COT","CROSS","CSC","Celsius2Fahrenheit","Ci","Ci0","Circle","ClrDraw","ClrGraph","ClrIO","CopyVar","CyclePic","DEGXRAD","DELCOL","DELROW","DET","DISP","DOT","DROP","DUP","DelFold","DelVar","Det","Dirac","DispG","DispHome","DrawFunc","DrawInv","DrawParm","DrawPol","DrawSlp","DrwCtour","EDITMAT","EIGENVAL","EIGENVV","EXP","EXPM1","EXPORT","Ei","Ei0","Ei_f","Eta","Exec","FLOOR","FNROOT","Factor","Fahrenheit2Celsius","Fill","GETKEY","GF","Gamma","Gcd","Gcdex","Get","GetCalc","GetFold","Graph","HMSX","Heaviside","IDENMAT","IFTE","IM","INPUT","INVERSE","ISOLATE","ITERATE","Input","InputStr","Int","Inverse","JordanBlock","LINE","LN","LNP1","LOG","LQ","LSQ","LU","Line","LineHorz","LineTan","LineVert","MAKELIST","MAKEMAT","MANT","MAX","MAXREAL","MIN","MINREAL","MOD","MSGBOX","NOP","NORMALD","NTHROOT","NewFold","NewPic","Nullspace","OVER","Output","Ox_2d_unit_vector","Ox_3d_unit_vector","Oy_2d_unit_vector","Oy_3d_unit_vector","Oz_3d_unit_vector","PERM","PICK","PIECEWISE","PIXOFF","PIXON","POISSON","POLYCOEF","POLYEVAL","POLYFORM","POLYROOT","POS","PRINT","Pause","Phi","Pictsize","PopUp","Prompt","Psi","Psi_minus_ln","PtOff","PtOn","PtText","PxlOff","PxlOn","QR","QUAD","QUOTE","Quo","RADXDEG","RANDMAT","RANDOM","RANDSEED","RANK","RCL","RE","RECT","RECURSE","REDIM","REPLACE","REVERSE","ROUND","ROWNORM","RREF","RandSeed","Rank","RclPic","Rem","Resultant","RplcPic","Rref","SCALE","SCALEADD","SCHUR","SEC","SIGN","SIN","SINH","SIZE","SORT","SPECNORM","SPECRAD","SUB","SVD","SVL","SWAP","SWAPCOL","SWAPROW","SetFold","Si","SiCi_f","SiCi_g","SortA","SortD","StoPic","Store","Sum","TAN","TANH","TAYLOR","TRACE","TRN","TRUNCATE","TeX","UTPC","UTPF","UTPN","UTPT","Unarchiv","VIEWS","WAIT","XHMS","XPON","Zeta","ZoomRcl","ZoomSto","a2q","abcuv","about","abs","abscissa","accumulate_head_tail","acos","acos2asin","acos2atan","acosh","acot","acsc","add","add_language","additionally","adjoint_matrix","affix","algvar","alog10","alors","altitude","and","angle","angleat","angleatraw","animate","animate3d","animation","ans","append","apply","approx","arc","arcLen","area","areaat","areaatraw","areaplot","arg","array","array_sto","as_function_of","asc","asec","asin","asin2acos","asin2atan","asinh","assign","assume","atan","atan2acos","atan2asin","atanh","atrig2ln","augment","avance","avgRC","background","baisse_crayon","bar_plot","barycenter","basis","bernoulli","bezout_entiers","binomial","binomial_cdf","binomial_icdf","binprint","bisector","bitand","bitmap","bitor","bitxor","black","blockmatrix","blue","border","bounded_function","boxwhisker","break","breakpoint","by","c1oc2","c1op2","cFactor","cSolve","cZeros","cache_tortue","calc_mode","camembert","canonical_form","cap","cas_setup","cat","cd","ceil","ceiling","cell","center","center2interval","centered_cube","centered_tetrahedron","cfactor","changebase","char","charpoly","chinrem","chisquare","chisquare_cdf","chisquare_icdf","cholesky","choosebox","chrem","circle","circumcircle","classes","click","close","coeff","coeffs","col","colDim","colNorm","coldim","collect","colnorm","color","colspace","comDenom","comb","combine","comment","common_perpendicular","companion","compare","complexroot","concat","cone","conic","conj","cont","contains","content","contourplot","convert","convertir","convexhull","coordinates","copy","correlation","cos","cos2sintan","cosh","cot","cote","count","count_eq","count_inf","count_sup","courbe_parametrique","courbe_polaire","covariance","covariance_correlation","cpartfrac","crationalroot","crayon","cross","crossP","cross_ratio","crossproduct","csc","csolve","csv2gen","cube","curvature","cumSum","cumulated_frequencies","curl","current_sheet","curve","cyan","cycle2perm","cycleinv","cycles2permu","cyclotomic","cylinder","de","deSolve","debug","debug_infolevel","debut_enregistrement","decrement","degree","delcols","delrows","deltalist","denom","densityplot","deriver","desolve","dessine_tortue","det","det_minor","developper","developper_transcendant","dfc","dfc2f","diag","diff","dim","display","disque","disque_centre","distance","distance2","distanceat","distanceatraw","div","divcrement","divergence","divide","divis","division_point","divisors","divpc","dodecahedron","dot","dotP","dotprod","droit","droite_tangente","dsolve","e2r","ecart_type","ecart_type_population","ecris","efface","egcd","egv","egvl","eigVc","eigVl","eigenvals","eigenvalues","eigenvectors","eigenvects","element","ellipse","entry","envelope","epsilon2zero","equal2diff","equal2list","equation","equilateral_triangle","erase3d","erf","erfc","erfs","et","euler","euler_mac_laurin","eval","eval_level","evala","evalb","evalc","evalf","evalm","even","evolute","exact","exbisector","excircle","execute","exp","exp2list","exp2pow","exp2trig","expexpand","exponential_regression","exponential_regression_plot","expr","extract_measure","ezgcd","f2nd","fMax","fMin","fPart","faces","facteurs_premiers","factor","factor_xn","factorial","factoriser","factoriser_entier","factoriser_sur_C","factoriser_xn","factors","faire","fclose","fcoeff","ffonction","fft","fieldplot","filled","fin_enregistrement","findhelp","fisher","fisher_cdf","fisher_icdf","float","float2rational","floor","fonction","fonction_derivee","fopen","format","fourier_an","fourier_bn","fourier_cn","fprint","frac","fracmod","frame_2d","frame_3d","froot","fsolve","funcplot","function_diff","fxnd","gauche","gauss","gaussjord","gbasis","gcd","gcdex","genpoly","geo2d","geo3d","getDenom","getKey","getNum","getType","giac","goto","grad","gramschmidt","graph2tex","graph3d2tex","graphe","graphe3d","graphe_suite","greduce","green","groupermu","hadamard","half_cone","half_line","halftan","halftan_hyp2exp","halt","hamdist","harmonic_conjugate","harmonic_division","has","hasard","head","heap_mult","hermite","hessenberg","hessian","heugcd","hexagon","hexprint","hidden_name","hilbert","histogram","hold","homothety","horner","hp38","hyp2exp","hyperbola","hyperplan","hypersphere","hypersurface","iPart","iabcuv","ibasis","ibpdv","ibpu","ichinrem","ichrem","icontent","icosahedron","id","identity","idivis","idn","iegcd","ifactor","ifactors","ifft","igcd","igcdex","ihermite","ilaplace","im","imag","image","implicitplot","implicitplot3d","inString","in_ideal","incircle","increment","indets","inequationplot","input","inputform","insmod","int","intDiv","integer_format","integrate","integrer","inter","interactive","interactive_odeplot","interactive_plotode","interp","interval2center","inv","inverse","inversion","invlaplace","invztrans","iquo","iquorem","iratrecon","irem","isPrime","is_collinear","is_concyclic","is_conjugate","is_coplanar","is_cycle","is_element","is_equilateral","is_harmonic","is_harmonic_circle_bundle","is_harmonic_line_bundle","is_orthogonal","is_parallel","is_parallelogram","is_permu","is_perpendicular","is_prime","is_pseudoprime","is_rectangle","is_rhombus","is_square","ismith","isobarycenter","isom","isopolygon","isprime","ithprime","jacobi_symbol","jordan","jusque","ker","kernel","keyboard","kill","l1norm","l2norm","label","lagrange","laguerre","laplace","laplacian","latex","lcm","lcoeff","ldegree","left","legend","legendre","legendre_symbol","length","leve_crayon","lgcd","lhs","ligne_polygonale","ligne_polygonale_pointee","limit","limite","lin","line","line_inter","line_segments","linear_interpolate","linear_regression","linear_regression_plot","lineariser","lineariser_trigo","linsolve","lis","lis_phrase","list2mat","listplot","lll","ln","lnGamma_minus","lname","lncollect","lnexpand","locus","log10","logarithmic_regression","logarithmic_regression_plot","logb","logistic_regression","logistic_regression_plot","lsmod","lu","lvar","mRow","mRowAdd","magenta","makelist","makemat","makemod","makesuite","makevector","map","maple2mupad","maple2xcas","maple_ifactors","maple_mode","mat2list","mathml","matpow","matrix","max","maxnorm","mean","median","median_line","member","mid","midpoint","min","mkisom","mksa","modgcd","modgcd_cachesize","modp","mods","montre_tortue","moustache","moyal","moyenne","mpzclass_allowed","mul","mult_c_conjugate","mult_conjugate","multcrement","multiplier_conjugue","multiplier_conjugue_complexe","multiply","mupad2maple","mupad2xcas","nCr","nDeriv","nInt","nPr","nSolve","ncols","newList","newMat","newton","nextperm","nextprime","nodisp","non","non_recursive_normal","nop","nops","norm","normal","normal_cdf","normal_icdf","normald","normald_cdf","normald_icdf","normalize","nrows","nuage_points","nullspace","numer","octahedron","octprint","odd","odeplot","odesolve","op","open","open_polygon","or","ord","order_size","ordinate","orthocenter","orthogonal","os_version","ou","output","p1oc2","p1op2","pa2b2","pade","padic_linsolve","parabola","parabolic_interpolate","parallel","parallelepiped","parallelogram","parameq","parameter","paramplot","pari","pari_unlock","part","partfrac","pas","pas_de_cote","pcar","pcar_hessenberg","pcoeff","perimeter","perimeterat","perimeteratraw","perm","perminv","permu2cycles","permu2mat","permuorder","perpen_bisector","perpendicular","peval","piecewise","pivot","pixoff","pixon","plane","plot","plot3d","plot_style","plotarea","plotcontour","plotdensity","plotfield","plotfunc","plotimplicit","plotinequation","plotlist","plotode","plotparam","plotpolar","plotseq","pmin","pnt","point","point2d","point3d","pointer","poisson","poisson_cdf","poisson_icdf","polar","polar2rectangular","polar_coordinates","polar_point","polarplot","pole","poly2symb","polyEval","polygone_rempli","polygonplot","polygonscatterplot","polyhedron","polynomial_regression","polynomial_regression_plot","position","potential","pour","pow2exp","power_regression","power_regression_plot","powermod","powerpc","powexpand","powmod","prepend","preval","prevperm","prevprime","primpart","print","printpow","prism","product","prog_eval_level","projection","proot","propFrac","propfrac","psrgcd","ptayl","purge","pwd","pyramid","q2a","qr","quadric","quadrilateral","quantile","quartile1","quartile3","quartiles","quaternion","quest","quo","quorem","quote","r2e","radical_axis","radius","ramene","rand","randMat","randNorm","randPoly","randexp","randmatrix","randperm","randpoly","randvector","rank","ranm","rassembler_trigo","rat_jordan","rat_jordan_block","rationalroot","ratnormal","rdiv","re","read","readrgb","readwav","real","realroot","reciprocation","rectangle","rectangle_plein","rectangular2polar","rectangular_coordinates","recule","red","reduced_conic","reduced_quadric","ref","reflection","rem","remain","remove","remove_language","reorder","repete","reset_solve_counter","residue","resoudre","resoudre_dans_C","resoudre_systeme_lineaire","restart","restart_modes","restart_vars","resultant","reverse_rsolve","revert","revlist","rhombus","rhs","right","right_triangle","rm_a_z","rm_all_vars","rmbreakpoint","rmmod","rmwatch","romberg","rond","rootof","roots","rotate","rotation","round","row","rowAdd","rowDim","rowNorm","rowSwap","rowdim","rownorm","rowspace","rref","rsolve","saute","sauve","save_history","scalarProduct","scalar_product","scatterplot","sec","segment","select","semi_augment","seq","seqplot","seqsolve","series","shift","shift_phase","show_language","si","sialorssinon","sign","signature","signe","similarity","simp2","simplex_reduce","simplifier","simplify","simult","sin","sin2costan","sincos","single_inter","singular","sinh","sinon","size","sizes","slope","slopeat","slopeatraw","smod","snedecor","snedecor_cdf","snedecor_icdf","solve","solve_zero_extremum","somme","sommet","sort","sphere","spline","split","spread2mathml","spreadsheet","sq","sqrfree","sqrt","square","srand","sst","sst_in","stdDev","stddev","stddevp","sto","string","student","student_cdf","student_icdf","sturm","sturmab","sturmseq","subMat","submatrix","subst","substituer","sum","sum_riemann","suppress","surd","svd","switch_axes","sylvester","symb2poly","syst2mat","tCollect","tExpand","table","tablefunc","tableseq","tabvar","tail","tan","tan2cossin2","tan2sincos","tan2sincos2","tangent","tangente","tanh","tantque","taylor","tchebyshev1","tchebyshev2","tcoeff","tcollect","testfunc","tests","tetrahedron","texpand","textinput","threads_allowed","throw","time","tlin","to","tourne_droite","tourne_gauche","trace","tran","translation","transpose","triangle","triangle_plein","trig2exp","trigcos","trigexpand","trigsin","trigtan","trn","trunc","truncate","tsimplify","type","ufactor","unapply","unarchive","unarchive_ti","unitV","unquote","usimplify","valuation","vandermonde","variance","vector","vers","version","vertices","vertices_abc","vertices_abca","vpotential","watch","whattype","when","white","widget_size","with_sqrt","write","writergb","writewav","xcas_mode","xyztrange","yellow","zeros","zip","ztrans"],
+  dicho_find:function(tableau,s){
+    var l=tableau.length,debut=0,fin=l,milieu;
+    if (l==0) return false;
+    if (s<tableau[0] || s>tableau[l-1]) return false;
+    // s>=tableau[debut] and s<=tableau[fin-1]
+    for (;debut<fin-1;){
+      milieu=Math.floor((debut+fin)/2);
+      // console.log(debut,fin,milieu,tableau[milieu]) 
+      if (s>=tableau[milieu]) debut=milieu; else fin=milieu;
+    }
+    // console.log(s,tableau[debut]);
+    if (s==tableau[debut]) return true;
+    return false;
+  },
+  unique_completion:function(tableau,s){
+    var l=tableau.length,debut=0,fin=l,milieu;
+    if (l==0 || s>tableau[l-1]) return "";
+    if (s<tableau[0]) return s==tableau[0].substr(s.length);
+    // s>=tableau[debut] and s<=tableau[fin-1]
+    for (;debut<fin-1;){
+      milieu=Math.floor((debut+fin)/2);
+      // console.log(debut,fin,milieu,tableau[milieu]) 
+      if (s>=tableau[milieu]) debut=milieu; else fin=milieu;
+    }
+    //console.log(s,tableau[debut],tableau[debut+1],tableau[debut+2]);
+    // s>=tableau[debut]
+    if (s==tableau[debut]){
+      if (debut+1<l && s==tableau[debut+1].substr(0,s.length) ) return "";
+      return s;
+    }
+    // now s>tableau[debut] and s is supposed to be shorter, hence s!=begin of tableau[debut]
+    if (debut+1<l && s!=tableau[debut+1].substr(0,s.length)) return "";
+    if (debut+2<l && s==tableau[debut+2].substr(0,s.length)) return "";
+    return tableau[debut+1];
+  },
   completion:function(cm){
     var s,k;
     if (cm.type=='textarea'){
@@ -2271,7 +1903,27 @@ gr(text);
      //Module.print(s); Module.print(k); Module.print(kend);
      s=s.substr(k+1,kend-k);
      if (s.length<2){ UI.insert(UI.focused,'?'); return;}
-     if (cm.type=='textarea'){cm.selectionStart=k+1; cm.selectionEnd=kstart;} else cm.setSelection({line: pos.line,ch:k+1},{line:pos.line, ch:pos.ch});
+     var sc=UI.unique_completion(UI.xcascmd,s);
+     if (cm.type=='textarea'){
+       cm.selectionStart=k+1;
+       cm.selectionEnd=kstart;
+       if (sc!=""){
+         UI.insert(cm,sc);
+         s=sc;
+         cm.selectionStart=k+1;
+         cm.selectionEnd=k+1+sc.length;
+       }
+     } else {
+       if (sc!=""){
+         cm.setSelection({line:pos.line,ch:k+1},{line:pos.line,ch:pos.ch});
+         UI.insert(cm,sc);
+         cm.setSelection({line:pos.line,ch:k+1},{line:pos.line,ch:k+1+sc.length});
+         s=sc;
+       }
+       else {
+          cm.showHint();
+       }
+     }
      UI.addhelp('?',s);
   },
   isie:false,    
@@ -2358,6 +2010,7 @@ var endPos = field.selectionEnd;
   return selectedText;
   },
 move_caret_or_focus:function(field,n){
+ UI.moveCaret(field,n); return;
  if (UI.detectmob()){ UI.moveCaret(field,n); return; }
   move_focus(field,n);
 },
@@ -2451,6 +2104,35 @@ move_focus:function(field,n){
   par.focus();
   UI.switch_buttons(par.parentNode.parentNode,true) 
 },
+selline:0,
+selch:0,
+setselbeg:function(field){
+  if (field.type!="textarea"){
+    var pos=field.getCursor(); // save position
+    UI.selline=pos.line; UI.selch=pos.ch;
+    //console.log(UI.selline,UI.selch);
+    return;
+  }
+  UI.selch=field.selectionStart;
+},
+setselend:function(field){
+  if (field.type!="textarea"){
+    var startpos=field.getCursor(); // current position
+    field.setSelection({line: UI.selline,ch:UI.selch },startpos);
+    field.refresh();
+    UI.selection=field.getSelection();
+    return;
+  }
+  var pos1=field.selectionStart;
+  var pos2=UI.selch;
+  if (pos2>field.value.length) pos2=field.value.length;
+  if (pos1>pos2){ var tmp=pos1; pos1=pos2; pos2=tmp; }
+  field.setSelectionRange(pos1,pos2);
+  UI.selection=field.value.substr(pos1,pos2-pos1);
+},
+indentline:function(field){
+ if (field.type!='textarea') field.execCommand('indentAuto');
+},
 moveCaret: function(field, charCount) {
   if (field.type!="textarea"){
     var pos=field.getCursor();
@@ -2525,9 +2207,10 @@ moveCaretUpDown: function(field, Count) {
   par=par.parentNode;
   par.style.visibility='hidden';
   if (UI.focusaftereval) UI.focused.focus();
-  //par=par.parentNode;
-  //var list = par.parentNode;
-  //list.removeChild(par);
+  par=par.parentNode;
+  var list = par.parentNode;
+  if (list.id=='helpoutput')
+    list.removeChild(par);
   },
   erase_all_warn:1,
   erase_all: function(field){
@@ -2628,6 +2311,7 @@ insert: function(myField, myValue) {
  if (UI.focusaftereval) myField.focus();
  if (myField.type!="textarea"){
   myField.replaceSelection(myValue);
+  myField.execCommand("indentAuto");
   var t=myField.getTextArea(); t.value=myField.getValue();
  }
  else {
@@ -2746,6 +2430,7 @@ insert: function(myField, myValue) {
 <script src="longhelp.js"></script>
 
 <script language="javascript">
+  CodeMirror.registerHelper("hintWords", "simplemode",UI.xcascmd);
 // En ajoutant async a la fin de script src=giac.js on accelere les chargements
 // de la page nue (cache), mais pas si il y a un lien
   cmentree=entree;
@@ -2755,7 +2440,7 @@ insert: function(myField, myValue) {
   var form=document.getElementById('config');
   var hw=window.innerWidth-50;
   if (hw>=1000){ UI.qa=true; form.qa.checked=true; UI.usecm=true; form.usecm.checked=true;}
-  else {UI.qa=false; form.qa.checked=false; UI.usecm=false; form.usecm.checked=false;}
+  else {UI.qa=false; form.qa.checked=false; UI.usecm=true; form.usecm.checked=true;}
   // config in cookies
   var ck;
   ck=UI.readCookie('xcas_digits');
@@ -2783,11 +2468,11 @@ insert: function(myField, myValue) {
   ck=UI.readCookie('xcas_usecm'); 
   if (ck) form.usecm.checked=UI.usecm=(ck=='1');
   ck=UI.config_string(); console.log(ck);
-  UI.caseval(ck); //UI.set_config_width();
+  if (0) UI.caseval(ck); else UI.initconfigstring=ck; //UI.set_config_width();
   var ua = window.navigator.userAgent;
   var old_ie = ua.indexOf('MSIE ');
   var new_ie = ua.indexOf('Trident/');
-  if (window.chrome && hw<1000) UI.prettyprint=false;
+  // if (window.chrome && hw<1000) UI.prettyprint=false;
   if ((old_ie > -1) || (new_ie > -1)) UI.isie=true;
   var bt=UI.browser_type();
   if (UI.isie || (bt!=1 && bt!=2)){
@@ -2796,6 +2481,8 @@ insert: function(myField, myValue) {
     if (UI.isie) alertmsg="3d does not work with Internet Explorer. "+alertmsg;
     alert(alertmsg);
   }
+ if (!UI.is_touch_device()) w3IncludeHTML(); // context-menu
+ // if (bt==1 && hw>=1000) w3IncludeHTML();
  document.getElementById('apropos').style.display='none';
  document.getElementById('help').style.display='none';
  console.log("window.onload");
@@ -2811,8 +2498,9 @@ insert: function(myField, myValue) {
  }
  var hashParams = window.location.hash.substr(1);
  // substr(1) to remove the `#`
- document.getElementById('startup_restore').style.display='block';
- UI.restoresession(hashParams,hist,asked,doexec);
+ if (UI.readCookie('xcas_session')!=null) document.getElementById('startup_restore').style.display='block';
+ //UI.restoresession(hashParams,hist,asked,doexec);
+  window.setTimeout(UI.restoresession,200,hashParams,hist,asked,doexec);
   document.getElementById('startup1').style.display='block';
 }
 </script>

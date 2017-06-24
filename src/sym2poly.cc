@@ -337,7 +337,8 @@ namespace giac {
       vector<const unary_function_ptr *> vu;
       vu.push_back(at_rootof); 
       vector <gen_op_context> vv;
-      vv.push_back(_nop);
+      vv.push_back(_nop); 
+      // FIXME: arg of e is two vectors, if rootof is ^, this raises a warning
       gen er=subst(e,vu,vv,false,context0);
       alg_lvar(er,l);
     }
@@ -2495,8 +2496,10 @@ namespace giac {
     if (g.type==_SYMB) {
       if (g._SYMBptr->sommet==at_pow && g._SYMBptr->feuille._VECTptr->back().type!=_INT_) 
 	return vecteur(1,g);
-      else
-	return lop_pow(g._SYMBptr->feuille);
+      else {
+	if (g._SYMBptr->sommet!=at_ln)
+	  return lop_pow(g._SYMBptr->feuille);
+      }
     }
     if (g.type!=_VECT)
       return vecteur(0);

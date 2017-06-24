@@ -1539,6 +1539,8 @@ namespace giac {
 	  return gen(vecteur(w.begin()+v2,w.begin()+v3+1),v[1].subtype);
       }
     }
+    if (v.size()==3)
+      v.insert(v.begin(),v0);
     if (v.size()<4)
       return gendimerr(contextptr);
     v[2]=_floor(v[2],contextptr);
@@ -1941,7 +1943,10 @@ namespace giac {
 	return _limit(tmp,contextptr);
       }
       else {
-	tmp=gen(makevecteur(arg0,newx,ndiff),_SEQ__VECT);
+	if (ndiff==1)
+	  tmp=gen(makesequence(arg0,newx));
+	else
+	  tmp=gen(makevecteur(arg0,newx,ndiff),_SEQ__VECT);
 	tmp=_derive(tmp,contextptr);
 	// return _limit(makesequence(tmp,newx,value),contextptr);
 	tmp=subst(tmp,newx,value,false,contextptr);

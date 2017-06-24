@@ -4590,10 +4590,10 @@ namespace xcas {
   void petite_fleche(double i1,double j1,double dx,double dy,int deltax,int deltay,int width){
     double dxy=std::sqrt(dx*dx+dy*dy);
     if (dxy){
-      dxy/=min(5,int(dxy/10))+width;
+      dxy/=max(2,min(5,int(dxy/10)))+width;
       dx/=dxy;
       dy/=dxy;
-      double dxp=-dy,dyp=dx;
+      double dxp=-dy,dyp=dx; // perpendicular
       dx*=std::sqrt(3.0);
       dy*=sqrt(3.0);
       fl_polygon(round(i1)+deltax,round(j1)+deltay,round(i1+dx+dxp)+deltax,round(j1+dy+dyp)+deltay,round(i1+dx-dxp)+deltax,round(j1+dy-dyp)+deltay);
@@ -4693,6 +4693,16 @@ namespace xcas {
       if ( (f[0].type==_SYMB) && (f[0]._SYMBptr->sommet==at_curve) && (f[0]._SYMBptr->feuille.type==_VECT) && (f[0]._SYMBptr->feuille._VECTptr->size()) ){
 	// Mon_image.show_mouse_on_object=false;
 	point=f[0]._SYMBptr->feuille._VECTptr->back();
+	if (point.type==_VECT && point._VECTptr->size()>2){
+	  vecteur v=*point._VECTptr;
+	  int vs=v.size()/2; // 3 -> 1
+	  if (Mon_image.findij(v[vs],x_scale,y_scale,i0,j0,contextptr) && Mon_image.findij(v[vs+1],x_scale,y_scale,i1,j1,contextptr)){
+	    bool logx=Mon_image.display_mode & 0x400,logy=Mon_image.display_mode & 0x800;
+	    checklog_fl_line(i0,j0,i1,j1,deltax,deltay,logx,logy,Mon_image.window_xmin,x_scale,Mon_image.window_ymax,y_scale);
+	    double dx=i0-i1,dy=j0-j1;
+	    petite_fleche(i1,j1,dx,dy,deltax,deltay,width+3);
+	  }
+	}
       }
       if (is_undef(point))
 	return;
@@ -5756,7 +5766,7 @@ namespace xcas {
     static Fl_Value_Input * ymin=0,*ystep=0,*ymax=0;
     static Fl_Return_Button * button0 = 0 ;
     static Fl_Button * button1 =0;
-    static Fl_Check_Button * do_plotfield = 0,*do_normal=0;
+    static Fl_Check_Button * do_plotfield = 0,*do_normal=0,*do_autonome=0;
     static Line_Type *ltres=0;
     // static int curvestyle=0;
     Graph2d3d * gr = dynamic_cast<Graph2d3d *>(spread_ptr);
@@ -5781,13 +5791,16 @@ namespace xcas {
       do_plotfield= new Fl_Check_Button (l+2,2,dx/6-4-l,dy/lignes-4,"Field");
       do_plotfield->value(true);
       do_plotfield->tooltip(gettext("Draw slopefield"));
-      do_normal= new Fl_Check_Button (2+dx/6,2,dx/6-4,dy/lignes-4,"||=1");
+      do_autonome= new Fl_Check_Button (2+dx/6,2,dx/6-4,dy/lignes-4,"d=2");
+      do_autonome->value(false);
+      do_autonome->tooltip(gettext("Autonomous 2d systems."));
+      do_normal= new Fl_Check_Button (2+dx/3,2,dx/6-4,dy/lignes-4,"||=1");
       do_normal->value(true);
       do_normal->tooltip(gettext("Normalize slopefield"));
       fcnimplicit=new Fl_Input(dx/2,2,dx/2-4,dy/lignes-4,gettext("F(x,y)="));
       fcnimplicit->value("x^4+y^4+x*y=25");
       fcnimplicit->tooltip(gettext("Implicit expression"));
-      fcnfield=new Fl_Input(dx/2,2,dx/2-4,dy/lignes-4,gettext("dy/dt(t,y)="));
+      fcnfield=new Fl_Input(dx/2+dx/6,2,dx/2-dx/6-4,dy/lignes-4,gettext("dy/dt(t,y)="));
       fcnfield->value("sin(t*y)");
       fcnfield->tooltip(gettext("Expression of dy/dt in terms of y and t, e.g. sin(t*y). For autonomous 2d system,change time variable to x and enter d[x,y]/dt in terms of [x,y], e.g. [[1,2],[3,4]]*[x,y]"));
       fcnrhot=new Fl_Input(dx/2,2,dx/2-4,dy/lignes-4,gettext("rho(t)="));
@@ -5930,6 +5943,7 @@ namespace xcas {
     ystep->hide();
     do_plotfield->hide();
     do_normal->hide();
+    do_autonome->hide();
     if (modeplot>=2){
       xmin->show();
       xstep->show();
@@ -5943,6 +5957,7 @@ namespace xcas {
 	fcnfield->show();
 	do_plotfield->show();
 	do_normal->show();
+	do_autonome->show();
       }
       else {
 	varnamex->show();
@@ -6002,6 +6017,18 @@ namespace xcas {
 	  bool formel=false,untranslate=false,approx=false;
 	  change_line_type(i,true,approx,"",fcnzuv->visible(),formel,untranslate,false,spread_ptr?spread_ptr->labelsize():14);
 	  ltres->line_type(i);
+	}
+	if (o==do_autonome){
+	  if (do_autonome->value()){
+	    fcnfield->value("[[1,2],[3,4]]*[x,y]");
+	    varnametfield->value("x");
+	    varnameyfield->value("y");
+	  }
+	  else {
+	    fcnfield->value("sin(t*y)");
+	    varnametfield->value("t");
+	    varnameyfield->value("y");
+	  }
 	}
 	if (o == button0) {r = 0; break;}
 	if (o == button1) {r = 1; break;}

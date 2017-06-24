@@ -21,6 +21,11 @@ using namespace std;
 #include <stdexcept>
 #include <map>
 #include <iostream>
+#ifdef HAVE_SSTREAM
+#include <sstream>
+#else
+#include <strstream>
+#endif
 #include "gen.h"
 #include "vecteur.h"
 #include "modpoly.h"
@@ -37,6 +42,8 @@ using namespace std;
 #include "ti89.h"
 #include "csturm.h"
 #include "sparse.h"
+#include "modfactor.h"
+#include "quater.h"
 #include "giacintl.h"
 #ifdef HAVE_LIBGSL
 #include <gsl/gsl_linalg.h>
@@ -48,7 +55,8 @@ using namespace std;
 // (link with -framewrok Accelerate)
 // it is not used by default because the Accelerate version is slower 
 // than the current Atlas, at least on OSX.6, and is also slower than giac built-in
-#ifndef APPLE_SMART
+
+#if !defined(APPLE_SMART) && !defined(DONT_USE_LIBLAPLACK) 
 #if defined __APPLE__ && !defined(HAVE_LIBLAPACK) && !defined(USE_GMP_REPLACEMENTS)
 #define HAVE_LIBLAPACK
 #endif
@@ -3514,7 +3522,7 @@ namespace giac {
     }
   }
   
-#ifndef GIAC_HAS_STO_38
+#if 1 // ndef GIAC_HAS_STO_38
   const int mmult_double_blocksize=45; // 2*45^2*sizeof(double)= a little less than 32K
   int mmult_int_blocksize=60; // 2*60^2*sizeof(int)= a little less than 32K
   gen _blockmatrix_mult_size(const gen & args,GIAC_CONTEXT){
@@ -4335,7 +4343,7 @@ namespace giac {
 	    if (it->type==_INT_){
 	      if (jt->type==_INT_){
 		longlong x=longlong(it->val)*jt->val;
-#ifdef __x86_64__
+#ifdef x86_64
 		if (x>=0)
 		  mpz_add_ui(*tmp._ZINTptr,*tmp._ZINTptr,x);
 		else
@@ -4508,7 +4516,7 @@ namespace giac {
     if (matrice2std_matrix_double(a,ad,true) && matrice2std_matrix_double(btran,btrand,true)){
       int resrows=mrows(a);
       int rescols=mrows(btran);
-#ifndef GIAC_HAS_STO_38
+#if 1 // ndef GIAC_HAS_STO_38
       int n;
       if (!ad.empty() && resrows>=2*mmult_double_blocksize && rescols>=2*mmult_double_blocksize && (n=ad.front().size())>=mmult_double_blocksize){
 	if (n>=CALL_LAPACK && resrows>=CALL_LAPACK && rescols>=CALL_LAPACK){
@@ -4695,7 +4703,7 @@ namespace giac {
     int at=a_.front()[0].type,bt=btran.front()[0].type;
     // if ( ( (at==_POLY && bt==_POLY) || (at==_VECT && bt==_VECT) ) && mmult_interp(a_,btran,res) ) return ;
 #endif
-#ifndef BCD // creating a copy of the matrices take too much memory and slows down on Aspen
+#if 1 // ndef BCD // creating a copy of the matrices take too much memory and slows down on Aspen
     if ( (has_num_coeff(a_) || has_num_coeff(btran)) && mmult_double(a_,btran,res))
       return;
 #endif
@@ -6131,6 +6139,17 @@ namespace giac {
 	if (*(it->_MODptr+1)!=p)
 	  return false;
 	v.push_back(it->_MODptr->val);
+	continue;
+      }
+      if (it->is_symb_of_sommet(at_normalmod)){
+	const gen & f=it->_SYMBptr->feuille;
+	if (f.type!=_VECT || f._VECTptr->size()!=2 || f._VECTptr->front().type!=_INT_ || f._VECTptr->back().type!=_INT_)
+	  return false;
+	if (!p)
+	  p=f._VECTptr->back().val;
+	if (f._VECTptr->back().val!=p)
+	  return false;
+	v.push_back(f._VECTptr->front().val);
 	continue;
       }
       if (it->type!=_INT_) return false;
@@ -13087,6 +13106,19 @@ namespace giac {
   // see modpoly.h for polynomial operations on vecteur
   dense_POLY1 mpcar(const matrice & a,vecteur & Bv,bool compute_Bv,bool convert_internal,GIAC_CONTEXT){
     int n=int(a.size());
+    gen modulo,fieldpmin;
+    if (n && has_gf_coeff(a,modulo,fieldpmin)){
+      gen tmp=_pcar(a,contextptr);
+      if (tmp.type!=_VECT)
+	return vecteur(1,gensizeerr(contextptr));
+      vecteur P=*tmp._VECTptr;
+      // do Horner to compute Bv
+      if (compute_Bv){
+	horner(P,a,0,Bv);
+	Bv[0]=midn(n);
+      }
+      return P;      
+    }
     if (n && a[0]._VECTptr->front().type==_MOD){
       vecteur P(mpcar_hessenberg(a,0,contextptr));
       // do Horner to compute Bv
@@ -13183,7 +13215,9 @@ namespace giac {
       std_matrix<gen> m; vecteur w;
       matrice2std_matrix_gen(M,m);
       mod_pcar(m,w,true);
-      return gen(w,_POLY1__VECT);
+      if (is_undef(b))
+	return gen(w,_POLY1__VECT);
+      return symb_horner(w,b);	
     }
     if (p.type==_MOD && (p._MODptr+1)->type==_INT_){
       gen mg=unmod(M);
@@ -13196,9 +13230,10 @@ namespace giac {
 	if (mod_pcar(M1,N,modulo,krylov,res,contextptr,false)){
 	  vecteur w;
 	  vector_int2vecteur(res,w);
-	  environment env;
-	  w=modularize(w,modulo,&env);
-	  return gen(w,_POLY1__VECT);
+	  w=*makemod(w,modulo)._VECTptr;
+	  if (is_undef(b))
+	    return gen(w,_POLY1__VECT);
+	  return symb_horner(w,b);	
 	}
       }
     }
@@ -13826,6 +13861,50 @@ namespace giac {
     vecteur p_car;
     p_car=mpcar(mr,m_adj,true,contextptr);
     p_car=common_deno(p_car)*p_car; // remove denominators
+    // extension handling
+    gen modulo,fieldpmin;
+    if (has_mod_coeff(p_car,modulo)){
+      modpoly pc=*unmod(p_car)._VECTptr;
+      vector< facteur<modpoly> > vpc; vector<modpoly> qmat;
+      environment env;
+      env.modulo=modulo; env.moduloon=true; env.pn=modulo;
+      if (ddf(pc,qmat,&env,vpc)){
+	int extdeg=1;
+	for (int j=0;j<int(vpc.size());++j){
+	  extdeg=lcm(extdeg,vpc[j].mult).val;
+	}
+	if (extdeg>1){
+	  *logptr(contextptr) << "Creating splitting field extension GF(" << modulo << "," << extdeg << ")" << endl;
+	  gen tmp=_galois_field(makesequence(modulo,extdeg),contextptr);
+	  tmp=tmp[plus_two];
+	  tmp=eval(tmp[2],1,contextptr); // field generator
+	  p_car=tmp*p_car;
+	}
+      }
+      else
+	*logptr(contextptr) << "Warning! Automatic extension not implemented. You can try to diagonalize the matrix * a non trivial element of GF(" << modulo << ",lcm of degrees of factor(" << symb_horner(p_car,vx_var) << "))" <<  endl;
+    }
+    if (has_gf_coeff(p_car,modulo,fieldpmin)){
+      factorization f;
+      gen res=gf_list()[pow(modulo,gfsize(fieldpmin),contextptr)].g;
+      if (galois_field * ptr=dynamic_cast<galois_field *>(res._USERptr)){
+	polynome P(1);
+	poly12polynome(p_car,1,P,1);
+	res=ptr->polyfactor(P,f);
+	int extdeg=1;
+	for (int i=0;i<int(f.size());++i){
+	  extdeg=lcm(extdeg,f[i].fact.lexsorted_degree()).val;
+	}
+	if (extdeg>1){
+	  extdeg *= gfsize(fieldpmin);
+	  *logptr(contextptr) << "Creating splitting field extension GF(" << modulo << "," << extdeg << ")" << endl;
+	  gen tmp=_galois_field(makesequence(modulo,extdeg),contextptr);
+	  tmp=tmp[plus_two];
+	  tmp=eval(tmp[2],1,contextptr); // field generator
+	  p_car=tmp*p_car;
+	}
+      }
+    }
     // factorizes p_car
     factorization f;
     polynome ppcar(poly1_2_polynome(p_car,1));
@@ -13949,11 +14028,15 @@ namespace giac {
 	vecteur ww(w.size());
 	for (unsigned i=0;i<w.size();++i)
 	  ww[i]=r2e(w[i],lv,contextptr);
-	v=solve(horner(ww,tmpx),tmpx,complex_mode(contextptr),contextptr); 
+	gen wwx=horner(ww,tmpx);
+	v=solve(wwx,tmpx,complex_mode(contextptr),contextptr); 
 	v=*apply(v,recursive_normal,contextptr)._VECTptr;
 	if (v.size()!=w.size()-1){
 	  gen m0num=evalf(m0,1,contextptr);
-	  if (m0num.type==_VECT && lidnt(m0num).empty()){
+	  if (m0num.type==_VECT 
+	      && is_numericm(*m0num._VECTptr)
+	      // && lidnt(m0num).empty()
+	      ){
 	    *logptr(contextptr) << gettext("Unable to find exact eigenvalues. Trying approx") << endl;
 	    return egv(*m0num._VECTptr,p,d,contextptr,jordan,false,eigenvalues_only);
 	  }
@@ -15667,23 +15750,55 @@ namespace giac {
 
   // Utilities for Hermite and Smith normal forms
   static gen rem(const gen & p,const gen & q,environment * env){
+    if (is_zero(p))
+      return p;
     if (!env)
       return smod(p,q);
-    if (p.type!=_VECT)
-      return zero;
-    if (q.type!=_VECT)
-      return q;
-    return operator_mod(*p._VECTptr,*q._VECTptr,env);
+    if (p.type==_POLY || q.type==_POLY){
+      if (p.type!=_POLY)
+	return p;
+      if (q.type!=_POLY)
+	return 0;
+      return *p._POLYptr % *q._POLYptr;
+    }
+    vecteur R=operator_mod(gen2vecteur(p),gen2vecteur(q),env);
+    if (R.size()==1)
+      return R.front();
+    else
+      return gen(R,_POLY1__VECT);
   }
 
   static gen quo(const gen & p,const gen & q,environment * env){
+    if (is_zero(p))
+      return p;
     if (!env)
       return (p-smod(p,q))/q;
-    if (p.type!=_VECT)
-      return zero;
-    if (q.type!=_VECT)
-      return q;
-    return operator_div(*p._VECTptr,*q._VECTptr,env);
+    if (p.type==_POLY || q.type==_POLY){
+      if (p.type!=_POLY)
+	return zero;
+      if (q.type!=_POLY)
+	return q;
+      return *p._POLYptr % *q._POLYptr; // FIXME mod computation
+    }
+    vecteur Q=operator_div(gen2vecteur(p),gen2vecteur(q),env);
+    if (Q.size()==1)
+      return Q.front();
+    else
+      return gen(Q,_POLY1__VECT);
+  }
+
+  // w=(c1*v1+c2*v2)/c smod modulo
+  void modlinear_combination(const gen & c1,const vecteur & v1,const gen & c2,const vecteur & v2,const gen & c,vecteur & w,environment * env,int cstart,int cend){
+    const_iterateur it1=v1.begin()+cstart,it1end=v1.end();
+    if (cend && cend>=cstart && cend<it1end-v1.begin())
+      it1end=v1.begin()+cend;
+    const_iterateur it2=v2.begin()+cstart;
+    iterateur jt=w.begin()+cstart;
+    gen modulo=env->modulo;
+    for (;it1!=it1end;++it1,++it2,++jt){
+      *jt=smod(c1*(*it1)+c2*(*it2),modulo);
+      *jt=quo(*jt,c,env);
+    }
   }
 
   static void egcd(const gen & a,const gen & b,gen & u,gen & v,gen & d,environment * env){
@@ -15691,21 +15806,80 @@ namespace giac {
       egcd(a,b,u,v,d);
       return ;
     }
+    if (is_zero(a)){
+      u=0; v=1; d=b; return;
+    }
+    if (is_zero(b)){
+      u=1; v=0; d=a; return;
+    }
+    if (a.type==_POLY || b.type==_POLY){
+      if (a.type!=_POLY){
+	if (env && env->moduloon){
+	  d=1;
+	  u=invmod(a,env->modulo);
+	}
+	else {
+	  d=a;
+	  u=plus_one;
+	}
+	v=zero;
+	return;
+      }
+      if (b.type!=_POLY){
+	if (env && env->moduloon){
+	  d=1;
+	  v=invmod(b,env->modulo);
+	}
+	else {
+	  d=b;
+	  v=plus_one;
+	}
+	u=zero;
+	return;
+      }
+      polynome U,V,D;
+      egcd(*a._POLYptr,*b._POLYptr,U,V,D);
+      u=U; v=V; d=D;
+      return;
+    }
     if (a.type!=_VECT){
-      d=a;
-      u=plus_one;
+      if (env && env->moduloon){
+	d=1;
+	u=invmod(a,env->modulo);
+      }
+      else {
+	d=a;
+	u=plus_one;
+      }
       v=zero;
       return;
     }
     if (b.type!=_VECT){
-      d=b;
-      v=plus_one;
+      if (env && env->moduloon){
+	d=1;
+	v=invmod(b,env->modulo);
+      }
+      else {
+	d=b;
+	v=plus_one;
+      }
       u=zero;
       return;
     }
     modpoly U,V,D;
     egcd(*a._VECTptr,*b._VECTptr,env,U,V,D);
-    u=U; v=V; d=D;
+    if (U.size()==1)
+      u=U.front();
+    else
+      u=gen(U,_POLY1__VECT); 
+    if (V.size()==1)
+      v=V.front();
+    else
+      v=gen(V,_POLY1__VECT); 
+    if (D.size()==1)
+      d=D.front();
+    else
+      d=gen(D,_POLY1__VECT);
   }
 
   // degree + 1 for poly, abs for integer, 1 otherwise
@@ -15759,17 +15933,25 @@ namespace giac {
 	    // Below diag: we use Bezout u*a+v*b=d where a=coeff, b="pivot"
 	    // L_i0 <- v*L_i0 + u*L_i
 	    // L_i <- (-a * L_i0 + b * L_i)/d
-	    // This transformation is Z-invertible since det=(U*a+b*v)/d=1
+	    // This transformation is Z-invertible since det=(u*a+b*v)/d=1
 	    // it will cancel the leading coeff of L_i
 	    // We should use the smallest possible |u| and |v|
 	    gen a = A[i][j];
 	    gen b = A[i0][j];
 	    egcd(a,b,u,v,d,env);
-	    linear_combination(v,U[i0],u,U[i],plus_one,1,B1,0.0,0);
-	    linear_combination(-a,U[i0],b,U[i],d,1,U[i],0.0,0);
+	    if (env && env->moduloon){
+	      modlinear_combination(v,U[i0],u,U[i],plus_one,B1,env,0,0);
+	      modlinear_combination(-a,U[i0],b,U[i],d,U[i],env,0,0);
+	      modlinear_combination(v,A[i0],u,A[i],plus_one,B2,env,0,0);
+	      modlinear_combination(-a,A[i0],b,A[i],d,A[i],env,0,0);
+	    }
+	    else {
+	      linear_combination(v,U[i0],u,U[i],plus_one,1,B1,0.0,0);
+	      linear_combination(-a,U[i0],b,U[i],d,1,U[i],0.0,0);
+	      linear_combination(v,A[i0],u,A[i],plus_one,1,B2,0.0,0);
+	      linear_combination(-a,A[i0],b,A[i],d,1,A[i],0.0,0);
+	    }
 	    U[i0]=B1;
-	    linear_combination(v,A[i0],u,A[i],plus_one,1,B2,0.0,0);
-	    linear_combination(-a,A[i0],b,A[i],d,1,A[i],0.0,0);
 	    A[i0]=B2;	    
 	  }
 	} // end for (column reduced)
@@ -15886,11 +16068,19 @@ namespace giac {
 	    gen a = A[i][j0];
 	    gen b = A[i0][j0];
 	    egcd(b,a,v,u,d,env);
-	    linear_combination(v,U[i0],u,U[i],plus_one,1,B1,0.0,0);
-	    linear_combination(-a,U[i0],b,U[i],d,1,U[i],0.0,0);
+	    if (env && env->moduloon){
+	      modlinear_combination(v,U[i0],u,U[i],plus_one,B1,env,0,0);
+	      modlinear_combination(-a,U[i0],b,U[i],d,U[i],env,0,0);
+	      modlinear_combination(v,A[i0],u,A[i],plus_one,B2,env,0,0);
+	      modlinear_combination(-a,A[i0],b,A[i],d,A[i],env,0,0);
+	    }
+	    else {
+	      linear_combination(v,U[i0],u,U[i],plus_one,1,B1,0.0,0);
+	      linear_combination(-a,U[i0],b,U[i],d,1,U[i],0.0,0);
+	      linear_combination(v,A[i0],u,A[i],plus_one,1,B2,0.0,0);
+	      linear_combination(-a,A[i0],b,A[i],d,1,A[i],0.0,0);
+	    }
 	    U[i0]=B1;
-	    linear_combination(v,A[i0],u,A[i],plus_one,1,B2,0.0,0);
-	    linear_combination(-a,A[i0],b,A[i],d,1,A[i],0.0,0);
 	    A[i0]=B2;	    
 	  } // end for (row reduced)
 	  if (!env && is_strictly_positive(-A[i0][j0],contextptr)){
@@ -15930,11 +16120,19 @@ namespace giac {
 	    gen a = A[i][i0];
 	    gen b = A[j0][i0];
 	    egcd(b,a,v,u,d,env);
-	    linear_combination(v,V[j0],u,V[i],plus_one,1,B2,0.0,0);
-	    linear_combination(-a,V[j0],b,V[i],d,1,V[i],0.0,0);
+	    if (env && env->moduloon){
+	      modlinear_combination(v,V[j0],u,V[i],plus_one,B2,env,0,0);
+	      modlinear_combination(-a,V[j0],b,V[i],d,V[i],env,0,0);
+	      modlinear_combination(v,A[j0],u,A[i],plus_one,B1,env,0,0);
+	      modlinear_combination(-a,A[j0],b,A[i],d,A[i],env,0,0);
+	    }
+	    else {
+	      linear_combination(v,V[j0],u,V[i],plus_one,1,B2,0.0,0);
+	      linear_combination(-a,V[j0],b,V[i],d,1,V[i],0.0,0);
+	      linear_combination(v,A[j0],u,A[i],plus_one,1,B1,0.0,0);
+	      linear_combination(-a,A[j0],b,A[i],d,1,A[i],0.0,0);
+	    }
 	    V[j0]=B2;
-	    linear_combination(v,A[j0],u,A[i],plus_one,1,B1,0.0,0);
-	    linear_combination(-a,A[j0],b,A[i],d,1,A[i],0.0,0);
 	    A[j0]=B1;	    
 	  } // end for (row reduced)
 	  if (!env && is_strictly_positive(-A[j0][i0],contextptr)){
@@ -16110,9 +16308,16 @@ namespace giac {
     if ( g.type==_STRNG && g.subtype==-1) return  g;
     char sep(';'),nl('\n'),eof(0),decsep(',');
     gen tmp,gs;
+    bool isfile=true;
+    int s=0;
     if (g.type==_VECT && !g._VECTptr->empty()){
       gs=g._VECTptr->front();
-      int s=int(g._VECTptr->size());
+      s=int(g._VECTptr->size());
+      tmp=g[s-1];
+      if (tmp==at_string){
+	isfile=false;
+	--s;
+      }
       if (s>1){
 	tmp=g[1];
 	if (tmp.type==_STRNG && !tmp._STRNGptr->empty())
@@ -16139,8 +16344,34 @@ namespace giac {
     if (gs.type!=_STRNG)
       return gensizeerr(gettext("Expecting file name to convert"));
     string file=*gs._STRNGptr;
-    ifstream i(file.c_str());
-    return csv2gen(i,sep,nl,decsep,eof,contextptr);
+    if (isfile){
+      ifstream i(file.c_str());
+      return csv2gen(i,sep,nl,decsep,eof,contextptr);
+    }
+    else {
+      // count [ ]
+      int open=0,close=0,sp=0;
+      for (size_t i=0;i<file.size();++i){
+	if (file[i]=='[')
+	  ++open;
+	if (file[i]==']')
+	  ++close;
+	if (file[i]==' ')
+	  ++sp;
+      }
+      if (file.size()<=20 && sp==0)
+	return eval(gen(file,contextptr),1,contextptr);
+      if (open>=2 && absint(open-close)<=1)
+	return gen(file,contextptr);
+#ifdef HAVE_SSTREAM
+      istringstream i(file.c_str());
+#else
+      istrstream i(file.c_str());
+#endif
+      if (s==1) // guess
+	csv_guess(file.c_str(),file.size(),sep,nl,decsep);
+      return csv2gen(i,sep,nl,decsep,eof,contextptr);
+    }
   }
   static const char _csv2gen_s []="csv2gen";
   static define_unary_function_eval (__csv2gen,&_csv2gen,_csv2gen_s);
