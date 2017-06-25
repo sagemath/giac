@@ -1,3 +1,9 @@
+giac (1.2.3.51+dfsg1-1) UNRELEASED; urgency=medium
+
+  * New upstream release.
+
+ -- Ximin Luo <infinity0@debian.org>  Sat, 24 Jun 2017 15:06:01 +0200
+
 giac (1.2.3.25+dfsg1-4) unstable; urgency=medium
 
   * Split arch-dependent vs -independent builds to try to avoid failures

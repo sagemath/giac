@@ -3,18 +3,16 @@ Author: Ximin Luo <infinity0@debian.org>
 Forwarded: TODO
 --- a/src/icas.cc
 +++ b/src/icas.cc
-@@ -494,8 +494,8 @@
- 	if (pos>=0 && pos<ss){
- 	  out << s << endl;
+@@ -523,7 +523,7 @@
  	  out.close();
--	  COUT << "File " << outfile << " created, now running hevea in background and pgiac " << outfile << endl << "Then I will run pdflatex " << giac::remove_extension(outfile) << endl << "For HTML5 output, you can run\nhevea -fix " << infile_ << endl;
--	  std::string cmd="hevea -fix "+infile_+" &";
-+	  COUT << "File " << outfile << " created, now running hevea and pgiac " << outfile << endl << "Then I will run pdflatex " << giac::remove_extension(outfile) << endl << "For HTML5 output, you can run\nhevea -fix " << infile_ << endl;
-+	  std::string cmd="hevea -fix "+infile_;
- 	  system(cmd.c_str());
- 	  cmd="makeindex "+giac::remove_extension(outfile);
- 	  system(cmd.c_str());
-@@ -705,8 +705,8 @@
+ 	  COUT << "File " << outfile << " created" << outfile << endl << "Then I will run pdflatex " << giac::remove_extension(outfile) << endl ;
+ 	  if (dohevea){
+-	    std::string cmd="hevea -fix "+infile_+" &";
++	    std::string cmd="hevea -fix "+infile_;
+ 	    COUT << "Running " << cmd << endl;
+ 	    system(cmd.c_str());
+ 	  }
+@@ -749,8 +749,8 @@
  	if (pos>=0 && pos<ss){
  	  out << s << endl;
  	  out.close();

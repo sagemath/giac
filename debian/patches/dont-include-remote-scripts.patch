@@ -1,39 +1,30 @@
 Description: Don't include remote scripts
  We have them in Debian, use those
+ sed -i \
+   -e 's,{giacjsonline},{giacjshere},g' \
+   -e 's,http://cdn.mathjax.org/mathjax/latest/,file:///usr/share/javascript/mathjax/,g' \
+   -e '/^%\loadgiacjsonline/d' \
+   doc/testfr.tex doc/test.tex doc/giac.tex doc/giacfr.tex doc/xcasen.html doc/xcasfr.html
+ then refresh, pop, and manually remove false positives from this patch, e.g.
+ %%comments and \verb literals.
 Author: Ximin Luo <infinity0@debian.org>
 Forwarded: not-needed
 ---
 This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
---- a/doc/testfr.tex
-+++ b/doc/testfr.tex
-@@ -60,7 +60,7 @@
- 
- 
- \begin{document}
--\begin{giacjsonline}
-+\begin{giacjshere}
- %\loadgiacjs
- %\loadgiacjsonline
-  
-@@ -170,5 +170,5 @@
- \verb|\giaclink{http://www-fourier.ujf-grenoble.fr/\%7eparisse/xcasfr.html#+factor(x^4-1)&+a:=idn(3)&}|\index{giaclink}\\
- \giaclink{http://www-fourier.ujf-grenoble.fr/\%7eparisse/xcasfr.html#+factor(x^4-1)&+a:=idn(3)&}
- 
--\end{giacjsonline}
-+\end{giacjshere}
- \end{document}
 --- a/doc/test.tex
 +++ b/doc/test.tex
-@@ -61,7 +61,7 @@
+@@ -59,9 +59,8 @@
+ \makeindex
+ 
  \begin{document}
- %\loadgiacjsonline
+-%\loadgiacjsonline
  %\loadgiacjs
 -\begin{giacjsonline}
 +\begin{giacjshere}
  \maketitle
  
  \tableofcontents
-@@ -158,5 +158,5 @@
+@@ -164,5 +163,5 @@
  \verb|\giacslider{a}{-5}{5}{0.1}{0}{plot(sin(a*x))}|\index{giacslider}\\
  \giacslider{a}{-5}{5}{0.1}{0}{plot(sin(a*x))}
  
@@ -42,7 +33,25 @@ This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
  \end{document}
 --- a/doc/giac.tex
 +++ b/doc/giac.tex
-@@ -270,7 +270,7 @@
+@@ -59,7 +59,7 @@
+ }
+ \loadgiacscriptend
+ } 
+-\newenvironment{giacjsonline}[1]["max-height: 500px; overflow:auto"]
++\newenvironment{giacjshere}[1]["max-height: 500px; overflow:auto"]
+ {\loadgiacmain{#1}
+ }
+ {
+@@ -86,7 +86,7 @@
+ \newenvironment{giacjs}[1]["max-height: 500px; overflow:auto"]{}{}
+ \newenvironment{giacjshere}[1]["max-height: 500px; overflow:auto"]{}{}
+ \newenvironment{giacparijs}[1]["max-height: 500px; overflow:auto"]{}{}
+-\newenvironment{giacjsonline}[1]["max-height: 500px; overflow:auto"]{}{}
++\newenvironment{giacjshere}[1]["max-height: 500px; overflow:auto"]{}{}
+ \newenvironment{giacparijsonline}[1]["max-height: 500px; overflow:auto"]{}{}
+ \fi
+ \newcommand{\loadgiacscriptstart}{
+@@ -348,7 +348,7 @@
    if (UI.usemathjax){
      var script = document.createElement("script");
      script.type = "text/javascript";
@@ -53,7 +62,25 @@ This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
    var elem= document.getElementById('controlindex');
 --- a/doc/giacfr.tex
 +++ b/doc/giacfr.tex
-@@ -265,7 +265,7 @@
+@@ -58,7 +58,7 @@
+ }
+ \loadgiacscriptend
+ } 
+-\newenvironment{giacjsonline}[1]["max-height: 500px; overflow:auto"]
++\newenvironment{giacjshere}[1]["max-height: 500px; overflow:auto"]
+ {\loadgiacmain{#1}
+ }
+ {
+@@ -85,7 +85,7 @@
+ \newenvironment{giacjs}[1]["max-height: 500px; overflow:auto"]{}{}
+ \newenvironment{giacjshere}[1]["max-height: 500px; overflow:auto"]{}{}
+ \newenvironment{giacparijs}[1]["max-height: 500px; overflow:auto"]{}{}
+-\newenvironment{giacjsonline}[1]["max-height: 500px; overflow:auto"]{}{}
++\newenvironment{giacjshere}[1]["max-height: 500px; overflow:auto"]{}{}
+ \newenvironment{giacparijsonline}[1]["max-height: 500px; overflow:auto"]{}{}
+ \fi
+ \newcommand{\loadgiacscriptstart}{
+@@ -342,7 +342,7 @@
    if (UI.usemathjax){
      var script = document.createElement("script");
      script.type = "text/javascript";
@@ -62,25 +89,13 @@ This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
      document.getElementsByTagName("head")[0].appendChild(script);
    }
    var elem= document.getElementById('controlindex');
---- a/doc/xcasen.html
-+++ b/doc/xcasen.html
-@@ -167,7 +167,7 @@
-  (function () {
-   var script = document.createElement("script");
-   script.type = "text/javascript";
--  script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
-+  script.src  = "file:///usr/share/javascript/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
-   document.getElementsByTagName("head")[0].appendChild(script);
- })();
- }
---- a/doc/xcasfr.html
-+++ b/doc/xcasfr.html
-@@ -2940,7 +2940,7 @@
-  (function () {
-   var script = document.createElement("script");
-   script.type = "text/javascript";
--  script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML";
-+  script.src  = "file:///usr/share/javascript/mathjax/MathJax.js?config=TeX-AMS_CHTML";
-   document.getElementsByTagName("head")[0].appendChild(script);
- })();
- }
+--- a/doc/testfr.tex
++++ b/doc/testfr.tex
+@@ -77,7 +77,6 @@
+ \begin{document}
+ \begin{giacjshere}
+ %\loadgiacjs
+-%\loadgiacjsonline
+ Un $x$
+ $$ 1/2 $$
+  

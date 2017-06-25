@@ -15,7 +15,7 @@ Forwarded: not-needed
  $(PACKAGE)-$(VERSION).tar.gz: dist
 --- a/configure.in
 +++ b/configure.in
-@@ -398,8 +398,6 @@
+@@ -399,8 +399,6 @@
  doc/es/Makefile
  doc/fr/Makefile
  doc/el/Makefile
@@ -24,7 +24,7 @@ Forwarded: not-needed
  doc/local/Makefile
  doc/pt/Makefile
  doc/zh/Makefile
-@@ -407,8 +405,6 @@
+@@ -408,8 +406,6 @@
  intl/Makefile
  po/Makefile.in
  examples/Makefile
@@ -64,8 +64,8 @@ Forwarded: not-needed
 @@ -1,6 +1,6 @@
  SUBDIRS = 	en es fr el local pt zh de
  DIST_SUBDIRS = 	en es fr el local pt zh de
--XCASHTML = xcasfr.html xcasen.html codemirror.css codemirror.js xcasmode.js giac.js matchbrackets.js FileSaver.js logo.png longhelp.js giac.tex giacfr.tex test.tex testfr.tex test.html testfr.html
-+XCASHTML = xcasfr.html xcasen.html xcasmode.js giac.js matchbrackets.js FileSaver.js logo.png longhelp.js giac.tex giacfr.tex test.tex testfr.tex test.html testfr.html
+-XCASHTML = xcasfr.html xcasen.html codemirror.css codemirror.js xcasmode.js giac.js matchbrackets.js FileSaver.js logo.png longhelp.js giac.tex giacfr.tex test.tex testfr.tex test.html testfr.html menufr.js menuen.js show-hint.js show-hint.css w3data.js algoseconde.html
++XCASHTML = xcasfr.html xcasen.html xcasmode.js giac.js matchbrackets.js FileSaver.js logo.png longhelp.js giac.tex giacfr.tex test.tex testfr.tex test.html testfr.html menufr.js menuen.js algoseconde.html
  EXTRA_DIST = aide_cas README index.html $(XCASHTML) dxcas/* pari/*
  
  dist_pkgdata_DATA = aide_cas
@@ -82,6 +82,13 @@ Forwarded: not-needed
  	$(INSTALL_DATA) $(top_srcdir)/doc/index.html $(DESTDIR)$(prefix)/share/giac/doc/
  	$(INSTALL_DATA) $(top_srcdir)/doc/README $(DESTDIR)$(prefix)/share/giac/doc/
  	ln -sf ../aide_cas $(DESTDIR)$(prefix)/share/giac/doc/aide_cas
+@@ -25,3 +23,6 @@
+ 
+ testfr.html:
+ 	hevea -fix testfr
++
++algoseconde.html:
++	hevea -fix algoseconde
 --- a/doc/en/Makefile.am
 +++ b/doc/en/Makefile.am
 @@ -1,6 +1,6 @@
