@@ -33,22 +33,22 @@ This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
  \end{document}
 --- a/doc/giac.tex
 +++ b/doc/giac.tex
-@@ -348,7 +348,7 @@
+@@ -364,7 +364,7 @@
    if (UI.usemathjax){
      var script = document.createElement("script");
      script.type = "text/javascript";
--    script.src  = "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+-    script.src  = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
 +    script.src  = "file:///usr/share/javascript/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
      document.getElementsByTagName("head")[0].appendChild(script);
    }
    var elem= document.getElementById('controlindex');
 --- a/doc/giacfr.tex
 +++ b/doc/giacfr.tex
-@@ -342,7 +342,7 @@
+@@ -359,7 +359,7 @@
    if (UI.usemathjax){
      var script = document.createElement("script");
      script.type = "text/javascript";
--    script.src  = "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+-    script.src  = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
 +    script.src  = "file:///usr/share/javascript/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
      document.getElementsByTagName("head")[0].appendChild(script);
    }
