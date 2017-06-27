@@ -24,7 +24,7 @@ This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
 +
 +algoseconde.html:
 +#	hevea -fix algoseconde
-+	echo '<p>Unfortunately, this file <a href="http://xcas.e.ujf-grenoble.fr/XCAS/viewtopic.php?f=4&t=1813">cannot yet be built</a> in Debian.</p>' > "$@"
++	echo '<p>Unfortunately, this file <a href="http://xcas.e.ujf-grenoble.fr/XCAS/viewtopic.php?f=4&t=1813">cannot yet be built</a> in Debian. See <a href="https://www-fourier.ujf-grenoble.fr/~parisse/algoseconde.html">here</a> for an on-line version, though it may be for a newer version than what's installed in this package.</p>' > "$@"
 --- a/src/Makefile.am
 +++ b/src/Makefile.am
 @@ -1,3 +1,4 @@
