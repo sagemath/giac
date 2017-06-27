@@ -6,7 +6,7 @@ Description: Don't include remote scripts
    -e '/^%\loadgiacjsonline/d' \
    doc/testfr.tex doc/test.tex doc/giac.tex doc/giacfr.tex doc/xcasen.html doc/xcasfr.html
  then refresh, pop, and manually remove false positives from this patch, e.g.
- %%comments and \verb literals.
+ %%comments and \verb literals and \newenvironment declarations.
 Author: Ximin Luo <infinity0@debian.org>
 Forwarded: not-needed
 ---
@@ -33,24 +33,6 @@ This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
  \end{document}
 --- a/doc/giac.tex
 +++ b/doc/giac.tex
-@@ -59,7 +59,7 @@
- }
- \loadgiacscriptend
- } 
--\newenvironment{giacjsonline}[1]["max-height: 500px; overflow:auto"]
-+\newenvironment{giacjshere}[1]["max-height: 500px; overflow:auto"]
- {\loadgiacmain{#1}
- }
- {
-@@ -86,7 +86,7 @@
- \newenvironment{giacjs}[1]["max-height: 500px; overflow:auto"]{}{}
- \newenvironment{giacjshere}[1]["max-height: 500px; overflow:auto"]{}{}
- \newenvironment{giacparijs}[1]["max-height: 500px; overflow:auto"]{}{}
--\newenvironment{giacjsonline}[1]["max-height: 500px; overflow:auto"]{}{}
-+\newenvironment{giacjshere}[1]["max-height: 500px; overflow:auto"]{}{}
- \newenvironment{giacparijsonline}[1]["max-height: 500px; overflow:auto"]{}{}
- \fi
- \newcommand{\loadgiacscriptstart}{
 @@ -348,7 +348,7 @@
    if (UI.usemathjax){
      var script = document.createElement("script");
@@ -62,24 +44,6 @@ This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
    var elem= document.getElementById('controlindex');
 --- a/doc/giacfr.tex
 +++ b/doc/giacfr.tex
-@@ -58,7 +58,7 @@
- }
- \loadgiacscriptend
- } 
--\newenvironment{giacjsonline}[1]["max-height: 500px; overflow:auto"]
-+\newenvironment{giacjshere}[1]["max-height: 500px; overflow:auto"]
- {\loadgiacmain{#1}
- }
- {
-@@ -85,7 +85,7 @@
- \newenvironment{giacjs}[1]["max-height: 500px; overflow:auto"]{}{}
- \newenvironment{giacjshere}[1]["max-height: 500px; overflow:auto"]{}{}
- \newenvironment{giacparijs}[1]["max-height: 500px; overflow:auto"]{}{}
--\newenvironment{giacjsonline}[1]["max-height: 500px; overflow:auto"]{}{}
-+\newenvironment{giacjshere}[1]["max-height: 500px; overflow:auto"]{}{}
- \newenvironment{giacparijsonline}[1]["max-height: 500px; overflow:auto"]{}{}
- \fi
- \newcommand{\loadgiacscriptstart}{
 @@ -342,7 +342,7 @@
    if (UI.usemathjax){
      var script = document.createElement("script");
