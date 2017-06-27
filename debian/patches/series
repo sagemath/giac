@@ -1,4 +1,5 @@
 # For upstreaming
+fix-gettext-options.patch
 no-useless-deps.patch
 system-gl2ps.patch
 missing-build-rules.patch

@@ -17,6 +17,7 @@ Files-Excluded:
  configure config.guess config.sub config.h.* config/* aclocal.m4 m4/* */Makefile.in
  po/Makefile.in.in
  po/*.gmo
+ po/*.pot
  intl/*
  src/mk*
  mkdebian mkdebian2 debian debianold
