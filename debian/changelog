@@ -1,6 +1,7 @@
 giac (1.2.3.53+dfsg1-1) UNRELEASED; urgency=medium
 
   * New upstream release.
+  * Bump to latest Standards-Version; no changes required.
 
  -- Ximin Luo <infinity0@debian.org>  Tue, 27 Jun 2017 12:46:58 +0200
 
