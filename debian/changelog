@@ -1,3 +1,10 @@
+giac (1.2.3.53+dfsg1-2) UNRELEASED; urgency=medium
+
+  * Output test log after a failed test run, to investigate a ppc64el build
+    failure that isn't reproducible on porterboxes.
+
+ -- Ximin Luo <infinity0@debian.org>  Tue, 27 Jun 2017 14:17:18 +0200
+
 giac (1.2.3.53+dfsg1-1) unstable; urgency=medium
 
   * New upstream release.

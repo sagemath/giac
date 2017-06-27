@@ -26,8 +26,6 @@ override_dh_autoreconf:
 # Deal with french documentation
 	cp -a debian/upstream-doc-fr doc/fr
 	mv doc/fr/Makefile.am.Debian doc/fr/Makefile.am
-# TODO: rm on next upstream import
-	$(RM) po/giac.pot
 # Actually configure
 	dh_autoreconf
 
@@ -39,7 +37,7 @@ override_dh_auto_build-arch:
 	dh_auto_build -a -D doc -- info
 
 override_dh_auto_test-arch:
-	dh_auto_test -a -D check
+	if dh_auto_test -a -D check; then :; else cat check/test-suite.log; false; fi
 
 override_dh_auto_test-indep:
 	true
