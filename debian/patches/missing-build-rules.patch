@@ -11,16 +11,20 @@ This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
  dist_doc_DATA = README index.html
  
 -install-exec-hook: 
-+install-exec-hook: testfr.html
++install-exec-hook: testfr.html algoseconde.html
  	$(install_sh) -d $(DESTDIR)$(prefix)/share/giac/doc/dxcas
  	$(install_sh) -d $(DESTDIR)$(prefix)/share/giac/doc/pari
  	for dd in $(XCASHTML); do \
-@@ -23,3 +23,5 @@
+@@ -23,3 +23,9 @@
  #	ln -sf $(DESTDIR)$(prefix)/share/giac/doc/en/xcasex $(DESTDIR)$(prefix)/share/giac/doc/local/xcasex
  #	ln -sf $(DESTDIR)$(prefix)/share/giac/doc/en/xcasmenu $(DESTDIR)$(prefix)/share/giac/doc/local/xcasmenu
  
 +testfr.html:
 +	hevea -fix testfr
++
++algoseconde.html:
++#	hevea -fix algoseconde
++	echo '<p>Unfortunately, this file <a href="http://xcas.e.ujf-grenoble.fr/XCAS/viewtopic.php?f=4&t=1813">cannot yet be built</a> in Debian.</p>' > "$@"
 --- a/src/Makefile.am
 +++ b/src/Makefile.am
 @@ -1,3 +1,4 @@

@@ -71,7 +71,7 @@ Forwarded: not-needed
  dist_pkgdata_DATA = aide_cas
 @@ -8,12 +8,10 @@
  
- install-exec-hook: testfr.html
+ install-exec-hook: testfr.html algoseconde.html
  	$(install_sh) -d $(DESTDIR)$(prefix)/share/giac/doc/dxcas
 -	$(install_sh) -d $(DESTDIR)$(prefix)/share/giac/doc/pari
  	for dd in $(XCASHTML); do \
@@ -82,13 +82,6 @@ Forwarded: not-needed
  	$(INSTALL_DATA) $(top_srcdir)/doc/index.html $(DESTDIR)$(prefix)/share/giac/doc/
  	$(INSTALL_DATA) $(top_srcdir)/doc/README $(DESTDIR)$(prefix)/share/giac/doc/
  	ln -sf ../aide_cas $(DESTDIR)$(prefix)/share/giac/doc/aide_cas
-@@ -25,3 +23,6 @@
- 
- testfr.html:
- 	hevea -fix testfr
-+
-+algoseconde.html:
-+	hevea -fix algoseconde
 --- a/doc/en/Makefile.am
 +++ b/doc/en/Makefile.am
 @@ -1,6 +1,6 @@
