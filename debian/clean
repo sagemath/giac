@@ -3,8 +3,13 @@ doc/fr/
 doc/*/texinfo.tex
 doc/texinfo.tex
 check/*.tst
+path.h
+po/*.gmo
+po/giac.pot
+src/config.h
 src/input_lexer.cc
 src/lexer.h
 src/input_parser.cc
 src/input_parser.h
 src/input_parser.hh
+src/path.h

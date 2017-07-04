@@ -14,15 +14,16 @@ Files-Excluded:
  doc/w3data.js
 # Autoconf intermediate files and other irrelevant cruft
  */*iphone* */Makefile.osx */Makefile.win*
- configure config.guess config.sub config.h.* config/* aclocal.m4 m4/* */Makefile.in
+ configure config.guess config.sub config.log config.h.* config/* aclocal.m4 m4/* */Makefile.in
  po/Makefile.in.in
  po/*.gmo
  po/*.pot
  intl/*
- src/mk*
+ src/mk* src/config.h
  mkdebian mkdebian2 debian debianold
 # Build output, we regenerate these instead
  check/*.tst
+ path.h src/path.h
  src/input_lexer.cc
  src/lexer.h
  src/input_parser.cc
