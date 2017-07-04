@@ -96,7 +96,10 @@ License: GPL-2+
 
 Files: src/pgiac
 Copyright: Jean-Michel Sarlat <jsarlat@planete.net>
-License: Perl
+License: GPL-1+ or Artistic
+Comment:
+ This program is free software; you can redistribute it and/or modify
+ it under the same terms as Perl itself.
 
 Files: doc/aide_cas
 Copyright: 2000-2017 Bernard Parisse <parisse@fourier.ujf-grenoble.fr>
@@ -154,6 +157,10 @@ Copyright: 2000-2017 Bernard Parisse <parisse@fourier.ujf-grenoble.fr>
            2017 Ximin Luo <infinity0@debian.org>
 License: GPL-3+
 
+License: GPL-1
+ On Debian GNU/Linux systems, the complete text of the GNU General Public
+ License version 1 can be found in `/usr/share/common-licenses/GPL-1'
+
 License: GPL-2
  On Debian GNU/Linux systems, the complete text of the GNU General Public
  License version 2 can be found in `/usr/share/common-licenses/GPL-2'
@@ -172,19 +179,9 @@ License: GFDL-NIV-1.2
  On Debian GNU/Linux systems, the complete text of the GNU Free Documentation
  License can be found in `/usr/share/common-licenses/GFDL-1.2'
 
-License: Perl
- This program is free software; you can redistribute it and/or modify
- it under the terms of either:
- .
- a) the GNU General Public License as published by the Free Software
-    Foundation; either version 1, or (at your option) any later
-    version, or
- .
- b) the "Artistic License" which comes with Perl.
- .
- On Debian GNU/Linux systems, the complete text of the GNU General
- Public License can be found in `/usr/share/common-licenses/GPL' and
- the Artistic Licence in `/usr/share/common-licenses/Artistic'.
+License: Artistic
+ On Debian GNU/Linux systems, the complete text of the Artistic License
+ can be found in `/usr/share/common-licenses/Artistic'
 
 License: BSD-3-clause
  On Debian systems, the complete text of the BSD 3 Clause License can
