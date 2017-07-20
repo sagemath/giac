@@ -1,4 +1,5 @@
 # For upstreaming
+fix-48-bit-addr.patch
 fix-gettext-options.patch
 no-useless-deps.patch
 system-gl2ps.patch

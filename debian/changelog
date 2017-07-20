@@ -1,3 +1,9 @@
+giac (1.2.3.53+dfsg1-3) UNRELEASED; urgency=medium
+
+  * Fix build for machines that have 48-bit virtual addresses.
+
+ -- Ximin Luo <infinity0@debian.org>  Thu, 20 Jul 2017 14:17:16 +0200
+
 giac (1.2.3.53+dfsg1-2) unstable; urgency=medium
 
   * Output test log after a failed test run, to investigate a ppc64el build
