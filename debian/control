@@ -12,7 +12,7 @@ Build-Depends:
  libtool,
  libgl2ps-dev,
  libgmp3-dev,
- libgsl0-dev,
+ libgsl-dev,
  libntl-dev,
  libmpfr-dev,
  libmpfi-dev,
