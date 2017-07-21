@@ -1067,6 +1067,16 @@ static void cb_Xcas_Execute_Worksheet(Fl_Menu_*, void*) {
   xcas::History_cb_Run_Worksheet(Xcas_current_session(),0);
 }
 
+static void cb_Xcas_Execute_Worksheet_Delay(Fl_Menu_*, void*) {
+  const char * ch=fl_input("Enter delay in seconds","1.5"); 
+              if (ch){
+                Fl_Widget * wid=Xcas_current_session();
+                xcas::History_Pack * hp=dynamic_cast<xcas::History_Pack *>(wid);
+                int i=std::floor(atof(ch)*1e6);
+                if (hp && i>0 && i<120e6){ hp->next_delay=i;xcas::History_cb_Run_Worksheet(wid,0);}
+             };
+}
+
 static void cb_Xcas_Execute_Below(Fl_Menu_*, void*) {
   xcas::History_cb_Run_Below(Xcas_current_session(),0);
 }
@@ -1632,6 +1642,11 @@ if (i>0 && i<26){
 };
 }
 
+static void cb_Xcas_help_start_algoseconde(Fl_Menu_*, void*) {
+  if (xcas::use_external_browser)
+           giac::system_browser_command(doc_prefix+"../algoseconde.html");
+}
+
 static void cb_Xcas_help_make_index(Fl_Menu_*, void*) {
   const giac::context * contextptr=Xcas_get_context();
 giac::html_help_init("aide_cas",language(contextptr),true,true);
@@ -1865,6 +1880,7 @@ Fl_Menu_Item menu_Xcas_main_menu[] = {
  {0,0,0,0,0,0,0,0,0},
  {"Edit", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
  {"Execute worksheet", 0x4ffc6,  (Fl_Callback*)cb_Xcas_Execute_Worksheet, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Execute worksheet with pauses", 0,  (Fl_Callback*)cb_Xcas_Execute_Worksheet_Delay, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Execute below", 0,  (Fl_Callback*)cb_Xcas_Execute_Below, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Remove answers below", 0,  (Fl_Callback*)cb_Xcas_Remove_Answers, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Undo", 0x4007a,  (Fl_Callback*)cb_Xcas_Undo, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
@@ -1963,6 +1979,7 @@ Fl_Menu_Item menu_Xcas_main_menu[] = {
  {"Tutorial", 0,  (Fl_Callback*)cb_Xcas_help_tutorial, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"solutions", 0,  (Fl_Callback*)cb_Xcas_help_solution, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
+ {"Tutoriel algo", 0,  (Fl_Callback*)cb_Xcas_help_start_algoseconde, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Rebuild help cache", 0,  (Fl_Callback*)cb_Xcas_help_make_index, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"About", 0,  (Fl_Callback*)cb_Xcas_a_propos, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
@@ -3129,7 +3146,7 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
     { Xcas_main_menu = new Fl_Menu_Bar(0, 0, 775, 25);
       if (!menu_Xcas_main_menu_i18n_done) {
         int i=0;
-        for ( ; i<328; i++)
+        for ( ; i<330; i++)
           if (menu_Xcas_main_menu[i].label())
             menu_Xcas_main_menu[i].label(gettext(menu_Xcas_main_menu[i].label()));
         menu_Xcas_main_menu_i18n_done = 1;
