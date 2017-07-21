@@ -1,4 +1,5 @@
 # For upstreaming
+changeset_55367.patch
 fix-48-bit-addr.patch
 fix-gettext-options.patch
 no-useless-deps.patch
