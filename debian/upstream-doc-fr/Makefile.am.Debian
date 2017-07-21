@@ -31,5 +31,7 @@ install-exec-hook:
 giacfr.tex: ../giacfr.tex
 	cp "$<" "$@"
 
-algo.pdf algo.html: algo.tex giacfr.tex
+%.pdf %.html: %.tex giacfr.tex
+# retry once if it fails
+	xvfb-run -a env XCAS_ROOT=../../ ../../src/icas "$<" || \
 	xvfb-run -a env XCAS_ROOT=../../ ../../src/icas "$<"
