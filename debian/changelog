@@ -1,3 +1,9 @@
+giac (1.2.3.57+dfsg1-2) UNRELEASED; urgency=medium
+
+  * Fix shell syntax typo, fixes the doc build.
+
+ -- Ximin Luo <infinity0@debian.org>  Fri, 21 Jul 2017 18:42:24 +0200
+
 giac (1.2.3.57+dfsg1-1) unstable; urgency=medium
 
   * New upstream release.
