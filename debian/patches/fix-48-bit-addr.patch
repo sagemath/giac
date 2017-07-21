@@ -24,26 +24,6 @@ Bug: http://xcas.e.ujf-grenoble.fr/XCAS/viewtopic.php?f=4&t=1785
  #else
      res.__EXTptr=new ref_algext;
  #endif
---- a/src/cocoa.cc
-+++ b/src/cocoa.cc
-@@ -9842,7 +9842,7 @@
-     if (debug_infolevel>0)
-       CERR << CLOCK()*1e-6 << " rows, columns, terms: " << M.size() << "x" << N << "=" << nterms << endl; 
-     // PSEUDO_MOD is not interesting here since there is no inter-reduction
--    gen p(int(longlong(1<<31)-1));
-+    gen p(int(ulonglong(1<<31)-1));
-     gen pip(1);
-     vectpolymod<tdeg_t> f4buchbergervmod;
-     matrice coeffmat;
-@@ -10058,7 +10058,7 @@
-     if (debug_infolevel>0)
-       CERR << CLOCK()*1e-6 << " rows, columns, terms: " << Mindex.size() << "x" << N << "=" << nterms << endl; 
-     // PSEUDO_MOD is not interesting here since there is no inter-reduction
--    gen p(int(longlong(1<<31)-1));
-+    gen p(int(ulonglong(1<<31)-1));
-     gen pip(1);
-     vectpolymod<tdeg_t> f4buchbergervmod;
-     matrice coeffmat;
 --- a/src/gen.cc
 +++ b/src/gen.cc
 @@ -570,7 +570,7 @@
@@ -723,17 +703,6 @@ Bug: http://xcas.e.ujf-grenoble.fr/XCAS/viewtopic.php?f=4&t=1785
  #endif
      }
  #endif
---- a/src/ifactor.cc
-+++ b/src/ifactor.cc
-@@ -2376,7 +2376,7 @@
- 	r=(r*invmod(2*s,p))%p;
- 	// overflow should not happen because p is a factor of a hence choosen
- 	// in the 1000 range (perhaps up to 10 000, but not much larger)
--	// if ((longlong(r)*p)!=r*p) CERR << "overflow" << endl;
-+	// if ((ulonglong(r)*p)!=r*p) CERR << "overflow" << endl;
- 	s += p*r;
- #ifdef PRIMES32
- 	if (afact>afact0){
 --- a/src/modpoly.cc
 +++ b/src/modpoly.cc
 @@ -2037,7 +2037,7 @@
@@ -799,12 +768,3 @@ Bug: http://xcas.e.ujf-grenoble.fr/XCAS/viewtopic.php?f=4&t=1785
  #else
        g.__ZINTptr = new ref_mpz_t(prealloc);
  #endif
-@@ -9863,7 +9863,7 @@
- 
-   static gen init_modulo(int n,double logbound){
- #if 1 // def _I386_
--    double pinit= double(longlong(1) << 60);
-+    double pinit= double(ulonglong(1) << 60);
-     pinit /=n ;
-     pinit = std::sqrt(pinit);
-     pinit -= 3*logbound; // keep enough primes satisfying p^2*n<2^63
