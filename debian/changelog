@@ -1,9 +1,10 @@
-giac (1.2.3.53+dfsg1-3) UNRELEASED; urgency=medium
+giac (1.2.3.57+dfsg1-1) UNRELEASED; urgency=medium
 
+  * New upstream release.
   * Fix build for machines that have 48-bit virtual addresses. Thanks to Edmund
     Grimley Evans for all his help on this and other issues. (Closes: #855078)
 
- -- Ximin Luo <infinity0@debian.org>  Thu, 20 Jul 2017 14:17:16 +0200
+ -- Ximin Luo <infinity0@debian.org>  Fri, 21 Jul 2017 17:52:27 +0200
 
 giac (1.2.3.53+dfsg1-2) unstable; urgency=medium
 
