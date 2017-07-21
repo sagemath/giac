@@ -1,6 +1,7 @@
 giac (1.2.3.53+dfsg1-3) UNRELEASED; urgency=medium
 
-  * Fix build for machines that have 48-bit virtual addresses.
+  * Fix build for machines that have 48-bit virtual addresses. Thanks to Edmund
+    Grimley Evans for all his help on this and other issues. (Closes: #855078)
 
  -- Ximin Luo <infinity0@debian.org>  Thu, 20 Jul 2017 14:17:16 +0200
 
