@@ -474,7 +474,7 @@ Applied-Upstream: commit:r55367
  #else
        bptr=b.__ZINTptr;
  #endif
-@@ -10190,7 +10190,7 @@
+@@ -10215,7 +10215,7 @@
      ref_mpz_t *aptr,*bptr;
      if (a.type!=_INT_)
  #ifdef SMARTPTR64
@@ -483,7 +483,7 @@ Applied-Upstream: commit:r55367
  #else
        aptr=a.__ZINTptr;
  #endif
-@@ -10200,7 +10200,7 @@
+@@ -10225,7 +10225,7 @@
      }
      if (b.type!=_INT_)
  #ifdef SMARTPTR64
@@ -492,7 +492,7 @@ Applied-Upstream: commit:r55367
  #else
        bptr=b.__ZINTptr;
  #endif
-@@ -10244,7 +10244,7 @@
+@@ -10269,7 +10269,7 @@
      ref_mpz_t *aptr,*bptr;
      if (a.type!=_INT_)
  #ifdef SMARTPTR64
@@ -501,7 +501,7 @@ Applied-Upstream: commit:r55367
  #else
        aptr=a.__ZINTptr;
  #endif
-@@ -10254,7 +10254,7 @@
+@@ -10279,7 +10279,7 @@
      }
      if (b.type!=_INT_)
  #ifdef SMARTPTR64
@@ -510,7 +510,7 @@ Applied-Upstream: commit:r55367
  #else
        bptr=b.__ZINTptr;
  #endif
-@@ -10311,7 +10311,7 @@
+@@ -10336,7 +10336,7 @@
      ref_mpz_t *aptr,*bptr;
      if (a.type!=_INT_)
  #ifdef SMARTPTR64
@@ -519,7 +519,7 @@ Applied-Upstream: commit:r55367
  #else
        aptr=a.__ZINTptr;
  #endif
-@@ -10321,7 +10321,7 @@
+@@ -10346,7 +10346,7 @@
      }
      if (b.type!=_INT_)
  #ifdef SMARTPTR64
@@ -528,7 +528,7 @@ Applied-Upstream: commit:r55367
  #else
        bptr=b.__ZINTptr;
  #endif
-@@ -10446,7 +10446,7 @@
+@@ -10471,7 +10471,7 @@
      ref_mpz_t *aptr,*bptr;
      if (a.type!=_INT_)
  #ifdef SMARTPTR64
@@ -537,7 +537,7 @@ Applied-Upstream: commit:r55367
  #else
        aptr = a.__ZINTptr;
  #endif
-@@ -10456,7 +10456,7 @@
+@@ -10481,7 +10481,7 @@
      }
      if (modulo.type)
  #ifdef SMARTPTR64
@@ -546,7 +546,7 @@ Applied-Upstream: commit:r55367
  #else
        bptr = modulo.__ZINTptr;
  #endif
-@@ -10646,7 +10646,7 @@
+@@ -10671,7 +10671,7 @@
      ref_mpz_t *aptr,*bptr;
      if (base.type)
  #ifdef SMARTPTR64
@@ -555,7 +555,7 @@ Applied-Upstream: commit:r55367
  #else
        aptr=base.__ZINTptr;
  #endif
-@@ -10656,7 +10656,7 @@
+@@ -10681,7 +10681,7 @@
      }
      if (modulo.type)
  #ifdef SMARTPTR64
@@ -564,7 +564,7 @@ Applied-Upstream: commit:r55367
  #else
        bptr=modulo.__ZINTptr;
  #endif
-@@ -10735,7 +10735,7 @@
+@@ -10760,7 +10760,7 @@
      ref_mpz_t *aptr;
      if (a.type!=_INT_)
  #ifdef SMARTPTR64
@@ -573,7 +573,7 @@ Applied-Upstream: commit:r55367
  #else
        aptr=a.__ZINTptr;
  #endif
-@@ -10756,7 +10756,7 @@
+@@ -10781,7 +10781,7 @@
      ref_mpz_t *aptr;
      if (a.type!=_INT_)
  #ifdef SMARTPTR64
@@ -582,7 +582,7 @@ Applied-Upstream: commit:r55367
  #else
        aptr=a.__ZINTptr;
  #endif
-@@ -10791,7 +10791,7 @@
+@@ -10816,7 +10816,7 @@
      ref_mpz_t *aptr;
      if (a.type!=_INT_)
  #ifdef SMARTPTR64
@@ -591,7 +591,7 @@ Applied-Upstream: commit:r55367
  #else
        aptr=a.__ZINTptr;
  #endif
-@@ -10854,7 +10854,7 @@
+@@ -10879,7 +10879,7 @@
      ref_mpz_t *aptr,*bptr;
      if (a.type!=_INT_)
  #ifdef SMARTPTR64
@@ -600,7 +600,7 @@ Applied-Upstream: commit:r55367
  #else
        aptr = a.__ZINTptr;
  #endif
-@@ -10864,7 +10864,7 @@
+@@ -10889,7 +10889,7 @@
      }
      if (b.type!=_INT_)
  #ifdef SMARTPTR64
@@ -609,7 +609,7 @@ Applied-Upstream: commit:r55367
  #else
        bptr=b.__ZINTptr;
  #endif
-@@ -10890,7 +10890,7 @@
+@@ -10915,7 +10915,7 @@
      ref_mpz_t *aptr,*bptr;
      if (a.type!=_INT_)
  #ifdef SMARTPTR64
@@ -618,7 +618,7 @@ Applied-Upstream: commit:r55367
  #else
        aptr=a.__ZINTptr;
  #endif
-@@ -10900,7 +10900,7 @@
+@@ -10925,7 +10925,7 @@
      }
      if (b.type!=_INT_)
  #ifdef SMARTPTR64
@@ -627,7 +627,7 @@ Applied-Upstream: commit:r55367
  #else
        bptr=b.__ZINTptr;
  #endif
-@@ -11171,7 +11171,7 @@
+@@ -11196,7 +11196,7 @@
    gen string2gen(const string & ss,bool remove_ss_quotes){
      gen res;
  #ifdef SMARTPTR64
@@ -636,7 +636,7 @@ Applied-Upstream: commit:r55367
  #else
      res.__STRNGptr = new ref_string(remove_ss_quotes?ss.substr(1,ss.size()-2):ss);
  #endif
-@@ -11407,7 +11407,7 @@
+@@ -11432,7 +11432,7 @@
        if ((ss.size()==1) || (ss[ss.size()-1]!='"'))
  	ss += '"';
  #ifdef SMARTPTR64
@@ -645,7 +645,7 @@ Applied-Upstream: commit:r55367
        subtype=0;
  #else
        __STRNGptr = new ref_string(ss.substr(1,ss.size()-2));
-@@ -11432,7 +11432,7 @@
+@@ -11457,7 +11457,7 @@
        if ((ss.size()==1) || (ss[ss.size()-1]!='"'))
  	ss += '"';
  #ifdef SMARTPTR64
@@ -654,7 +654,7 @@ Applied-Upstream: commit:r55367
  #else
        __STRNGptr = new ref_string(ss.substr(1,ss.size()-2));
  #endif
-@@ -11480,7 +11480,7 @@
+@@ -11505,7 +11505,7 @@
        if ((ss.size()==1) || (ss[ss.size()-1]!='"'))
  	ss += '"';
  #ifdef SMARTPTR64
@@ -663,7 +663,7 @@ Applied-Upstream: commit:r55367
        subtype=0;
  #else
        __STRNGptr = new ref_string(ss.substr(1,ss.size()-2));
-@@ -13846,7 +13846,7 @@
+@@ -13960,7 +13960,7 @@
  
    gen::gen(const real_object & g){
  #ifdef SMARTPTR64
@@ -672,7 +672,7 @@ Applied-Upstream: commit:r55367
  #else
      __REALptr = new ref_real_object;
  #endif
-@@ -13862,7 +13862,7 @@
+@@ -13976,7 +13976,7 @@
  
    gen::gen(const real_interval & g){
  #ifdef SMARTPTR64
