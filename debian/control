@@ -45,8 +45,8 @@ Build-Depends-Indep:
  xvfb <!nodoc>,
 Standards-Version: 4.0.0
 Homepage: http://www-fourier.ujf-grenoble.fr/~parisse/giac.html
-Vcs-Browser: https://anonscm.debian.org/cgit/debian-science/packages/giac.git
-Vcs-Git: https://anonscm.debian.org/git/debian-science/packages/giac.git
+Vcs-Browser: https://salsa.debian.org/science-team/giac
+Vcs-Git: https://salsa.debian.org/science-team/giac.git
 
 Package: libgiac0
 Architecture: any

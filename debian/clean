@@ -3,6 +3,8 @@ doc/fr/
 doc/*/texinfo.tex
 doc/texinfo.tex
 check/*.tst
+check/integrate.out2
+check/TP16-sol.cas.out2
 path.h
 po/*.gmo
 po/giac.pot
