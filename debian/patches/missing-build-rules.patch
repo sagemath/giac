@@ -40,9 +40,9 @@ This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
 -  input_lexer.h input_parser.h threaded.h vector.h \
 +  path.h \
 +  input_lexer.h threaded.h vector.h \
-   help.cc  # Ugh..
+   help.cc  lpsolve.cc optimization.cc signalprocessing.cc \
+   graphe.cc graphtheory.cc # Ugh..
  
- libgiac_la_LIBADD = $(NTL_LIBS) $(COCOA_LIBS) $(PARI_LIBS) $(GSL_LIBS)
 @@ -95,3 +96,8 @@
  ##	$(INSTALL_DATA) $(libgiac_la_SOURCES)  $(DESTDIR)$(docdir)/src
  ##	$(INSTALL_DATA) $(top_srcdir)/config.h $(DESTDIR)$(includedir)/giac

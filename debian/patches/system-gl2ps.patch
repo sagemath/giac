@@ -14,8 +14,8 @@ Forwarded: TODO
  #include <AGL/agl.h>
 --- a/src/Makefile.am
 +++ b/src/Makefile.am
-@@ -28,17 +28,17 @@
- static_help.h giacPCH.h giacintl.h gmp_replacements.h myostream.h
+@@ -30,17 +30,17 @@
+ lpsolve.h optimization.h signalprocessing.h graphe.h graphtheory.h
  
  noinst_LTLIBRARIES = libxcas.la
 -libxcas_la_LIBADD = libgiac.la $(GUI_LIBS)

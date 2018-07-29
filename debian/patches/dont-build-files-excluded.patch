@@ -6,16 +6,16 @@ Forwarded: not-needed
 @@ -1,6 +1,6 @@
 -SUBDIRS = 	src check intl po debianold debian doc examples 
 -DIST_SUBDIRS = 	src check intl po debianold debian doc examples 
--EXTRA_DIST = path.h.in setup inst TROUBLES Init.scm compte INSTALACION LEAME.WIN LEAME.ipaq giac.specs giac.specs32 fltk.1.1.changes README.MACOSX pariinl.h changeversion mkosx mkosx10 mkosx3 mkdebian mkdebian2 win2unix.cc addu.cc xcas*.nsi xcas.desktop xcas.xpm xcas.applications README.visualcpp java.README config.h.win win64 mkiphone build_for_iphoneos path.iphone simupath.iphone config.h.iphone config.h.64 config.h.mingw path.mingw configure.mingw README.mingw archive.mingw compile.android mkrpm icons/*
+-EXTRA_DIST = path.h.in setup inst TROUBLES Init.scm compte INSTALACION LEAME.WIN LEAME.ipaq giac.specs giac.specs32 fltk.1.1.changes README.MACOSX pariinl.h changeversion mkosx mkosx10 mkosx3 mkdebian mkdebian2 win2unix.cc addu.cc xcas*.nsi xcas.desktop xcas.xpm xcas.applications README.visualcpp java.README config.h.win win64 mkiphone build_for_iphoneos path.iphone simupath.iphone config.h.iphone config.h.64 config.h.mingw path.mingw configure.mingw README.mingw archive.mingw compile.android mkrpm LISEZMOI.numworks icons/*
 +SUBDIRS = 	src check intl po doc examples
 +DIST_SUBDIRS = 	src check intl po doc examples
-+EXTRA_DIST = path.h.in setup inst TROUBLES Init.scm compte INSTALACION LEAME.WIN LEAME.ipaq giac.specs giac.specs32 fltk.1.1.changes README.MACOSX pariinl.h changeversion mkosx mkosx10 mkosx3 win2unix.cc addu.cc xcas*.nsi xcas.desktop xcas.xpm xcas.applications README.visualcpp java.README config.h.win win64 mkiphone build_for_iphoneos path.iphone simupath.iphone config.h.iphone config.h.64 config.h.mingw path.mingw configure.mingw README.mingw archive.mingw compile.android mkrpm icons/*
++EXTRA_DIST = path.h.in setup inst TROUBLES Init.scm compte INSTALACION LEAME.WIN LEAME.ipaq giac.specs giac.specs32 fltk.1.1.changes README.MACOSX pariinl.h changeversion mkosx mkosx10 mkosx3 win2unix.cc addu.cc xcas*.nsi xcas.desktop xcas.xpm xcas.applications README.visualcpp java.README config.h.win win64 mkiphone build_for_iphoneos path.iphone simupath.iphone config.h.iphone config.h.64 config.h.mingw path.mingw configure.mingw README.mingw archive.mingw compile.android mkrpm LISEZMOI.numworks icons/*
  
  # Rule to build tar-bzipped distribution package
  $(PACKAGE)-$(VERSION).tar.gz: dist
 --- a/configure.in
 +++ b/configure.in
-@@ -399,8 +399,6 @@
+@@ -431,8 +431,6 @@
  doc/es/Makefile
  doc/fr/Makefile
  doc/el/Makefile
@@ -24,7 +24,7 @@ Forwarded: not-needed
  doc/local/Makefile
  doc/pt/Makefile
  doc/zh/Makefile
-@@ -408,8 +406,6 @@
+@@ -440,8 +438,6 @@
  intl/Makefile
  po/Makefile.in
  examples/Makefile
@@ -64,9 +64,9 @@ Forwarded: not-needed
 @@ -1,6 +1,6 @@
  SUBDIRS = 	en es fr el local pt zh de
  DIST_SUBDIRS = 	en es fr el local pt zh de
--XCASHTML = xcasfr.html xcasen.html codemirror.css codemirror.js xcasmode.js giac.js matchbrackets.js FileSaver.js logo.png longhelp.js giac.tex giacfr.tex test.tex testfr.tex test.html testfr.html menufr.js menuen.js show-hint.js show-hint.css w3data.js algoseconde.html
-+XCASHTML = xcasfr.html xcasen.html xcasmode.js giac.js matchbrackets.js FileSaver.js logo.png longhelp.js giac.tex giacfr.tex test.tex testfr.tex test.html testfr.html menufr.js menuen.js algoseconde.html
- EXTRA_DIST = aide_cas README index.html $(XCASHTML) dxcas/* pari/*
+-XCASHTML = xcasfr.html xcasfrwasm.html xcasen.html *.css *.js giac.wasm logo.png giac.tex giacfr.tex test.tex testfr.tex test.html testfr.html algolycee.html graphtheory-user_manual.pdf
++XCASHTML = xcasfr.html xcasfrwasm.html xcasen.html *.css *.js logo.png giac.tex giacfr.tex test.tex testfr.tex test.html testfr.html algolycee.html graphtheory-user_manual.pdf
+ EXTRA_DIST = aide_cas README index.html $(XCASHTML) dxcas/* pari/*  
  
  dist_pkgdata_DATA = aide_cas
 @@ -8,12 +8,10 @@
@@ -85,16 +85,16 @@ Forwarded: not-needed
 --- a/doc/en/Makefile.am
 +++ b/doc/en/Makefile.am
 @@ -1,6 +1,6 @@
- TEX_LOCAL = cascmd_en.tex casinter.tex cas.tex slipres.tex giacxcas.tex
+ TEX_LOCAL = cascmd_en.tex casinter.tex cas.tex slipres.tex giacxcas.tex tutoriel.tex
  
 -PDF_LOCAL = cascmd_en.pdf casinter.pdf cas.pdf troussesurvie_en.pdf
 +PDF_LOCAL = cascmd_en.pdf casinter.pdf cas.pdf
  
  PS_LOCAL = cascmd_en.ps casinter.ps cas.ps
  
-@@ -32,10 +32,9 @@
- $(srcdir)/cascmd_en: cascmd_en.stamp
+@@ -34,10 +34,9 @@
  $(srcdir)/casinter: casinter.stamp
+ $(srcdir)/tutoriel: tutoriel.stamp
  
 -install-data-local: $(HTML_STAMPS) $(PS_LOCAL) $(DVI_LOCAL) troussesurvie_en.pdf # $(PDF_LOCAL) 
 +install-data-local: $(HTML_STAMPS) $(PS_LOCAL) $(DVI_LOCAL) # $(PDF_LOCAL) 
