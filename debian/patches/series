@@ -10,6 +10,8 @@ dont-bg-hevea.patch
 
 # Debian only
 test-fixes.patch
+# This is applied in d/rules, leave it unapplied here
+#test-fixes-data.patch
 dont-build-files-excluded.patch
 dont-include-remote-scripts.patch
 find-doc-files-at-buildtime.patch
