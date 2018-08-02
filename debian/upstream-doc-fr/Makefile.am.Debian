@@ -32,6 +32,5 @@ giacfr.tex: ../giacfr.tex
 	cp "$<" "$@"
 
 %.pdf %.html: %.tex giacfr.tex
-# retry once if it fails
-	xvfb-run -a env XCAS_ROOT=../../ ../../src/icas "$<" || \
 	xvfb-run -a env XCAS_ROOT=../../ ../../src/icas "$<"
+	set -e; for i in $@; do test -e $$i; done
