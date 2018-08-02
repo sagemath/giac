@@ -36,6 +36,11 @@ using namespace std;
 #include "rpn.h"
 #include "plot.h"
 #include "giacintl.h"
+#if defined GIAC_HAS_STO_38 || defined NSPIRE || defined FXCG || defined GIAC_GGB
+inline bool is_graphe(const giac::gen &g,std::string &disp_out,const giac::context *){ return false; }
+#else
+#include "graphtheory.h"
+#endif
 
 #ifndef NO_NAMESPACE_GIAC
 namespace giac {
@@ -49,14 +54,14 @@ namespace giac {
     double x,y;
     // test whether a or b is too small
     double theta=std::atan2(b,a);
-    if (std::abs(M_PI/2-std::abs(theta))<1e-3){
+    if (absdouble(M_PI/2-absdouble(theta))<1e-3){
       // line y=cst
       x0=xmin;
       x1=xmax;
       y0=y1=c/b;
       return y0>=ymin && y0<=ymax;
     }
-    if (std::abs(theta)<1e-3 || (M_PI-std::abs(theta))<1e-3){
+    if (absdouble(theta)<1e-3 || (M_PI-absdouble(theta))<1e-3){
       // line x=cst
       y0=ymin;
       y1=ymax;
@@ -937,6 +942,7 @@ namespace giac {
       e=a.evalf_double(1,contextptr); // FIXME? level 1 does not work for non 0 context
 #ifndef NO_STDEXCEPT
     } catch (std::runtime_error & error ){
+      last_evaled_argptr(contextptr)=NULL;
       CERR << error.what() << endl;
     }
 #endif
@@ -973,7 +979,13 @@ namespace giac {
     if (g.is_symb_of_sommet(at_curve)){
       gen & gf=g._SYMBptr->feuille;
       if (gf.type==_VECT && gf._VECTptr->size()>1){
-	in_autoscale((*gf._VECTptr)[1],vx,vy,vz,contextptr);
+	gen tmp=(*gf._VECTptr)[1];
+	if (is_undef(tmp)){
+	  tmp=(*gf._VECTptr)[0];
+	  if (tmp.type==_VECT && tmp._VECTptr->size()>4)
+	    tmp=(*tmp._VECTptr)[4];
+	}
+	in_autoscale(tmp,vx,vy,vz,contextptr);
       }
       return false;
     }
@@ -994,15 +1006,16 @@ namespace giac {
       vecteur v;
       if (g._SYMBptr->feuille.type==_VECT && g._SYMBptr->feuille._VECTptr->size()>=3){
 	v=*g._SYMBptr->feuille._VECTptr;
-	gen delta=v[2]-v[1];
-	v=makevecteur(c-r*exp(cst_i*(v[1]-0.1*delta),contextptr),
-		      c-r*exp(cst_i*v[1],contextptr),
-		      c-r*exp(cst_i*(3*v[1]+v[2])/gen(4),contextptr),
-		      c-r*exp(cst_i*(v[1]+v[2])/gen(2),contextptr),
-		      c-r*exp(cst_i*(v[1]+3*v[2])/gen(4),contextptr),
-		      c-r*exp(cst_i*v[2],contextptr),
-		      c-r*exp(cst_i*(v[2]+0.1*delta),contextptr)); 
-	// FIXME? centre_rayon returns (a-b)/2 for rayon instead of (b-a)/2...
+	gen v2=evalf_double(v[2],1,contextptr);
+	gen v1=evalf_double(v[1],1,contextptr);
+	gen delta=v2-v1;
+	v=makevecteur(c,c+r*exp(cst_i*(v1-0.1*delta),contextptr),
+		      c+r*exp(cst_i*v1,contextptr),
+		      c+r*exp(cst_i*(3*v1+v2)/gen(4),contextptr),
+		      c+r*exp(cst_i*(v1+v2)/gen(2),contextptr),
+		      c+r*exp(cst_i*(v1+3*v2)/gen(4),contextptr),
+		      c+r*exp(cst_i*v2,contextptr),
+		      c+r*exp(cst_i*(v2+0.1*delta),contextptr)); 
       }
       else
 	v=makevecteur(c-r,c+r,c-cst_i*r,c+cst_i*r);
@@ -1036,20 +1049,28 @@ namespace giac {
 	return in_autoscale(f,vx,vy,vz,contextptr);
       }
     }
+    if (g.is_symb_of_sommet(at_equal) && g._SYMBptr->feuille.type==_VECT && g._SYMBptr->feuille._VECTptr->size()==2 && g._SYMBptr->feuille._VECTptr->front()==_GL_ORTHO && !is_zero(g._SYMBptr->feuille._VECTptr->back()))
+      return true;
     return false;
   }
 
-  void overwrite_viewbox(const gen & g,double & window_xmin,double & window_xmax,double & window_ymin,double & window_ymax,double &window_zmin,double & window_zmax){
+  // returns true if axes are drawn
+  bool overwrite_viewbox(const gen & g,double & window_xmin,double & window_xmax,double & window_ymin,double & window_ymax,double &window_zmin,double & window_zmax){
+    bool res=true;
     if (g.type==_VECT){
       vecteur v =*g._VECTptr;
       for (int i=0;i<int(v.size());++i){
-	overwrite_viewbox(v[i],window_xmin,window_xmax,window_ymin,window_ymax,window_zmin,window_zmax);
+	if (!overwrite_viewbox(v[i],window_xmin,window_xmax,window_ymin,window_ymax,window_zmin,window_zmax))
+	  res=false;
       }
+      return res;
     }
     if (g.is_symb_of_sommet(at_equal)){
       gen f=g._SYMBptr->feuille;
       if (f.type==_VECT && f._VECTptr->size()==2){
 	gen optname= f._VECTptr->front(),optvalue=f._VECTptr->back();
+	if (optname.type==_INT_ && optname.subtype==_INT_PLOT && optname.val==_AXES && optvalue==0)
+	  res=false;
 	if (optvalue.is_symb_of_sommet(at_interval) && optname.type==_INT_ && optname.subtype==_INT_PLOT && optname.val>=_GL_X && optname.val<=_GL_Z){
 	  gen optvf=evalf_double(optvalue._SYMBptr->feuille,1,context0);
 	  if (optvf.type==_VECT && optvf._VECTptr->size()==2){
@@ -1075,12 +1096,43 @@ namespace giac {
 	}
       }
     }
+    return res;
+  }
+
+  void title_legende(const gen & g,plot_attr & p){
+    if (g.type==_VECT){
+      vecteur v =*g._VECTptr;
+      for (int i=0;i<int(v.size());++i){
+	title_legende(v[i],p);
+      }
+      return;
+    }
+    if (g.is_symb_of_sommet(at_equal)){
+      gen f=g._SYMBptr->feuille;
+      if (f.type==_VECT && f._VECTptr->size()==2){
+	gen optname= f._VECTptr->front(),optvalue=f._VECTptr->back();
+	if (optname.type==_INT_ && optname.subtype==_INT_PLOT){
+	  string s=optvalue.type==_STRNG?*optvalue._STRNGptr:optvalue.print(context0);
+	  switch (optname.val){
+	  case _TITLE:
+	    p.title=s;
+	    break;
+	  case _GL_X_AXIS_NAME:
+	    p.xlegende=s;
+	    break;
+	  case _GL_Y_AXIS_NAME:
+	    p.ylegende=s;
+	    break;
+	  }
+	}
+      }
+    }
   }
 
   static void zoom(double &m,double & M,double d){
     double x_center=(M+m)/2;
     double dx=(M-m);
-    double s=std::abs(m)+std::abs(M);
+    double s=absdouble(m)+absdouble(M);
     if (dx<=1e-5*s){
       dx=s;
       if (dx<=1e-5)
@@ -1122,7 +1174,7 @@ namespace giac {
     autoscaleg(g,vx,vy,vz,contextptr);
     autoscaleminmax(vx,X1,X2,false);
     autoscaleminmax(vy,Y1,Y2,false);
-    double xunit=giac::horiz_latex/(X2-X1);
+    double xunit=horiz_latex/(X2-X1);
     double yunit=(X2-X1)/(Y2-Y1)*xunit;
     res="\\begin{pspicture}("+double2tex(X1*xunit)+","+double2tex(Y1*xunit)+
       ")("+double2tex(X2*xunit)+","+double2tex(Y2*xunit)+
@@ -1142,6 +1194,13 @@ namespace giac {
     const gen &feu=mys.feuille;
     if (mys.sommet==at_pnt && feu.type==_VECT && !is3d(mys))
       return vectpnt2tex(mys,contextptr);
+    if (mys.sommet==at_program && feu.type==_VECT && feu._VECTptr->size()>=3){
+      const vecteur & v=*feu._VECTptr;
+      gen f=v[2];
+      if (!f.is_symb_of_sommet(at_local)){
+	return gen2tex(v[0],contextptr)+" \\rightarrow "+gen2tex(f,contextptr);
+      }
+    }
     if (mys.sommet.ptr()->texprint)
       return mys.sommet.ptr()->texprint(feu,mys.sommet.ptr()->s,contextptr);
     if (mys.sommet==at_abs)
@@ -1157,7 +1216,9 @@ namespace giac {
 	  return opstring+gen2tex(feu,contextptr) ;
 	return opstring+string("\\left(") + gen2tex(feu,contextptr) +string("\\right)");
       }
-      if (mys.sommet==at_inv && (feu.is_symb_of_sommet(at_prod) || feu.is_symb_of_sommet(at_plus) || feu.type<=_IDNT) ){
+      if (mys.sommet==at_inv && (feu.is_symb_of_sommet(at_prod) || feu.is_symb_of_sommet(at_plus) || feu.is_symb_of_sommet(at_pow) || feu.type<=_IDNT) ){
+	if (feu.type==_IDNT)
+	  return gen2tex(feu,contextptr)+"^{-1}";
 	return string("\\frac{1}{") + gen2tex(feu,contextptr) +string("}");
       }
       return opstring + "\\left(" + gen2tex(feu,contextptr) +"\\right)" ;
@@ -1245,6 +1306,8 @@ namespace giac {
   string gen2tex(const gen & e,GIAC_CONTEXT){
     switch (e.type){
     case _INT_: case _ZINT: case _REAL:
+      if (e.subtype==_INT_BOOLEAN)
+	return "\\mbox{"+e.print(contextptr)+'}';      
       return e.print(contextptr);
     case _DOUBLE_:
       if (specialtexprint_double(contextptr))
@@ -1260,6 +1323,11 @@ namespace giac {
     case _VECT:
       if (e.subtype==_SPREAD__VECT)
 	return spread2tex(*e._VECTptr,1,contextptr);
+      if (e.subtype==_GRAPH__VECT){
+	string s;
+	if (is_graphe(e,s,contextptr))
+	  return "\\mbox{"+s+'}';
+      }
       if (!e._VECTptr->empty() && e._VECTptr->back().is_symb_of_sommet(at_pnt) && !is3d(e._VECTptr->back()) )
 	return vectpnt2tex(e,contextptr);
       if (ckmatrix(*e._VECTptr))
@@ -1293,7 +1361,7 @@ namespace giac {
   }
   gen _latex(const gen & g,GIAC_CONTEXT){
     if ( g.type==_STRNG && g.subtype==-1) return  g;
-#ifndef NSPIRE
+#if !defined NSPIRE && !defined FXCG
     if (!secure_run && g.type==_VECT && g.subtype==_SEQ__VECT && g._VECTptr->size()==2 && (*g._VECTptr)[1].type==_STRNG){
       ofstream of((*g._VECTptr)[1]._STRNGptr->c_str());
       of << gen2tex(g._VECTptr->front(),contextptr) << endl;

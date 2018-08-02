@@ -111,7 +111,7 @@ namespace xcas {
       Fl::lock();
       gen g=Xcas_PrintG->get_data();
       Fl::unlock();
-      vecteur w=makevecteur(string2gen("",false),string2gen("Step by step console",false));
+      vecteur w=makevecteur(string2gen("",false));//makevecteur(string2gen("",false),string2gen("Step by step console",false));
       if (g.type==_VECT) w=*g._VECTptr;
       // add format,v at the end of w
       int posnl=0;
@@ -435,7 +435,14 @@ namespace xcas {
 		debug_print(w[2],vs,contextptr);
 	      vector<string>::iterator it=vs.begin(),itend=vs.end();
 	      for (;it!=itend;++it){
-		Xcas_source_browser->add(it->c_str());
+		string & cur=*it; // replace \n by space
+		for (;;){
+		  size_t pos=cur.find('\n');
+		  if (pos<0 || pos>=cur.size())
+		    break;
+		  cur[pos]=' ';
+		}
+		Xcas_source_browser->add(cur.c_str());
 	      }
 	    }
 	    msg += dbgptr->debug_prog_name->print(contextptr) + "(" + gen(vecteur(w[0]._VECTptr->begin()+1,w[0]._VECTptr->end()),_SEQ__VECT).print(contextptr)+")";
@@ -541,8 +548,10 @@ namespace xcas {
 	  return; // moved from below otherwise after debugging STOP button is always on
       }
     }
+    bool lock=true; // added because DispG freeze in linux
     if (Xcas_DispG_Window){
       if (show_xcas_dispg){
+	lock=false;
 	if (show_xcas_dispg & 2){
 	  if (!Xcas_DispG_Window->visible())
 	    Xcas_DispG->autoscale();
@@ -566,13 +575,13 @@ namespace xcas {
     }
     ++initialized;
     if (initialized % 5){
-      Fl::unlock();
+      if (lock) Fl::unlock();
 #ifdef WIN32
       usleep(10000);
 #else
       usleep(1000);
 #endif
-      Fl::lock();
+      if (lock) Fl::lock();
       return;
     }
     if (!initialized && initialize_function)
@@ -1058,7 +1067,7 @@ namespace xcas {
 	change_group_fontsize(g,w->labelsize());
 	return g;
       }
-      if (evaled_g.is_symb_of_sommet(at_pnt) || anim){
+      if (is_pnt_or_pixon(evaled_g) || anim){
 	Fl_Tile * g = new Fl_Tile(w->x(),w->y(),w->w(),max(130,w->w()/3));
 	g->labelsize(w->labelsize());
 	Graph2d3d * res;
@@ -1359,18 +1368,7 @@ namespace xcas {
     return s;
   }
 
-  string replace(const string & s,char c1,char c2){
-    string res;
-    int l=s.size();
-    res.reserve(l);
-    const char * ch=s.c_str();
-    for (int i=0;i<l;++i,++ch){
-      res+= (*ch==c1? c2: *ch);
-    }
-    return res;
-  }
-
-  string replace(const string & s,char c1,const string & c2){
+  string replaces(const string & s,char c1,const string & c2){
     string res;
     int l=s.size();
     res.reserve(l);
@@ -1413,6 +1411,26 @@ namespace xcas {
     }
     return w;
   }
+
+  std::string replace_html5(const string & s){
+    string res;
+    size_t ss=s.size(),i;
+    for (i=0;i<ss;++i){
+      char ch=s[i];
+      if ( (ch>='0' && ch<='9') || (ch>='a' && ch<='z') || (ch>='A' && ch<='Z'))
+	res += ch;
+      else {
+	res +='%';
+	int t=(ch&0xf0)>>4;
+	if (t<10) res += ('0'+t); else res += 'a'+(t-10);
+	t=ch&0x0f;
+	if (t<10) res += ('0'+t); else res += 'a'+(t-10);
+      }
+    }
+    //std::cerr << s << endl << res << endl;
+    return res;
+  }
+
   std::string widget_html5(const Fl_Widget * o){
     string res;
     const giac::context * contextptr = get_context(o);
@@ -1420,7 +1438,7 @@ namespace xcas {
     if (const Tableur_Group * t = dynamic_cast<const Tableur_Group *>(o)){
       Flv_Table_Gen * g=t->table;
       matrice m=g->m;
-      res = replace(gen(m,_SPREAD__VECT).print(contextptr),'\n',' ');
+      res = replace_html5(gen(m,_SPREAD__VECT).print(contextptr));
       return '+'+res+'&';
     }
     if (const Figure * f = dynamic_cast<const Figure *>(o)){
@@ -1433,12 +1451,12 @@ namespace xcas {
     }
     if (const Editeur * ed=dynamic_cast<const Editeur *>(o)){
       string s=unlocalize(ed->value());
-      res = replace(s,'\n',' ');
+      res = replace_html5(s);
       return '+'+res+'&';
     }
     if (const Xcas_Text_Editor * ed=dynamic_cast<const Xcas_Text_Editor *>(o)){
       string s=unlocalize(ed->value());
-      res = replace(s,'\n',' ');
+      res = replace_html5(s);
       return '+'+res+'&';
     }
     if (dynamic_cast<const Fl_Output *>(o))
@@ -1446,13 +1464,12 @@ namespace xcas {
     if (const Fl_Input_ * i=dynamic_cast<const Fl_Input_ *>(o)){
       string s=i->value();
       if (dynamic_cast<const Comment_Multiline_Input *>(i))
-	s = "// "+replace(s,'\n',"<br>");
+	s = "// "+replaces(s,'\n',"<br>");
       if ( dynamic_cast<const Multiline_Input_tab *>(i) )
 	s=unlocalize(s);
       if (s.empty())
 	return s;
-      res = replace(s,'\n',' ');
-      res = replace(res,'\'',"%27");
+      res = replace_html5(s);
       return '+'+res+'&' ;
     }
     if (const Fl_Group * g=dynamic_cast<const Fl_Group *>(o)){
@@ -1593,7 +1610,7 @@ namespace xcas {
       res += '\n';
       res += print_DOUBLE_(i->window_xmin) + ',' + print_DOUBLE_(i->window_xmax) + ',';
       res += print_DOUBLE_(i->window_ymin) + ',' + print_DOUBLE_(i->window_ymax) + ',';
-      res += replace(giac::gen(seq2vecteur(i->plot_instructions)).print(contextptr),'\n','£');
+      res += replace(giac::gen(giac::merge_pixon(seq2vecteur(i->plot_instructions))).print(contextptr),'\n','£');
       res += ','+ print_DOUBLE_(i->window_zmin) + ',' + print_DOUBLE_(i->window_zmax)+','+print_DOUBLE_(i->q.w) +','+print_DOUBLE_(i->q.x)+','+print_DOUBLE_(i->q.y)+','+print_DOUBLE_(i->q.z) + ','+print_DOUBLE_(i->x_tick) + ',' + print_DOUBLE_(i->y_tick)+','+print_INT_(i->show_axes)+','+print_INT_(i->couleur)+','+print_INT_(i->approx)+','+print_DOUBLE_(i->ylegende)+',';
       if (i->paused)
 	res += "-";
@@ -2515,6 +2532,22 @@ namespace xcas {
 	      txt="assume("+g[0].print(contextptr)+"=["+g[1].print(contextptr)+","+g[2].print(contextptr)+","+g[3].print(contextptr)+","+g[4].print(contextptr)+"])";
 	    }
 	  }
+	  else {
+	    if (s[pos+1]!='+'){
+	      pos=nextpos;
+	      continue;
+	    }
+	    if (s.size()>pos+3 && s[pos+2]=='/' && s[pos+3]=='/'){
+	      txt=replace(txt,'\n',char(163)); // should count \n and ajust size
+	      txt="// fltk 7Fl_Tile 14 68 845 25 18 0\n[\n// fltk N4xcas23Comment_Multiline_InputE 14 68 845 24 18 0\n"+txt.substr(2,txt.size()-2)+"\n,\n// fltk N4xcas10Log_OutputE 14 93 845 1 18 0\n\n]";
+	    }
+	    else {
+	      int pos=txt.find('\n');
+	      if (pos>0 && pos<txt.size()){
+		txt="// fltk 7Fl_Tile 14 68 845 254 18 0\n[\n// fltk N4xcas16Xcas_Text_EditorE 14 68 845 253 18 0\n"+print_INT_(txt.size())+" ,\n"+txt+",\n// fltk N4xcas10Log_OutputE 14 321 845 1 18 0\n\n]";
+	      }
+	    }
+	  }
 	  Xcas_pack_insert(pack,txt.c_str(),txt.size(),y);
 	  ++y;
 	  pos=nextpos;
@@ -2658,6 +2691,8 @@ namespace xcas {
 	return 1;
       }
       if (u==at_ClrIO){
+	if (Xcas_PrintG) 
+	  Xcas_PrintG->set_data(string2gen("",false));
 	* logptr(contextptr) << "";
 	return 1;
       }
@@ -2789,6 +2824,10 @@ namespace xcas {
       fl_message("%s",eval(v.front()._SYMBptr->feuille,contextptr).print(contextptr).c_str());
       return plus_one;
     }
+    if (v.size()==1 && v.front().type==_STRNG){
+      v.push_back(identificateur("_input_"));
+      // CERR << v << endl;
+    }
     if (!v.empty() && v.front()==at_getKey){
       Fl_Widget * foc=Fl::focus();
       static Fl_Window * getkeywin=0;
@@ -2914,7 +2953,7 @@ namespace xcas {
       }
       if ( (it->type==_STRNG) && it+1!=itend && ((it+1)->type==_IDNT || (it+1)->is_symb_of_sommet(at_at) || (it+1)->is_symb_of_sommet(at_of)) ){
 	Fl_Input * o;
-	string * l=new string (it->print(contextptr));
+	string * l=new string (*it->_STRNGptr);
 	labels.push_back(l);
 	int yadd=6+nlines(*l)*14;
 	int taille=4+int(fl_width(l->c_str()));
@@ -2939,7 +2978,8 @@ namespace xcas {
 	if (vg.empty())
 	  continue;
 	Fl_Input * o;
-	string * l=new string (vg[0].eval(eval_level(contextptr),contextptr).print(contextptr));
+	gen tmps=vg[0].eval(eval_level(contextptr),contextptr);
+	string * l=new string (tmps.type==_STRNG?*tmps._STRNGptr:tmps.print(contextptr));
 	labels.push_back(l);
 	int taille=4+int(fl_width(l->c_str()));
 	if (taille>taillew/2)
@@ -2959,14 +2999,14 @@ namespace xcas {
 	g=g.eval(eval_level(contextptr),contextptr);
 	Fl_Output * o;
 	if (u==at_Title){
-	  string * l=new string (g.print(contextptr));
+	  string * l=new string (g.type==_STRNG?*g._STRNGptr:g.print(contextptr));
 	  labels.push_back(l);
-	  o=new Fl_Output(taillew-40,current_y,0,20,l->c_str());
+	  o=new Fl_Output(taillew/2-40,current_y,0,20,l->c_str());
 	  o->value("");
 	}
 	else {
 	  o=new Fl_Output(40,current_y,taillew-60,20,"");
-	  o->value(g.print(contextptr).c_str());
+	  o->value((g.type==_STRNG?*g._STRNGptr:g.print(contextptr)).c_str());
 	}
 	voutput.push_back(o);
 	current_y += 20;
@@ -3006,7 +3046,7 @@ namespace xcas {
 	Fl_Browser * o =new Fl_Browser(50, current_y+16, 180, hs);
 	current_y += hs+16;
         o->type(2);
-	string * l=new string (vg[0].print(contextptr));
+	string * l=new string (vg[0].type==_STRNG?*vg[0]._STRNGptr:vg[0].print(contextptr));
 	labels.push_back(l);
         o->label(l->c_str());
 	o->align(FL_ALIGN_TOP);
@@ -3040,6 +3080,7 @@ namespace xcas {
       }
     }
     w->hide();
+    bool request=false;
     gen gtmp("ok",contextptr);
     res.push_back(symb_sto(r,gtmp));
     // store results
@@ -3070,16 +3111,20 @@ namespace xcas {
       if ( (u==at_click) || (u==at_Request) ){
 	vecteur vg(gen2vecteur(g));
 	try {
-	  if (vg.size()>3|| u==at_Request)
+	  if (vg.size()>3|| u==at_Request){
+	    request=true;
 	    resadd=string2gen((*vinput_it)->value(),false);
+	  }
 	  else
 	    resadd=gen((*vinput_it)->value(),contextptr);
 	}
 	catch (std::runtime_error & e){
 	  resadd=string2gen(e.what(),false);
 	}
-	if (u==at_Request && vg.size()>1)
+	if (u==at_Request && vg.size()>1){
 	  res.push_back(symb_sto(resadd,vg[1]));
+	  request=true;
+	}
 	else {
 	  if (vg.size()>2)
 	    res.push_back(symb_sto(resadd,vg[2]));
@@ -3153,6 +3198,8 @@ namespace xcas {
     // delete w;
     if (r==2)
       return 0;
+    if (request)
+      return res;
     if (r==0)
       return undef;
     else
@@ -3185,6 +3232,8 @@ namespace xcas {
 #else
 
   gen Xcas_fltk_inputform(const gen & args,const giac::context * contextptr){
+    if (args.type==_VECT && args._VECTptr->empty())
+      return Xcas_fltk_inputform(identificateur("tmp_input"),contextptr);
     vecteur v(inputform_pre_analysis(args,contextptr));
     Fl::lock();
     gen res=makeform(v,contextptr);

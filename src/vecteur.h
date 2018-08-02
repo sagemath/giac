@@ -45,6 +45,8 @@ namespace giac {
   typedef double long_double;
 #endif
   typedef std::complex<long_double> complex_long_double;
+  double complex_abs(const complex_double & c);
+  double complex_long_abs(const complex_long_double & c);
 
   // make a matrix with free rows 
   // (i.e. it is possible to modify the answer in place)
@@ -197,7 +199,7 @@ namespace giac {
   // if a and b are matrices returns matrix product
   // if a is a matrix and b a vecteur return matr*vect
   // otherwise returns the dot product of a and b
-  gen ckmultmatvecteur(const vecteur & a,const vecteur & b);
+  gen ckmultmatvecteur(const vecteur & a,const vecteur & b,GIAC_CONTEXT);
   void multmatvecteur(const matrix_double & H,const std::vector<giac_double> & w,std::vector<giac_double> & v);
 
   void vecteur2vector_int(const vecteur & v,int modulo,std::vector<int> & res);
@@ -321,6 +323,7 @@ namespace giac {
   bool remove_identity(matrice & res);
   bool remove_identity(std::vector< std::vector<int> > & res,int modulo);
 
+  void mdividebypivot(matrice & a,int lastcol,GIAC_CONTEXT); // in-place div by pivots
   void mdividebypivot(matrice & a,int lastcol=-1); // in-place div by pivots
   // if lastcol==-1, divide last col, if lastcol==-2 do not divide last col
   // if lastcol>=0 stop dividing at lastcol
@@ -466,6 +469,9 @@ namespace giac {
   extern const unary_function_ptr * const  at_qr ;
   matrice thrownulllines(const matrice & res);
 
+  extern const unary_function_ptr * const  at_lll_reduce ;
+  extern const unary_function_ptr * const  at_lll ;
+
   gen _cholesky(const gen & a,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_cholesky ;
   gen _svd(const gen & a,GIAC_CONTEXT);
@@ -507,7 +513,7 @@ namespace giac {
   bool hermite(const std_matrix<gen> & Aorig,std_matrix<gen> & U,std_matrix<gen> & A,environment * env,GIAC_CONTEXT);
   gen _ihermite(const gen & g,GIAC_CONTEXT);
   gen _ismith(const gen & g,GIAC_CONTEXT);
-#ifndef NSPIRE
+#if !defined NSPIRE && !defined FXCG
   gen _csv2gen(const gen & g,GIAC_CONTEXT);
   matrice csv2gen(std::istream & i,char sep,char nl,char decsep,char eof,GIAC_CONTEXT);
 #endif

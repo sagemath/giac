@@ -485,7 +485,7 @@ namespace xcas {
       if (m)
 	m->_g=g;
       if (giac::first_error_line(contextptr))
-	*logptr(contextptr) << gettext("Syntax compatibility mode ") << print_program_syntax(xcas_mode(contextptr)) << gettext("\nParse error line ") << giac::first_error_line(contextptr) <<  gettext(" at ")  << giac::error_token_name(contextptr) ;
+	*logptr(contextptr) << gettext("Syntax compatibility mode ") << print_program_syntax(xcas_mode(contextptr)) << gettext("\nParse error line ") << giac::first_error_line(contextptr) + gettext(" column ")+print_INT_(giac::lexer_column_number(contextptr))+  gettext(" at ")  << giac::error_token_name(contextptr) ;
       return 1;
     }
     if (Equation * e = dynamic_cast<Equation *>(w)){
@@ -507,7 +507,7 @@ namespace xcas {
       if (ed)
 	ed->_g=g;
       if (giac::first_error_line(contextptr))
-	*logptr(contextptr) << gettext("Syntax compatibility mode ") << print_program_syntax(xcas_mode(contextptr)) << gettext("\nParse error line ") << giac::first_error_line(contextptr) <<  gettext(" at ")  << giac::error_token_name(contextptr) ;
+	*logptr(contextptr) << gettext("Syntax compatibility mode ") << print_program_syntax(xcas_mode(contextptr)) << gettext("\nParse error line ") << giac::first_error_line(contextptr) + gettext(" column ")+print_INT_(giac::lexer_column_number(contextptr))+  gettext(" at ")  << giac::error_token_name(contextptr) ;
       return 1;
     }
     if (Figure * f = dynamic_cast<Figure *>(w)){
@@ -1756,7 +1756,7 @@ namespace xcas {
     else 
       usepos=(dynamic_cast<Equation *>(Xcas_input_focus)==0);
     _sel_begin=savepos;
-    fprintf(f,"// xcas version=%s fontsize=%i font=%i currentlevel=%i\n",VERSION,labelsize(),labelfont(),pos);
+    fprintf(f,"// xcas version=%s fontsize=%i font=%i currentlevel=%i pixon=%i\n",VERSION,labelsize(),labelfont(),pos,pixon_size);
     fprintf(f,"%s",chs);
     if (savecontext){
       string tmps=archive_session(false,contextptr);
@@ -1999,6 +1999,11 @@ namespace xcas {
 		newpos=atoi(optvalue.c_str());
 		if (before_position>0)
 		  newpos += before_position;
+	      }
+	      if (optname=="pixon"){
+		newpos=atoi(optvalue.c_str());
+		if (newpos>=1 && newpos<=9)
+		  pixon_size=newpos;
 	      }
 	    }
 	    optname="";
@@ -2546,14 +2551,20 @@ namespace xcas {
       return "mu";
     case 3:
       return "ti";
+    case 256:
+      return "py";
     default:
       return "cas";
     }
   }
 
   void save_as_text(ostream & of,int mode,History_Pack * pack){
+    bool python=mode>=256;
+    mode = mode & 0xff;
     const giac::context * contextptr=pack?pack->contextptr:context0;
     int save_maple_mode=xcas_mode(contextptr);
+    int save_python=python_compat(contextptr);
+    python_compat(python,contextptr);
     int n=pack->children();
     for (int i=0;i<n;i++){
       if (!of)
@@ -2578,7 +2589,12 @@ namespace xcas {
       }
       if (Editeur * ed=dynamic_cast<Editeur *>(wid)){
 	xcas_mode(contextptr)=mode;
-	of << unlocalize(ed->value()) << endl;
+	gen g(ed->value(),contextptr);
+	if (g.is_symb_of_sommet(at_nodisp))
+	  g=g._SYMBptr->feuille;
+	if (g.is_symb_of_sommet(at_sto) && python_compat(contextptr))
+	  g=g._SYMBptr->feuille[0];
+	of << unlocalize(g.print(contextptr)) << endl;
 	xcas_mode(contextptr)=save_maple_mode;
       }
       if (Xcas_Text_Editor * xed=dynamic_cast<Xcas_Text_Editor *>(wid)){
@@ -2606,6 +2622,7 @@ namespace xcas {
 	xcas_mode(contextptr)=save_maple_mode;
       }
     }
+    python_compat(save_python,contextptr);
   }
 
   void History_cb_save_as_text(Fl_Widget * m,int mode){
@@ -2626,6 +2643,10 @@ namespace xcas {
 
   void History_cb_Save_as_xcas_text(Fl_Widget* m , void*) {
     History_cb_save_as_text(m,0);
+  }
+
+  void History_cb_Save_as_xcaspy_text(Fl_Widget* m , void*) {
+    History_cb_save_as_text(m,256);
   }
 
   void History_cb_Save_as_maple_text(Fl_Widget* m , void*) {
@@ -3124,9 +3145,9 @@ namespace xcas {
   void xdvi(const std::string & name){
     string s=remove_extension(name);
 #ifdef WIN32
-    system((xcasroot()+"latex.bat "+s).c_str());
+    system_no_deprecation((xcasroot()+"latex.bat "+s).c_str());
     cerr << xcasroot()+"latex.bat "+s << endl;
-    system((xcasroot()+"xdvi.bat "+s+" &").c_str());
+    system_no_deprecation((xcasroot()+"xdvi.bat "+s+" &").c_str());
     cerr << xcasroot()+"xdvi.bat "+s+" &" << endl;
 #else
     string path=get_path(s);
@@ -3135,23 +3156,23 @@ namespace xcas {
       char buf[1024];
       path=getcwd(buf,1024);
     }
-    int tmpresult=system(("cd "+path+" ; latex "+s+" ").c_str());
-    tmpresult=system(("cd "+path+" ; xdvi "+s+" &").c_str());
-    tmpresult=system(("cd "+path+" ; dvips "+s+" -o "+s+".ps && pstopnm -stdout "+s+" | pnmtopng > "+s+".png").c_str());
+    int tmpresult=system_no_deprecation(("cd "+path+" ; latex "+s+" ").c_str());
+    tmpresult=system_no_deprecation(("cd "+path+" ; xdvi "+s+" &").c_str());
+    tmpresult=system_no_deprecation(("cd "+path+" ; dvips "+s+" -o "+s+".ps && pstopnm -stdout "+s+" | pnmtopng > "+s+".png").c_str());
     fl_message("%s",("->"+s+".tex/.dvi/.ps/.png").c_str());
 #endif //    
   }
   
   void dvips(const std::string & name){
 #ifdef WIN32
-    system((xcasroot()+"latex.bat "+remove_extension(name)).c_str());
-    system((xcasroot()+"dvips.bat "+remove_extension(name)+" &").c_str());
+    system_no_deprecation((xcasroot()+"latex.bat "+remove_extension(name)).c_str());
+    system_no_deprecation((xcasroot()+"dvips.bat "+remove_extension(name)+" &").c_str());
 #else
     string s=remove_extension(name);
     string path=get_path(s);
     s=remove_path(s);
-    int tmpresult=system(("cd "+path+" ; latex "+s+" ").c_str());
-    tmpresult=system(("cd "+path+" ; dvips "+s+" -o "+s+".ps && pstopnm -stdout "+s+" | pnmtopng > "+s+".png").c_str());
+    int tmpresult=system_no_deprecation(("cd "+path+" ; latex "+s+" ").c_str());
+    tmpresult=system_no_deprecation(("cd "+path+" ; dvips "+s+" -o "+s+".ps && pstopnm -stdout "+s+" | pnmtopng > "+s+".png").c_str());
 #endif //    
   }
 
@@ -3777,7 +3798,7 @@ namespace xcas {
     if (current_status){
       string mode_s="Config ";
       if (pack->url)
-	mode_s += remove_path(*pack->url);
+	mode_s += '\''+remove_path(*pack->url)+'\'';
       mode_s += " :";
 #ifdef IPAQ
       if (giac::approx_mode(ptr))
@@ -3806,7 +3827,11 @@ namespace xcas {
       mode_s += ' ';
       switch (giac::xcas_mode(ptr)){
       case 0: 
-	mode_s+="xcas "; break;
+	if (python_compat(ptr))
+	  mode_s += "python ";
+	else
+	  mode_s+="xcas "; 
+	break;
       case 1: 
 	mode_s+="maple "; break;
       case 2: 

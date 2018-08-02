@@ -67,8 +67,8 @@ enum Fl_Color {	// standard colors
 //#ifndef LP64
 typedef ptrdiff_t Int;
 //#else typedef signed long Int; #endif
-#include "Colors.h"
-//#include "../../src/Colors.h"
+//#include "Colors.h"
+#include "../../src/Colors.h"
 enum Fl_Color {
   FL_BLACK = ColorBlack,
   FL_WHITE = ColorWhite,
@@ -196,6 +196,7 @@ namespace giac {
   int erase_pos(GIAC_CONTEXT);
   int erase_pos(int current,GIAC_CONTEXT);
   bool is_segment(const gen & e);
+  bool is_pnt_or_pixon(const gen & g);
   gen remove_at_pnt(const gen & e);
   gen remove_sto(const gen & e);
   vecteur selection2vecteur(const std::vector<int> & selected,GIAC_CONTEXT);
@@ -279,9 +280,12 @@ namespace giac {
 
   gen _erase(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_erase;
-
+  
+  extern int pixon_size; 
+  vecteur merge_pixon(const vecteur & v);
   gen _pixon(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_pixon;
+  void pixon_print(const gen &g,std::string & S,GIAC_CONTEXT);
 
   gen _pixoff(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_pixoff;
@@ -756,7 +760,7 @@ namespace giac {
   gen _enveloppe(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_enveloppe;
 
-  int graph_output_type(const giac::gen & g);
+  int graph_output_type(const gen & g);
   gen put_attributs(const gen & lieu_geo,const vecteur & attributs,GIAC_CONTEXT);
   vecteur seq2vecteur(const gen & g);
 
