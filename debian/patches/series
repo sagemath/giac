@@ -7,7 +7,7 @@ system-gl2ps.patch
 version-bison-3.patch
 dont-bg-hevea.patch
 u-version-pari-2.11.patch
-fix-dvi-bounding-box-errors.patch
+fix-pdf-errors.patch
 
 ## Build script patches
 missing-build-rules.patch
