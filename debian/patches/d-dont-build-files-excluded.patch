@@ -92,12 +92,14 @@ Forwarded: not-needed
  
  PS_LOCAL = cascmd_en.ps casinter.ps cas.ps
  
-@@ -34,10 +34,9 @@
+@@ -34,12 +34,11 @@
  $(srcdir)/casinter: casinter.stamp
  $(srcdir)/tutoriel: tutoriel.stamp
  
--install-data-local: $(HTML_STAMPS) $(PS_LOCAL) $(DVI_LOCAL) troussesurvie_en.pdf # $(PDF_LOCAL) 
-+install-data-local: $(HTML_STAMPS) $(PS_LOCAL) $(DVI_LOCAL) # $(PDF_LOCAL) 
+-all-local: html-local ps-local dvi-local troussesurvie_en.pdf # pdf-local
++all-local: html-local ps-local dvi-local # pdf-local
+ 
+ install-data-local: all-local
  	$(install_sh) -d $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
  #	$(INSTALL_DATA) $(PDF_LOCAL) $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
 -	$(INSTALL_DATA) troussesurvie_en.pdf $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)

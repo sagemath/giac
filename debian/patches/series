@@ -1,20 +1,29 @@
-# For upstreaming
+### For upstreaming
+
+## Issues with other programs, or version matches
 fix-gettext-options.patch
 no-useless-deps.patch
 system-gl2ps.patch
-missing-build-rules.patch
 version-bison-3.patch
 dont-bg-hevea.patch
 u-version-pari-2.11.patch
 fix-dvi-bounding-box-errors.patch
 
+## Build script patches
+missing-build-rules.patch
+split-build-install.patch
+#no-X-deps-icas.patch # see README.source for details
+
+## Test data patches
 test-fixes.patch
 # This is applied in d/rules, leave it unapplied here
 #test-fixes-data.patch
-#no-X-deps-icas.patch # see README.source for details
 
-# Debian only
-dont-build-files-excluded.patch
-#dont-include-remote-scripts.patch
-find-doc-files-at-buildtime.patch
+
+
+### Debian only
+
+d-dont-build-files-excluded.patch
+d-find-doc-files-at-buildtime.patch
 d-workaround-hevea-bugs.patch
+d-dont-include-remote-scripts.patch

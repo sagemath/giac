@@ -1,0 +1,39 @@
+--- a/doc/en/Makefile.am
++++ b/doc/en/Makefile.am
+@@ -34,7 +34,9 @@
+ $(srcdir)/casinter: casinter.stamp
+ $(srcdir)/tutoriel: tutoriel.stamp
+ 
+-install-data-local: $(HTML_STAMPS) $(PS_LOCAL) $(DVI_LOCAL) troussesurvie_en.pdf # $(PDF_LOCAL) 
++all-local: html-local ps-local dvi-local troussesurvie_en.pdf # pdf-local
++
++install-data-local: all-local
+ 	$(install_sh) -d $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
+ #	$(INSTALL_DATA) $(PDF_LOCAL) $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
+ 	$(INSTALL_DATA) troussesurvie_en.pdf $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
+--- a/doc/el/Makefile.am
++++ b/doc/el/Makefile.am
+@@ -24,7 +24,9 @@
+ 
+ $(srcdir)/cascmd_el: cascmd_el.stamp
+ 
+-install-data-local: $(HTML_STAMPS) $(PDF_LOCAL) $(PS_LOCAL) $(DVI_LOCAL)
++all-local: html-local pdf-local ps-local dvi-local
++
++install-data-local: all-local
+ 	$(install_sh) -d $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
+ #	$(INSTALL_DATA) $(PDF_LOCAL) $(DESTDIR)/$(the_LANG)
+ #	$(INSTALL_DATA) $(PS_LOCAL) $(DESTDIR)/$(the_LANG)
+--- a/doc/es/Makefile.am
++++ b/doc/es/Makefile.am
+@@ -16,7 +16,9 @@
+ dvi-local: $(DVI_LOCAL)
+ ps-local: $(PS_LOCAL)
+ 
+-install-data-local: $(HTML_STAMPS) $(PDF_LOCAL) $(PS_LOCAL) $(DVI_LOCAL)
++all-local: $(HTML_STAMPS) pdf-local ps-local dvi-local
++
++install-data-local: all-local
+ 	$(install_sh) -d $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
+ #	$(INSTALL_DATA) $(PDF_LOCAL) $(DESTDIR)/$(the_LANG)
+ #	$(INSTALL_DATA) $(PS_LOCAL) $(DESTDIR)/$(the_LANG)
