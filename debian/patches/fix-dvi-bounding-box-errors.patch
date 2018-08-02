@@ -1,0 +1,14 @@
+Description: Work around "no BoundingBox" errors
+Author: Ximin Luo <infinity0@debian.org>
+Bug: https://xcas.univ-grenoble-alpes.fr/forum/viewtopic.php?f=5&t=2108&p=10339#p10339
+--- a/doc/en/cascmd_en.tex
++++ b/doc/en/cascmd_en.tex
+@@ -2,7 +2,7 @@
+ %\textwidth 11,8 cm
+ %\textheight 17 cm
+ \textheight 23 cm
+-\usepackage{graphicx}
++\usepackage[dvipdfmx]{graphicx} \usepackage{bmpsize}
+ \usepackage{amsmath}
+ \usepackage{amsfonts}
+ \usepackage{amssymb}
