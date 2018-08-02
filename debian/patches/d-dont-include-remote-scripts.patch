@@ -1,39 +1,66 @@
 Description: Don't include remote scripts
- We have them in Debian, use those
+ We have them in Debian, use those.
+ To refresh this patch:
+
+ files=$(git grep -l '/cdn' -- ':^debian')
+ quilt add $files
  sed -i \
    -e 's,{giacjsonline},{giacjshere},g' \
-   -e 's,http://cdn.mathjax.org/mathjax/latest/,file:///usr/share/javascript/mathjax/,g' \
+   -e 's,https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/,file:///usr/share/javascript/mathjax/,g' \
    -e '/^%\loadgiacjsonline/d' \
-   doc/testfr.tex doc/test.tex doc/giac.tex doc/giacfr.tex doc/xcasen.html doc/xcasfr.html
- then refresh, pop, and manually remove false positives from this patch, e.g.
- %%comments and \verb literals and \newenvironment declarations.
+   $files
+ quilt refresh
+
+ (You might also have to update the URL in the sed expression.)
+ 
+ Then refresh, pop, and manually remove false positives from this patch, e.g.
+ %%comments and \verb literals and \newenvironment declarations. (This patch
+ should contain no hunks that change \newenvironment declarations.)
 Author: Ximin Luo <infinity0@debian.org>
 Forwarded: not-needed
 ---
 This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
---- a/doc/test.tex
-+++ b/doc/test.tex
-@@ -59,9 +59,8 @@
- \makeindex
- 
- \begin{document}
--%\loadgiacjsonline
- %\loadgiacjs
--\begin{giacjsonline}
-+\begin{giacjshere}
- \maketitle
- 
- \tableofcontents
-@@ -164,5 +163,5 @@
- \verb|\giacslider{a}{-5}{5}{0.1}{0}{plot(sin(a*x))}|\index{giacslider}\\
- \giacslider{a}{-5}{5}{0.1}{0}{plot(sin(a*x))}
- 
--\end{giacjsonline}
-+\end{giacjshere}
- \end{document}
+--- a/doc/algolycee.html
++++ b/doc/algolycee.html
+@@ -58,7 +58,7 @@
+  (function () {
+   var script = document.createElement("script");
+   script.type = "text/javascript";
+-  script.src  = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML";
++  script.src  = "file:///usr/share/javascript/mathjax/MathJax.js?config=TeX-MML-AM_CHTML";
+   document.getElementsByTagName("head")[0].appendChild(script);
+ })();
+ }
+@@ -9790,7 +9790,7 @@
+   if (UI.usemathjax){
+     var script = document.createElement("script");
+     script.type = "text/javascript";
+-    script.src  = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
++    script.src  = "file:///usr/share/javascript/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+     document.getElementsByTagName("head")[0].appendChild(script);
+   }
+   var elem= document.getElementById('controlindex');
 --- a/doc/giac.tex
 +++ b/doc/giac.tex
-@@ -364,7 +364,7 @@
+@@ -1,7 +1,7 @@
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ %% giac/hevea interaction code definitions
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+-%% Use one of the environment \begin{giacjs}...\end{giacjs} or \begin{giacjsonline}...\end{giacjsonline}
++%% Use one of the environment \begin{giacjs}...\end{giacjs} or \begin{giacjshere}...\end{giacjshere}
+ %% to load the javascript code (from hard disk or Internet)
+ %% Commands \giacinput{} or \giacinputmath{} or \giacinputbigmath{} 
+ %% \giaccmd{} or \giaccmdmath{} or \giaccmdbigmath{} 
+@@ -21,7 +21,7 @@
+  (function () {
+   var script = document.createElement("script");
+   script.type = "text/javascript";
+-  script.src  = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML";
++  script.src  = "file:///usr/share/javascript/mathjax/MathJax.js?config=TeX-MML-AM_CHTML";
+   document.getElementsByTagName("head")[0].appendChild(script);
+ })();
+ }
+@@ -425,7 +425,7 @@
    if (UI.usemathjax){
      var script = document.createElement("script");
      script.type = "text/javascript";
@@ -44,7 +71,25 @@ This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
    var elem= document.getElementById('controlindex');
 --- a/doc/giacfr.tex
 +++ b/doc/giacfr.tex
-@@ -359,7 +359,7 @@
+@@ -1,7 +1,7 @@
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ %% giac/hevea interaction code definitions
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+-%% Use one of the environment \begin{giacjs}...\end{giacjs} or \begin{giacjsonline}...\end{giacjsonline}
++%% Use one of the environment \begin{giacjs}...\end{giacjs} or \begin{giacjshere}...\end{giacjshere}
+ %% to load the javascript code (from hard disk or Internet)
+ %% Commands \giacinput{} or \giacinputmath{} or \giacinputbigmath{} 
+ %% \giaccmd{} or \giaccmdmath{} or \giaccmdbigmath{} 
+@@ -20,7 +20,7 @@
+  (function () {
+   var script = document.createElement("script");
+   script.type = "text/javascript";
+-  script.src  = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML";
++  script.src  = "file:///usr/share/javascript/mathjax/MathJax.js?config=TeX-MML-AM_CHTML";
+   document.getElementsByTagName("head")[0].appendChild(script);
+ })();
+ }
+@@ -420,7 +420,7 @@
    if (UI.usemathjax){
      var script = document.createElement("script");
      script.type = "text/javascript";
@@ -55,11 +100,79 @@ This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
    var elem= document.getElementById('controlindex');
 --- a/doc/testfr.tex
 +++ b/doc/testfr.tex
-@@ -77,7 +77,6 @@
- \begin{document}
- \begin{giacjshere}
- %\loadgiacjs
--%\loadgiacjsonline
- Un $x$
- $$ 1/2 $$
-  
+@@ -42,7 +42,7 @@
+  (function () {
+   var script = document.createElement("script");
+   script.type = "text/javascript";
+-  script.src  = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML";
++  script.src  = "file:///usr/share/javascript/mathjax/MathJax.js?config=TeX-MML-AM_CHTML";
+   document.getElementsByTagName("head")[0].appendChild(script);
+ })();
+ }
+@@ -108,19 +108,19 @@
+ 
+ \section{Utilisation} 
+ La commande\verb|\begin{giacjshere}|\index{giacjshere}, 
+-\verb|\begin{giacjs}|\index{giacjs} ou \verb|\begin{giacjsonline}|\index{giacjsonline}
++\verb|\begin{giacjs}|\index{giacjs} ou \verb|\begin{giacjshere}|\index{giacjshere}
+ doit figurer juste apr\`es \verb|\begin{document}|, selon que l'on va charger le moteur
+ de calcul \verb|giac.js| de la m\^eme fa\c{c}on que la page HTML,
+ depuis une installation de Xcas sur le disque dur
+ ou depuis le serveur de l'Institut Fourier. La
+ commande correspondante \verb|\end{giacjs}|, \verb|\end{giacjshere}| 
+-ou \verb|\end{giacjsonline}| 
++ou \verb|\end{giacjshere}| 
+ doit figurer juste avant \verb|\end{document}|.
+ Pour que les liens du tableau de bord Table et Index fonctionnent,
+ vous devez imprimer la table des mati\`eres et l'index au d\'ebut du
+ document, comme dans ce fichier (commandes \verb|\tableofcontents|\index{table} et
+ \verb|\printindex|\index{index} juste apr\`es
+-\verb|\begin{giacjsonline}| et commande \verb|\makeindex| 
++\verb|\begin{giacjshere}| et commande \verb|\makeindex| 
+ juste avant \verb|\begin{document}|).
+ 
+ Pour cr\'eer une commande en ligne avec r\'eponse en MathML (ou
+--- a/doc/xcas.js
++++ b/doc/xcas.js
+@@ -2414,7 +2414,7 @@
+         if (!UI.usemathjax) {
+           var script = document.createElement("script");
+           script.type = "text/javascript";
+-          script.src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_CHTML";
++          script.src = "file:///usr/share/javascript/mathjax/MathJax.js?config=TeX-AMS_CHTML";
+           document.getElementsByTagName("head")[0].appendChild(script);
+           window.setTimeout(UI.setmathjax, 400);
+         }
+--- a/doc/xcasen.html
++++ b/doc/xcasen.html
+@@ -3632,7 +3632,7 @@
+         (function () {
+             var script = document.createElement("script");
+             script.type = "text/javascript";
+-            script.src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_CHTML";
++            script.src = "file:///usr/share/javascript/mathjax/MathJax.js?config=TeX-AMS_CHTML";
+             document.getElementsByTagName("head")[0].appendChild(script);
+         })();
+     }
+--- a/doc/xcasfr.html
++++ b/doc/xcasfr.html
+@@ -3800,7 +3800,7 @@
+         (function () {
+             var script = document.createElement("script");
+             script.type = "text/javascript";
+-            script.src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_CHTML";
++            script.src = "file:///usr/share/javascript/mathjax/MathJax.js?config=TeX-AMS_CHTML";
+             document.getElementsByTagName("head")[0].appendChild(script);
+         })();
+     }
+--- a/doc/xcasfrwasm.html
++++ b/doc/xcasfrwasm.html
+@@ -3311,7 +3311,7 @@
+  (function () {
+   var script = document.createElement("script");
+   script.type = "text/javascript";
+-  script.src  = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_CHTML";
++  script.src  = "file:///usr/share/javascript/mathjax/MathJax.js?config=TeX-AMS_CHTML";
+   document.getElementsByTagName("head")[0].appendChild(script);
+ })();
+ }
