@@ -5,13 +5,13 @@ system-gl2ps.patch
 missing-build-rules.patch
 version-bison-3.patch
 dont-bg-hevea.patch
-
+u-version-pari-2.11.patch
 #no-X-deps-icas.patch # see README.source for details
-
-# Debian only
 test-fixes.patch
 # This is applied in d/rules, leave it unapplied here
 #test-fixes-data.patch
+
+# Debian only
 dont-build-files-excluded.patch
 dont-include-remote-scripts.patch
 find-doc-files-at-buildtime.patch
