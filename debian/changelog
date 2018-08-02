@@ -1,8 +1,8 @@
-giac (1.4.9.69+dfsg1-1~exp1) UNRELEASED; urgency=medium
+giac (1.4.9.69+dfsg1-1~exp1) experimental; urgency=medium
 
   * New upstream release.
 
- -- Ximin Luo <infinity0@debian.org>  Sun, 29 Jul 2018 03:23:14 -0700
+ -- Ximin Luo <infinity0@debian.org>  Thu, 02 Aug 2018 02:33:00 -0700
 
 giac (1.2.3.57+dfsg1-2) unstable; urgency=medium
 
