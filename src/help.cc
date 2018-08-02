@@ -44,7 +44,7 @@ using namespace std;
 #include <sys/param.h>
 #endif
 
-#if !defined BESTA_OS && !defined NSPIRE // test should always return true
+#if !defined BESTA_OS && !defined NSPIRE && !defined FXCG && !defined NUMWORKS // test should always return true
 #include <dirent.h>
 #endif
 
@@ -56,7 +56,7 @@ using namespace std;
 namespace giac {
 #endif // ndef NO_NAMESPACE_GIAC
   
-  const int HELP_LANGUAGES=4;
+  const int HELP_LANGUAGES=5;
 
   struct static_help_t {
     const char * cmd_name;
@@ -70,7 +70,7 @@ namespace giac {
 #if !defined RTOS_THREADX && !defined BESTA_OS && !defined GIAC_HAS_STO_38 
 #include "static_help.h"
 #else
-    { "", { "", "", "", ""}, "", "", "" },
+    { "", { "", "", "", "",""}, "", "", "" },
 #endif
   };
 
@@ -109,7 +109,7 @@ namespace giac {
     int l=int(s.size());
     if ( (l>2) && (s[0]=='\'') && (s[l-1]=='\'') )
       s=s.substr(1,l-2);
-    static_help_t h={s.c_str(),{0,0,0,0},0,0,0};
+    static_help_t h={s.c_str(),{0,0,0,0,0},0,0,0};
     std::pair<const static_help_t *,const static_help_t *> p=equal_range(static_help,static_help+static_help_size,h,static_help_sort());
     if (p.first!=p.second && p.first!=static_help+static_help_size){
       howto=p.first->cmd_howto[lang-1];
@@ -186,12 +186,20 @@ namespace giac {
     return res;
   }
 
-  // Run ./icas with export GIAC_DEBUG=-2 to print static_help.h and static_help_w.h
+  // Run ./icas with export GIAC_DEBUG=-2 to print static_help.h and static_help_w.h, then sort in emacs
+  // cascmd_fr -> longhelp.js: 
   static bool output_static_help(vector<aide> & v,const vector<int> & langv){
-#ifndef NSPIRE
+#if !defined NSPIRE && !defined FXCG
+    add_language(5,context0); // add german help de/aide_cas
+    cout << "Generating xcascmds, for UI.xcascmds in xcas.js, sort and esc-x replace-string ctrl-Q ctrl-j ret ret" << endl;
+    cout << "Generating static_help.h (sort it in emacs)" << endl;
+    cout << "Generating static_help_w.h (same but UTF16)" << endl;
+    ofstream cmds("xcascmds");
+    cmds << "[" << endl;
     ofstream of("static_help.h");
     vector<aide>::iterator it=v.begin(),itend=v.end();
     for (;it!=itend;){
+      cmds << '"' << output_quote(it->cmd_name) << '"' << "," << endl;
       of << "{";
       of << '"' << output_quote(it->cmd_name) << '"' << ",";
       std::vector<localized_string> & blabla = it->blabla;
@@ -199,7 +207,7 @@ namespace giac {
       int bs=int(blabla.size());
       of << "{";
       for (int i=0;i<HELP_LANGUAGES;i++){
-	if (i<bs && equalposcomp(langv,i+1))
+	if (i<bs && i+1==blabla[i].language && equalposcomp(langv,i+1))
 	  of << '"' << output_quote(blabla[i].chaine) << '"' ;
 	else
 	  of << 0 ;
@@ -244,6 +252,7 @@ namespace giac {
 	break;
       of << "," << endl;
     }
+    cmds << "]" << endl;
     of << endl;
     ofstream ofw("static_help_w.h");
     ofstream ofwindex("index_w.h");
@@ -443,9 +452,10 @@ namespace giac {
       readhelp(v,f_name,count,warn);
     return v;
   }
+  // FIXME: aide_cas may end with synonyms (# cmd synonym1 ...)
   void readhelp(vector<aide> & v,const char * f_name,int & count,bool warn){
     count=0;
-#ifndef NSPIRE
+#if !defined NSPIRE && !defined FXCG
     if (access(f_name,R_OK)){
       if (warn)
 	std::cerr << "Help file " << f_name << " not found" << endl;
@@ -497,8 +507,8 @@ namespace giac {
 	vector<aide>::iterator itpos;
 	for (it=itbeg;it!=itend;++it){
 	  itpos=lower_bound(v.begin(),v.end(),current_aide,alpha_order);
-	  if (itpos!=v.begin()){
-	    --itpos;
+	  if (itpos!=v.end()){
+	    // --itpos;
 	    if (itpos->cmd_name==it->chaine){ // already documented
 	      current_synonymes=itpos->synonymes;
 	      current_blabla=itpos->blabla;
@@ -557,8 +567,9 @@ namespace giac {
       vector<int> langv;
       langv.push_back(1);
       langv.push_back(2);
-      // langv.push_back(3);
-      // langv.push_back(4);
+      langv.push_back(3);
+      langv.push_back(4);
+      langv.push_back(5);
       output_static_help(v,langv);
     }
 #endif
@@ -670,7 +681,7 @@ namespace giac {
     return result;
   }
 
-#if !defined(NSPIRE_NEWLIB) || !defined(RTOS_THREADX) && !defined(EMCC) &&!defined(NSPIRE)
+#if !defined(NSPIRE_NEWLIB) && !defined(RTOS_THREADX) && !defined(EMCC) &&!defined(NSPIRE) && !defined FXCG
   multimap<string,string> html_mtt,html_mall;
   std::vector<std::string> html_vtt,html_vall;
 
@@ -680,25 +691,25 @@ namespace giac {
     if (access(file.c_str(),R_OK))
       return false;
     ifstream i(file.c_str());
-    // Skip navigation panel
-#if defined VISUALC || defined BESTA_OS
+    // Skip navigation panel 
+#if defined VISUALC || defined BESTA_OS || defined FREERTOS
     char * buf=new char[BUFFER_SIZE+1];
 #else
     char buf[BUFFER_SIZE+1];
 #endif
     for (;i && !i.eof();){
       i.getline(buf,BUFFER_SIZE,'\n');
-      string s(buf);
-      if (s=="<!--End of Navigation Panel-->")
+      string s(buf),stmp;
+      if (s=="<!--End of Navigation Panel-->") // latex2html?
 	break;
       int t=int(s.size());
-      if (t>24 && s.substr(t-24,24)=="<LI CLASS=\"li-indexenv\">"){
+      if (t>24 && ((stmp=s.substr(t-24,24))=="<LI CLASS=\"li-indexenv\">" || stmp=="<li class=\"li-indexenv\">")){
 	// hevea file contains index
 	for (;i && !i.eof(); ){
 	  i.getline(buf,BUFFER_SIZE,'\n');
 	  s=buf;
 	  t=int(s.size());
-	  if (t>29 && s.substr(0,29)=="</LI><LI CLASS=\"li-indexenv\">"){
+	  if (t>29 && ((stmp=s.substr(0,29))=="</LI><LI CLASS=\"li-indexenv\">" || stmp=="</li><li class=\"li-indexenv\">")){
 	    s=s.substr(29,s.size()-29);
 	    t=int(s.size());
 	    if (!t || s[0]=='<') // skip index words with special color/font
@@ -710,9 +721,12 @@ namespace giac {
 	      vector<string> hrefs;
 	      for (;;){
 		t=int(s.size());
-		endcmd=int(s.find("<A HREF=\""));
-		if (endcmd<0 || endcmd+9>=t)
-		  break;
+		endcmd=int(s.find("<a href=\""));
+		if (endcmd<0 || endcmd+9>=t){
+		  endcmd=int(s.find("<A HREF=\""));
+		  if (endcmd<0 || endcmd+9>=t)
+		    break;
+		}
 		s=s.substr(endcmd+9,s.size()-endcmd-9);
 		t=int(s.size());
 		endcmd=int(s.find("\""));
@@ -727,7 +741,7 @@ namespace giac {
 		t=int(s.size());
 		if (t<3)
 		  break;
-		if (s.substr(0,3)=="<B>")
+		if (s.substr(0,3)=="<B>" || (t>30 && s.substr(0,29)=="<span style=\"font-weight:bold"))
 		  hrefs.insert(hrefs.begin(),link);
 		else
 		  hrefs.push_back(link);
@@ -740,13 +754,14 @@ namespace giac {
 	      }
 	    } // if (endcmd>2 && endcmd<t)
 	  } // if (t>29 &&...
-	} // end of file
-#if defined VISUALC || defined BESTA_OS
+	} // for (;i && !i.eof();) end of file
+#if defined VISUALC || defined BESTA_OS || defined FREERTOS
 	delete [] buf;
 #endif
 	return true;
-      }
-      if (t>14 && s.substr(t-14,14)=="Index</A></B> "){
+      } // end hevea file with index
+      // latex2html only?
+      if (t>14 && s.substr(t-14,14)=="Index</A></B> "){ 
 	// look in the corresponding index file instead
 	int t1=int(s.find("HREF"))+6;
 	if (t1>=0 && t1<t-16){
@@ -754,13 +769,13 @@ namespace giac {
 	  if (warn)
 	    cerr << "Using index " << s << endl;
 	  find_index(current_dir,current_dir+s,mtt,mall,true,warn);
-#if defined VISUALC || defined BESTA_OS
+#if defined VISUALC || defined BESTA_OS || defined FREERTOS
 	  delete [] buf;
 #endif
 	  return true;
 	}
       }
-#if defined VISUALC || defined BESTA_OS
+#if defined VISUALC || defined BESTA_OS || defined FREERTOS
       delete [] buf;
 #endif
     }
@@ -900,8 +915,8 @@ namespace giac {
     return 0;
   }
 
-#if ! (defined VISUALC || defined BESTA_OS || defined NSPIRE || defined NSPIRE_NEWLIB)
-#ifdef WIN32
+#if ! (defined VISUALC || defined BESTA_OS || defined FREERTOS || defined NSPIRE || defined FXCG || defined NSPIRE_NEWLIB)
+#if defined WIN32 || !defined DT_DIR
   static int dir_select (const struct dirent *d){
     string s(d->d_name);
     // cerr << s << endl;
@@ -946,7 +961,7 @@ namespace giac {
 #endif // visualc
 
   void find_all_index(const std::string & subdir,multimap<std::string,std::string> & mtt,multimap<std::string,std::string> & mall){
-#if defined GNUWINCE || defined __MINGW_H || defined __ANDROID__ || defined EMCC || defined NSPIRE_NEWLIB
+#if defined GNUWINCE || defined __MINGW_H || defined __ANDROID__ || defined EMCC || defined NSPIRE_NEWLIB || defined FXCG
     return;
 #else
     // cerr << "HTML help Scanning " << subdir << endl;
@@ -983,7 +998,7 @@ namespace giac {
 	else
 	  s=eps[cnt]->d_name;
 	s= subdir+s;
-#ifdef WIN32
+#if defined WIN32 || !defined DT_DIR
         int t=s.size();
         if (s[t-1]=='\\')
 	  find_all_index(s+"/",mtt,mall);
@@ -1056,7 +1071,7 @@ namespace giac {
 
   // extern int debug_infolevel;
   static bool get_index_from_cache(const char * filename, multimap<string,string> & multi,bool verbose){
-#if defined VISUALC || defined BESTA_OS
+#if defined VISUALC || defined BESTA_OS  || defined FREERTOS
     char * buf = new char[BUFFER_SIZE];
 #else
     char buf[BUFFER_SIZE];
@@ -1068,7 +1083,7 @@ namespace giac {
       if (!if_mtt || if_mtt.eof()){
 	if (verbose)
 	  cerr << "// Read " << n << " entries from cache " << filename << endl;
-#if defined VISUALC || defined BESTA_OS
+#if defined VISUALC || defined BESTA_OS || defined FREERTOS
 	delete [] buf;
 #endif
 	return true;
@@ -1076,7 +1091,7 @@ namespace giac {
       string first(buf);
       if_mtt.getline(buf,BUFFER_SIZE,char(0xa4));
       if (!if_mtt || if_mtt.eof()){
-#if defined VISUALC || defined BESTA_OS
+#if defined VISUALC || defined BESTA_OS || defined FREERTOS
 	delete [] buf;
 #endif
 	return false;
@@ -1097,15 +1112,13 @@ namespace giac {
 	  multi.clear();
 	  cerr << "Wrong cache! " << filename << endl;
 	  if_mtt.close();
-	  #ifndef RTOS_THREADX
-	  #ifndef BESTA_OS
+#if !defined RTOS_THREADX && !defined BESTA_OS && !defined FREERTOS
 	  if (unlink(filename)==-1)
 	    cerr <<  "You don't have write permissions on " << filename <<".\nYou must ask someone who has write permissions to remove " << filename << endl;
 	  else
 	    cerr << "Cache file "<< filename << " has been deleted" << endl;
-	  #endif
-	  #endif
-#if defined VISUALC || defined BESTA_OS
+#endif
+#if defined VISUALC || defined BESTA_OS || defined FREERTOS
 	  delete [] buf;
 #endif
 	  return false;
@@ -1116,14 +1129,14 @@ namespace giac {
     }
     if (verbose)
       cerr << "// Read " << n << " entries from cache " << filename ;
-#if defined VISUALC || defined BESTA_OS
+#if defined VISUALC || defined BESTA_OS || defined FREERTOS
     delete [] buf;
 #endif
     return true;
   }
 
   static bool get_index_from_cache(const char * filename, vector<string> & multi,bool verbose){
-#if defined VISUALC || defined BESTA_OS
+#if defined VISUALC || defined BESTA_OS || defined FREERTOS
     char * buf = new char[BUFFER_SIZE];
 #else
     char buf[BUFFER_SIZE];
@@ -1133,21 +1146,18 @@ namespace giac {
     while (if_mtt && !if_mtt.eof()){
       if_mtt.getline(buf,BUFFER_SIZE,char(0xa4));
       if (!if_mtt || if_mtt.eof()){
-#if defined VISUALC || defined BESTA_OS
+#if defined VISUALC || defined BESTA_OS || defined FREERTOS
 	delete [] buf;
 #endif
 	if (verbose)	
 	  cerr << "// Read " << n << " entries from cache " << filename << endl;
-#if defined VISUALC || defined BESTA_OS
-	delete [] buf;
-#endif
 	return true;
       }
       multi.push_back(buf);
       ++n;
       if_mtt.getline(buf,BUFFER_SIZE,'\n');
     }
-#if defined VISUALC || defined BESTA_OS
+#if defined VISUALC || defined BESTA_OS || defined FREERTOS
     delete [] buf;
 #endif
     if (verbose)

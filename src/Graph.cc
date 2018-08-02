@@ -94,35 +94,10 @@ namespace xcas {
     }
   }
 
-  void arc_en_ciel(int k,int & r,int & g,int & b){
-    k += 21;
-    k %= 126;
-    if (k<0)
-      k += 126;
-    if (k<21){
-      r=251; g=0; b=12*k;
-    }
-    if (k>=21 && k<42){
-      r=251-(12*(k-21)); g=0; b=251;
-    } 
-    if (k>=42 && k<63){
-      r=0; g=(k-42)*12; b=251;
-    } 
-    if (k>=63 && k<84){
-      r=0; g=251; b=251-(k-63)*12;
-    } 
-    if (k>=84 && k<105){
-      r=(k-84)*12; g=251; b=0;
-    } 
-    if (k>=105 && k<126){
-      r=251; g=251-(k-105)*12; b=0;
-    } 
-  }
-
   void xcas_color(int color,bool dim3){
     if (color>=0x100 && color<0x17e){
       int r,g,b;
-      arc_en_ciel(color-0x100,r,g,b);
+      arc_en_ciel(color-(0x100),r,g,b);
 #ifdef HAVE_LIBFLTK_GL
       if (dim3)
 	glColor3f(r/255.,g/255.,b/255.);
@@ -374,6 +349,10 @@ namespace xcas {
   }
 
   void Graph2d3d::update_infos(const gen & g,GIAC_CONTEXT){
+    if (g.type==_VECT && g.subtype==_GRAPH__VECT){
+      show_axes=false;
+      orthonormalize();
+    }
     if (g.is_symb_of_sommet(at_equal)){
       // detect a title or a x/y-axis name
       gen & f = g._SYMBptr->feuille;
@@ -4612,7 +4591,7 @@ namespace xcas {
     History_Pack * hp =get_history_pack(&Mon_image);
     context * contextptr=hp?hp->contextptr:get_context(hp);
     if (g.type==_VECT){
-      vecteur & v =*g._VECTptr;
+      vecteur v = merge_pixon(*g._VECTptr);
       const_iterateur it=v.begin(),itend=v.end();
       for (;it!=itend;++it){
 	fltk_draw(Mon_image,plot_i,*it,x_scale,y_scale,clip_x,clip_y,clip_w,clip_h);
@@ -4797,21 +4776,24 @@ namespace xcas {
 	  vecteur &v=*point._SYMBptr->feuille._VECTptr;
 	  if (v.size()<3 || v[0].type!=_INT_ || v[1].type!=_INT_ || v[2].type!=_INT_)
 	    return;
-	  int delta_i=v[0].val,delta_j=v[1].val;
-	  xcas_color(v[2].val);
-#ifdef IPAQ
-	  if (delta_i>0 && delta_i<mxw && delta_j>0 && delta_j<myw)
-	    check_fl_point(deltax+delta_i,deltay+delta_j,clip_x,clip_y,clip_w,clip_h,0,0);
-#else
-	  delta_i *= 2;
-	  delta_j *= 2;
-	  if (delta_i>0 && delta_i<mxw && delta_j>0 && delta_j<myw){
-	    check_fl_point(deltax+delta_i,deltay+delta_j,clip_x,clip_y,clip_w,clip_h,0,0);
-	    check_fl_point(deltax+delta_i,deltay+delta_j+1,clip_x,clip_y,clip_w,clip_h,0,0);
-	    check_fl_point(deltax+delta_i+1,deltay+delta_j,clip_x,clip_y,clip_w,clip_h,0,0);
-	    check_fl_point(deltax+delta_i+1,deltay+delta_j+1,clip_x,clip_y,clip_w,clip_h,0,0);
+	  int delta_i=v[0].val,delta_j=v[1].val,psx=0,psy=0;
+	  if (v.size()>3 && v[3].type==_INT_){
+	    if (v[3].val>0) psy=v[3].val; else psx=-v[3].val;
 	  }
+	  psx=pixon_size*(psx+1);
+	  psy=pixon_size*(psy+1);
+	  xcas_color(v[2].val);
+	  delta_i *= pixon_size;
+	  delta_j *= pixon_size;
+	  if (delta_i>=0 && delta_i<mxw && delta_j>=0 && delta_j<myw){
+#if 1
+	    check_fl_rectf(deltax+delta_i,deltay+delta_j,psx,psy,clip_x,clip_y,clip_w,clip_h,0,0);
+#else
+	    for (int i=0;i<psx;++i)
+	      for (int j=0;j<psy;++j)
+		check_fl_point(deltax+delta_i+i,deltay+delta_j+j,clip_x,clip_y,clip_w,clip_h,0,0);
 #endif
+	  }
 	  return;
 	}
 	if (point._SYMBptr->sommet==at_bitmap){
@@ -4958,7 +4940,7 @@ namespace xcas {
       // initial point
       if (!Mon_image.findij(*jt,x_scale,y_scale,i0,j0,contextptr))
 	return;
-      if (fill_polygon && *jt==*(jtend-1)){
+      if (fill_polygon){
 	const_iterateur jtsave=jt;
 	gen e,f0,f1;
 	// Compute matrix for complex drawing
@@ -4971,6 +4953,11 @@ namespace xcas {
 	  evalfdouble2reim(*jt,e,f0,f1,contextptr);
 	  if ((f0.type==_DOUBLE_) && (f1.type==_DOUBLE_))
 	    fl_vertex(f0._DOUBLE_val,f1._DOUBLE_val);
+	}
+	if (*jtsave!=*(jtend-1)){
+	  evalfdouble2reim(*jtsave,e,f0,f1,contextptr);
+	  if ((f0.type==_DOUBLE_) && (f1.type==_DOUBLE_))
+	    fl_vertex(f0._DOUBLE_val,f1._DOUBLE_val);	  
 	}
 	fl_end_complex_polygon();
 	fl_pop_matrix(); // Restore initial matrix
@@ -5852,22 +5839,22 @@ namespace xcas {
       tmax->value(3.14);
       tmax->step(0.5);
       umin = new Fl_Value_Input(dx/6,2+2*dy/lignes,dx/6-2,dy/lignes-4,gettext("umin"));
-      umin->value(-3);
+      umin->value(-4);
       umin->step(0.5);
       ustep = new Fl_Value_Input(3*dx/6,2+2*dy/lignes,dx/6-2,dy/lignes-4,gettext("ustep"));
-      ustep->value(0.25);
+      ustep->value(0.5);
       ustep->step(0.01);
       umax = new Fl_Value_Input(5*dx/6,2+2*dy/lignes,dx/6-2,dy/lignes-4,gettext("umax"));
-      umax->value(3);
+      umax->value(4);
       umax->step(0.5);
       vmin = new Fl_Value_Input(dx/6,2+3*dy/lignes,dx/6-2,dy/lignes-4,gettext("vmin"));
-      vmin->value(-3);
+      vmin->value(-4);
       vmin->step(0.5);
       vstep = new Fl_Value_Input(3*dx/6,2+3*dy/lignes,dx/6-2,dy/lignes-4,gettext("vstep"));
-      vstep->value(0.25);
+      vstep->value(0.5);
       vstep->step(0.01);
       vmax = new Fl_Value_Input(5*dx/6,2+3*dy/lignes,dx/6-2,dy/lignes-4,gettext("vmax"));
-      vmax->value(3);
+      vmax->value(4);
       vmax->step(0.5);
       xmin = new Fl_Value_Input(dx/6,2+2*dy/lignes,dx/6-2,dy/lignes-4,gettext("xmin"));
       xmin->value(-5);
@@ -7322,12 +7309,28 @@ namespace xcas {
       text=localize("ecris ",l);
     if (b->label()==gettext("sg"))
       text=localize("signe ",l);
+    if (Fl_Text_Editor * ed=dynamic_cast<Fl_Text_Editor *>(Xcas_input_focus)){
+      int i=ed->insert_position();
+      ed->buffer()->insert(i,text.c_str());
+      ed->insert_position(i+text.size());
+      return;
+    }
     Fl::focus(Xcas_input_focus);
     if (!text.empty())
       help_output(text.substr(0,text.size()-1),language(get_context(Fl::focus())));
+#ifdef __APPLE__
+    const char * ch=text.c_str();
+    int ll=strlen(ch);
+    for (int i=0;i<ll;++ch,++i){
+      Fl::e_text= (char *) ch;
+      Fl::e_length=1;
+      fl_handle(Fl::focus());
+    }
+#else
     Fl::e_text= (char *) text.c_str();
     Fl::e_length=text.size();
     fl_handle(Fl::focus());
+#endif
   }
 
   Fl_Widget * Logo_eval(Fl_Widget * w) {
@@ -7351,7 +7354,7 @@ namespace xcas {
 	  }
 	  else {
 	    string logs(gettext("Not registered\n"));
-	    logs += gettext("Parse error line ")+giac::print_INT_(giac::first_error_line(contextptr))+ gettext(" at ") +giac::error_token_name(contextptr);
+	    logs += gettext("Parse error line ")+giac::print_INT_(giac::first_error_line(contextptr))+ gettext(" column ")+print_INT_(giac::lexer_column_number(contextptr))+ gettext(" at ") +giac::error_token_name(contextptr);
 	    fl_alert("%s",logs.c_str());
 	  }
 	}
@@ -7377,7 +7380,7 @@ namespace xcas {
 	}
 	else {
 	  string logs(gettext("Not registered\n"));
-	  logs += gettext("Parse error line ")+giac::print_INT_(giac::first_error_line(contextptr))+ gettext(" at ") +giac::error_token_name(contextptr);
+	  logs += gettext("Parse error line ")+giac::print_INT_(giac::first_error_line(contextptr))+ gettext(" column ")+print_INT_(giac::lexer_column_number(contextptr))+ gettext(" at ") +giac::error_token_name(contextptr);
 	  fl_alert("%s",logs.c_str());
 	}
 	l->t->redraw();

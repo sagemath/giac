@@ -43,7 +43,7 @@ namespace giac {
     vector<int>::const_iterator it=v.begin(),itend=v.end();
     vecteur res;
     res.reserve(itend-it);
-    if (xcas_mode(contextptr) || abs_calc_mode(contextptr)==38){
+    if (array_start(contextptr)){ //(xcas_mode(contextptr) || abs_calc_mode(contextptr)==38){
       for (;it!=itend;++it)
 	res.push_back(*it+1);
     }
@@ -69,7 +69,7 @@ namespace giac {
     vecteur::const_iterator it=v.begin(),itend=v.end();
     vector<int> res;
     res.reserve(itend-it);
-    if (xcas_mode(contextptr) || abs_calc_mode(contextptr)==38){
+    if (array_start(contextptr)){ //(xcas_mode(contextptr) || abs_calc_mode(contextptr)==38){
       for (;it!=itend;++it)
 	if ((*it).type==_INT_) 
 	  res.push_back((*it).val-1);
@@ -178,15 +178,30 @@ namespace giac {
   static define_unary_function_eval (__sizes,&_sizes,_sizes_s);
   define_unary_function_ptr5( at_sizes ,alias_at_sizes,&__sizes,0,true);
 
+  longlong lcm(int a,int b){
+    int d=gcd(a,b);
+    return (a/d)*longlong(b);
+  }
+
+  int lcm(const vector<int> & v){
+    vector<int>::const_iterator it=v.begin(),itend=v.end();
+    if (itend==it) return 0;
+    if (itend==it+1) return *it;
+    int r=lcm(*it,*(it+1));
+    for (it+=2;it<itend;++it)
+      r=lcm(r,*it);
+    return r;
+  }
+
   static int cyclesorder(const vector< vector<int> > & v,GIAC_CONTEXT){
     vector<int> ss;
     ss=sizes(v);   
-    return(_lcm(vector_int_2_vecteur(ss,contextptr),contextptr).val);
+    return lcm(ss);
   } 
   static int permuorder(const vector<int> & p,GIAC_CONTEXT){
     vector< vector<int> > c;  
     c=permu2cycles(p);
-    return(_lcm(vector_int_2_vecteur(sizes(c),contextptr),contextptr).val);
+    return lcm(sizes(c));
   }
 
   gen _permuorder(const gen & args,GIAC_CONTEXT){
@@ -302,7 +317,7 @@ namespace giac {
       return w;
     }
     gen n=args;
-    if (!is_integral(n) || n.type!=_INT_) 
+    if (!is_integral(n) || n.type!=_INT_ || n.val<=0) 
       return gensizeerr(contextptr);
     return vector_int_2_vecteur(randperm(n.val),contextptr);
   }
@@ -321,7 +336,7 @@ namespace giac {
     for (int j=0;j<n;j++){ if (p[j].type!=_INT_){return(false);}}
      
     for (int j=0;j<n;j++){
-      if (xcas_mode(contextptr)>0 || abs_calc_mode(contextptr)==38) 
+      if (array_start(contextptr)) //xcas_mode(contextptr)>0 || abs_calc_mode(contextptr)==38) 
 	p1[j]=p[j].val-1; 
       else 
 	p1[j]=p[j].val;
@@ -362,7 +377,7 @@ namespace giac {
     vector<int> c2(n1);
     c1=c2;
     for (int j=0;j<n1;j++){
-      if (xcas_mode(contextptr)>0 || abs_calc_mode(contextptr)==38) 
+      if (array_start(contextptr))//xcas_mode(contextptr)>0 || abs_calc_mode(contextptr)==38) 
 	c1[j]=c[j].val-1; 
       else 
 	c1[j]=c[j].val;
@@ -617,7 +632,7 @@ namespace giac {
     vecteur::const_iterator it=v.begin(),itend=v.end();
     for (;it!=itend;++it){
       vector<int> c;
-      if (!is_cycle(*it->_VECTptr,c,contextptr))
+      if (it->type!=_VECT || !is_cycle(*it->_VECTptr,c,contextptr))
 	return gensizeerr(contextptr);
     }
     return vector_int_2_vecteur(cycles2permu(vecteur_2_vectvector_int(v,contextptr)),contextptr);
@@ -666,7 +681,7 @@ namespace giac {
     vector<int> p;
     if (!is_permu(v,p,contextptr))
       return gensizeerr(contextptr);
-    return vectvector_int_2_vecteur(permu2cycles(p),contextptr);
+    return gen(vectvector_int_2_vecteur(permu2cycles(p),contextptr),_LIST__VECT);
   }
 
   static const char _permu2cycles_s[]="permu2cycles";
@@ -959,6 +974,11 @@ namespace giac {
     if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type==_DOUBLE_ && args._DOUBLE_val==int(args._DOUBLE_val)){
       return evalf(_laplacian(int(args._DOUBLE_val),contextptr),1,context0);
+    }
+    if (args.type==_IDNT){
+      gen g=eval(args,1,contextptr);
+      if (g.type==_INT_)
+	return _laplacian(g,contextptr);
     }
     if (args.type==_INT_ && args.val>0 && args.val<int(std::sqrt(double(LIST_SIZE_LIMIT)))){
       // discrete 1-d laplacian matrix
@@ -1551,7 +1571,7 @@ namespace giac {
     vecteur l(n); 
     for (int k=0;k<n;k++){
       for (int j=0;j<n;j++){
-	if (p[k]==j+(xcas_mode(contextptr)!=0 || abs_calc_mode(contextptr)==38)) {
+	if (p[k]==j+array_start(contextptr)) {
 	  l[j]=1;
 	} else {
 	  l[j]=0;
@@ -1687,6 +1707,22 @@ namespace giac {
       return gentypeerr(contextptr);
     vecteur v(*args._VECTptr);
     gen g1=v.front(),g2=v.back();
+    if (g1.type==_STRNG && g2.type==_STRNG){ // Python "Ceci est une phrase".split(" ")
+      if (g2._STRNGptr->empty())
+	return gendimerr(contextptr);
+      vecteur res;
+      int pos=0,ss=g1._STRNGptr->size();
+      for (;pos<ss;){
+	int npos=g1._STRNGptr->find(*g2._STRNGptr,pos);
+	if (npos<0 || npos>=ss)
+	  break;
+	res.push_back(string2gen(g1._STRNGptr->substr(pos,npos-pos),false));
+	pos=npos+g2._STRNGptr->size();
+      }
+      if (pos<ss)
+	res.push_back(string2gen(g1._STRNGptr->substr(pos,ss-pos),false));
+      return res;
+    }
     if (g2.type!=_VECT)
       return gentypeerr(contextptr);
     vecteur v2(*g2._VECTptr);
@@ -1718,6 +1754,32 @@ namespace giac {
   static const char _split_s[]="split";
   static define_unary_function_eval (__split,&_split,_split_s);
   define_unary_function_ptr5( at_split ,alias_at_split,&__split,0,true);
+ 
+  gen _join(const gen & args,GIAC_CONTEXT){
+    if ( args.type==_STRNG && args.subtype==-1) return  args;
+    if (args.type==_VECT && args._VECTptr->size()==2){
+      gen g1=args._VECTptr->front(),g2=args._VECTptr->back();
+      if (g1.type==_STRNG && g2.type==_VECT){ // Python 
+	const_iterateur it=g2._VECTptr->begin(),itend=g2._VECTptr->end();
+	string res;
+	for (;it!=itend;){
+	  if (it->type==_STRNG)
+	    res += *it->_STRNGptr;
+	  else
+	    res += it->print(contextptr);
+	  ++it;
+	  if (it==itend)
+	    break;
+	  res += *g1._STRNGptr;
+	}
+	return string2gen(res,false);
+      }
+    }
+    return gensizeerr(contextptr);
+  } 
+  static const char _join_s[]="join";
+  static define_unary_function_eval (__join,&_join,_join_s);
+  define_unary_function_ptr5( at_join ,alias_at_join,&__join,0,true);
  
   gen _sum_riemann(const gen & args,GIAC_CONTEXT){
     if ( args.type==_STRNG && args.subtype==-1) return  args;

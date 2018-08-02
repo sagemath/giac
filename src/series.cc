@@ -1922,7 +1922,7 @@ namespace giac {
 	  }
 	  // final correction for Psi
 	  if (temp__SYMB.sommet==at_Psi){
-	    v.insert(v.begin(),((addorder%2)?1:-1)/factorial(addorder));
+	    v.insert(v.begin(),gen((addorder%2)?1:-1)/factorial(addorder));
 	    shift_coeff -= 1;
 	  }
 	}
@@ -2079,7 +2079,7 @@ namespace giac {
 	}
       }
       else {
-	if ( (!test || res.empty() || *it!=x ) && contains(*it,x))
+	if ( (!test || res.empty() || *it!=x ) && contains(*it,x) && !equalposcomp(res,*it))
 	  res.push_back(*it);
       }
     }
@@ -2456,7 +2456,17 @@ namespace giac {
     // First try substitution
     if (has_i(lop(e,at_ln)))
       e=recursive_normal(expln2trig(e,contextptr),contextptr);
-    if (loptab(e,sign_floor_ceil_round_tab).empty()){
+    vecteur vsign(loptab(e,sign_floor_ceil_round_tab));
+    if (0 && direction && !vsign.empty() && !equalposcomp(sign_floor_ceil_round_tab,e._SYMBptr->sommet)){
+      // evaluate vsign first
+      vecteur res;
+      for (int i=0;i<int(vsign.size());++i){
+	res[i]=in_limit(vsign[i],x,lim_point,direction,contextptr);
+      }
+      e=subst(e,vsign,res,false,contextptr);
+      vsign.clear();
+    }
+    if (vsign.empty()){
       gen first_try=subst(e,x,lim_point,false,contextptr);
       first_try=eval(first_try,1,contextptr);
       first_try=simplifier(first_try,contextptr);
@@ -2495,8 +2505,9 @@ namespace giac {
 	// first_try = quotesubst(ratnormal(e,contextptr),x,lim_point,contextptr);
       }
       bool absb=eval_abs(contextptr);
+      first_try=eval(first_try,eval_level(contextptr),contextptr); // moved before eval_abs(false,contextptr), must be before simplifier below
+      first_try=simplifier(first_try,contextptr); // for assume(a>0); limit((sqrt(2*a^3*x-x^4)-a*root(3,a^2*x))/(a-root(4,a*x^3)),x=a);
       eval_abs(false,contextptr);
-      first_try=eval(first_try,eval_level(contextptr),contextptr);
       first_try = recursive_normal(first_try,contextptr);
       //first_try=eval(first_try,1,contextptr);
       eval_abs(absb,contextptr);
@@ -2539,6 +2550,8 @@ namespace giac {
     if (has_i(e_copy)) {
       e_copy=subst(e_copy,tan_tab,tan2sincos_tab,true,contextptr);
       e_copy=subst(e_copy,exp_tab,exp2sincos_tab,true,contextptr);
+      if (has_i(lop(e_copy,at_erfs)))
+	return gensizeerr(gettext("erf/erfc/erfs with complex argument not yet implemented in limit"));
     }
     // Rewrite constants
     vecteur rv=rlvar(e_copy,false),cv;
@@ -2552,7 +2565,7 @@ namespace giac {
 	e_copy=subst(e_copy,cv,*cvg._VECTptr,false,contextptr);
     }
     if (!direction) { 
-      if (!is_analytic(e_copy)){
+      if (!is_analytic(e_copy) || has_op(e_copy,*at_acos) || has_op(e_copy,*at_asin)){
 	gen g1=unidirectional_limit(e_copy,x,lim_point,1,contextptr);
 	if (is_undef(g1))
 	  return g1;
@@ -2587,8 +2600,11 @@ namespace giac {
 	  return g1;
 	return gensizeerr("Unidirectional limits are distincts "+g2.print(contextptr)+","+g1.print(contextptr));
       }
-      if (p.empty() || ck_is_strictly_positive(p.front().exponent,contextptr))
+      if (p.empty() || ck_is_strictly_positive(p.front().exponent,contextptr) ){
+	if (check_bounded(p.front().coeff,contextptr)==-1)
+	  return gensizeerr("Unable to bound coefficient");
 	return 0;
+      }
       if (ck_is_strictly_positive(-p.front().exponent,contextptr)){
 	if (p.front().exponent.type==_INT_ && p.front().exponent.val%2==0){
 	  int s=fastsign(p.front().coeff,contextptr);
@@ -2984,6 +3000,13 @@ namespace giac {
   gen limit(const gen & e,const identificateur & x,const gen & lim_point,int direction,GIAC_CONTEXT){
     if (is_undef(lim_point))
       return lim_point;
+    if (lim_point.type==_DOUBLE_){
+      double d=lim_point._DOUBLE_val;
+      if (d==int(d))
+	return limit(e,x,int(d),direction,contextptr);
+    }
+    if (has_num_coeff(lim_point)) // otherwise A:=conic(x^2/4+y^2/3=1); B:=element(A,1)+nop(-1.666-1.243*i) runs forever
+      return subst(e,x,lim_point,false,contextptr);
     // Insert here code for cleaning limit remember
     int save_series_flags=series_flags(contextptr);
     series_flags(save_series_flags | 8,contextptr);

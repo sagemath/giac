@@ -72,6 +72,7 @@
 #ifndef NO_NAMESPACE_GIAC
 namespace giac {
 #endif // ndef NO_NAMESPACE_GIAC
+  void wait_1ms(int ms=1);
   template<class U>
   inline unsigned sizeinbase2(U n){
     unsigned i=0;
@@ -1218,7 +1219,9 @@ namespace giac {
 	// using heap of chains
 	// std::vector< vector_size64< std::pair<unsigned,unsigned> > > vindex(v1s);
 	std::vector< std::vector< std::pair<unsigned,unsigned> > > vindex(v1s);
+#ifdef HEAP_STATS
 	double count1=0,count2=0,total=double(v1s)*v2s;
+#endif
 	U_unsigned<U> * heap = new U_unsigned<U>[v1s] ; // pointers to v2 monomials
 	U_unsigned<U> * heap0, *heapbeg=heap,* heapend=heap+v1s;
 	for (it1=it1beg,heap0=heap;heap0!=heapend;++heap0,++it1){
@@ -1262,12 +1265,21 @@ namespace giac {
 	  // erase top node, then push each element of the incremented top chain 
 	  it=nouveau.begin();
 	  itend=nouveau.end();
+	  U prevu=0; int previndex=-1;
 	  for (;it!=itend;++it){
 	    u=(it1beg+it->first)->u+(it2beg+it->second)->u;
+	    if (u==prevu && previndex>=0){
+	      vindex[previndex].push_back(*it);
+#ifdef HEAP_STATS
+	      ++count1;
+#endif
+	      continue;
+	    }
+	    prevu=u;
 	    // check if u is in the path to the root of the heap
 	    unsigned holeindex=unsigned(heapend-heapbeg),parentindex;
 	    if (holeindex && u==heapbeg->u){
-	      vindex[heapbeg->v].push_back(*it);
+	      vindex[previndex=heapbeg->v].push_back(*it);
 #ifdef HEAP_STATS
 	      ++count1;
 #endif
@@ -1284,15 +1296,15 @@ namespace giac {
 #ifdef HEAP_STATS
 		++count2;
 #endif
-		vindex[(heapbeg+parentindex)->v].push_back(*it);
+		vindex[previndex=(heapbeg+parentindex)->v].push_back(*it);
 		break;
 	      }
 	      holeindex=parentindex;
 	    }
 	    if (!done){
 	      // not found, add a new node to the heap
-	      vindex[heapend->v].clear();
-	      vindex[heapend->v].push_back(*it);
+	      vindex[previndex=heapend->v].clear();
+	      vindex[previndex].push_back(*it);
 	      heapend->u=u;
 	      ++heapend;
 #ifdef USTL
@@ -1719,6 +1731,7 @@ namespace giac {
 	  // erase top node, then push each element of the incremented top chain 
 	  it=nouveau.begin();
 	  itend=nouveau.end();
+	  U prevu=0; int previndex=-1;
 	  for (;it!=itend;++it){
 	    it1=it1beg+it->first;
 	    u1=it1->u;
@@ -1726,10 +1739,16 @@ namespace giac {
 	    d2=v2deg-(d-d1);
 	    it2beg=(*v2ptrs)[d2];
 	    u=u1+(it2beg+it->second)->u;
+	    if (u==prevu && previndex>=0){
+	      vptr=&(*vsmallindexptr)[previndex];
+	      vptr->push_back(*it);
+	      continue;
+	    }
+	    prevu=u;
 	    // check if u is in the path to the root of the heap
 	    unsigned holeindex=heapend-heapbeg,parentindex;
 	    if (holeindex && u==heapbeg->u){
-	      vptr=&(*vsmallindexptr)[heapbeg->v];
+	      vptr=&(*vsmallindexptr)[previndex=heapbeg->v];
 	      vptr->push_back(*it);
 	      continue;
 	    }
@@ -1740,7 +1759,7 @@ namespace giac {
 		break;
 	      if (u==(heapbeg+parentindex)->u){
 		done=true;
-		vptr=&(*vsmallindexptr)[(heapbeg+parentindex)->v];
+		vptr=&(*vsmallindexptr)[previndex=(heapbeg+parentindex)->v];
 		vptr->push_back(*it);
 		break;
 	      }
@@ -1748,7 +1767,7 @@ namespace giac {
 	    }
 	    if (!done){
 	      // not found, add a new node to the heap
-	      vptr=&(*vsmallindexptr)[heapend->v];
+	      vptr=&(*vsmallindexptr)[previndex=heapend->v];
 	      vptr->clear();
 	      vptr->push_back(*it);
 	      heapend->u=u;
@@ -1808,6 +1827,7 @@ namespace giac {
 	  // erase top node, then push each element of the incremented top chain 
 	  it=nouveau.begin();
 	  itend=nouveau.end();
+	  U prevu=0; int previndex=-1;
 	  for (;it!=itend;++it){
 	    it1=it1beg+it->first;
 	    u1=it1->u;
@@ -1815,10 +1835,16 @@ namespace giac {
 	    d2=v2deg-(d-d1);
 	    it2beg=(*v2ptrs)[d2];
 	    u=u1+(it2beg+it->second)->u;
+	    if (u==prevu && previndex>=0){
+	      vptr=&(*vindexptr)[previndex];
+	      vptr->push_back(*it);
+	      continue;
+	    }
+	    prevu=u;
 	    // check if u is in the path to the root of the heap
 	    unsigned holeindex=heapend-heapbeg,parentindex;
 	    if (holeindex && u==heapbeg->u){
-	      vptr=&(*vindexptr)[heapbeg->v];
+	      vptr=&(*vindexptr)[previndex=heapbeg->v];
 	      vptr->push_back(*it);
 	      continue;
 	    }
@@ -1829,7 +1855,7 @@ namespace giac {
 		break;
 	      if (u==(heapbeg+parentindex)->u){
 		done=true;
-		vptr=&(*vindexptr)[(heapbeg+parentindex)->v];
+		vptr=&(*vindexptr)[previndex=(heapbeg+parentindex)->v];
 		vptr->push_back(*it);
 		break;
 	      }
@@ -1837,7 +1863,7 @@ namespace giac {
 	    }
 	    if (!done){
 	      // not found, add a new node to the heap
-	      vptr=&(*vindexptr)[heapend->v];
+	      vptr=&(*vindexptr)[previndex=heapend->v];
 	      vptr->clear();
 	      vptr->push_back(*it);
 	      heapend->u=u;
@@ -1952,7 +1978,9 @@ namespace giac {
     }
     // if array multiplication is faster, set prod
     bool use_heap = (heap_mult<0) || (heap_mult>0 && v1v2>heap_mult);
-    if (!prod && use_heap && nthreads<2) 
+    if (!prod && use_heap 
+	//&& nthreads<2
+	) // multi-thread heap disabled because of locks by inserting in chains 
       return false;  
     if (debug_infolevel>20){
       CERR << "// " << CLOCK() << "using threaded " ;
@@ -2268,6 +2296,7 @@ namespace giac {
     if (u<v) 
       return true;
     return false;
+    /*
     // the code below is too slow
     std::vector<int>::const_iterator it=varsshift.begin(),itend=varsshift.end();
     for (;it!=itend;++it){
@@ -2280,6 +2309,7 @@ namespace giac {
       v -= (v1 << shift);
     }
     return false;
+    */
   }
 
   // #define HEAP_STATS
@@ -2661,18 +2691,27 @@ namespace giac {
 	std::vector< std::pair<unsigned,unsigned> >::iterator it,itend;
 	it=qnouveau.begin();
 	itend=qnouveau.end();
+	U prevu=0; int previndex=-1;
 	for (;it!=itend;++it){
 	  if (!it->first) // leading term of b already taken in account
 	    continue;
 	  u=(itbbeg+it->first)->u+(q.begin()+it->second)->u;
 	  if (norem && one_index_smaller(u,bu,varsshift)) continue;
+	  if (u==prevu && previndex>=0){
+#ifdef HEAP_STATS
+	    ++chain;
+#endif
+	    vindex[previndex].push_back(*it);
+	    continue;
+	  }
+	  prevu=u;
 	  // check if u is in the path to the root of the heap
 	  unsigned holeindex=unsigned(heapend-heapbeg),parentindex;
 	  if (holeindex && u==heapbeg->u){
 #ifdef HEAP_STATS
 	    ++chain;
 #endif
-	    vindex[heapbeg->v].push_back(*it);
+	    vindex[previndex=heapbeg->v].push_back(*it);
 	    continue;
 	  }
 	  bool done=false;
@@ -2686,7 +2725,7 @@ namespace giac {
 	      ++chain;
 #endif
 	      done=true;
-	      vindex[(heapbeg+parentindex)->v].push_back(*it);
+	      vindex[previndex=(heapbeg+parentindex)->v].push_back(*it);
 	      break;
 	    }
 	    holeindex=parentindex;
@@ -2696,7 +2735,7 @@ namespace giac {
 	    ++nochain;
 #endif
 	    // not found, add a new node to the heap
-	    std::vector< std::pair<unsigned,unsigned> > & V=vindex[heapend->v];
+	    std::vector< std::pair<unsigned,unsigned> > & V=vindex[(previndex=heapend->v)];
 	    V.clear();
 	    V.push_back(*it);
 	    heapend->u=u;
@@ -2802,12 +2841,18 @@ namespace giac {
 	  // push each element of the incremented top chain 
 	  it=qnouveau.begin();
 	  itend=qnouveau.end();
+	  U prevu=0; int previndex=-1;
 	  for (;it!=itend;++it){
 	    u=(itbbeg+it->first)->u+(q.begin()+it->second)->u;
+	    if (u==prevu && previndex>=0){
+	      vindex[previndex].push_back(*it);
+	      continue;
+	    }
+	    prevu=u;
 	    // check if u is in the path to the root of the heap
 	    unsigned holeindex=unsigned(heapend-heapbeg),parentindex;
 	    if (holeindex && u==heapbeg->u){
-	      vindex[heapbeg->v].push_back(*it);
+	      vindex[(previndex=heapbeg->v)].push_back(*it);
 	      continue;
 	    }
 	    bool done=false;
@@ -2818,14 +2863,14 @@ namespace giac {
 		break;
 	      if (u==pu){
 		done=true;
-		vindex[(heapbeg+parentindex)->v].push_back(*it);
+		vindex[(previndex=(heapbeg+parentindex)->v)].push_back(*it);
 		break;
 	      }
 	      holeindex=parentindex;
 	    }
 	    if (!done){
 	      // not found, add a new node to the heap
-	      std::vector< std::pair<unsigned,unsigned> > & V=vindex[heapend->v];
+	      std::vector< std::pair<unsigned,unsigned> > & V=vindex[(previndex=heapend->v)];
 	      V.clear();
 	      V.push_back(*it);
 	      heapend->u=u;

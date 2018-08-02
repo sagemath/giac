@@ -2,8 +2,8 @@ dnl Run autoreconf -iv to produce the configure script and associated files.
 
 dnl Giac version number
 m4_define([giac_major_version], [1])
-m4_define([giac_minor_version], [2])
-m4_define([giac_micro_version], [3])
+m4_define([giac_minor_version], [4])
+m4_define([giac_micro_version], [9])
 m4_define([giac_version], [giac_major_version.giac_minor_version.giac_micro_version])
 
 dnl Attempt to change archive name made by make dist 
@@ -262,6 +262,38 @@ if test "$CONFIG_AO" = "yes"; then
 AC_SUBST(CONFIG_AO)
 AC_SUBST(AO_LIBS)
 AM_CONDITIONAL(CONFIG_AO, [test "$CONFIG_AO" = "yes"])
+
+dnl AC_CHECK_LIB(glpk, main)
+CONFIG_GLPK="yes"
+AC_ARG_ENABLE([glpk],
+	[AS_HELP_STRING([--enable-glpk], [Use GLPK [[default=yes]]])],
+	[if test "$enableval" = "no"; then CONFIG_GLPK="no"; fi], [])
+
+if test "$CONFIG_GLPK" = "yes"; then
+	AC_CHECK_HEADER(glpk.h, [], [CONFIG_GLPK="no"])
+  fi
+if test "$CONFIG_GLPK" = "yes"; then
+	AC_CHECK_LIB(glpk, main, [], [CONFIG_GLPK="no"])
+  fi
+AC_SUBST(CONFIG_GLPK)
+AC_SUBST(GLPK_LIBS)
+AM_CONDITIONAL(CONFIG_GLPK, [test "$CONFIG_GLPK" = "yes"])
+
+dnl AC_CHECK_LIB(curl, main)
+CONFIG_CURL="yes"
+AC_ARG_ENABLE([curl],
+	[AS_HELP_STRING([--enable-curl], [Use CURL [[default=yes]]])],
+	[if test "$enableval" = "no"; then CONFIG_CURL="no"; fi], [])
+
+if test "$CONFIG_CURL" = "yes"; then
+	AC_CHECK_HEADER(curl/curl.h, [], [CONFIG_CURL="no"])
+  fi
+if test "$CONFIG_CURL" = "yes"; then
+	AC_CHECK_LIB(curl, main, [], [CONFIG_CURL="no"])
+  fi
+AC_SUBST(CONFIG_CURL)
+AC_SUBST(CURL_LIBS)
+AM_CONDITIONAL(CONFIG_CURL, [test "$CONFIG_CURL" = "yes"])
 
   
 AC_CANONICAL_HOST

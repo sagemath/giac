@@ -195,13 +195,15 @@ Function {latex_save_DispG(const char * filename)} {return_type void
 
 Function {a_propos()} {return_type void
 } {
-  code {std::string s("xcas "); s+=VERSION; s+=" (c) 2000-14, Bernard Parisse, Renee De Graeve\\n";
+  code {std::string s("xcas "); s+=GIAC_VERSION; s+=" (c) 2000-18, Bernard Parisse, Renee De Graeve\\n";
   s += "http://www-fourier.ujf-grenoble.fr/~parisse/giac.html\\n";
   s += "If you like Xcas, please link your webpage to the above link to help other find it\\n";
   s += "Software licensed under the GPL, General Public License version 3.0 or later\\nSee the file COPYING in this package for more details\\nOr browse http://www.gnu.org\\n";
   s += "French documentation (c) Renee de Graeve\\n";
   s += "This documentation is freely redistribuable for non commercial purpose\\n";
-  s += "Math ML support, Xcas online: Jean-Pierre Branchard\\n";
+  s += "Python giacpy module: Frederic Han\\n";
+  s += "Optimization, signalprocessing, graph theory code: Luka Marohnić\\n";
+  s += "Math ML and SVG support initially written by Jean-Pierre Branchard\\n";
   s += "OpenOffice interface: Christophe Devalland, Serge Moutou\\n";
   s += "Qcas interface: Loic Le Coq, Frederic Han\\n";
   s += "Androcas interface: Thomas Luka\\n";
@@ -209,6 +211,8 @@ Function {a_propos()} {return_type void
   s += "Tutorial (dxcas) with B. Ycart\\n";
   s += "Greek localization, Alkiviadis Akritas, Eugenia Kelepesi-Akritas, George Nasopoulos, Nikos Larisis\\n";
   s += "Spanish localization, Xavier Vidaux, J. Manrique Lopez\\n";
+  s += "German short help localization, Philipp Rösch\\n";
+  s += "English user guide contributions by Jay Belanger and Luka Marohnić\\n";
   s += "Debian package: Carlos Enrique Carleos Artime\\n";
   s += "Mac OS X port thanks to Jean-Yves Avenard and IREM Grenoble\\n";
   s += "Tablor by Guillaume Connan, Pgiac by Jean-Michel Sarlat\\n";
@@ -244,6 +248,9 @@ Function {a_propos()} {return_type void
 \#endif //
 \#ifdef HAVE_LIBNTL
   s += "Contains NTL code (c) Victor Shoup\\n";
+\#endif //
+\#ifdef HAVE_LIBGLPK
+  s += "Contains GLPK code (c) Andrew Makhorin\\n";
 \#endif //
   s += "Postscript output 2-d inspired by eukleides (c) Christian Obrecht\\n";
   s += "3-d exports from gl2ps, (c) 1999-2006 Christophe Geuzaine\\n";
@@ -836,7 +843,12 @@ Function {load_autorecover_data()} {open
     if (f){
       fclose(f);
      // Xcas_Main_Window_->hide();
-     int n=fl_choice(gettext("Choose start mode"),gettext("Maple"),gettext("Xcas"),gettext("Other")),mm=-1; // n==0 maple, 1 xcas, 2 other
+\#if 1
+     int n=fl_choice(gettext("Choose syntax compatibility"),gettext("Python"),gettext("Xcas"),gettext("Other")),mm=-1; // n==2 other
+    if (n<2) n=1-n;
+\#else
+     int n=fl_choice(gettext("Choose syntax compatibility"),gettext("Xcas"),gettext("Python"),gettext("Other")),mm=-1; // n==2 other
+\#endif
      if (n==2){
         mm=fl_choice(gettext("Choose start mode"),gettext("Turtle"),gettext("Spreadsheet"),gettext("Geometry"));
         if (mm==0) mm=7;
@@ -857,8 +869,8 @@ Function {load_autorecover_data()} {open
      configs+=giac::print_INT_(mm+1);
      configs += ",0";
      configs +=");xcas_mode(";
-     if (n==0)
-      configs+='1'; 
+     if (n==1)
+      configs+="256"; 
      else
       configs+='0';
      configs += ");xyztrange(-10.0,10.0,-10.0,10.0,-10.0,10.0,-10.0,10.0,-10.0,10.0,-1.4,1.1,1,0.0,1.0);";
@@ -936,6 +948,9 @@ tmp="/usr/bin/mozilla";
 if (giac::is_file_available(tmp.c_str()))
    return tmp;
 tmp="/usr/bin/dillo";
+if (giac::is_file_available(tmp.c_str()))
+   return tmp;
+tmp="/usr/bin/chromium";
 if (giac::is_file_available(tmp.c_str()))
    return tmp;
 \#ifdef WIN32 //
@@ -1018,7 +1033,7 @@ Function {Xcas_run(int argc,char ** argv)} {open
 } {
   Fl_Window Xcas_Main_Window_ {
     label {Xcas New Interface} open
-    xywh {95 113 775 520} type Single resizable visible
+    xywh {95 113 865 520} type Single resizable visible
   } {
     Fl_Menu_Bar Xcas_main_menu {open
       xywh {0 0 775 25}
@@ -1134,6 +1149,11 @@ Function {Xcas_run(int argc,char ** argv)} {open
           MenuItem Xcas_Export_Xcas {
             label {xcas text}
             callback {xcas::History_cb_Save_as_xcas_text(Xcas_current_session(),0);}
+            xywh {65 65 100 20}
+          }
+          MenuItem Xcas_Export_XcasPy {
+            label {xcas-python text}
+            callback {xcas::History_cb_Save_as_xcaspy_text(Xcas_current_session(),0);}
             xywh {65 65 100 20}
           }
           MenuItem Xcas_Export_Maple {
@@ -1261,9 +1281,8 @@ update_xcas=0;}
                 xcas::History_Pack * hp=dynamic_cast<xcas::History_Pack *>(wid);
                 int i=std::floor(atof(ch)*1e6);
                 if (hp && i>0 && i<120e6){ hp->next_delay=i;xcas::History_cb_Run_Worksheet(wid,0);}
-             }
-          }
-          xywh {140 140 100 20} 
+             }}
+          xywh {140 140 100 20}
         }
         MenuItem Xcas_Execute_Below {
           label {Execute below}
@@ -1440,7 +1459,7 @@ Xcas_update_mode();}
           MenuItem Xcas_show_DispG {
             label DispG
             callback {Xcas_DispG_Window_->show(); 
-Xcas_DispG_Cancel_->hide();} selected
+Xcas_DispG_Cancel_->hide();}
             xywh {45 45 100 20} shortcut 0x80064
           }
           MenuItem Xcas_show_keyboard {
@@ -1499,6 +1518,7 @@ Xcas_DispG_Cancel_->hide();}
             callback {const giac::context * contextptr=Xcas_get_context();
 // doc_prefix=giac::set_language(1,giac::context0);
 doc_prefix=giac::set_language(1,contextptr);
+giac::language(1,giac::context0);
 giac::html_help_init("aide_cas",1);}
             xywh {0 0 100 20}
           }
@@ -1507,6 +1527,7 @@ giac::html_help_init("aide_cas",1);}
             callback {const giac::context * contextptr=Xcas_get_context();
 // doc_prefix=giac::set_language(2,giac::context0);
 doc_prefix=giac::set_language(2,contextptr);
+giac::language(2,giac::context0);
 giac::html_help_init("aide_cas",1);}
             xywh {0 0 100 20}
           }
@@ -1515,6 +1536,7 @@ giac::html_help_init("aide_cas",1);}
             callback {const giac::context * contextptr=Xcas_get_context();
 // doc_prefix=giac::set_language(3,giac::context0);
 doc_prefix=giac::set_language(3,contextptr);
+giac::language(3,giac::context0);
 giac::html_help_init("aide_cas",1);}
             xywh {0 0 100 20}
           }
@@ -1523,6 +1545,7 @@ giac::html_help_init("aide_cas",1);}
             callback {const giac::context * contextptr=Xcas_get_context();
 // doc_prefix=giac::set_language(4,giac::context0);
 doc_prefix=giac::set_language(4,contextptr);
+giac::language(4,giac::context0);
 giac::html_help_init("aide_cas",1);}
             xywh {0 0 100 20}
           }
@@ -1531,6 +1554,16 @@ giac::html_help_init("aide_cas",1);}
             callback {const giac::context * contextptr=Xcas_get_context();
 // doc_prefix=giac::set_language(4,giac::context0);
 doc_prefix=giac::set_language(8,contextptr);
+giac::language(8,giac::context0);
+giac::html_help_init("aide_cas",1);}
+            xywh {0 0 100 20}
+          }
+          MenuItem Xcas_index_German {
+            label deutsch
+            callback {const giac::context * contextptr=Xcas_get_context();
+// doc_prefix=giac::set_language(3,giac::context0);
+doc_prefix=giac::set_language(9,contextptr);
+giac::language(9,giac::context0);
 giac::html_help_init("aide_cas",1);}
             xywh {0 0 100 20}
           }
@@ -1725,6 +1758,19 @@ if (xcas::use_external_browser)
          if (xcas::Xcas_help_window){
            xcas::Xcas_help_window->load((giac::giac_aide_dir()+doc_prefix+"cascmd_"+giac::find_lang_prefix(giac::language(contextptr))+"index.html").c_str());
            xcas::Xcas_help_window->show();
+          }
+         }}
+            xywh {5 5 100 20}
+          }
+          MenuItem Xcas_help_graphtheory {
+            label {Graph theory}
+            callback {if (xcas::use_external_browser)
+           giac::system_browser_command("doc/graphtheory-user_manual.pdf");
+        else {
+         if (xcas::Xcas_help_window){ //disabled because it crashes with builin browser
+           fl_message("%s",("Open with your browser "+giac::giac_aide_dir()+"doc/graphtheory-user_manual.pdf").c_str());
+           // xcas::Xcas_help_window->load((giac::giac_aide_dir()+"algo.html").c_str());
+           // xcas::Xcas_help_window->show();
           }
          }}
             xywh {5 5 100 20}
@@ -1961,8 +2007,7 @@ if (i>0 && i<26){
         MenuItem Xcas_help_start_algoseconde {
           label {Tutoriel algo}
           callback {if (xcas::use_external_browser)
-           giac::system_browser_command(doc_prefix+"../algoseconde.html");
-          }
+           giac::system_browser_command(doc_prefix+"../algolycee.html");}
           xywh {10 10 100 20}
         }
         MenuItem Xcas_help_make_index {
@@ -2030,7 +2075,7 @@ giac::html_help_init("aide_cas",language(contextptr),true,true);}
           xywh {0 0 100 20}
         } {
           MenuItem Xcas_help_int {
-            label {int: Integration (definite/indefinite)}
+            label {integrate: Integration (definite/indefinite)}
             xywh {35 35 100 20}
           }
           MenuItem Xcas_help_diff {
@@ -2261,9 +2306,17 @@ giac::html_help_init("aide_cas",language(contextptr),true,true);}
             label {binomial: Binomial distribution}
             xywh {35 35 100 20}
           }
+          MenuItem Xcas_help_comb {
+            label {comb: comb(n.k) k parmi n}
+            xywh {35 35 100 20}
+          }
           MenuItem Xcas_help_normald {
             label {normald: Normal density}
             xywh {35 35 100 20}
+          }
+          MenuItem Xcas_help_seq {
+            label {seq: list}
+            xywh {50 50 100 20}
           }
           MenuItem Xcas_help_rand {
             label {rand: random number}
@@ -2671,6 +2724,10 @@ if (f && plotparam_dialog(f,arg,2)){
             label {linear_regressionplot: 2-d stats}
             xywh {95 95 100 20}
           }
+          MenuItem Xcas_help_plotproba {
+            label {plotproba: probabilistic graph}
+            xywh {65 65 100 20}
+          }
         }
       }
       Submenu Xcas_help_geo {
@@ -2707,13 +2764,13 @@ if (f && plotparam_dialog(f,arg,2)){
         xywh {75 75 100 20}
       } {}
       Submenu Xcas_help_tortue {
-        label Turtle
+        label Turtle open
         xywh {65 65 100 20}
       } {
         MenuItem Xcas_Add_Logo {
           label {New turtle}
-          callback {xcas::History_cb_New_Logo(Xcas_current_session(),0);}
-          xywh {105 105 100 20} shortcut 0x80064
+          callback {xcas::History_cb_New_Logo(Xcas_current_session(),0);} selected
+          xywh {105 105 100 20} shortcut 0x8006c
         }
       }
     }
@@ -4176,6 +4233,8 @@ Xcas_help_randmarkov->callback(cb_Assistant_ItemName);
 Xcas_help_cdf->callback(cb_Assistant_ItemName);
 Xcas_help_icdf->callback(cb_Assistant_ItemName);
 Xcas_help_binomial->callback(cb_Assistant_ItemName);
+Xcas_help_comb->callback(cb_Assistant_ItemName);
+Xcas_help_plotproba->callback(cb_Assistant_ItemName);
 Xcas_help_binomial2->callback(cb_Assistant_ItemName);
 Xcas_help_negbinomial->callback(cb_Assistant_ItemName);
 Xcas_help_normald->callback(cb_Assistant_ItemName);
@@ -4345,6 +4404,16 @@ if (argc>argstart){
 }
 else make_history();
   bool running=true;
+\#ifdef WIN32
+  static std::string windowname=std::string("Xcas ")+GIAC_VERSION+" (win"+giac::print_INT_(8*sizeof(long))+")";
+\#else
+\#ifdef __APPLE__ 
+  static std::string windowname=std::string("Xcas ")+GIAC_VERSION+" (osx"+giac::print_INT_(8*sizeof(long))+")";
+\#else
+  static std::string windowname=std::string("Xcas ")+GIAC_VERSION+" (linux"+giac::print_INT_(8*sizeof(long))+")";
+\#endif
+\#endif
+  Xcas_Main_Window_->label(windowname.c_str());
   while (running){
     while (Xcas_Main_Window_->visible() || Xcas_Main_Window_->shown() ) {
       Fl::wait();

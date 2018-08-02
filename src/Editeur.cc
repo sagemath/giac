@@ -119,6 +119,7 @@ namespace xcas {
     "catch",
     "continue",
     "de",
+    "def",
     "default",
     "do",
     "downto",
@@ -131,6 +132,7 @@ namespace xcas {
     "end_proc",
     "end_while",
     "et",
+    "except",
     "faire",
     "false",
     "ffaire",
@@ -143,6 +145,7 @@ namespace xcas {
     "fsi",
     "ftantque",
     "function",
+    "global",
     "goto",
     "if",
     "jusqu_a",
@@ -220,10 +223,10 @@ namespace xcas {
       if (current == 'B' || current>='E') current = 'A';
       if (current == 'A') {
 	// Check for directives, comments, strings, and keywords...
-	if (col == 0 && *text == '#') {
+	if (col == 0 && *text == '#' && !python_color) {
 	  // Set style to directive
 	  current = 'E';
-	} else if (strncmp(text, "//", 2) == 0) {
+	} else if (strncmp(text, "//", 2) == 0 || (python_color &&strncmp(text,"#",1)==0)) {
 	  current = 'B';
 	  for (; length > 0 && *text != '\n'; length --, text ++) *style++ = 'B';
 	  
@@ -514,12 +517,14 @@ namespace xcas {
 	break;
       tmp += ch;
     }
-    if (mode<0 || mode==xcas_mode(contextptr)){
+    if (mode<0 || ((mode&0xff)==xcas_mode(contextptr) && (mode>=256)==python_compat(contextptr))){
       e->insert(tmp.c_str());
       return;
     }
     int save_maple_mode=xcas_mode(contextptr);
-    xcas_mode(contextptr)=mode;
+    int save_python=python_compat(contextptr);
+    xcas_mode(contextptr)=(mode&0xff);
+    python_compat((mode>=256?1:0),contextptr);
     gen g;
     try {
       g=gen(tmp,contextptr);
@@ -528,6 +533,7 @@ namespace xcas {
       cerr << err.what() << endl;
     }
     xcas_mode(contextptr)=save_maple_mode;
+    python_compat(save_python,contextptr);
     if (g.type==_VECT && g.subtype==_SEQ__VECT && xcas_mode(contextptr) !=3 ){
       const_iterateur it=g._VECTptr->begin(),itend=g._VECTptr->end();
       for (;it!=itend;++it){
@@ -594,7 +600,9 @@ namespace xcas {
 	return;
     }
     int save_maple_mode=xcas_mode(contextptr);
-    xcas_mode(contextptr)=mode;
+    xcas_mode(contextptr)=(mode & 0xff);
+    int save_python=python_compat(contextptr);
+    python_compat((mode>=256?1:0),contextptr);
     ofstream of(newfile.c_str());
     if (g.type==_VECT && g.subtype==_SEQ__VECT && xcas_mode(contextptr) !=3 ){
       const_iterateur it=g._VECTptr->begin(),itend=g._VECTptr->end();
@@ -605,6 +613,7 @@ namespace xcas {
     }
     else
       of << g.print_universal(contextptr) << ((xcas_mode(contextptr)==3)?"\n":";\n");
+    python_compat(save_python,contextptr);
     xcas_mode(contextptr)=save_maple_mode;
   }
 
@@ -624,6 +633,10 @@ namespace xcas {
 
   static void cb_Editeur_Insert_Xcas(Fl_Menu_* m , void*) {
     cb_editeur_insert(m,".cxx",0);
+  }
+
+  static void cb_Editeur_Insert_Python(Fl_Menu_* m , void*) {
+    cb_editeur_insert(m,".py",256);
   }
 
   static void cb_Editeur_Insert_Maple(Fl_Menu_* m , void*) {
@@ -651,6 +664,14 @@ namespace xcas {
     if (e){
       char * newfile = file_chooser("Export program", "*.cxx", "session.cxx");
       editeur_export(e,newfile,0);
+    }
+  }
+
+  static void cb_Editeur_Export_Python(Fl_Menu_* m , void*) {
+    Fl_Text_Editor * e = find_editor(m);
+    if (e){
+      char * newfile = file_chooser("Export program", "*.py", "session.py");
+      editeur_export(e,newfile,256);
     }
   }
 
@@ -1643,24 +1664,43 @@ namespace xcas {
     autosave_disabled=false;
     w->hide();
     if (r==0){
+      giac::context * contextptr = get_context(ed);
+      bool python=python_compat(contextptr);
       int i=ed->insert_position();
-      string s=("si ");
+      string s=python?"if ":"si ";
       s += cond->value();
-      s += " alors ";
+      s += python?":\n":" alors ";
       s += ifclause->value();
       gen g(elseclause->value(),contextptr);
-      if (!is_undef(g)){
-	s += " sinon ";
+      bool ifonly=is_undef(g);
+      if (!ifonly){
+	s += python?"\nelse:\n":" sinon ";
 	s += elseclause->value();
       }
-      s += " fsi;\n";
+      if (python) s+="\n"; else s += " fsi;\n";
       ed->buffer()->insert(i,s.c_str());
       int delta=s.size();
       if (Xcas_Text_Editor * xed=dynamic_cast<Xcas_Text_Editor *>(ed)){
 	int j=ed->buffer()->line_end(i)+1;
 	delta += xed->indent(j)-j;
+	if (python){
+	  j=ed->buffer()->line_end(j)+1;
+	  delta += xed->indent(j)-j;
+	  //j=ed->buffer()->line_end(j)+1;
+	  //delta += xed->indent(j)-j;
+	  if (!ifonly){
+	    j=ed->buffer()->line_end(j)+1;
+	    delta += xed->indent(j)-j;
+	    j=ed->buffer()->line_end(j)+1;
+	    delta += xed->indent(j)-j;
+	  }
+	  ed->insert_position(i+delta);
+	  Fl_Text_Editor::kf_backspace(0,ed);
+	  xed->dedent();
+	} else ed->insert_position(i+delta);
       }
-      ed->insert_position(i+delta);
+      else
+	ed->insert_position(i+delta);
     }
   }
 
@@ -1765,30 +1805,61 @@ namespace xcas {
     autosave_disabled=false;
     w->hide();
     if (r==0){
+      giac::context * contextptr = get_context(ed);
+      bool python=python_compat(contextptr);
       int i=ed->insert_position();
       string s;
       if (tantque->value()){
-	s = "tantque ";
+	if (python)
+	  s = "while ";
+	else
+	  s = "tantque ";
 	s += cond->value();
-	s += " faire\n";
+	if (python)
+	  s += ":\n";
+	else
+	  s += " faire\n";
 	s +=  loop->value();
-	s += "\nftantque;\n";
+	if (python) s+="\n\n"; else s += "\nftantque;\n";
       }
       else {
-	s="pour ";
+	if (python)
+	  s="for ";
+	else
+	  s="pour ";
 	s += count->value();
-	s += " de ";
-	s += start->value();
-	s += " jusque ";
-	s += stop->value();
+	if (python){
+	  s += " in range(";
+	  s += start->value();
+	  s += ",";
+	  s += stop->value();
+	}
+	else {
+	  s += " de ";
+	  s += start->value();
+	  s += " jusque ";
+	  s += stop->value()+(python?1:0);
+	}
 	gen g(step->value(),contextptr);
 	if (!is_undef(g)){
-	  s += " pas ";
-	  s += step->value();
+	  if (python){
+	    s += ',';
+	    s += step->value();
+	  }
+	  else {
+	    s += " pas ";
+	    s += step->value();
+	  }
 	}
-	s += " faire\n";
+	if (python)
+	  s+="):\n";
+	else
+	  s += " faire\n";
 	s += loop->value();
-	s += "\nfpour;\n";
+	if (python)
+	  s += "\n";
+	else
+	  s += "\nfpour;\n";
       }
       ed->buffer()->insert(i,s.c_str());
       int delta=s.size();
@@ -1797,10 +1868,18 @@ namespace xcas {
 	delta += xed->indent(j)-j;
 	j=ed->buffer()->line_end(j)+1;
 	delta += xed->indent(j)-j;
-	j=ed->buffer()->line_end(j)+1;
-	delta += xed->indent(j)-j;
+	if (!python){
+	  j=ed->buffer()->line_end(j)+1;
+	  delta += xed->indent(j)-j;
+	}
+	ed->insert_position(i+delta);
+	if (python){
+	  Fl_Text_Editor::kf_backspace(0,ed);
+	  xed->dedent();
+	}
       }
-      ed->insert_position(i+delta);
+      else
+	ed->insert_position(i+delta);
     }
   }
 
@@ -1833,7 +1912,7 @@ namespace xcas {
       args->value("x");
       y_ += dh;
       locs=new Fl_Input(dw,y_,dw-2,dh-2,gettext("Locals"));
-      locs->tooltip(gettext("Enter local variable(s), e.g. k or n1,n2,n3. Leave empty if no local variables"));
+      locs->tooltip(gettext("Enter local variable(s), e.g. k or n1,n2,n3. Leave empty if no local variables. Local symbolic variables should be purged after declaration."));
       locs->value("k");
       y_ += dh;
       ret=new Fl_Input(dw,y_,dw-2,dh-2,gettext("Return value"));
@@ -1884,38 +1963,54 @@ namespace xcas {
       int i=0,addi=0; // i=ed->insert_position(),addi=0;
       string s;
       giac::context * contextptr = get_context(ed);
+      bool python=python_compat(contextptr);
       switch (xcas_mode(contextptr)){
       case 0:
-	if (syntaxefr)
-	  s+="fonction ";
+	if (python)
+	  s += "def ";
+	else {
+	  if (syntaxefr)
+	    s+="fonction ";
+	}
 	s+=name->value();
 	s+='(';
 	s+=args->value();
 	s+=")";
-	if (!syntaxefr)
-	  s+=":={";
+	if (python)
+	  s += ":";
+	else {
+	  if (!syntaxefr)
+	    s+=":={";
+	}
 	s+="\n";
 	if (strlen(locs->value())){
-	  s+="  local ";
+	  s+=python?"    # local ":"  local ";
 	  s+=locs->value();
-	  s+=";\n  ";
+	  if (python) 
+	    s+="\n    "; 
+	  else 
+	    s+=";\n  ";
 	}
 	addi=s.size();
 	s += "\n";
 	if (strlen(ret->value())){
-	  if (lang==1)
+	  if (lang==1 && !python)
 	    s+="  retourne ";
 	  else
-	    s+="  return ";
+	    s+=python?"    return ":"  return ";
 	  s+=ret->value();
-	  s+=";";
+	  if (!python) s+=";";
 	}	  
 	s += "\n";
-	if (syntaxefr)
-	  s+="ffonction";
-	else
-	  s+="}";
-	s+=":;\n\n";
+	if (python)
+	  ;
+	else {
+	  if (syntaxefr)
+	    s+="ffonction";
+	  else
+	    s+="}";
+	  s+=":;\n\n";
+	}
 	ed->buffer()->insert(i,s.c_str());  
 	ed->insert_position(i+addi);
 	break;
@@ -2341,6 +2436,7 @@ namespace xcas {
     {gettext("Insert"), 0,  0, 0, 64, 0, 0, 14, 56},
     {gettext("file"), 0,  (Fl_Callback*)cb_Editeur_Insert_File, 0, 0, 0, 0, 14, 56},
     {gettext("xcas text"), 0,  (Fl_Callback*)cb_Editeur_Insert_Xcas, 0, 0, 0, 0, 14, 56},
+    {gettext("xcas python text"), 0,  (Fl_Callback*)cb_Editeur_Insert_Python, 0, 0, 0, 0, 14, 56},
     {gettext("maple text"), 0,  (Fl_Callback*)cb_Editeur_Insert_Maple, 0, 0, 0, 0, 14, 56},
     {gettext("mupad text"), 0,  (Fl_Callback*)cb_Editeur_Insert_Mupad, 0, 0, 0, 0, 14, 56},
     {gettext("ti text"), 0,  (Fl_Callback*)cb_Editeur_Insert_Ti, 0, 0, 0, 0, 14, 56},
@@ -2350,6 +2446,7 @@ namespace xcas {
     {gettext("File extension"), 0,  (Fl_Callback*)cb_Editeur_Extension, 0, 0, 0, 0, 14, 56},
     {gettext("Export"), 0,  0, 0, 64, 0, 0, 14, 56},
     {gettext("xcas text"), 0,  (Fl_Callback*)cb_Editeur_Export_Xcas, 0, 0, 0, 0, 14, 56},
+    {gettext("xcas-python text"), 0,  (Fl_Callback*)cb_Editeur_Export_Python, 0, 0, 0, 0, 14, 56},
     {gettext("maple text"), 0,  (Fl_Callback*)cb_Editeur_Export_Maple, 0, 0, 0, 0, 14, 56},
     {gettext("mupad text"), 0,  (Fl_Callback*)cb_Editeur_Export_Mupad, 0, 0, 0, 0, 14, 56},
     {gettext("ti text"), 0,  (Fl_Callback*)cb_Editeur_Export_Ti, 0, 0, 0, 0, 14, 56},
@@ -2447,6 +2544,7 @@ namespace xcas {
     if (parent()){
       labelsize(parent()->labelsize());
       logo=dynamic_cast<Logo *>(parent());
+      contextptr=get_context(parent());
     }
     Fl_Group::current(this);
     int L=(3*labelsize())/2;
@@ -2525,7 +2623,10 @@ namespace xcas {
     resizable(editor);
     switch (xcas_mode(contextptr)){
     case 0:
-      extension="cxx";
+      if (python_compat(contextptr))
+	extension="py";
+      else
+	extension="cxx";
       break;
     case 1:
       extension="map";
@@ -2728,6 +2829,10 @@ namespace xcas {
 
   // indent current line at position pos, return new current position
   int Xcas_Text_Editor::indent(int pos){
+    giac::context * contextptr = get_context(this);
+    bool python=python_compat(contextptr);
+    int indentunit=2;
+    if (python) indentunit=4;
     int debut_ligne=buffer()->line_start(pos),indent=0;
     // Tab pressed -> indent current line
     char Lastchar;
@@ -2735,7 +2840,7 @@ namespace xcas {
       char * ch_ = buffer()->line_text(pos-1),*ch=ch_;
       bool empty_line=true;
       int position=buffer()->line_start(debut_ligne-2);
-      indent = 2;
+      indent = python?0:2;
       while (1){
 	free(ch_);
 	ch_ = buffer()->line_text(position);
@@ -2743,7 +2848,7 @@ namespace xcas {
 	int save_indent=indent;
 	// Count spaces in ch
 	for (;*ch;++ch,++indent){
-	  if (*ch=='/' && *(ch+1)=='/')
+	  if ( (python && *ch=='#') || (!python && *ch=='/' && *(ch+1)=='/') )
 	    break;
 	  if (*ch!=' '){
 	    empty_line=false;
@@ -2762,17 +2867,17 @@ namespace xcas {
 	while (*ch==' ') 
 	  ++ch;
 	int firstchar=*ch,lastchar = *ch,prevlast=0;
-	if (lastchar ==';' && !*(ch+1))
-	  indent -= 2;
+	if (!python && lastchar ==';' && !*(ch+1))
+	  indent -= indentunit;
 	// Add spaces for each open (, open {, open [, 
 	// remove spaces for ] } )
 	for (;*ch;++ch){
 	  switch (*ch){
 	  case '(': case '[': case '{':
-	    indent += 2;
+	    indent += indentunit;
 	    break;
 	  case ')': case ']': case '}':
-	    indent -=2;
+	    indent -=indentunit;
 	    break;
 	  }
 	  if (*ch=='/' && *(ch+1)=='/')
@@ -2783,9 +2888,15 @@ namespace xcas {
 	  }
 	}
 	Lastchar=lastchar;
-	// Last non space should be { or ; 
-	if ( (lastchar=='{' && firstchar!='}') || (lastchar=='}' && firstchar!='}') || (lastchar==';' && prevlast!='}' ) )
-	  indent -=2;
+	if (python){
+	  if (lastchar==':')
+	    indent += indentunit;
+	}
+	else {
+	  // Last non space should be { or ; 
+	  if ( (lastchar=='{' && firstchar!='}') || (lastchar=='}' && firstchar!='}') || (lastchar==';' && prevlast!='}' ) )
+	    indent -=indentunit;
+	}
 	free(ch_);
       }
     }
@@ -2797,7 +2908,7 @@ namespace xcas {
 	break;
     }
     if (*ch=='}')
-      indent -= 2;
+      indent -= indentunit;
     string mot;
     mot += *ch;
     for(char * ch1=ch+1;*ch1;++ch1){
@@ -2806,7 +2917,7 @@ namespace xcas {
       mot += *ch1;
     }
     if (Lastchar!='}' && (equalposcomp(motsclef,mot)))
-      indent -=2;
+      indent -=indentunit;
     indent=max(indent,0);
     delta += indent;
     string s(indent,' ');
@@ -2868,8 +2979,18 @@ namespace xcas {
 #ifdef WIN32
     newsize += 2;
 #endif
-    increase_size(this,newsize-h());
-    check_scrollbarsize();
+    if (nl==1){
+      fl_font(FL_HELVETICA,labelsize());
+      double taille=1.4*fl_width(s.c_str());
+      // cerr << ch << " " << taille << " " << labelsize() << endl;
+      if (taille>w()) // make enough room for scrollbar
+	increase_size(this,25+labelsize()-h());
+      else 
+	increase_size(this,newsize-h());
+    }
+    else 
+      increase_size(this,newsize-h());
+    // check_scrollbarsize();
     show_insert_position();
   }
 
@@ -3006,6 +3127,48 @@ namespace xcas {
 	  }
 	}
 	free(ch);
+      }
+    }
+  }
+
+  void Xcas_Text_Editor::dedent(){
+    // delete several characters
+    int pos=insert_position();
+    int debut_ligne=buffer()->line_start(pos),i;
+    char * ch=buffer()->line_text(debut_ligne);
+    string s(ch); free(ch);
+    // skip spaces ahead
+    int lpos=pos-debut_ligne;
+    for (;lpos<s.size();++lpos){
+      if (s[lpos]!=' ')
+	break;
+    }
+    if (lpos<s.size()){
+      insert_position(lpos+debut_ligne);
+      pos=insert_position();
+    }
+    int curind=pos-debut_ligne;
+    for (i=0;i<curind;++i){
+      if (s[i]!=' ')
+	break;
+    }
+    if (curind && i==curind){
+      while (debut_ligne>1){
+	// search position in previous line indentations
+	pos=debut_ligne-1;
+	debut_ligne=buffer()->line_start(pos);
+	ch=buffer()->line_text(debut_ligne);
+	string s(ch); free(ch);
+	for (i=0;i<curind;++i){
+	  if (s[i]!=' ')
+	    break;
+	}
+	if (i<curind){
+	  // std::cerr << "fixme del" << endl;
+	  for (;curind>i;--curind)
+	    Fl_Text_Editor::kf_backspace(0,this);
+	  break;
+	}
       }
     }
   }
@@ -3206,6 +3369,9 @@ namespace xcas {
 	resize_nl_before(1);
 	if (hp)
 	  hp->modified(true);
+      }
+      if (!tableur && Fl::event_key()==FL_BackSpace && python_compat(contextptr)){
+	dedent();
       }
       if (tableur && tableur->editing && Fl::event_key()==FL_BackSpace && value().empty()){
 	tableur->editing=false;

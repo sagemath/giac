@@ -65,7 +65,7 @@ using namespace std;
 #endif
 
 
-#ifdef GIAC_HAS_STO_38
+#if 0 // def GIAC_HAS_STO_38
   TMillisecs PrimeGetNow();
 #endif
 
@@ -82,11 +82,16 @@ namespace giac {
 
   gen _zip(const gen & g,const context * contextptr){
     if ( g.type==_STRNG && g.subtype==-1) return  g;
-    if (g.type!=_VECT || g._VECTptr->size()<3)
+    int s=-1;
+    if (g.type!=_VECT || (s=g._VECTptr->size())<2)
       return symbolic(at_zip,g);
     vecteur & v=*g._VECTptr;
-    int s=int(v.size());
     gen & f=v[0];
+    if (s==2){
+      if (f.type!=_VECT || v[1].type!=_VECT || f._VECTptr->size()!=v[1]._VECTptr->size())
+	return gendimerr(contextptr);
+      return _tran(g,contextptr);
+    }
     if (v[1].type!=_VECT || v[2].type!=_VECT)
       return f(gen(makevecteur(v[1],v[2]),_SEQ__VECT),contextptr);
     vecteur & w1=*v[1]._VECTptr;
@@ -300,11 +305,17 @@ namespace giac {
   static define_unary_function_eval (__revlist,&_revlist,_revlist_s);
   define_unary_function_ptr5( at_revlist ,alias_at_revlist,&__revlist,0,true);
 
+  static const char _reverse_s []="reverse";
+  static define_unary_function_eval (__reverse,&_revlist,_reverse_s);
+  define_unary_function_ptr5( at_reverse ,alias_at_reverse,&__reverse,0,true);
+
   gen _restart(const gen & args,GIAC_CONTEXT){
     if ( args.type==_STRNG && args.subtype==-1) return  args;
     init_context((context *) ((void *) contextptr));
     gen res= _rm_all_vars(args,contextptr);
     *logptr(contextptr) << "============== restarted ===============" << endl;
+    if (args.type==_VECT && args.subtype==_SEQ__VECT && args._VECTptr->empty())
+      _srand(_time(gen(vecteur(0),_SEQ__VECT),contextptr),contextptr);
     return res;
   }
   static const char _restart_s []="restart";
@@ -329,6 +340,12 @@ namespace giac {
   gen _time(const gen & a,GIAC_CONTEXT){
     if ( a.type==_STRNG && a.subtype==-1) return  a;
     if (a.type==_VECT && a.subtype==_SEQ__VECT){
+#ifdef GIAC_HAS_STO_38
+      return PrimeGetNow()/1000.;
+#endif
+#if defined(EMCC) && !defined(PNACL)
+      return emcctime()/1e6;
+#endif
       return total_time(contextptr);
     }
     double delta;
@@ -354,7 +371,7 @@ namespace giac {
     // return difftime(t2,t1);
     double t1=emcctime();
     eval(a,level,contextptr);
-    return (emcctime()-t1)/1000;
+    return (emcctime()-t1)/1e6;
 #endif
 #if defined(__APPLE__) || defined(PNACL)
     unsigned u1=CLOCK();
@@ -449,6 +466,10 @@ namespace giac {
   static define_unary_function_eval (__length,&_size,_length_s);
   define_unary_function_ptr5( at_length ,alias_at_length,&__length,0,true);
 
+  static const char _len_s []="len";
+  static define_unary_function_eval (__len,&_size,_len_s);
+  define_unary_function_ptr5( at_len ,alias_at_len,&__len,0,true);
+
   static const char _nops_s []="nops";
   static define_unary_function_eval (__nops,&_size,_nops_s);
   define_unary_function_ptr5( at_nops ,alias_at_nops,&__nops,0,true);
@@ -484,7 +505,7 @@ namespace giac {
     for (int i=0;i<ml;++i)
       m[i]=*m[i]._VECTptr; // create a copy of the matrix
     int l=v[1].val,c=v[2].val;
-    int shift = xcas_mode(contextptr)!=0 || abs_calc_mode(contextptr)==38;
+    int shift = array_start(contextptr); // xcas_mode(contextptr)!=0 || abs_calc_mode(contextptr)==38;
     l -= shift ;
     c -= shift ;
     if (l<0 || l>=ml || c<0 || c>=mc)
@@ -582,7 +603,7 @@ namespace giac {
     if ( g.type==_STRNG && g.subtype==-1) return  g;
     if (g.type!=_VECT || g._VECTptr->size()!=2)
       return gensizeerr();
-    int shift = xcas_mode(contextptr)!=0 || abs_calc_mode(contextptr)==38;
+    int shift = array_start(contextptr); //xcas_mode(contextptr)!=0 || abs_calc_mode(contextptr)==38;
     gen indice=g._VECTptr->back();
     if (indice.is_symb_of_sommet(at_interval) && indice._SYMBptr->feuille.type==_VECT)
       indice=symbolic(at_interval,indice._SYMBptr->feuille-gen(shift)*vecteur(indice._SYMBptr->feuille._VECTptr->size(),1));
@@ -602,7 +623,7 @@ namespace giac {
     if ( g.type==_STRNG && g.subtype==-1) return  g;
     if (g.type!=_VECT || g._VECTptr->size()!=2)
       return gensizeerr();
-    int shift = xcas_mode(contextptr)!=0 || abs_calc_mode(contextptr)==38;
+    int shift = array_start(contextptr); //xcas_mode(contextptr)!=0 || abs_calc_mode(contextptr)==38;
     gen indice=g._VECTptr->back();
     if (indice.is_symb_of_sommet(at_interval) && indice._SYMBptr->feuille.type==_VECT)
       indice=symbolic(at_interval,indice._SYMBptr->feuille-gen(shift)*vecteur(indice._SYMBptr->feuille._VECTptr->size(),1));
@@ -681,9 +702,23 @@ namespace giac {
     }
     gen v((*args._VECTptr)[1]);
     gen f(args._VECTptr->front());
+    if (f.type==_STRNG && v.type==_STRNG){
+      // (Python-like) count occurences of v in f
+      int count=0,pos=-1,s=f._STRNGptr->size();
+      for (;pos<s;++count){
+	pos=f._STRNGptr->find(*v._STRNGptr,pos+1);
+	if (pos<0 || pos>=s)
+	  break;
+      }
+      return count;
+    }
     gen param;
     if (args._VECTptr->size()>2)
       param=(*args._VECTptr)[2];
+    else {
+      if (v.type!=_VECT) 
+	return _count_eq(makesequence(v,f),contextptr);
+    }
     return count(f,v,contextptr,param);
   }
   static const char _count_s []="count";
@@ -914,7 +949,7 @@ namespace giac {
   // open a file, returns a FD
   gen _open(const gen & g,GIAC_CONTEXT){
     if ( g.type==_STRNG && g.subtype==-1) return  g;
-#if defined(VISUALC) || defined(__MINGW_H) || defined (FIR) || defined(NSPIRE) || defined(__ANDROID__) || defined(NSPIRE_NEWLIB) || defined(EMCC) || defined(GIAC_GGB)
+#if defined(VISUALC) || defined(__MINGW_H) || defined (FIR) || defined(FXCG) || defined(NSPIRE) || defined(__ANDROID__) || defined(NSPIRE_NEWLIB) || defined(EMCC) || defined(GIAC_GGB)
     return gensizeerr(gettext("not implemented"));
 #else
     gen tmp=check_secure();
@@ -941,9 +976,14 @@ namespace giac {
     gen tmp=check_secure();
     if (is_undef(tmp)) return tmp;
     gen filename(g);
-    if (filename.type!=_STRNG)
+    string mode="w+";
+    if (g.type==_VECT && g.subtype==_SEQ__VECT && g._VECTptr->size()==2 && g._VECTptr->back().type==_STRNG){
+      filename=g._VECTptr->front();
+      mode=*g._VECTptr->back()._STRNGptr;
+    }
+    if (filename.type!=_STRNG || mode.size()>2)
       return gensizeerr();
-    FILE * f=fopen(filename._STRNGptr->c_str(),"w+");
+    FILE * f=fopen(filename._STRNGptr->c_str(),mode.c_str());
     return gen((void *) f,_FILE_POINTER);
   }
   static const char _fopen_s []="fopen";
@@ -960,7 +1000,7 @@ namespace giac {
     vecteur & v=*g._VECTptr;
     int s=int(v.size());
     FILE * f=0;
-#if !defined(BESTA_OS) && !defined(NSPIRE)
+#if !defined(BESTA_OS) && !defined(NSPIRE) && !defined(FXCG)
     if (v[0].type==_INT_ && v[0].subtype==_INT_FD)
       f= fdopen(v[0].val,"a");
 #endif    
@@ -987,7 +1027,7 @@ namespace giac {
   gen _close(const gen & g0,GIAC_CONTEXT){
     gen g=eval(g0,1,contextptr);
     if ( g.type==_STRNG && g.subtype==-1) return  g;
-#if !defined(VISUALC) && !defined(BESTA_OS) && !defined(__MINGW_H) && !defined(NSPIRE)
+#if !defined(VISUALC) && !defined(BESTA_OS) && !defined(__MINGW_H) && !defined(NSPIRE) && !defined(FXCG)
     if (g.type==_INT_ && g.subtype==_INT_FD){
       purgenoassume(g0,contextptr);
       close(g.val);
@@ -1080,7 +1120,7 @@ namespace giac {
       interval=symb_interval(interval,interval);
     if (!ckmatrix(gm) || !interval.is_symb_of_sommet(at_interval) || (f=interval._SYMBptr->feuille).type!=_VECT || f._VECTptr->size()!=2 || !is_integral(fa=f._VECTptr->front()) || !is_integral(fb=f._VECTptr->back()) )
       return gentypeerr();
-    int shift = xcas_mode(contextptr)!=0 || abs_calc_mode(contextptr)==38;
+    int shift = array_start(contextptr); //xcas_mode(contextptr)!=0 || abs_calc_mode(contextptr)==38;
     int a=fa.val-shift,b=fb.val-shift,s;
     matrice m=*gm._VECTptr;
     if (!isrow)
@@ -2487,6 +2527,7 @@ namespace giac {
       n=gen(identificateur("rsolve_n"));
     }
     int fs=int(fv.size());
+    if (dim<fs) return gensizeerr(contextptr);
     int add=dim-fs;
     if (f.type!=_VECT && !fv1){
       f=vecteur(x._VECTptr->end()-add,x._VECTptr->end());
@@ -2956,8 +2997,16 @@ namespace giac {
     if ( g.type==_STRNG && g.subtype==-1) return  g;
     // create a table with specified index, may be initialized
     vecteur args;
-    if (g.type==_VECT && g.subtype==_SEQ__VECT)
+    if (g.type==_VECT && g.subtype==_SEQ__VECT){
       args=*g._VECTptr;
+      if (!args.empty()){
+	gen f=args.back();
+	if (f.is_symb_of_sommet(at_equal) && f._SYMBptr->feuille[0]==at_dtype){
+	  args.pop_back();
+	  return _convert(makesequence(_array(args.size()==1?args.front():gen(args,_SEQ__VECT),contextptr),f._SYMBptr->feuille[1]),contextptr);
+	}
+      }
+    }
     else
       args=gen2vecteur(g);
 #if 1 // def NSPIRE
@@ -2970,7 +3019,7 @@ namespace giac {
     int nindexes=1;
     gen initv(vecteur(0));
     vecteur & init = *initv._VECTptr;
-    int shift = xcas_mode(contextptr)!=0 || abs_calc_mode(contextptr)==38;
+    int shift = array_start(contextptr); //xcas_mode(contextptr)!=0 || abs_calc_mode(contextptr)==38;
     for (int i=0;i<s;++i){
       if (args[i].is_symb_of_sommet(at_interval)){
 	gen & f =args[i]._SYMBptr->feuille;
@@ -2988,6 +3037,8 @@ namespace giac {
     }
     if (nindexes>>24)
       return gendimerr(gettext("Array too large")+print_INT_(nindexes));
+    if (nindexes==1)
+      return g;
     int is=int(indexsize.size());
     for (int i=0;i<nindexes;++i){
       // generate index by writing nindexes in bases indexsize
@@ -3085,6 +3136,17 @@ namespace giac {
     return h._DOUBLE_val;
   }
 
+  complex<double> cpp_convert_4(const gen & g,GIAC_CONTEXT){
+    gen h=evalf_double(g,1,context0);
+    if (h.type==_DOUBLE_)
+      return h._DOUBLE_val;
+    if (h.type!=_CPLX || h.subtype!=3){
+      gensizeerr(contextptr);
+      return 0;
+    }
+    return complex<double>(h._CPLXptr->_DOUBLE_val,(h._CPLXptr+1)->_DOUBLE_val);
+  }
+
   vecteur cpp_convert_7(const gen & g,GIAC_CONTEXT){
     if (g.type!=_VECT){
       gensizeerr(contextptr);
@@ -3123,7 +3185,7 @@ namespace giac {
       if (g._SYMBptr->sommet==at_size)
 	return 2;
       vecteur v=lvar(g._SYMBptr->feuille);
-      return is_int_or_double(v);
+      return is_int_or_double(v); // this assumes that the function has the same type as the arguments
     }
     if (g.type!=_VECT)
       return 0;
@@ -3141,6 +3203,8 @@ namespace giac {
       return 2;
     case _DOUBLE_:
       return _DOUBLE_;
+    case _CPLX:
+      return _CPLX;
     case _VECT:
       return _VECT;
     case _STRNG:
@@ -3148,6 +3212,8 @@ namespace giac {
     }
     if (g.type==_SYMB){
       if (g._SYMBptr->sommet==at_size)
+	return 2;
+      if (g._SYMBptr->sommet==at_abs && cpp_vartype(g._SYMBptr->feuille)==3)
 	return 2;
       vecteur v=lvar(g._SYMBptr->feuille);
       const_iterateur it=v.begin(),itend=v.end();
@@ -3177,6 +3243,8 @@ namespace giac {
 	return 2;
       case 'd':
 	return _DOUBLE_;
+      case 'c':
+	return _CPLX;
       case 'v':
 	return _VECT;
       case 's':
@@ -3212,6 +3280,10 @@ namespace giac {
 	case 'd':
 	  vtype="double ";
 	  if (typeptr) *typeptr=_DOUBLE_;
+	  break;
+	case 'c':
+	  vtype="complex<double> ";
+	  if (typeptr) *typeptr=_CPLX;
 	  break;
 	case 'v':
 	  vtype="giac::vecteur ";
@@ -3275,7 +3347,7 @@ namespace giac {
 	s="giac::makesequence(";
       vecteur::const_iterator it=args._VECTptr->begin(), itend=args._VECTptr->end();
       if (it==itend)
-	return "";
+	return "gen(vecteur(0),"+print_INT_(args.subtype)+");";
       for(int i=0;;++i){
 	s += cprint(*it,(name.type==_VECT && i<name._VECTptr->size())?name[i]:zero,contextptr);
 	++it;
@@ -3289,11 +3361,27 @@ namespace giac {
       if (name==1) s += ";";
       return s;
     }
+    if (args.type==_CPLX)
+      return "gen("+args._CPLXptr->print(contextptr)+","+(args._CPLXptr+1)->print(contextptr)+")";
+    if (args.type==_FUNC){
+      if (args==at_break)
+	return "break";
+      if (args==at_continue)
+	return "continue";
+      string name=args.print(contextptr);
+      if (name.size()>2 && name[0]=='\'' && name[name.size()-1]=='\'')
+	name=name.substr(1,name.size()-2);
+      return "at_"+name;
+    }
     if (args.type!=_SYMB)
       return args.print(contextptr);
     unary_function_ptr & u=args._SYMBptr->sommet;
+    if (u==at_break)
+      return "break";
+    if (u==at_continue)
+      return "continue";
     gen f=args._SYMBptr->feuille;
-    if (u==at_sto && f.type==_VECT && f._VECTptr->size()==2){
+    if ( (u==at_sto || u==at_array_sto) && f.type==_VECT && f._VECTptr->size()==2){
 #if 1
       int i=cpp_vartype(f[1]);
       if (!i || i==cpp_vartype(f[0]))
@@ -3329,7 +3417,7 @@ namespace giac {
       int i=cpp_vartype(f);
       if (i==_VECT)
 	return cprint(f,0,contextptr)+".size()";
-      return "cpp_convert_7("+cprint(f,0,contextptr)+").size()";
+      return "cpp_convert_7("+cprint(f,0,contextptr)+",contextptr).size()";
     }
     if (u==at_at && f.type==_VECT && f._VECTptr->size()==2){
       int i=cpp_vartype(f._VECTptr->front());
@@ -3380,7 +3468,7 @@ namespace giac {
 	  core ="return "+heads+"(contextptr);";
 	else {
 #if 1
-	  core = "return "+heads+"(cpp_convert_"+print_INT_(convert)+"(g,contextptr),contextptr);";
+	  core = "return "+heads+"(cpp_convert_"+print_INT_(cpp_vartype(f[0]._VECTptr->front()))+"(g,contextptr),contextptr);";
 #else
 	  switch (convert){
 	  case 0:
@@ -3449,7 +3537,7 @@ namespace giac {
     }
     if (u==at_local)
       return cprintvars(f[0][0],false,";\n",0,contextptr)+";\n"+cprint(f[1],1,contextptr);
-    if (u==at_for && f.type==_VECT && f._VECTptr->size()==4){
+    if ( (u==at_for || u==at_pour) && f.type==_VECT && f._VECTptr->size()==4){
       string res="for(";
       res = res +cprint(f[0],0,contextptr);
       res = res +';';
@@ -3463,7 +3551,7 @@ namespace giac {
     }
     if (u==at_bloc)
       return cprint(f,1,contextptr);
-    if (u==at_ifte && f.type==_VECT && f._VECTptr->size()==3){
+    if ( (u==at_ifte || u==at_si) && f.type==_VECT && f._VECTptr->size()==3){
       string res="if(";
       res = res +cprint(f[0],0,contextptr);
       res = res +"){\n";
@@ -3496,16 +3584,18 @@ namespace giac {
     // operators: if all vars are double or int args.print()
     // otherwise or not an operator giac::opname(,contextptr)
     string res=u.ptr()->print(contextptr);
-    bool idf=is_int_or_double(f);
+    int idf0=is_int_or_double(f);
+    bool idf= idf0 || cpp_vartype(f)==_CPLX;
     if (u==at_sin || u==at_cos || u==at_tan || u==at_asin || u==at_acos || u==at_atan || u==at_exp || u==at_ln || u==at_abs){
       if (idf)
 	return "std::"+args.print(contextptr);
     }
     else
       res = '_'+res;
-    if (u.ptr()->printsommet==printsommetasoperator || (idf && (u==at_inferieur_strict || u==at_inferieur_egal || u==at_superieur_strict || u==at_superieur_egal))){
+    if (u.ptr()->printsommet==printsommetasoperator || u==at_division || 
+	(idf0 && (u==at_inferieur_strict || u==at_inferieur_egal || u==at_superieur_strict || u==at_superieur_egal))){
       int rs=int(res.size());
-      if (idf || (rs==2 && (res[1]=='+' || res[1]=='*'))){
+      if ( (idf && (rs!=2 || res[1]!='^')) || (rs==2 && (res[1]=='+' || res[1]=='*' || res[1]=='>' || res[1]=='<')) || (rs==3 && (res[1]=='>' || res[1]=='<') && res[2]=='=') ){
 	res=u.ptr()->print(contextptr);
 	string sres;
 	vecteur v=gen2vecteur(f);
@@ -3529,6 +3619,9 @@ namespace giac {
 	case '*':
 	  res="_prod";
 	  break;
+	case '/':
+	  res="_division";
+	  break;
 	case '<':
 	  res="_inferieur_strict";
 	  break;
@@ -3538,7 +3631,18 @@ namespace giac {
 	case '=':
 	  res="_equal";
 	  break;
+	case '^':
+	  res="_pow";
+	  break;
 	}
+      }
+    }
+    if (u==at_increment || u==at_decrement){
+      if (f.type!=_VECT &&  is_int_or_double(f)){
+	return cprint(f,0,contextptr)+(u==at_increment?"++":"--");
+      }
+      if (f.type==_VECT && f._VECTptr->size()==2 && is_int_or_double(f._VECTptr->front()) && is_int_or_double(f._VECTptr->back()) ){
+	return cprint(f._VECTptr->front(),0,contextptr)+(u==at_increment?"+=":"-=")+cprint(f._VECTptr->back(),0,contextptr);
       }
     }
     if (u==at_same || u==at_different || u==at_and || u==at_ou ){
@@ -3567,35 +3671,46 @@ namespace giac {
 
   gen _cprint(const gen & args,GIAC_CONTEXT){
     if ( args.type==_STRNG && args.subtype==-1) return  args;
-    int x=xcas_mode(contextptr);
+    int x=xcas_mode(contextptr),l=language(contextptr);
     xcas_mode(0,contextptr);
+    language(2,contextptr);
     gen args_evaled=eval(args,1,contextptr);
     string s=cprint(args_evaled,args,contextptr);
     xcas_mode(x,contextptr);
+    language(l,contextptr);
     return string2gen(s,false);
   }
   static const char _cprint_s []="cprint";
   static define_unary_function_eval (__cprint,&_cprint,_cprint_s);
   define_unary_function_ptr5( at_cprint ,alias_at_cprint,&__cprint,_QUOTE_ARGUMENTS,true);
 
-#ifndef GIAC_HAS_STO_38
+#if !defined GIAC_HAS_STO_38 && !defined NSPIRE && !defined FXCG
   // make a cpp translation file
   gen _cpp(const gen & args,GIAC_CONTEXT){
     if ( args.type==_STRNG && args.subtype==-1) return  args;
     gen tmp=check_secure();
     if (is_undef(tmp)) return tmp;
     if (args.type==_IDNT){
-      int x=xcas_mode(contextptr);
+      int x=xcas_mode(contextptr),l=language(contextptr);
       xcas_mode(0,contextptr);
+      language(2,contextptr);
       gen args_evaled=eval(args,1,contextptr);
       string s=cprint(args_evaled,args,contextptr);
+      language(l,contextptr);
       xcas_mode(x,contextptr);
       string funcname=args.print(contextptr);
       string filename="giac_"+funcname+".cpp";
       ofstream of(filename.c_str());
+#ifdef __APPLE__
+      of << "// -*- mode:c++; compile-command:\" c++ -I/Applications/usr/include -I.. -I. -fPIC -DPIC -g -O2 -dynamiclib giac_" << funcname << ".cpp -o libgiac_" << funcname << ".dylib -L/Applications/usr/lib -L/Applications/usr/64/local/lib -lgiac \" -*-" << endl;
+#else
+      of << "// -*- mode:c++; compile-command:\" c++ -I.. -I. -fPIC -DPIC -g -O2 -c giac_" << funcname << ".cpp -o giac_" << funcname << ".lo && cc -shared giac_"<<funcname<<".lo -lgiac -lc -Wl,-soname -Wl,libgiac_"<<funcname<<"so.0 -o libgiac_"<<funcname<<".so.0.0.0 && ln -sf libgiac_"<<funcname<<".so.0.0.0 libgiac_"<<funcname<<".so\" -*-" << endl;
+#endif
+      of << "#include <giac/config.h>" << endl;
       of << "#include <giac/giac.h>" << endl;
       of << "using namespace std;" << endl;
       of << "namespace giac {" << endl;
+      of << "inline bool operator <= (const gen & a,const gen &b){ return is_greater(b,a,giac::context0); }\ninline bool operator >= (const gen & a,const gen &b){ return is_greater(a,b,giac::context0); }" <<endl;
       of << s << endl;
       of << "const string _"+funcname+"_s(\""+funcname+"\");" << endl;
       of << "unary_function_eval __"+funcname+"(0,&_"+funcname+",_"+funcname+"_s);" << endl;
@@ -3603,33 +3718,41 @@ namespace giac {
       of << "}" << endl;
       of.close();
       *logptr(contextptr) << "File " << filename << " created." << endl;
-      string cmd="indent -br -brf giac_"+funcname+".cpp";
+      string cmd="indent -br -brf -l256 giac_"+funcname+".cpp"; int not_ok;
+#ifndef __APPLE__
       *logptr(contextptr) << "Running " << cmd << endl;
-      int not_ok=system(cmd.c_str());
+      not_ok=system_no_deprecation(cmd.c_str());
       if (not_ok)
 	*logptr(contextptr) << "Warning, indent not found, please install for nice output" << endl;
-      cmd="c++ -I.. -I. -fPIC -DPIC -g -c giac_"+funcname+".cpp -o giac_"+funcname+".lo";
-      *logptr(contextptr) << "Running " << cmd << endl;
-      not_ok=system(cmd.c_str());
+#endif
+#ifdef __APPLE__
+      cmd="g++ -dynamiclib -I/Applications/usr/include -I.. -I. -fPIC -DPIC -g -O2 -dy giac_"+funcname+".cpp -o libgiac_"+funcname+".dylib -L/Applications/usr/lib -L/Applications/usr/64/local/lib -lgiac";
+#else
+      cmd="c++ -I.. -I. -fPIC -DPIC -g -O2 -c giac_"+funcname+".cpp -o giac_"+funcname+".lo";
+#endif
+      *logptr(contextptr) << "Running\n" << cmd << endl;
+      not_ok=system_no_deprecation(cmd.c_str());
       if (not_ok){
 	*logptr(contextptr) << "Unable to compile, please fix cpp file" << endl;
 	return -1;
       }
       //cmd="ln -sf giac_"+funcname+".lo giac_"+funcname+".o";
       //*logptr(contextptr) << "Running " << cmd << endl;
-      //not_ok=system(cmd.c_str());
-      cmd="cc -shared giac_"+funcname+".lo -lgiac -lc -Wl,-soname -Wl,libgiac_"+funcname+"so.0 -o libgiac_"+funcname+".so.0.0.0";
-      *logptr(contextptr) << "Running " << cmd << endl;
-      not_ok=system(cmd.c_str());
+      //not_ok=system_no_deprecation(cmd.c_str());
+#ifndef __APPLE__
+      cmd="cc -shared giac_"+funcname+".lo -lgiac -lc -Wl,-soname -Wl,libgiac_"+funcname+".so.0 -o libgiac_"+funcname+".so.0.0.0";
+      *logptr(contextptr) << cmd << endl;
+      not_ok=system_no_deprecation(cmd.c_str());
       if (not_ok){
 	*logptr(contextptr) << "Unable to create shared library, perhaps missing libraries?" << endl;
 	return -2;
       }
       //cmd="ln -sf libgiac_"+funcname+".so.0.0.0 libgiac_"+funcname+".so.0";
-      //system(cmd.c_str());
+      //system_no_deprecation(cmd.c_str());
       cmd="ln -sf libgiac_"+funcname+".so.0.0.0 libgiac_"+funcname+".so";
-      *logptr(contextptr) << "Running " << cmd << endl;
-      not_ok=system(cmd.c_str());
+      *logptr(contextptr) << cmd << endl;
+      not_ok=system_no_deprecation(cmd.c_str());
+#endif
       *logptr(contextptr) << "You can now run insmod(\"" << funcname << "\")" << endl;
       return 1;
     }
@@ -3647,7 +3770,7 @@ namespace giac {
     of << s << endl;
     of.close();
     string cmd="indent -br -brf "+filename;
-    system(cmd.c_str());
+    system_no_deprecation(cmd.c_str());
     return 1;
   }
   static const char _cpp_s []="cpp";
@@ -3666,7 +3789,9 @@ namespace giac {
   static const char _hexprint_s []="hexprint";
   static define_unary_function_eval (__hexprint,&_hexprint,_hexprint_s);
   define_unary_function_ptr5( at_hexprint ,alias_at_hexprint,&__hexprint,0,true);
-  
+  static const char _giac_hex_s []="hex";
+  static define_unary_function_eval (__giac_hex,&_hexprint,_giac_hex_s);
+  define_unary_function_ptr5( at_giac_hex ,alias_at_giac_hex,&__giac_hex,0,true)  
   gen _octprint(const gen & g,GIAC_CONTEXT){
     if ( g.type==_STRNG && g.subtype==-1) return  g;
     if (g.type == _INT_)
@@ -3692,6 +3817,9 @@ namespace giac {
   define_unary_function_ptr5(at_binprint,alias_at_binprint,&__binprint,0,true);
   // const unary_function_ptr at_binprint (&__binprint,0,true);
 
+  static const char _giac_bin_s []="bin";
+  static define_unary_function_eval (__giac_bin,&_binprint,_giac_bin_s);
+  define_unary_function_ptr5( at_giac_bin ,alias_at_giac_bin,&__giac_bin,0,true);
 
 #ifndef NO_NAMESPACE_GIAC
 } // namespace giac

@@ -73,6 +73,8 @@ namespace giac {
     _INT___VECT = _INT_*_DISPATCHBASE+_VECT,
     _INT___MAP = _INT_*_DISPATCHBASE+_MAP,
     _INT___REAL = _INT_*_DISPATCHBASE+_REAL,
+    _INT___FRAC = _INT_*_DISPATCHBASE+_FRAC,
+    _INT___STRNG = _INT_*_DISPATCHBASE+_STRNG,
     _ZINT__INT_ = _ZINT*_DISPATCHBASE+_INT_,
     _ZINT__ZINT =_ZINT*_DISPATCHBASE+_ZINT,
     _ZINT__CPLX = _ZINT*_DISPATCHBASE+_CPLX,
@@ -84,6 +86,7 @@ namespace giac {
     _ZINT__VECT = _ZINT*_DISPATCHBASE+_VECT,
     _ZINT__MAP = _ZINT*_DISPATCHBASE+_MAP,
     _ZINT__REAL = _ZINT*_DISPATCHBASE+_REAL,
+    _ZINT__FRAC = _ZINT*_DISPATCHBASE+_FRAC,
     _CPLX__INT_ = _CPLX*_DISPATCHBASE+_INT_,
     _CPLX__ZINT = _CPLX*_DISPATCHBASE+_ZINT,
     _CPLX__CPLX = _CPLX*_DISPATCHBASE+_CPLX,
@@ -140,6 +143,7 @@ namespace giac {
     _DOUBLE___MAP = _DOUBLE_*_DISPATCHBASE+_MAP,
     _DOUBLE___REAL = _DOUBLE_*_DISPATCHBASE+_REAL,
     _DOUBLE___FRAC = _DOUBLE_*_DISPATCHBASE+_FRAC,
+    _DOUBLE___STRNG = _DOUBLE_*_DISPATCHBASE+_STRNG,
     _FLOAT___INT_=  _FLOAT_*_DISPATCHBASE+_INT_,
     _FLOAT___ZINT = _FLOAT_*_DISPATCHBASE+_ZINT,
     _FLOAT___CPLX = _FLOAT_*_DISPATCHBASE+_CPLX,
@@ -184,6 +188,7 @@ namespace giac {
     _FRAC__FLOAT_ = _FRAC*_DISPATCHBASE+_FLOAT_,
     _FRAC__DOUBLE_ = _FRAC*_DISPATCHBASE+_DOUBLE_,
     _FRAC__INT_=  _FRAC*_DISPATCHBASE+_INT_,
+    _FRAC_ZINT=  _FRAC*_DISPATCHBASE+_ZINT,
     _FRAC__REAL=  _FRAC*_DISPATCHBASE+_REAL,
     _SPOL1__SPOL1 = _SPOL1*_DISPATCHBASE+_SPOL1,
     _EXT__EXT = _EXT*_DISPATCHBASE+_EXT,
@@ -192,6 +197,8 @@ namespace giac {
     _EXT__INT_=  _EXT*_DISPATCHBASE+_INT_,
     _EXT__POLY=  _EXT*_DISPATCHBASE+_POLY,
     _STRNG__STRNG = _STRNG*_DISPATCHBASE+_STRNG,
+    _STRNG__INT_=  _STRNG*_DISPATCHBASE+_INT_,
+    _STRNG__DOUBLE_=  _STRNG*_DISPATCHBASE+_DOUBLE_,
     _FUNC__FUNC = _FUNC*_DISPATCHBASE+_FUNC,
     _MOD__MOD = _MOD*_DISPATCHBASE+_MOD,
     _ZINT__MOD = _ZINT*_DISPATCHBASE+_MOD,
@@ -251,11 +258,15 @@ namespace giac {
     _GGBVECT=27,
     _PRINT__VECT=28,
     _TUPLE__VECT=29,
+    _TABLE__VECT=30,
+    _GRAPH__VECT =31,
+    _PRG__VECT=32,
   } ;
 
   enum symb_subtypes {
     _GLOBAL__EVAL =-1,
-    _SPREAD__SYMB =123 // do not use this value elsewhere
+    _SPREAD__SYMB =123, // do not use this value elsewhere
+    _FORCHK__SYMB=124, // cached subtype value for for inside a for loop
   } ;
 
   enum map_subtypes {
@@ -538,6 +549,50 @@ namespace giac {
     _NEGINT=2*256+2,
     _NONPOSINT=3*256+2,
     _NONNEGINT=4*256+2,
+    _LP_BINARY=106,           //   * binary
+    _LP_BINARYVARIABLES=107,  //   * binaryvariables
+    _LP_DEPTHLIMIT=108,       //   * depthlimit
+    _LP_INTEGER=109,          //   * integer
+    _LP_INTEGERVARIABLES=110, //   * integervariables
+    _LP_MAXIMIZE=111,         //   * maximize
+    _LP_NONNEGATIVE=112,      //   * nonnegative
+    _LP_NONNEGINT=113,        //   * nonnegint
+    _LP_VARIABLES=114,        //   * variables
+    _LP_ASSUME=115,
+    _LP_NODE_LIMIT = 116,             // lp_nodelimit
+    _LP_INTEGER_TOLERANCE = 117,      // lp_integertolerance
+    _LP_METHOD = 118,                 // lp_method
+    _LP_SIMPLEX = 119,                // lp_simplex
+    _LP_INTERIOR_POINT = 120,         // lp_interiorpoint
+    _LP_INITIAL_POINT = 121 ,          // lp_initialpoint
+    _LP_MAX_CUTS = 122,            // lp_maxcuts            option
+    _LP_GAP_TOLERANCE = 123,       // lp_gaptolerance       option
+    _LP_NODESELECT = 124,          // lp_nodeselect         option
+    _LP_VARSELECT = 125,           // lp_varselect          option
+    _LP_FIRSTFRACTIONAL = 126,     // lp_firstfractional    value
+    _LP_LASTFRACTIONAL = 127,      // lp_lastfractional     value
+    _LP_MOSTFRACTIONAL = 128,      // lp_mostfractional     value
+    _LP_PSEUDOCOST = 129,          // lp_pseudocost         value
+    _LP_DEPTHFIRST = 130,          // lp_depthfirst         value
+    _LP_BREADTHFIRST = 131,        // lp_breadthfirst       value
+    _LP_BEST_PROJECTION = 132,     // lp_bestprojection     value
+    _LP_HYBRID = 133,              // lp_hybrid             value
+    _LP_ITERATION_LIMIT = 134,     // lp_iterationlimit     option
+    _LP_TIME_LIMIT = 135,          // lp_timelimit          option
+    _LP_VERBOSE =136,             // lp_verbose            option
+    _NLP_INITIALPOINT = 137,    //nlp_initialpoint
+    _NLP_ITERATIONLIMIT = 138,  //nlp_iterationlimit
+    _NLP_NONNEGATIVE = 139,     //nlp_nonnegative
+    _NLP_PRECISION = 140,       //nlp_precision
+    _NLP_MAXIMIZE = 141,         //nlp_maximize
+    _GT_CONNECTED = 142, // connected
+    _GT_SPRING = 143, // spring
+    _GT_TREE = 144, // tree
+    _GT_PLANAR = 145, // planar
+    _GT_DIRECTED = 146, // directed
+    _GT_WEIGHTED = 147, // weighted
+    _GT_WEIGHTS = 148, // weights
+    _GT_BIPARTITE = 149, // bipartite
   };
 
   enum mupad_operator {
@@ -590,6 +645,8 @@ namespace giac {
     step_integrate_header=33,
     step_derive_header=34,
   };
+
+
 
 #ifndef NO_NAMESPACE_GIAC
 } // namespace giac

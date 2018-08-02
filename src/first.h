@@ -21,6 +21,9 @@
 #ifndef _GIAC_FIRST_H_
 #define _GIAC_FIRST_H_
 
+#ifndef GIAC_VERSION
+#define GIAC_VERSION VERSION
+#endif
 //#include <stdint.h>
 
 #ifdef __x86_64__
@@ -52,7 +55,26 @@
 #define NO_STDEXCEPT 1
 #endif
 
-
+#ifdef FXCG
+#define RAND_MAX 2147483647
+#define clock() 0
+#define CLOCK() 0
+#define CLOCK_T int
+#undef HAVE_LIBDL
+#undef HAVE_LIBPTHREAD
+struct Bidon {
+  int i;
+Bidon(int i_=0):i(i_){}
+  flush(){}
+};
+template<class T> Bidon operator << (Bidon ,const T&){ return Bidon(); }
+inline Bidon operator << (Bidon,const char *){return Bidon();}
+// #define CIN 0 //std::cin
+#define COUT Bidon(0) //std::cout
+#define CERR Bidon(0) //std::cout
+typedef unsigned pid_t;
+double lgamma(double);
+#else // FXCG
 
 #ifdef NSPIRE
 #define clock() 0
@@ -62,7 +84,7 @@
 #define CIN (*std::console_cin_ptr)
 #define COUT (*std::console_cin_ptr)
 #define CERR (*std::console_cin_ptr)
-#else
+#else // NSPIRE
 #define CIN std::cin
 #define COUT std::cout
 #ifdef EMCC
@@ -72,7 +94,7 @@ extern "C" int glinit(int,int,int,int,int);
 extern "C" void glcontext(int);
 #define CLOCK emcctime
 #define CLOCK_T clock_t
-#else
+#else // EMCC
 #define CERR std::cerr
 #if defined(MS_SMART) || defined(NO_CLOCK)
 #define CLOCK() 0
@@ -81,8 +103,9 @@ extern "C" void glcontext(int);
 #define CLOCK clock
 #define CLOCK_T clock_t
 #endif // MS_SMART
-#endif
-#endif
+#endif // EMCC
+#endif // NSPIRE
+#endif // FXCG
 
 #ifdef __sparc__
 #define DOUBLEVAL
@@ -132,6 +155,10 @@ int my_sprintf(char * s, const char * format, ...);
 #undef CLOCK_T
 #define CLOCK() PrimeGetNow()
 #define CLOCK_T int
+#endif
+
+#if !defined HAVE_ALLOCA_H && !defined GIAC_HAS_STO_38
+#define alloca _alloca
 #endif
 
 #ifdef NO_UNARY_FUNCTION_COMPOSE
@@ -256,7 +283,7 @@ typedef unsigned long long ulonglong;
 // #define PSEUDO_MOD accelerates cyclic* gbasis computation significantly
 // from int_multilinear_combination in vecteur.cc (from rref?)
 #ifdef FIR
-#if !(defined(BESTA_OS) || defined(WINDOWS) || defined(OSXIOS) || defined(FIR_LINUX) || defined(FIR_ANDROID))
+#if !(defined(BESTA_OS) || defined(WINDOWS) || defined(OSXIOS) || defined(FIR_LINUX) || defined(FIR_ANDROID) || defined(FREERTOS) )
 // was #if !(defined(IOS) || defined(__ANDROID__)) && !defined(OSX) && !defined(LINUX)
 #define PSEUDO_MOD 
 #endif
@@ -284,6 +311,20 @@ typedef int ref_count_t;
 //#define CP15_TPIDRURW          15, 0, 13,  0, 2         // Software Thread ID Register, User Read/Write
 #endif
 
+#ifndef SIZEOF_VOID_P
+#ifdef __APPLE__
+#ifdef __LP64__
+#define SIZEOF_VOID_P 8
+#else
+#define SIZEOF_VOID_P 4
+#endif
+#endif //__APPLE__
+
+#ifndef SIZEOF_VOID_P
+//#error "No SIZEOF_VOID_P defined on this system!!!!"
+#endif
+#endif
+
 #if __BYTE_ORDER__ ==__ORDER_LITTLE_ENDIAN__ && SIZEOF_VOID_P==8 //(defined(__LP64__) || defined(_WIN64) || (defined(x86_64) && !defined(__ILP32__)) || defined(_M_X64) || defined(__ia64) || defined (_M_IA64) || defined(__aarch64__) || defined(__powerpc64__))
 #if !defined(BUILDING_NODE_EXTENSION) || !defined(_WIN64)
 #define SMARTPTR64
@@ -307,7 +348,9 @@ typedef int ref_count_t;
 #include "gmp.h"
 #endif // USE_GMP_REPLACEMENTS
 
+#ifndef FXCG
 #include <cassert>
+#endif
 
 class init_gmp_memory 
 {
@@ -479,13 +522,17 @@ inline float finv(float f1){ return 1/f1; }
 #if defined __APPLE__ || defined EMCC || defined NO_BSD 
 inline float fgamma(float f1){ return tgammaf(f1); }
 #else
-#if defined(__MINGW_H) || defined(VISUALC) // FIXME gamma, not used
+#if defined(__MINGW_H) || defined(VISUALC) || defined(FXCG)// FIXME gamma, not used
 inline float fgamma(float f1){ return f1; }
 #else
 inline float fgamma(float f1){ return gammaf(f1); } // or tgammaf(f1) on some versions of emscripten
 #endif
 #endif
+#ifdef FXCG
+inline float atan2f(float f1,float f2,int rad){ if (rad) return std::atan2(f1,f2); else return std::atan2(f1,f2)*180/3.14159265358979323846;}
+#else
 inline float atan2f(float f1,float f2,int rad){ if (rad) return atan2f(f1,f2); else return atan2f(f1,f2)*180/M_PI;}
+#endif
 #define fis_nan my_isnan
 #define fis_inf my_isinf
 #endif // BCD

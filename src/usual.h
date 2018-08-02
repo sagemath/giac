@@ -247,7 +247,7 @@ namespace giac {
 
   gen _print(const gen & args,GIAC_CONTEXT);  
   extern const unary_function_ptr * const  at_print;
-#if !defined RTOS_THREADX && !defined NSPIRE
+#if !defined RTOS_THREADX && !defined NSPIRE && !defined FXCG
   extern const unary_function_eval __print;
 #endif
 
@@ -315,6 +315,8 @@ namespace giac {
   extern const unary_function_ptr * const  at_decrement;
   extern const unary_function_ptr * const  at_multcrement;
   extern const unary_function_ptr * const  at_divcrement;
+  extern const unary_function_ptr * const  at_iquosto;
+  extern const unary_function_ptr * const  at_iremsto;
   gen sto(const gen & a,const gen & b,GIAC_CONTEXT);
   gen sto(const gen & a,const gen & b,bool in_place,GIAC_CONTEXT);  
   gen _sto(const gen & g,const context * contextptr);
@@ -417,10 +419,16 @@ namespace giac {
   gen _prod(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_prod ;
 
+  std::string printasand(const gen & feuille,const char * sommetstr,GIAC_CONTEXT);
+  std::string texprintasand(const gen & g,const char * s,GIAC_CONTEXT);
+
+  std::string printasor(const gen & feuille,const char * sommetstr,GIAC_CONTEXT);
+  std::string texprintasor(const gen & g,const char * s,GIAC_CONTEXT);
+
   symbolic symb_pow(const gen & a,const gen & b);
   std::string cprintaspow(const gen & feuille,const char * sommetstr_orig,GIAC_CONTEXT);
 #ifndef GIAC_HAS_STO_38
-#ifdef NSPIRE
+#if defined NSPIRE || defined FXCG
   extern const alias_unary_function_eval __pow;
 #else
   extern unary_function_eval __pow;

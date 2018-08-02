@@ -28,10 +28,8 @@
 //#pragma anon_unions
 //#endif
 //========================================
-#ifndef ConnectivityKit
-#ifndef _MSC_VER
+#if !defined ConnectivityKit && !defined _MSC_VER && !defined FREERTOS
 #pragma anon_unions
-#endif
 #endif
 ///////////////////////////////////////////
 
@@ -44,7 +42,7 @@
 #include <unordered_map>
 #endif
 
-#if defined UNORDERED_MAP  && !defined(__clang__) && !defined(VISUALC) // && !defined(__APPLE__)
+#if defined UNORDERED_MAP  && !defined(VISUALC) // && !defined(__APPLE__) && !defined(__clang__) 
 #include <tr1/unordered_map>
 #define HASH_MAP_NAMESPACE std::tr1
 #define hash_map unordered_map
@@ -106,6 +104,7 @@ namespace giac {
   inline index_t index_min(const index_t & a,const index_t & b){ return index_gcd(a,b); }
   inline index_t index_max(const index_t & a,const index_t & b){ return index_lcm(a,b); }
   void dbgprint(const index_t & i);
+  void add_print_INT_(std::string & s,int i);
   std::string print_INT_(int i);
   std::string hexa_print_INT_(int i);
   std::string octal_print_INT_(int i);
@@ -252,7 +251,7 @@ namespace giac {
   // capacity of deg_t by direct addressing
   const int POLY_VARS=POLY_VARS_DIRECT+POLY_VARS_OTHER-1;
 
-#if defined(GIAC_NO_OPTIMIZATIONS) || ((defined(VISUALC) || defined(__APPLE__)) && !defined(GIAC_VECTOR)) || defined __clang__ // || defined(NSPIRE)
+#if defined(GIAC_NO_OPTIMIZATIONS) || ((defined(VISUALC) || defined(__APPLE__)) && !defined(GIAC_VECTOR)) || defined __clang__ // || defined(NSPIRE) || defined FXCG
   class index_m {
   public:
     ref_index_t * riptr;
@@ -293,7 +292,7 @@ namespace giac {
     index_t::iterator end() { return riptr->i.end(); }
     index_t::const_iterator begin() const { return riptr->i.begin(); }
     index_t::const_iterator end() const { return riptr->i.end(); }
-#if !defined(NSPIRE) && !defined(OSX) && !defined(IOS) && !defined(OSXIOS)
+#if !defined(NSPIRE) && !defined(FXCG) && !defined(OSX) && !defined(IOS) && !defined(OSXIOS)
     index_t::reverse_iterator rbegin() { return riptr->i.rbegin(); }
     index_t::reverse_iterator rend() { return riptr->i.rend(); }
     index_t::const_reverse_iterator rbegin() const { return riptr->i.rbegin(); }

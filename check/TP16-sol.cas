@@ -1,4 +1,4 @@
- restart;maple_mode(1);cas_setup(0,0,0,1,0,1e-10,10,[1,50,0,25],0,0,0); #radians,pas de cmplx, pas de  Sqrt
+ restart(1);maple_mode(1);cas_setup(0,0,0,1,0,1e-10,10,[1,50,0,25],0,0,0); #radians,pas de cmplx, pas de  Sqrt
 /* --------------------------------------------Exercice---courbes param\'etr\'ees---------------------------------*/
  XT:=t*(t^2-1)^2;YT:=t^2+1;
  eq:=resultant(XT-x,YT-y,t);
@@ -58,7 +58,7 @@ purge(x,y);
  solx:=[solve(eqred,x)];
  soly:=seq(gcd(subs(x=solx[i],C1),subs(x=solx[i],C2)),i=1..3);
 /*  les ordonn\'ees des points d'abscisse solx[i] sont:*/
- seq(cSolve(soly[i],y),i=1..3);
+L2:=seq(cSolve(soly[i],y),i=1..3): sort([L2],(u,v)-> real(u+I*u*0.3)<real(v+I*v*0.3));
 /*  On constate que pour solx[3] les ordonn\'ees des points de C1 inter£  C2 ayant cette abscisse sont complexes conjuguees bien que solx[3]£ soit reel ce qui explique pourquoi le dessin ne nous donnait que 4 points.*/
 /* ----------------------------------------Exercice---Intersections de quadriques--------------------------------------*/
 purge(u);

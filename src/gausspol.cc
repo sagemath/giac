@@ -1077,12 +1077,16 @@ namespace giac {
     }
 #endif
 #ifdef NO_TEMPLATE_MULTGCD
+#ifdef FXCG
+    Mul_gen(ita,ita_end,itb,itb_end,res.coord,th.is_strictly_greater,th.m_is_strictly_greater);
+#else
     Mul<gen>(ita,ita_end,itb,itb_end,res.coord,th.is_strictly_greater,th.m_is_strictly_greater);
     // Mul_gen(ita,ita_end,itb,itb_end,res.coord,th.is_strictly_greater,th.m_is_strictly_greater);
+#endif
     return;
 #else
     if ( 
-	// true // used for debugging with small poly
+	//true || // used for debugging with small poly
 	c1>50 || c2 >50 || (c1>7 && c2>7) 
 	){
       // Degree info, try to multiply the polys using integer for the exponents
@@ -1507,10 +1511,14 @@ namespace giac {
     } // end if c1>7 && c2>7
     if (debug_infolevel>1)
       CERR << CLOCK() << "Mul<gen> begin " << CLOCK() << endl;
+#ifdef FXCG
+    Mul_gen(ita,ita_end,itb,itb_end,res.coord,th.is_strictly_greater,th.m_is_strictly_greater);
+#else
     if (c1*c2<100)
       Mul_gen(ita,ita_end,itb,itb_end,res.coord,th.is_strictly_greater,th.m_is_strictly_greater);
     else
       Mul<gen>(ita,ita_end,itb,itb_end,res.coord,th.is_strictly_greater,th.m_is_strictly_greater);
+#endif
     if (debug_infolevel>1)
       CERR << CLOCK() << "Mul<gen> end " << CLOCK() << endl;
     // if (th.dim==12)
@@ -2013,15 +2021,15 @@ namespace giac {
   }
 
   polynome re(const polynome & th){
-    return Tapply(th,giac::no_context_re);
+    return Tapply(th,no_context_re);
   }
 
   polynome im(const polynome & th){
-    return Tapply(th,giac::no_context_im);
+    return Tapply(th,no_context_im);
   }
 
   polynome conj(const polynome & th){
-    return Tapply(th,giac::no_context_conj);
+    return Tapply(th,no_context_conj);
   }
 
   void smod(const polynome & th, const gen & modulo,polynome & res){
@@ -2644,6 +2652,9 @@ namespace giac {
     int n=Q.lexsorted_degree();
     // first estimate n*(a-m)+m*b 
     int d1=n*(a-m)+m*b;
+    gen coeffP;
+    if (!ducos && !interpolable_resultant(P,d1,coeffP,false,context0)) ducos=true;
+    if (!ducos && !interpolable_resultant(Q,d1,coeffP,false,context0)) ducos=true;
     //gen Pg=a*gen(m)*comb(m+dim-2,dim-2);
     //gen Qg=b*gen(n)*comb(n+dim-2,dim-2);
     if (//1 ||
@@ -2671,6 +2682,8 @@ namespace giac {
       qp0=firstcoeff(Q).trunc1();
       polynome2poly1(qp0,1,vq0);
       int j=-d/2;
+      if (coeffP.type==_USER) 
+	j=0;
       for (int i=0;i<=d;++i,++j){
 	if (!debug_infolevel){
 	  double cclock=CLOCK()*1e-6;
@@ -2679,18 +2692,20 @@ namespace giac {
 	}
 	if (debug_infolevel)
 	  CERR << CLOCK()*1e-6 << " interp horner, loop index " << i << endl;
+	gen xi;
 	for (;;++j){
 	  // find evaluation preserving degree in x
 	  if (0 && j==0)
 	    CERR << "j" << endl;
-	  gen hp=horner(vp0,j);
-	  gen hq=horner(vq0,j);
+	  xi=interpolate_xi(j,coeffP);
+	  gen hp=horner(vp0,xi);
+	  gen hq=horner(vq0,xi);
 	  if (!is_zero(hp) && !is_zero(hq))
 	    break;
 	}
-	X[i]=j;
-	gen gp=horner(vp,j);
-	gen gq=horner(vq,j);
+	X[i]=xi;
+	gen gp=horner(vp,xi);
+	gen gq=horner(vq,xi);
 	if (debug_infolevel)
 	  CERR << CLOCK()*1e-6 << " interp resultant evaled at " << j << ", " << 100*double(i)/(d+1) << "% done" << endl;
 	if (gp.type==_POLY && gq.type==_POLY){
@@ -5057,7 +5072,7 @@ namespace giac {
   // a multivariate poly with multivariate poly coeffs
   polynome splitmultivarpoly(const polynome & p,int inner_dim){
     int outer_dim=p.dim-inner_dim;
-    index_t cur_outer;
+    index_t cur_outer(outer_dim);
     polynome cur_inner(inner_dim);
     polynome res(outer_dim);
     vector< monomial<gen> >::const_iterator it=p.coord.begin(),itend=p.coord.end();
@@ -5573,6 +5588,7 @@ namespace giac {
       ii.insert(ii.begin(),0);
       p_y=p_y+poly1_2_polynome(*(p_it->value._EXTptr->_VECTptr),p_y.dim).shift(ii);
     }
+    // p_y=p_y/Tcontent(p_y);
     return true;
   }
 
@@ -5723,6 +5739,8 @@ namespace giac {
 	      res=res._FRACptr->num;
 	    if (res.type!=_POLY)
 	      continue;
+	    // ? unitarize res
+	    *res._POLYptr=*res._POLYptr/res._POLYptr->coord.front().value;
 	    f.push_back(facteur<polynome>(*res._POLYptr,mult));
 	  }
 	  if (j==v.size()){ //adjust an

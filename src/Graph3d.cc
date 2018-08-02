@@ -90,10 +90,10 @@ namespace xcas {
     if (res!=-1){
       string command="pngtopnm "+filename+" | pnmtops > "+remove_extension(filename)+".ps &";
       cerr << command << endl;
-      system(command.c_str()); 
+      system_no_deprecation(command.c_str()); 
       command="pngtopnm "+filename+" | pnmtojpeg > "+remove_extension(filename)+".jpg &";
       cerr << command << endl;
-      system(command.c_str()); 
+      system_no_deprecation(command.c_str()); 
     }
 #endif
     return -1;
@@ -146,7 +146,7 @@ namespace xcas {
   }
 
   // t angle in radians -> r,g,b
-  void arc_en_ciel(double t,int & r,int & g,int &b){
+  void arc_en_ciel2(double t,int & r,int & g,int &b){
     int k=int(t/2/M_PI*126);
     arc_en_ciel(k,r,g,b);
   }
@@ -188,7 +188,7 @@ namespace xcas {
 	} // end realiscmplx>0
 	// set color corresponding to argument
 	int r,g,b;
-	arc_en_ciel(arg,r,g,b);
+	arc_en_ciel2(arg,r,g,b);
 	glColor3f(r/255.,g/255.,b/255.);
 	// glColor4i(r,g,b,int(std::log(d3+1)));
       } // end if (realiscmplx)

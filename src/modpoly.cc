@@ -2037,7 +2037,7 @@ namespace giac {
 #ifndef SMARTPTR64
 		(tmpptr->__ZINTptr->ref_count==1) && 
 #else
-		((ref_mpz_t *) (* (longlong *) tmpptr >> 16))->ref_count==1 &&
+		((ref_mpz_t *) (* (ulonglong *) tmpptr >> 16))->ref_count==1 &&
 #endif
 		( (itq->type==_ZINT) || (itq->type==_INT_) ) )
 	      sub_mul(tmpptr->_ZINTptr,prod,q,*itq);
@@ -2249,7 +2249,7 @@ namespace giac {
     // copy rem to an array
     vector<int>::const_iterator remit=rem.begin();//,remend=rem.end();
     if ((a-b+1)*double(m)*m<9e15){
-      longlong * tmp=(longlong *)alloca((a+1)*sizeof(longlong));
+      ALLOCA(longlong, tmp, (a+1)*sizeof(longlong));//longlong * tmp=(longlong *)alloca((a+1)*sizeof(longlong));
       longlong * tmpend=&tmp[a];
       longlong * tmpptr=tmpend; // tmpend points to the highest degree coeff of A
       for (;tmpptr!=tmp-1;--tmpptr,++remit)
@@ -4986,6 +4986,30 @@ namespace giac {
     }
 #endif
     modpoly::const_iterator it=p.begin(),itend=p.end();
+    if (x.type==_CPLX && x.subtype==3){
+      complex<double> res(0),X(x._CPLXptr->_DOUBLE_val,(x._CPLXptr+1)->_DOUBLE_val);
+      bool ok=true;
+      for (;ok && it!=itend;++it){
+	res *=X;
+	switch (it->type){
+	case _INT_:
+	  res += it->val;
+	  break;
+	case _DOUBLE_:
+	  res += it->_DOUBLE_val;
+	  break;
+	case _CPLX:
+	  if (it->subtype==3){
+	    res += complex<double>(it->_CPLXptr->_DOUBLE_val,(it->_CPLXptr+1)->_DOUBLE_val);
+	    break;
+	  }
+	default:
+	  ok=false;
+	}
+      }
+      if (ok) return res;
+    }
+    it=p.begin();
     gen res(*it);
     ++it;
     if (env && env->moduloon){
@@ -5008,22 +5032,50 @@ namespace giac {
       return g;
     return horner(*g._VECTptr,x);
   }
+  complex<double> horner_newton(const vecteur & p,const std::complex<double> &x,GIAC_CONTEXT){
+    complex<double> num,den;
+    const_iterateur it=p.begin(),itend=p.end();
+    double n=itend-it-1; gen tmp;
+    for (;it!=itend;--n,++it){
+      num *= x;
+      if (n) den *= x;
+      switch (it->type){
+      case _INT_:
+	num += it->val;
+	den += n*it->val;
+	break;
+      case _DOUBLE_:
+	num += it->_DOUBLE_val;
+	den += n*it->_DOUBLE_val;
+	break;
+      case _CPLX:
+	tmp=it->subtype==3?*it:evalf_double(*it,1,contextptr);
+	if (tmp.type==_CPLX && tmp.subtype==3){
+	  num += complex<double>(tmp._CPLXptr->_DOUBLE_val,(tmp._CPLXptr+1)->_DOUBLE_val);
+	  den += n*complex<double>(tmp._CPLXptr->_DOUBLE_val,(tmp._CPLXptr+1)->_DOUBLE_val);
+	  break;
+	}
+      default:
+	return (num=0)/(den=0);
+      }
+    } // end for
+    return x-num/den;
+  }
   gen _horner(const gen & args,GIAC_CONTEXT){
     if ( args.type==_STRNG && args.subtype==-1) return  args;
-    gen p,q,x;
     if (args.type!=_VECT)
       return symbolic(at_horner,args);
     vecteur & v=*args._VECTptr;
     int s=int(v.size());
     if (s<2)
       return gensizeerr(contextptr);
-    p=v.front();
-    q=v[1];
+    const gen &p=v.front();
+    const gen & q=v[1];
     if (p.type==_VECT){
       if (q.type==_VECT && p._VECTptr->size()==q._VECTptr->size() && s==3){
 	// Horner-like evaluation for divided difference
 	// p=divided differences, q=list of abscissas, r=eval point
-	x=v[2];
+	const gen & x=v[2];
 	gen r=0;
 	const vecteur & P=*p._VECTptr;
 	s=int(P.size())-1;
@@ -5033,8 +5085,29 @@ namespace giac {
 	}
 	return r;
       }
+      if (s==3){
+	const gen & v2=v[2];
+	if (v2.type==_FUNC && *v2._FUNCptr==at_newton){
+	  // Newton iteration for a polynomial
+	  complex<double> x;
+	  if (q.type==_DOUBLE_)
+	    x=q._DOUBLE_val;
+	  else {
+	    if (q.type==_CPLX && q.subtype==3)
+	      x=complex<double>(q._CPLXptr->_DOUBLE_val,(q._CPLXptr+1)->_DOUBLE_val);
+	    else {
+	      gen tmp=evalf_double(q,1,contextptr);
+	      if (tmp.type!=_CPLX || tmp.subtype!=3)
+		return gensizeerr(contextptr);
+	      x=complex<double>(tmp._CPLXptr->_DOUBLE_val,(tmp._CPLXptr+1)->_DOUBLE_val);
+	    }
+	  }
+	  return horner_newton(*p._VECTptr,x,contextptr);
+	}
+      } // end newton iteration
       return horner(*p._VECTptr,q);
     }
+    gen x;
     if (s==2)
       x=vx_var;
     else 
@@ -5057,7 +5130,7 @@ namespace giac {
     return r2e(horner(a,ba),lv,contextptr)/r2e(aad,lv,contextptr);
   }
   static const char _horner_s []="horner";
-  static define_unary_function_eval (__horner,&giac::_horner,_horner_s);
+  static define_unary_function_eval (__horner,&_horner,_horner_s);
   define_unary_function_ptr5( at_horner ,alias_at_horner,&__horner,0,true);
 
   gen symb_horner(const modpoly & p,const gen & x,int d){
@@ -5899,11 +5972,15 @@ namespace giac {
       vector<int> W=vecteur_2_vector_int(w);
       vector<int> RES(F.size());
       int m=env->modulo.val;
+#ifndef FXCG
       if (debug_infolevel>2)
 	CERR << CLOCK()*1e-6 << " begin fft int " << W.size() << " memory " << memory_usage()*1e-6 << "M" << endl;
+#endif
       fft(F,W,RES,m);
+#ifndef FXCG
       if (debug_infolevel>2)
 	CERR << CLOCK()*1e-6 << " end fft int " << W.size() << " memory " << memory_usage()*1e-6 << "M" << endl;
+#endif
       unsigned n=unsigned(RES.size());
       res.clear();
       res.reserve(n);
@@ -6065,8 +6142,10 @@ namespace giac {
   }  
 
   void fft2( complex<double> * A, int n, double theta){
+#ifndef FXCG
     if (debug_infolevel>2)
       CERR << CLOCK()*1e-6 << " begin fft2 C " << n << " memory " << memory_usage()*1e-6 << "M" << endl;
+#endif
     vector< complex<double> > W,T(n);
     W.reserve(n); 
     double thetak(theta);
@@ -6080,8 +6159,10 @@ namespace giac {
       }
     }
     fft2(A,n,&W.front(),&T.front());
+#ifndef FXCG
     if (debug_infolevel>2)
       CERR << CLOCK()*1e-6 << " end fft C " << n << " memory " << memory_usage()*1e-6 << "M" << endl;
+#endif
   }
 
   void fft(std::complex<double> * f,int n,const std::complex<double> * w,int m,complex< double> * t){
@@ -7133,8 +7214,10 @@ namespace giac {
   }
 
   void fft2(int * A, int n, int w, int p){
+#ifndef FXCG
     if (debug_infolevel>2)
       CERR << CLOCK()*1e-6 << " begin fft2 int " << n << " memory " << memory_usage()*1e-6 << "M" << endl;
+#endif
     vector<int> W,T(n);
     fft2w(W,n,w,p);
     int * Aend=A+n;
@@ -7142,9 +7225,11 @@ namespace giac {
       if (*a<0) *a += p;
     fft2(A,n,&W.front(),p,&T.front());
     for (int * a=A;a<Aend;++a)
-      if (*a<0) *a += p;    
+      if (*a<0) *a += p;
+#ifndef FXCG
     if (debug_infolevel>2)
       CERR << CLOCK()*1e-6 << " end fft int " << n << " memory " << memory_usage()*1e-6 << "M" << endl;
+#endif
   }
 
   void makepositive(int * p,int n,int modulo){
@@ -8677,7 +8762,7 @@ namespace giac {
 #ifdef HAVE_LIBPTHREAD
     int locked=pthread_mutex_trylock(&ntl_mutex);
 #endif // HAVE_LIBPTHREAD
-    if (locked)
+    if (locked || ntl_on(context0)==0)
       return giac_gcd_modular_algo1(p,q,d);
     bool res=true;
     try {

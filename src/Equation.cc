@@ -39,6 +39,7 @@
 #include <giac/giac.h>
 #else
 #include "giac.h"
+#include "graphtheory.h"
 #endif
 #include "History.h"
 #include "Xcas1.h"
@@ -616,7 +617,7 @@ namespace xcas {
 	return Equation_compute_size(arg,a,windowhsize,contextptr);
       gen tmp;
 #ifdef SMARTPTR64
-      * ((longlong * ) &tmp) = longlong(new ref_fraction(Tfraction<gen>(arg._VECTptr->front(),arg._VECTptr->back()))) << 16;
+      * ((ulonglong * ) &tmp) = ulonglong(new ref_fraction(Tfraction<gen>(arg._VECTptr->front(),arg._VECTptr->back()))) << 16;
 #else
       tmp.__FRACptr = new ref_fraction(Tfraction<gen>(arg._VECTptr->front(),arg._VECTptr->back()));
 #endif
@@ -1109,6 +1110,11 @@ namespace xcas {
      *   VECTORS   *
      ***************/
     if ( (g.type==_VECT) && !g._VECTptr->empty() ){
+      if (g.subtype==_GRAPH__VECT){  
+	string s;
+	if (is_graphe(g,s,contextptr))
+	  return Equation_compute_size(string2gen(s,false),a,windowhsize,contextptr);
+      }
       if (g.subtype==_SPREAD__VECT)
 	return Equation_compute_size(string2gen("spreadsheet",false),a,windowhsize,contextptr);
       vecteur v;
@@ -1322,7 +1328,8 @@ namespace xcas {
       int x=0;
       int h=a.fontsize;
       int y=0;
-      int modsize=int(fl_width("%"))+4;
+      bool py=python_compat(contextptr);
+      int modsize=int(fl_width(py?" mod":"%"))+4;
       bool paren=is_positive(-*g._MODptr,contextptr);
       int llp=int(fl_width("("));
       int lrp=int(fl_width(")"));
@@ -1786,8 +1793,12 @@ namespace xcas {
       }
       bool parenthesis=true;
       string opstring(",");
-      if (u.ptr()->printsommet==&printsommetasoperator || equalposcomp(binary_op_tab(),u) )
-	opstring=u.ptr()->s;
+      if (u.ptr()->printsommet==&printsommetasoperator || equalposcomp(binary_op_tab(),u) ){
+	if (u==at_normalmod && python_compat(contextptr))
+	  opstring=" mod";
+	else
+	  opstring=u.ptr()->s;
+      }
       else {
 	if (u==at_sto)
 	  opstring=":=";
@@ -1935,7 +1946,7 @@ namespace xcas {
 
   void Equation::draw(){
     fl_clip_box(x(),y(),w(),h(),clip_x,clip_y,clip_w,clip_h);
-    // cout << clip_x << " " << clip_y << " " << clip_w << " " << clip_h << endl;
+    //cout << clip_x << " " << clip_y << " " << clip_w << " " << clip_h << endl;
     fl_push_clip(clip_x,clip_y,clip_w,clip_h);
     fl_color(attr.background);
     fl_rectf(clip_x, clip_y, clip_w, clip_h);
