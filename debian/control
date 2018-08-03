@@ -28,13 +28,14 @@ Build-Depends:
  libxext-dev,
  libxft-dev,
  libxinerama-dev,
+# for the info pages in arch-specific packages
+ texinfo,
 Build-Depends-Indep:
  hevea <!nodoc>,
  imagemagick <!nodoc>,
  latex2html <!nodoc>,
  libjs-codemirror <!nodoc>,
  libjs-mathjax <!nodoc>,
- texinfo <!nodoc>,
  texlive-binaries <!nodoc>,
  texlive-font-utils <!nodoc>,
  texlive-science <!nodoc>,
