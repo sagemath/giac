@@ -12,3 +12,10 @@ time, and it is unclear whether we should spend effort maintaining such a patch
 or add extra complexity to d/rules to run the build twice with different
 ./configure arguments. For now, I have given up this attempt but the patch is
 included (just not applied) in case anyone wants to pick it up in the future.
+
+DFSG source repacking
+=====================
+
+We excluded a bunch of stuff in the original upstream source tarball from the
+Debian "orig" source tarball. The list of excluded files and reasons for their
+exclusion are briefly documented in debian/copyright.

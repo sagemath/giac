@@ -1,6 +1,7 @@
 giac (1.4.9.69+dfsg1-1~exp2) UNRELEASED; urgency=medium
 
   * Move texinfo into Build-Depends since it's needed in the arch:any build.
+  * Document why we exclude certain upstream files from the orig tarball.
 
  -- Ximin Luo <infinity0@debian.org>  Fri, 03 Aug 2018 00:22:53 -0700
 
