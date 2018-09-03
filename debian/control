@@ -79,7 +79,7 @@ Description: Computer Algebra System C++ library - Development files
 Package: xcas
 Architecture: any
 Multi-Arch: allowed
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${perl:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${perl:Depends}, libgiac0 (= ${binary:Version})
 Suggests: giac-doc,
 # xcas calls system() in quite a bunch of places for optional behaviour
  hevea,
@@ -104,6 +104,7 @@ Architecture: all
 Multi-Arch: foreign
 Section: doc
 Depends: ${misc:Depends}, libjs-codemirror, libjs-mathjax, xcas
+Recommends: xcas (= ${binary:Version})
 Description: Computer Algebra System - documentation
  Giac is a computer algebra system, following the development of the CAS for HP
  calculators. It has fast implementation of algorithms for polynomial
