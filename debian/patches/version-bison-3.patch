@@ -4,7 +4,7 @@ Forwarded: TODO
 --- a/src/input_parser.yy
 +++ b/src/input_parser.yy
 @@ -21,10 +21,7 @@
-  *  along with this program. If not, see <https://www.gnu.org/licenses/>.
+  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
  
 -         %{
