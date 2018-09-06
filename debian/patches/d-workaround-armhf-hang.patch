@@ -14,3 +14,13 @@ Bug: https://xcas.univ-grenoble-alpes.fr/forum/viewtopic.php?f=4&t=2109
  is_prime(97160249868928888261606009);
  nextprime(9856989898990);
  nextprime(97160249868928888261606009);
+--- a/check/cas.out
++++ b/check/cas.out
+@@ -151,7 +151,6 @@
+ 1,
+ 1,
+ 0,
+-0,
+ 9856989898997,
+ 97160249868928888261606031,
+ 97160249868928888261605967,
