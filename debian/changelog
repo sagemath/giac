@@ -1,11 +1,12 @@
-giac (1.4.9.69+dfsg1-1~exp3) UNRELEASED; urgency=medium
+giac (1.4.9.69+dfsg1-1) unstable; urgency=medium
 
+  * Upload to unstable.
   * Make sure xcas uses the same version of libgiac0.
   * Recommend that xcas-doc uses the same version of xcas.
   * Use HTTPS urls in various parts of the packaging.
   * Work around hanging test chk_cas on armhf.
 
- -- Ximin Luo <infinity0@debian.org>  Mon, 03 Sep 2018 12:00:59 -0700
+ -- Ximin Luo <infinity0@debian.org>  Wed, 05 Sep 2018 21:31:11 -0700
 
 giac (1.4.9.69+dfsg1-1~exp2) experimental; urgency=medium
 
