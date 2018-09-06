@@ -1,9 +1,9 @@
 Description: Loosen expected test case in chk_fhan16
  Upstream says it is only a sorting issue and not an important test failure.
 Author: Ximin Luo <infinity0@debian.org>
-Bug: http://xcas.e.ujf-grenoble.fr/XCAS/viewtopic.php?p=8965#p8965
+Bug: https://xcas.e.ujf-grenoble.fr/XCAS/viewtopic.php?p=8965#p8965
 ---
-This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
 --- a/check/chk_fhan16
 +++ b/check/chk_fhan16
 @@ -1,4 +1,4 @@

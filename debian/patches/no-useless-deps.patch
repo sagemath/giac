@@ -2,7 +2,7 @@ Description: Don't link X libs if unneeded
 Author: Ximin Luo <infinity0@debian.org>
 Forwarded: TODO
 ---
-This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
 --- a/src/Makefile.am
 +++ b/src/Makefile.am
 @@ -49,7 +49,7 @@

@@ -19,7 +19,7 @@ Description: Don't include remote scripts
 Author: Ximin Luo <infinity0@debian.org>
 Forwarded: not-needed
 ---
-This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
 --- a/doc/algolycee.html
 +++ b/doc/algolycee.html
 @@ -58,7 +58,7 @@

@@ -9,7 +9,7 @@ https://people.debian.org/~bap/dfsg-faq.html#no_commercial
 
 For more information see:
 
-http://xcas.e.ujf-grenoble.fr/XCAS/viewtopic.php?f=19&t=1777
+https://xcas.e.ujf-grenoble.fr/XCAS/viewtopic.php?f=19&t=1777
 
 The only document in doc/fr which is available under a DFSG-free license is
 algo.tex. This is provided in this Debian package, however the interactive
@@ -24,7 +24,7 @@ used by some of the documentation web pages. To follow Debian's anti-embedding
 policy, we add this to Files-Excluded with the intention of building it from
 source in Debian. The upstream build scripts are here:
 
-http://www-fourier.ujf-grenoble.fr/~parisse/giac/emgiac.tgz
+https://www-fourier.ujf-grenoble.fr/~parisse/giac/emgiac.tgz
 
 but the instructions are trivial - basically, one calls `emmake make`. So we
 probably don't need to combine its contents into this Debian package.

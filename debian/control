@@ -45,7 +45,7 @@ Build-Depends-Indep:
  xauth <!nodoc>,
  xvfb <!nodoc>,
 Standards-Version: 4.0.0
-Homepage: http://www-fourier.ujf-grenoble.fr/~parisse/giac.html
+Homepage: https://www-fourier.ujf-grenoble.fr/~parisse/giac.html
 Vcs-Browser: https://salsa.debian.org/science-team/giac
 Vcs-Git: https://salsa.debian.org/science-team/giac.git
 
