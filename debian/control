@@ -1,6 +1,6 @@
 Source: giac
 Section: science
-Priority: extra
+Priority: optional
 Maintainer: Debian Science Maintainers <debian-science-maintainers@lists.alioth.debian.org>
 Uploaders: Ximin Luo <infinity0@debian.org>, Gilles Filippini <pini@debian.org>
 Build-Depends:
