@@ -5,6 +5,7 @@ giac (1.5.0.85+dfsg1-1) UNRELEASED; urgency=medium
     - Priority extra is now optional.
     - Quote full text of BSD license in d/copyright
       (the /usr/share/common-licenses/ file is going away) 
+    - Remove d/compat and use dh-compat 12. 
 
  -- Julien Puydt <jpuydt@debian.org>  Mon, 20 Jan 2020 21:02:06 +0100
 
