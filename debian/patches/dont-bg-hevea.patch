@@ -1,25 +1,25 @@
 Description: Don't run hevea in background
 Author: Ximin Luo <infinity0@debian.org>
 Forwarded: TODO
---- a/src/icas.cc
-+++ b/src/icas.cc
-@@ -523,7 +523,7 @@
+--- giac.orig/src/icas.cc
++++ giac/src/icas.cc
+@@ -561,7 +561,7 @@
  	  out.close();
- 	  COUT << "File " << outfile << " created" << outfile << endl << "Then I will run pdflatex " << giac::remove_extension(outfile) << endl ;
+ 	  COUT << "File " << outfile << " created" << outfile << '\n' << "Then I will run pdflatex " << giac::remove_extension(outfile) << '\n' ;
  	  if (dohevea){
 -	    std::string cmd="hevea -fix "+infile_+" &";
-+	    std::string cmd="hevea -fix "+infile_;
- 	    COUT << "Running " << cmd << endl;
++	    std::string cmd="hevea -fix "+infile_" &";
+ 	    COUT << "Running " << cmd << '\n';
  	    giac::system_no_deprecation(cmd.c_str());
  	  }
-@@ -749,8 +749,8 @@
+@@ -822,8 +822,8 @@
  	if (pos>=0 && pos<ss){
- 	  out << s << endl;
+ 	  out << s << '\n';
  	  out.close();
--	  COUT << "File " << outfile << " created, now running hevea in background and pgiac " << outfile << endl << "Then I will run pdflatex " << giac::remove_extension(outfile) << endl << "For HTML5 output, you can run\nhevea -fix " << giac::remove_extension(infile) << endl;
+-	  COUT << "File " << outfile << " created, now running hevea in background and pgiac " << outfile << '\n' << "Then I will run pdflatex " << giac::remove_extension(outfile) << '\n' << "For HTML5 output, you can run\nhevea -fix " << giac::remove_extension(infile) << '\n';
 -	  std::string cmd="hevea -fix "+giac::remove_extension(infile)+" &";
-+	  COUT << "File " << outfile << " created, now running hevea and pgiac " << outfile << endl << "Then I will run pdflatex " << giac::remove_extension(outfile) << endl << "For HTML5 output, you can run\nhevea -fix " << giac::remove_extension(infile) << endl;
++	  COUT << "File " << outfile << " created, now running hevea and pgiac " << outfile << '\n' << "Then I will run pdflatex " << giac::remove_extension(outfile) << '\n' << "For HTML5 output, you can run\nhevea -fix " << giac::remove_extension(infile) << '\n';
 +	  std::string cmd="hevea -fix "+giac::remove_extension(infile);
  	  giac::system_no_deprecation(cmd.c_str());
  	  cmd=("pgiac "+outfile+" && pdflatex "+giac::remove_extension(outfile)+" && mv "+giac::remove_extension(outfile)+".pdf "+giac::remove_extension(infile)+".pdf");
- 	  COUT << cmd << endl;
+ 	  COUT << cmd << '\n';

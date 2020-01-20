@@ -1,21 +1,21 @@
 Description: Don't build Files-Excluded
 Author: Ximin Luo <infinity0@debian.org>
 Forwarded: not-needed
---- a/Makefile.am
-+++ b/Makefile.am
+--- giac.orig/Makefile.am
++++ giac/Makefile.am
 @@ -1,6 +1,6 @@
--SUBDIRS = 	src check intl po debianold debian doc examples 
--DIST_SUBDIRS = 	src check intl po debianold debian doc examples 
--EXTRA_DIST = path.h.in setup inst TROUBLES Init.scm compte INSTALACION LEAME.WIN LEAME.ipaq giac.specs giac.specs32 fltk.1.1.changes README.MACOSX pariinl.h changeversion mkosx mkosx10 mkosx3 mkdebian mkdebian2 win2unix.cc addu.cc xcas*.nsi xcas.desktop xcas.xpm xcas.applications README.visualcpp java.README config.h.win win64 mkiphone build_for_iphoneos path.iphone simupath.iphone config.h.iphone config.h.64 config.h.mingw path.mingw configure.mingw README.mingw archive.mingw compile.android mkrpm LISEZMOI.numworks icons/*
+-SUBDIRS = 	src check intl po debianold debian doc examples
+-DIST_SUBDIRS = 	src check intl po debianold debian doc examples
+-EXTRA_DIST = path.h.in setup inst TROUBLES Init.scm compte INSTALACION LEAME.WIN LEAME.ipaq giac.specs giac.specs32 fltk.1.1.changes README.MACOSX pariinl.h changeversion mkosx mkosx10 mkosx3 mkdebian mkdebian2 win2unix.cc addu.cc xcas*.nsi xcas.desktop xcas.xpm xcas.applications README.visualcpp java.README config.h.win config.h.win64 win64 mkiphone build_for_iphoneos path.iphone simupath.iphone config.h.iphone config.h.64 config.h.mingw path.mingw configure.mingw README.mingw archive.mingw compile.android mkrpm LISEZMOI.numworks icons/* README.hevea2mml README.itex2MML
 +SUBDIRS = 	src check intl po doc examples
 +DIST_SUBDIRS = 	src check intl po doc examples
-+EXTRA_DIST = path.h.in setup inst TROUBLES Init.scm compte INSTALACION LEAME.WIN LEAME.ipaq giac.specs giac.specs32 fltk.1.1.changes README.MACOSX pariinl.h changeversion mkosx mkosx10 mkosx3 win2unix.cc addu.cc xcas*.nsi xcas.desktop xcas.xpm xcas.applications README.visualcpp java.README config.h.win win64 mkiphone build_for_iphoneos path.iphone simupath.iphone config.h.iphone config.h.64 config.h.mingw path.mingw configure.mingw README.mingw archive.mingw compile.android mkrpm LISEZMOI.numworks icons/*
++EXTRA_DIST = path.h.in setup inst TROUBLES Init.scm compte INSTALACION LEAME.WIN LEAME.ipaq giac.specs giac.specs32 fltk.1.1.changes README.MACOSX pariinl.h changeversion mkosx mkosx10 mkosx3 win2unix.cc addu.cc xcas*.nsi xcas.desktop xcas.xpm xcas.applications README.visualcpp java.README config.h.win config.h.win64 win64 mkiphone build_for_iphoneos path.iphone simupath.iphone config.h.iphone config.h.64 config.h.mingw path.mingw configure.mingw README.mingw archive.mingw compile.android mkrpm LISEZMOI.numworks icons/* README.hevea2mml README.itex2MML
  
  # Rule to build tar-bzipped distribution package
  $(PACKAGE)-$(VERSION).tar.gz: dist
---- a/configure.in
-+++ b/configure.in
-@@ -431,8 +431,6 @@
+--- giac.orig/configure.in
++++ giac/configure.in
+@@ -467,8 +467,6 @@
  doc/es/Makefile
  doc/fr/Makefile
  doc/el/Makefile
@@ -24,7 +24,7 @@ Forwarded: not-needed
  doc/local/Makefile
  doc/pt/Makefile
  doc/zh/Makefile
-@@ -440,8 +438,6 @@
+@@ -476,8 +474,6 @@
  intl/Makefile
  po/Makefile.in
  examples/Makefile
@@ -33,8 +33,8 @@ Forwarded: not-needed
  ])
  
  echo "Adding link . to giac in src"
---- a/doc/el/Makefile.am
-+++ b/doc/el/Makefile.am
+--- giac.orig/doc/el/Makefile.am
++++ giac/doc/el/Makefile.am
 @@ -1,5 +1,3 @@
 -SUBDIRS = tutoriel casinter
 -DIST_SUBDIRS = tutoriel casinter
@@ -50,7 +50,7 @@ Forwarded: not-needed
  
  html-local: $(HTML_STAMPS)
  pdf-local: $(PDF_LOCAL)
-@@ -74,7 +72,7 @@
+@@ -76,7 +74,7 @@
  
  .tex.stamp:
  #	$(RUN_LATEX2HTML) $< --address '$(GIAC_ADDRESS)'
@@ -59,17 +59,17 @@ Forwarded: not-needed
  	tdir=`echo $< | sed -e 's/\.tex//'`; \
  	imagen -png -pdf -mag 2000 $$tdir; \
  	$(install_sh) -d $$tdir ; \
---- a/doc/Makefile.am
-+++ b/doc/Makefile.am
+--- giac.orig/doc/Makefile.am
++++ giac/doc/Makefile.am
 @@ -1,6 +1,6 @@
  SUBDIRS = 	en es fr el local pt zh de
  DIST_SUBDIRS = 	en es fr el local pt zh de
--XCASHTML = xcasfr.html xcasfrwasm.html xcasen.html *.css *.js giac.wasm logo.png giac.tex giacfr.tex test.tex testfr.tex test.html testfr.html algolycee.html graphtheory-user_manual.pdf
-+XCASHTML = xcasfr.html xcasfrwasm.html xcasen.html *.css *.js logo.png giac.tex giacfr.tex test.tex testfr.tex test.html testfr.html algolycee.html graphtheory-user_manual.pdf
- EXTRA_DIST = aide_cas README index.html $(XCASHTML) dxcas/* pari/*  
+-XCASHTML = xcasfr.html xcasen.html *.css *.js giacwasm.wasm logo.png giac.tex giacfr.tex test.tex testfr.tex test.html testfr.html algolycee.html graphtheory-user_manual.pdf *.sty
++XCASHTML = xcasfr.html xcasen.html *.css *.js logo.png giac.tex giacfr.tex test.tex testfr.tex test.html testfr.html algolycee.html graphtheory-user_manual.pdf *.sty
+ EXTRA_DIST = aide_cas README index.html $(XCASHTML) dxcas/* pari/* castex.tex tortue.tex 
  
  dist_pkgdata_DATA = aide_cas
-@@ -8,12 +8,10 @@
+@@ -9,12 +9,10 @@
  
  install-exec-hook: testfr.html algoseconde.html
  	$(install_sh) -d $(DESTDIR)$(prefix)/share/giac/doc/dxcas
@@ -82,8 +82,8 @@ Forwarded: not-needed
  	$(INSTALL_DATA) $(top_srcdir)/doc/index.html $(DESTDIR)$(prefix)/share/giac/doc/
  	$(INSTALL_DATA) $(top_srcdir)/doc/README $(DESTDIR)$(prefix)/share/giac/doc/
  	ln -sf ../aide_cas $(DESTDIR)$(prefix)/share/giac/doc/aide_cas
---- a/doc/en/Makefile.am
-+++ b/doc/en/Makefile.am
+--- giac.orig/doc/en/Makefile.am
++++ giac/doc/en/Makefile.am
 @@ -1,6 +1,6 @@
  TEX_LOCAL = cascmd_en.tex casinter.tex cas.tex slipres.tex giacxcas.tex tutoriel.tex
  

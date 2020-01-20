@@ -2,23 +2,23 @@ Description: Work around too-old version of hevea in Debian
  It contains some bugs which break the xcas doc build
 Author: Ximin Luo <infinity0@debian.org>
 Bug: https://xcas.univ-grenoble-alpes.fr/forum/viewtopic.php?f=5&t=2108&p=10338#p10338
---- a/src/icas.cc
-+++ b/src/icas.cc
-@@ -523,7 +523,7 @@
+--- giac.orig/src/icas.cc
++++ giac/src/icas.cc
+@@ -561,7 +561,7 @@
  	  out.close();
- 	  COUT << "File " << outfile << " created" << outfile << endl << "Then I will run pdflatex " << giac::remove_extension(outfile) << endl ;
+ 	  COUT << "File " << outfile << " created" << outfile << '\n' << "Then I will run pdflatex " << giac::remove_extension(outfile) << '\n' ;
  	  if (dohevea){
--	    std::string cmd="hevea -fix "+infile_;
+-	    std::string cmd="hevea -fix "+infile_" &";
 +	    std::string cmd="hevea -fix "+infile_+" && sed -i -re 's/\\\\product\\b/\\prod/g' "+infile_+"_.tex";
- 	    COUT << "Running " << cmd << endl;
+ 	    COUT << "Running " << cmd << '\n';
  	    giac::system_no_deprecation(cmd.c_str());
  	  }
-@@ -750,7 +750,7 @@
- 	  out << s << endl;
+@@ -823,7 +823,7 @@
+ 	  out << s << '\n';
  	  out.close();
- 	  COUT << "File " << outfile << " created, now running hevea and pgiac " << outfile << endl << "Then I will run pdflatex " << giac::remove_extension(outfile) << endl << "For HTML5 output, you can run\nhevea -fix " << giac::remove_extension(infile) << endl;
+ 	  COUT << "File " << outfile << " created, now running hevea and pgiac " << outfile << '\n' << "Then I will run pdflatex " << giac::remove_extension(outfile) << '\n' << "For HTML5 output, you can run\nhevea -fix " << giac::remove_extension(infile) << '\n';
 -	  std::string cmd="hevea -fix "+giac::remove_extension(infile);
-+	  std::string cmd="hevea -fix "+giac::remove_extension(infile)+" && sed -i -re 's/\\\\product\\b/\\prod/g' "+giac::remove_extension(infile)+"_.tex";
++	  std::string cmd="hevea -fix "+giac::remove_extension(infile)+ " && sed -i -re 's/\\\\product\\b/\\prod/g' "+giac::remove_extension(infile)+"_.tex";
  	  giac::system_no_deprecation(cmd.c_str());
  	  cmd=("pgiac "+outfile+" && pdflatex "+giac::remove_extension(outfile)+" && mv "+giac::remove_extension(outfile)+".pdf "+giac::remove_extension(infile)+".pdf");
- 	  COUT << cmd << endl;
+ 	  COUT << cmd << '\n';

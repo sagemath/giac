@@ -20,8 +20,8 @@ Author: Ximin Luo <infinity0@debian.org>
 Forwarded: not-needed
 ---
 This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
---- a/doc/algolycee.html
-+++ b/doc/algolycee.html
+--- giac.orig/doc/algolycee.html
++++ giac/doc/algolycee.html
 @@ -58,7 +58,7 @@
   (function () {
    var script = document.createElement("script");
@@ -40,8 +40,8 @@ This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
      document.getElementsByTagName("head")[0].appendChild(script);
    }
    var elem= document.getElementById('controlindex');
---- a/doc/giac.tex
-+++ b/doc/giac.tex
+--- giac.orig/doc/giac.tex
++++ giac/doc/giac.tex
 @@ -1,7 +1,7 @@
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  %% giac/hevea interaction code definitions
@@ -60,7 +60,7 @@ This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
    document.getElementsByTagName("head")[0].appendChild(script);
  })();
  }
-@@ -425,7 +425,7 @@
+@@ -908,7 +908,7 @@
    if (UI.usemathjax){
      var script = document.createElement("script");
      script.type = "text/javascript";
@@ -69,8 +69,8 @@ This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
      document.getElementsByTagName("head")[0].appendChild(script);
    }
    var elem= document.getElementById('controlindex');
---- a/doc/giacfr.tex
-+++ b/doc/giacfr.tex
+--- giac.orig/doc/giacfr.tex
++++ giac/doc/giacfr.tex
 @@ -1,7 +1,7 @@
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  %% giac/hevea interaction code definitions
@@ -89,7 +89,7 @@ This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
    document.getElementsByTagName("head")[0].appendChild(script);
  })();
  }
-@@ -420,7 +420,7 @@
+@@ -906,7 +906,7 @@
    if (UI.usemathjax){
      var script = document.createElement("script");
      script.type = "text/javascript";
@@ -98,18 +98,9 @@ This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
      document.getElementsByTagName("head")[0].appendChild(script);
    }
    var elem= document.getElementById('controlindex');
---- a/doc/testfr.tex
-+++ b/doc/testfr.tex
-@@ -42,7 +42,7 @@
-  (function () {
-   var script = document.createElement("script");
-   script.type = "text/javascript";
--  script.src  = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML";
-+  script.src  = "file:///usr/share/javascript/mathjax/MathJax.js?config=TeX-MML-AM_CHTML";
-   document.getElementsByTagName("head")[0].appendChild(script);
- })();
- }
-@@ -108,19 +108,19 @@
+--- giac.orig/doc/testfr.tex
++++ giac/doc/testfr.tex
+@@ -93,19 +93,19 @@
  
  \section{Utilisation} 
  La commande\verb|\begin{giacjshere}|\index{giacjshere}, 
@@ -132,9 +123,9 @@ This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
  juste avant \verb|\begin{document}|).
  
  Pour cr\'eer une commande en ligne avec r\'eponse en MathML (ou
---- a/doc/xcas.js
-+++ b/doc/xcas.js
-@@ -2414,7 +2414,7 @@
+--- giac.orig/doc/xcas.js
++++ giac/doc/xcas.js
+@@ -2623,7 +2623,7 @@
          if (!UI.usemathjax) {
            var script = document.createElement("script");
            script.type = "text/javascript";
@@ -143,9 +134,9 @@ This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
            document.getElementsByTagName("head")[0].appendChild(script);
            window.setTimeout(UI.setmathjax, 400);
          }
---- a/doc/xcasen.html
-+++ b/doc/xcasen.html
-@@ -3632,7 +3632,7 @@
+--- giac.orig/doc/xcasen.html
++++ giac/doc/xcasen.html
+@@ -3637,7 +3637,7 @@
          (function () {
              var script = document.createElement("script");
              script.type = "text/javascript";
@@ -154,9 +145,9 @@ This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
              document.getElementsByTagName("head")[0].appendChild(script);
          })();
      }
---- a/doc/xcasfr.html
-+++ b/doc/xcasfr.html
-@@ -3800,7 +3800,7 @@
+--- giac.orig/doc/xcasfr.html
++++ giac/doc/xcasfr.html
+@@ -3817,7 +3817,7 @@
          (function () {
              var script = document.createElement("script");
              script.type = "text/javascript";
@@ -165,8 +156,8 @@ This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
              document.getElementsByTagName("head")[0].appendChild(script);
          })();
      }
---- a/doc/xcasfrwasm.html
-+++ b/doc/xcasfrwasm.html
+--- giac.orig/doc/xcasfrwasm.html
++++ giac/doc/xcasfrwasm.html
 @@ -3311,7 +3311,7 @@
   (function () {
    var script = document.createElement("script");
