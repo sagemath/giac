@@ -1,6 +1,9 @@
 // -*- mode:C++ ; compile-command: "g++ -I.. -g -c mathml.cc  -DIN_GIAC -DHAVE_CONFIG_H" -*-
 
 #include "giacPCH.h"
+#if !defined GIAC_HAS_STO_38 && !defined NSPIRE && !defined FXCG && !defined POCKETCAS 
+#include <fstream>
+#endif
 
 #include "gen.h"
 #include "symbolic.h"
@@ -16,7 +19,7 @@
 
 //#include <fcntl.h>
 #include <cstdlib>
-#if !defined NSPIRE && !defined FXCG
+#if !defined NSPIRE && !defined FXCG && !defined KHICAS
 #include <cstdio>
 #if defined VISUALC13 && !defined BESTA_OS
 #undef clock
@@ -39,7 +42,13 @@ using namespace std;
 namespace giac {
 #endif // ndef NO_NAMESPACE_GIAC
 
-#if defined GIAC_HAS_STO_38 || defined NSPIRE || defined FXCG
+#if defined GIAC_HAS_STO_38 || defined NSPIRE || defined FXCG || defined(KHICAS)
+  std::string gen2mathml(const gen & g,GIAC_CONTEXT){
+    return gettext("No mathml support");
+  }
+  gen _mathml(const gen & g,GIAC_CONTEXT){
+    return gensizeerr(gettext("No mathml support"));
+  }
   gen _mathml_error(const gen & g,GIAC_CONTEXT){
     return gensizeerr(gettext("No mathml support"));
   }
@@ -285,7 +294,8 @@ namespace giac {
 	    if(!((mys.feuille._VECTptr->back()==plus_one_half))){
 	      if ((mys.feuille._VECTptr->front().type==_INT_)||(mys.feuille._VECTptr->front().type==_ZINT)){
 	        if  (is_positive(mys.feuille._VECTptr->front(),contextptr))
-	          s += "<mo>&times;</mo>";// F.H: 2*2^n et 22^n, 2*2^(1/7)  mais pas 2*sqrt(2). 
+		  if (s.size()<16 || s.substr(s.size()-16,16)!="<mo>&times;</mo>")
+		    s += "<mo>&times;</mo>";// F.H: 2*2^n et 22^n, 2*2^(1/7)  mais pas 2*sqrt(2). 
 	      }
 	    } 
 	}
@@ -671,9 +681,15 @@ namespace giac {
       return "white";
     }
     int r,g,b;
-    if (color>=0x100 && color<0x17e)
+    if (color>=0x100 && color<0x17e){
       color -= 0x100;
-    arc_en_ciel(color,r,g,b);
+      arc_en_ciel(color,r,g,b);
+    } else {
+      r=8*((color>>11)&0x1f);
+      g=4*((color>>5) &0x3f);
+      b=8*(color & 0x1f);
+      //CERR << color << " " << r << " " << g << " " << b << '\n';
+    }
     return "rgb("+print_INT_(r)+","+print_INT_(g)+","+print_INT_(b)+")";
   }
 
@@ -758,7 +774,7 @@ namespace giac {
     }
     if (xml){
       sprintf(pos,"<?xml version=\"1.0\" encoding=\"iso-8859-1\"?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.2\" ");
-      // sortie<<"<?xml version=\"1.0\" encoding=\"iso-8859-1\"?>"<<endl;
+      // sortie<<"<?xml version=\"1.0\" encoding=\"iso-8859-1\"?>"<<'\n';
       // sortie<<"<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.0\" ";
     }
     else {
@@ -810,11 +826,11 @@ namespace giac {
       // sortie<<"<line x1=\""<<x <<"\" y1=\""<<ymin <<"\" x2=\""<<x <<"\" y2=\""<<ymax << "\" ";
       if(i%5==0){
 	sprintf(pos,"stroke=\"%s\" stroke-width=\"%.5g\" />\n",grid_color2,2*xthickness);
-	// sortie<<"stroke=\""<<grid_color2<<"\"  stroke-width=\""<<2*thickness<<"\" />"<<endl;
+	// sortie<<"stroke=\""<<grid_color2<<"\"  stroke-width=\""<<2*thickness<<"\" />"<<'\n';
       }
       else {
 	sprintf(pos,"stroke=\"%s\" stroke-width=\"%.5g\" />\n",grid_color,xthickness);
-	// sortie<<"stroke=\""<<grid_color<<"\"  stroke-dasharray=\""<<10*thickness<<","<<10*thickness <<"\" stroke-width=\""<<thickness<<"\" />"<<endl;
+	// sortie<<"stroke=\""<<grid_color<<"\"  stroke-dasharray=\""<<10*thickness<<","<<10*thickness <<"\" stroke-width=\""<<thickness<<"\" />"<<'\n';
       }
       pos=buffer+strlen(buffer);
     }
@@ -825,18 +841,18 @@ namespace giac {
       // sortie<<"<line x1=\""<<xmin <<"\" y1=\""<<y <<"\" x2=\""<<xmax <<"\" y2=\""<<y;
       if (i%5==0){
 	sprintf(pos,"stroke=\"%s\" stroke-width=\"%.5g\" />\n",grid_color2,2*ythickness);	
-	// sortie<<"\" stroke=\""<<grid_color2<<"\"  stroke-width=\""<<2*thickness<<"\" />"<<endl;
+	// sortie<<"\" stroke=\""<<grid_color2<<"\"  stroke-width=\""<<2*thickness<<"\" />"<<'\n';
       }
       else {
 	sprintf(pos,"stroke=\"%s\" stroke-width=\"%.5g\" />\n",grid_color,ythickness);
-	// sortie<<"\" stroke=\""<<grid_color<<"\"  stroke-dasharray=\"" <<10*thickness<<","<<10*thickness <<"\" stroke-width=\""<<thickness<<"\" />"<<endl;
+	// sortie<<"\" stroke=\""<<grid_color<<"\"  stroke-dasharray=\"" <<10*thickness<<","<<10*thickness <<"\" stroke-width=\""<<thickness<<"\" />"<<'\n';
       }
       pos=buffer+strlen(buffer);
     }
     //cadre
     sprintf(pos,"<rect stroke=\"black\" stroke-width=\"%.5g\" fill=\"none\" x=\"%.5g\" y=\"%.5g\" width=\"%.5g\" height=\"%.5g\" />",2*std::min(xthickness,ythickness),xmin,ymin,svg_width,svg_height);
     pos=buffer+strlen(buffer);
-    // sortie<<"<rect stroke=\""<<"black"<<"\"  stroke-width=\""<<2*thickness<<"\" fill=\"none\" x=\""<<xmin<<"\" y=\""<<ymin<<"\" width=\""<<svg_width<<"\" height=\""<<svg_height<<"\" />"<<endl;  
+    // sortie<<"<rect stroke=\""<<"black"<<"\"  stroke-width=\""<<2*thickness<<"\" fill=\"none\" x=\""<<xmin<<"\" y=\""<<ymin<<"\" width=\""<<svg_width<<"\" height=\""<<svg_height<<"\" />"<<'\n';  
     // string s=sortie.str();
     return buffer;
   }
@@ -894,17 +910,17 @@ namespace giac {
     char * pos=buffer;
 #if 0
     sprintf(pos,"<rect x=\"%.5g\" y=\"%.5g\" height=\"%.5g\" width=\"%.5g\" stroke=\"none\" fill=\"white\"/\n>\n",xmin-x_scale,ymax,y_scale,svg_width+2*x_scale);
-    // sortie<<"<rect x=\""<<xmin-x_scale<<"\" y=\""<<ymax<<"\" height=\""<<y_scale<<"\" width=\""<<svg_width+2*x_scale<< "\" stroke=\"none\" fill=\"white\"/>"<<endl;
+    // sortie<<"<rect x=\""<<xmin-x_scale<<"\" y=\""<<ymax<<"\" height=\""<<y_scale<<"\" width=\""<<svg_width+2*x_scale<< "\" stroke=\"none\" fill=\"white\"/>"<<'\n';
     pos = buffer+strlen(buffer);
     sprintf(pos,"<rect x=\"%.5g\" y=\"%.5g\" width=\"%.5g\" height=\"%.5g\" stroke=\"none\" fill=\"white\"/\n>\n",xmin-x_scale,ymin,x_scale,svg_height);
-    // sortie<<"<rect x=\""<<xmin-x_scale<<"\" y=\""<<ymin<<"\" width=\""<<x_scale <<"\" height=\""<<svg_height<< "\" stroke=\"none\" fill=\"white\"/>"<<endl;
+    // sortie<<"<rect x=\""<<xmin-x_scale<<"\" y=\""<<ymin<<"\" width=\""<<x_scale <<"\" height=\""<<svg_height<< "\" stroke=\"none\" fill=\"white\"/>"<<'\n';
     pos = buffer+strlen(buffer);
     sprintf(pos,"<rect x=\"%.5g\" y=\"%.5g\" width=\"%.5g\" height=\"%.5g\" stroke=\"none\" fill=\"white\"/\n>\n",xmax,ymin,x_scale*2,svg_height);
-    // sortie<<"<rect x=\""<<xmax<<"\" y=\""<<ymin<<"\" width=\""<<x_scale*2 <<"\" height=\""<<svg_height<<"\" stroke=\"none\" fill=\"white\"/>"<<endl;
+    // sortie<<"<rect x=\""<<xmax<<"\" y=\""<<ymin<<"\" width=\""<<x_scale*2 <<"\" height=\""<<svg_height<<"\" stroke=\"none\" fill=\"white\"/>"<<'\n';
     pos = buffer+strlen(buffer);
     sprintf(pos,"<rect x=\"%.5g\" y=\"%.5g\" width=\"%.5g\" height=\"%.5g\" stroke=\"none\" fill=\"white\"/\n></g>\n",xmin-x_scale,ymin-y_scale,svg_width+2*x_scale,y_scale);
     pos = buffer+strlen(buffer);
-    // sortie<<"<rect x=\""<<xmin-x_scale<<"\" y=\""<<ymin-y_scale<<"\" width=\""<<svg_width+2*x_scale <<"\" height=\""<<y_scale <<"\" stroke=\"none\" fill=\"white\"/>\n</g>"<<endl;
+    // sortie<<"<rect x=\""<<xmin-x_scale<<"\" y=\""<<ymin-y_scale<<"\" width=\""<<svg_width+2*x_scale <<"\" height=\""<<y_scale <<"\" stroke=\"none\" fill=\"white\"/>\n</g>"<<'\n';
 #else
     sprintf(pos,"</g>\n");
     pos = buffer+strlen(buffer);
@@ -926,7 +942,7 @@ namespace giac {
       pos = buffer+strlen(buffer);
       // sortie << setprecision(5)<<"<text x=\""<<x<<"\" y=\""<<ymax+0.6*y_scale<<"\" ";
       // sortie <<" style=\"font-size:"<<fontscale<<"pt; text-anchor:middle;\"";
-      // sortie << ">" << (float)x <<"</text>"<<endl;
+      // sortie << ">" << (float)x <<"</text>"<<'\n';
     } 
     if (xleg){
       sprintf(pos,"<text x=\"%.5g\" y=\"%.5g\" transform=\"scale(%.5g,%.5g)\" style=\"font-size:%.5gpt; text-anchor:start;\">%s</text>\n",xmin/fontscale,(ymax+0.6*y_scale)/ratio/fontscale,fontscale,ratio*fontscale,0.67,greek(p.xlegende).c_str());
@@ -940,7 +956,7 @@ namespace giac {
       pos = buffer+strlen(buffer);
       // sortie<<setprecision(5)<<"<text x=\""<<xmax+0.2*x_scale<<"\" y=\""<<ymax+ymin-y+0.1*y_scale << "\" ";
       // sortie <<"style=\"font-size:"<<fontscale<<"pt\"";
-      // sortie << ">" << (float)y<<"</text>"<<endl;
+      // sortie << ">" << (float)y<<"</text>"<<'\n';
     }
     if (yleg){
       sprintf(pos,"<text x=\"%.5g\" y=\"%.5g\" transform=\"scale(%.5g,%.5g)\" style=\"font-size:%.5gpt; text-anchor:end;\">%s</text>\n",(xmax)/fontscale,(ymin+0.0*y_scale)/ratio/fontscale,fontscale,ratio*fontscale,0.67,greek(p.ylegende).c_str());
@@ -1023,11 +1039,11 @@ namespace giac {
     double dx=xmax-xmin,dy=ymax-ymin,m;
     if (dx<dy) m=dx; else m=dy;
     double res= dx*dy*m*m;
-    //COUT << dx << " " << dy << " " << m << " " << res << endl;
+    //COUT << dx << " " << dy << " " << m << " " << res << '\n';
     res=std::sqrt(res);
-    //COUT << res << endl;
+    //COUT << res << '\n';
     res=std::sqrt(res);
-    // COUT << res << endl;
+    // COUT << res << '\n';
     return res;
   }
   
@@ -1040,16 +1056,26 @@ namespace giac {
     string s= "<path ";
     if (attr.ie){
       double thickness=geo_thickness(xmin,xmax,ymin,ymax)/svg_epaisseur1*attr.width;
-      s = s+"stroke-width=\""+print_DOUBLE_(thickness,5);
+      s = s+"stroke-width=\""+print_DOUBLE_(thickness,5)+"\"";
     }
     else
-      s = s+"vector-effect=\"non-scaling-stroke\"  stroke-width=\""+print_INT_(attr.width);
+      s = s+"vector-effect=\"non-scaling-stroke\"  stroke-width=\""+print_INT_(attr.width)+"\"";
+    if (attr.type_line)
+      s += " stroke-dasharray=\""+print_INT_(attr.type_line)+"\"";
     if (attr.fill_polygon)
-      s = s+"\" fill=\""+color_string(attr)+"\" d=\"M";
+      s = s+" fill=\""+color_string(attr)+"\" d=\"M";
     else
-      s = s+"\" stroke=\""+color_string(attr)+"\" fill=\"none\" d=\"M";
+      s = s+" stroke=\""+color_string(attr)+"\" fill=\"none\" d=\"M";
     g=evalf(g,1,contextptr);
     vecteur v=*(g._VECTptr);
+    for (i=0;i<int(v.size());++i){
+      gen R,I;
+      reim(v[i],R,I,contextptr);
+      if (is_inf(R)||is_inf(I)){
+	v.erase(v.begin()+i);
+	--i;
+      }
+    }
     for (i=0 ; i<signed(v.size()) ; i++){
       s=s+re(v[i],contextptr).print(contextptr)+" "+im(v[i],contextptr).print(contextptr)+" ";
       if (i%2==0)
@@ -1084,17 +1110,25 @@ namespace giac {
     A=evalf(A,1,contextptr); B=evalf(B,1,contextptr);
     if (attr.ie){
       double thickness=geo_thickness(xmin,xmax,ymin,ymax)/svg_epaisseur1*attr.width;
-      s= "<line stroke-width=\""+print_DOUBLE_(thickness,5);
+      s+= "<line stroke-width=\""+print_DOUBLE_(thickness,5)+"\"";
     }
     else
-      s= "<line vector-effect=\"non-scaling-stroke\" stroke-width=\""+print_INT_(attr.width);
-    s = s+"\" stroke=\""+color_string(attr)+"\" x1=\""
+      s+= "<line vector-effect=\"non-scaling-stroke\" stroke-width=\""+print_INT_(attr.width)+"\"";
+    if (attr.type_line)
+      s += " stroke-dasharray=\""+print_INT_(attr.type_line)+"\"";
+    gen reB,imB;
+    reim(B,reB,imB,contextptr);
+    s = s+" stroke=\""+color_string(attr)+"\" x1=\""
       + re(A,contextptr).print(contextptr)+"\" y1=\""
       + im(A,contextptr).print(contextptr)+"\" x2=\""
-      + re(B,contextptr).print(contextptr)+"\" y2=\""
-      + im(B,contextptr).print(contextptr)+"\"/>\n";
-    //CERR << s << endl;
-    s = s+svg_text(B,legende,attr,xmin,xmax,ymin,ymax,contextptr);
+      + reB.print(contextptr)+"\" y2=\""
+      + imB.print(contextptr)+"\"/>\n";
+    //CERR << s << '\n';
+    if (is_positive((reB-xmax)*(reB-xmin),contextptr) ||
+	is_positive((imB-ymax)*(imB-ymin),contextptr))
+      s = s+svg_text((A+B)/2,legende,attr,xmin,xmax,ymin,ymax,contextptr);
+    else
+      s = s+svg_text(B,legende,attr,xmin,xmax,ymin,ymax,contextptr);
     return s;
   }
 
@@ -1120,11 +1154,11 @@ namespace giac {
 	double dxp=-dy/attr.ysurx,dyp=dx*attr.ysurx; // apparent perpendicular
 	dx = dx*std::sqrt(3.0);
 	dy = dy*std::sqrt(3.0);
-	//CERR << "step3 " << dx << " " << dxp << " " << dx+dxp << " " << dy << endl;
+	//CERR << "step3 " << dx << " " << dxp << " " << dx+dxp << " " << dy << '\n';
 	double dx1=dx+dxp,dx2=dx-dxp,dy1=dy+dyp,dy2=dy-dyp;
 	gen C=B+gen(dx1,dy1);
 	gen D=B+gen(dx2,dy2);
-	//CERR << C << " " << D << endl;
+	//CERR << C << " " << D << '\n';
 	s += svg_segment(B,C,attr,"",xmin,xmax,ymin,ymax,contextptr);
 	s += svg_segment(B,D,attr,"",xmin,xmax,ymin,ymax,contextptr);
       }
@@ -1145,12 +1179,13 @@ namespace giac {
     gen di,dr;
     reim(d01,dr,di,contextptr);
     double did=di._DOUBLE_val,drd=dr._DOUBLE_val;
-    // COUT << center << " " << d01 << " " << drd << " " << did << endl;
+    // COUT << center << " " << d01 << " " << drd << " " << did << '\n';
     double r=std::sqrt(drd*drd+did*did)/2.0;
-    // COUT << r << endl;
+    // COUT << r << '\n';
     double a1=evalf_double(angle1,1,contextptr)._DOUBLE_val+rot;
     double a2=evalf_double(angle2,1,contextptr)._DOUBLE_val+rot;
-    if (a2<a1) std::swap(a1,a2);
+    bool echange=a2<a1;
+    if (echange) std::swap(a1,a2);
     bool arc=std::abs(a2-a1-2*M_PI)>1e-4;
     if (arc){ // bezier curve is safer...
       int n=100;
@@ -1173,26 +1208,32 @@ namespace giac {
 	}
       }
       if (attr.type_line>4){
-	reverse(v.begin(),v.end());
-	s=svg_vecteur(v[v.size()/2],v[v.size()/2+1],attr,"",xmin,xmax,ymin,ymax,contextptr);
+	//reverse(v.begin(),v.end());
+	if (echange)
+	  s=svg_vecteur(v[v.size()/2+1],v[v.size()/2],attr,"",xmin,xmax,ymin,ymax,contextptr);
+	else
+	  s=svg_vecteur(v[v.size()/2],v[v.size()/2+1],attr,"",xmin,xmax,ymin,ymax,contextptr);
       }
       return s=s+svg_bezier_curve(v,attr,legende,xmin,xmax,ymin,ymax,contextptr);
       // return svg_bezier_curve(v,attr,legende,xmin,xmax,ymin,ymax,contextptr);
     }
     s= string(arc?"<path ":"<circle ");
     if (attr.ie){
-      // COUT << xmin << " " << xmax << " " << ymin << " " << ymax << " " << svg_epaisseur1 << " " << attr.width << endl;
+      // COUT << xmin << " " << xmax << " " << ymin << " " << ymax << " " << svg_epaisseur1 << " " << attr.width << '\n';
       double thickness=geo_thickness(xmin,xmax,ymin,ymax)/svg_epaisseur1*attr.width;
-      // COUT << thickness << endl;
+      // COUT << thickness << '\n';
       s = s+" stroke-width=\""+print_DOUBLE_(thickness,5)+"\" stroke=\""+color_string(attr);
     }
     else
       s = s+"vector-effect=\"non-scaling-stroke\" stroke=\""+color_string(attr)+"\"  stroke-width=\""+print_INT_(attr.width);
-    // COUT << s << endl;
+    s += "\"";
+    if (attr.type_line)
+      s += " stroke-dasharray=\""+print_INT_(attr.type_line)+"\"";
+    // COUT << s << '\n';
     if (attr.fill_polygon)
-      s = s+"\" fill=\""+color_string(attr)+"\" ";
+      s = s+" fill=\""+color_string(attr)+"\" ";
     else
-      s = s+"\" fill=\"none\" ";
+      s = s+" fill=\"none\" ";
     if (arc){
       // arc of circle: compute start.x, start.y, end.x end.y
       // from polar coord (radius,a1) and (radius,a2)
@@ -1211,7 +1252,7 @@ namespace giac {
       if (attr.fill_polygon)
 	s = s+" L "+print_DOUBLE_(cx,5)+" "+print_DOUBLE_(cy,5)+" Z";
       s = s+"\" />\n";
-      //CERR << s << endl;
+      //CERR << s << '\n';
     }
     else 
       s = s + "cx=\""+centerx.print(contextptr)+"\" cy=\""
@@ -1220,7 +1261,7 @@ namespace giac {
 	+ "\" />\n";
     if (legende!="")
       s = s+svg_text(evalf(center+r,1,contextptr),legende,attr,xmin,xmax,ymin,ymax,contextptr);
-    // COUT << s << endl;
+    // COUT << s << '\n';
     return s;
   }
 
@@ -1254,12 +1295,12 @@ namespace giac {
     // recherche de l'??quation de la droite
     if (is_zero(eval(re(A,contextptr)-re(B,contextptr),eval_level(contextptr),contextptr))){
       gen x=re(A,contextptr);
-      C=x+i*ymin; D=x+i*ymax;
+      C=x+ymin*i; D=x+ymax*i;
     } else {
       gen a=eval((im(A,contextptr)-im(B,contextptr))/(re(A,contextptr)-re(B,contextptr)),eval_level(contextptr),contextptr);
       gen b=eval(im(A,contextptr)-a*re(A,contextptr),eval_level(contextptr),contextptr);
-      C=xmin+i*(a*xmin+b);
-      D=xmax+i*(a*xmax+b);
+      C=xmin+i*(xmin*a+b);
+      D=xmax+i*(xmax*a+b);
     }
     return svg_segment(C,D,attr,legende,xmin,xmax,ymin,ymax,contextptr);
   }
@@ -1274,17 +1315,17 @@ namespace giac {
     if (is_zero(reA-reB)){
       gen x=reA;
       if (is_positive(imB-imA,contextptr))
-	C=x+i*ymax;
+	C=x+ymax*i;
       else
-	C=x+i*ymin;
+	C=x+ymin*i;
     } 
     else {
       gen a=(imB-imA)/(reB-reA);
       gen b=imA-a*reA;
       if (is_positive(reB-reA,contextptr))
-	C=xmax+i*(a*xmax+b);
+	C=xmax+i*(xmax*a+b);
       else
-	C=xmin+i*(a*xmin+b); 
+	C=xmin+i*(xmin*a+b); 
     }
     return svg_segment(A,C,attr,legende,xmin,xmax,ymin,ymax,contextptr);
   }
@@ -1301,14 +1342,16 @@ namespace giac {
       s= "<polyline ";
     if (attr.ie){
       double thickness=geo_thickness(xmin,xmax,ymin,ymax)/svg_epaisseur1*attr.width;
-      s = s+"stroke-width=\""+print_DOUBLE_(thickness,5);
+      s = s+"stroke-width=\""+print_DOUBLE_(thickness,5)+"\"";
     }
     else
-      s = s+"vector-effect=\"non-scaling-stroke\"  stroke-width=\""+print_INT_(attr.width);
+      s = s+"vector-effect=\"non-scaling-stroke\"  stroke-width=\""+print_INT_(attr.width)+"\"";
+    if (attr.type_line)
+      s += " stroke-dasharray=\""+print_INT_(attr.type_line)+"\"";
     if (attr.fill_polygon)
-      s = s+"\" fill=\""+color_string(attr)+"\" points=\"";
+      s = s+" fill=\""+color_string(attr)+"\" points=\"";
     else
-      s = s+"\" stroke=\""+color_string(attr)+"\" fill=\"none\" points=\"";
+      s = s+" stroke=\""+color_string(attr)+"\" fill=\"none\" points=\"";
     for (i=0 ; i<signed(v.size())-1 ; i++){
       s = s+re(evalf(v[i],1,contextptr),contextptr).print(contextptr)+" "+im(evalf(v[i],1,contextptr),contextptr).print(contextptr)+", ";
     }
@@ -1397,7 +1440,7 @@ namespace giac {
       if (v[0].type==_SYMB){ 
 	symbolic figure=*v[0]._SYMBptr; 
 	if (figure.sommet == at_curve ){
-	  //CERR << attr.ysurx << endl;
+	  //CERR << attr.ysurx << '\n';
 	  gen curve=figure.feuille[1];
 	  string s;
 	  if (type_line>4 && curve.type==_VECT && curve._VECTptr->size()>2){
@@ -1486,7 +1529,7 @@ namespace giac {
       gen g1=(*g._VECTptr)[1],g0=g._VECTptr->front();
       if (g1.type==_STRNG){
 	ofstream of(g1._STRNGptr->c_str());
-	of << gen2svg(g0,contextptr,false) << endl;
+	of << gen2svg(g0,contextptr,false) << '\n';
 	return plus_one;
       }
       if (g1==1){
@@ -1904,7 +1947,7 @@ namespace giac {
 #ifndef EMCC
     if (g.type==_VECT && g.subtype==_SEQ__VECT && g._VECTptr->size()>1 && (*g._VECTptr)[1].type==_STRNG && *((*g._VECTptr)[1]._STRNGptr)!="Done"){
       ofstream of((*g._VECTptr)[1]._STRNGptr->c_str());
-      of << gen2mathmlfull(g._VECTptr->front(),contextptr) << endl;
+      of << gen2mathmlfull(g._VECTptr->front(),contextptr) << '\n';
       return plus_one;
     }
 #endif
@@ -1935,7 +1978,7 @@ namespace giac {
     vecteur &v=*g._VECTptr; 
     if (g.type==_VECT && g.subtype==_SEQ__VECT && g._VECTptr->size()>2 && (*g._VECTptr)[2].type==_STRNG){
       ofstream of((*g._VECTptr)[2]._STRNGptr->c_str());
-      of << spread2mathmlfull(*(v[0]._VECTptr), is_one(v[1]),contextptr) << endl;
+      of << spread2mathmlfull(*(v[0]._VECTptr), is_one(v[1]),contextptr) << '\n';
       return plus_one;
     }
     return string2gen(spread2mathmlfull(*(v[0]._VECTptr) , is_one(v[1]),contextptr));

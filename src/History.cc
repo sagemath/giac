@@ -237,7 +237,7 @@ namespace xcas {
 	ofstream of((giac::home_directory()+Xcas_recent_filenames_filename).c_str());
 #endif
 	for (unsigned i=0;i<Xcas_recent_filenames.size();++i)
-	  of << Xcas_recent_filenames[i] << endl;
+	  of << Xcas_recent_filenames[i] << '\n';
 	of.close();
       }
     }
@@ -456,13 +456,13 @@ namespace xcas {
 	size_t s=arg._VECTptr->size();
 	if ((s==2 || s==3) && !n._IDNTptr->in_eval(0,n,n1,contextptr,true))
 	  *logptr(contextptr) << gettext("If you want to create a point ") << n 
-			      << gettext(" with coordinates ") << arg << endl
-			      << gettext("the right command is ") << n <<":=point(" << arg << ")" << endl;
+			      << gettext(" with coordinates ") << arg << '\n'
+			      << gettext("the right command is ") << n <<":=point(" << arg << ")" << '\n';
       }
     }
-    if (g.is_symb_of_sommet(at_equal) && g._SYMBptr->feuille.type==_VECT && g._SYMBptr->feuille._VECTptr->size()==2 && g._SYMBptr->feuille._VECTptr->front().type!=_INT_){
+    if (python_compat(contextptr)==0 && g.is_symb_of_sommet(at_equal) && g._SYMBptr->feuille.type==_VECT && g._SYMBptr->feuille._VECTptr->size()==2 && g._SYMBptr->feuille._VECTptr->front().type!=_INT_){
       if (g._SYMBptr->feuille._VECTptr->front().is_symb_of_sommet(at_at) || g._SYMBptr->feuille._VECTptr->front().is_symb_of_sommet(at_of) || g._SYMBptr->feuille._VECTptr->front().type!=_SYMB)
-	*logptr(contextptr) << gettext("Warning evaluating = at top level, you must use := to assign ") << g._SYMBptr->feuille._VECTptr->back() << gettext(" to ") << g._SYMBptr->feuille._VECTptr->front() << gettext(" or == to test equality") << endl;
+	*logptr(contextptr) << gettext("Warning evaluating = at top level, you must use := to assign ") << g._SYMBptr->feuille._VECTptr->back() << gettext(" to ") << g._SYMBptr->feuille._VECTptr->front() << gettext(" or == to test equality") << '\n';
     }
     return equaltosto(g,contextptr);
   }
@@ -507,7 +507,7 @@ namespace xcas {
       if (ed)
 	ed->_g=g;
       if (giac::first_error_line(contextptr))
-	*logptr(contextptr) << gettext("Syntax compatibility mode ") << print_program_syntax(xcas_mode(contextptr)) << gettext("\nParse error line ") << giac::first_error_line(contextptr) + gettext(" column ")+print_INT_(giac::lexer_column_number(contextptr))+  gettext(" at ")  << giac::error_token_name(contextptr) ;
+	*logptr(contextptr) << gettext("Syntax compatibility mode ") << print_program_syntax(xcas_mode(contextptr)) << gettext("\nParse error line ") << giac::first_error_line(contextptr) << gettext(" column ") << print_INT_(giac::lexer_column_number(contextptr)) <<  gettext(" at ")  << giac::error_token_name(contextptr) ;
       return 1;
     }
     if (Figure * f = dynamic_cast<Figure *>(w)){
@@ -856,7 +856,7 @@ namespace xcas {
       current.push_back(child(i));
       // cerr << child(i) << " ";
     }
-    // cerr << endl;
+    // cerr << '\n';
     int us=undo_history.size();
     if (us>undo_position)
       undo_history.erase(undo_history.begin()+undo_position,undo_history.end());
@@ -996,7 +996,7 @@ namespace xcas {
 #endif
 		 );
     if (newh<H){
-      cerr << "Too many large widgets. Compressing" << endl;
+      cerr << "Too many large widgets. Compressing" << '\n';
       double ratio=double(newh)/H;
       newh=0;
       int y0=y(),hh;
@@ -1012,7 +1012,7 @@ namespace xcas {
       return false;
     int oldh=h();
     if (_resize_above){ // if(newh>oldh)
-      // cerr << newh-h() << endl;
+      // cerr << newh-h() << '\n';
       increase_size(this,newh-oldh);
     }
     else
@@ -1042,7 +1042,7 @@ namespace xcas {
       init_sizes();
     if (!doing_eval)
       parent_redraw(this);
-    // cerr << "resize " << this << " " << newh << " " << h() << " " << int(damage()) << endl;
+    // cerr << "resize " << this << " " << newh << " " << h() << " " << int(damage()) << '\n';
     return true;
   }
 
@@ -1076,7 +1076,7 @@ namespace xcas {
     for (int i=0;i<n;++i,++a){
       Fl_Widget * tmp = *a;
       if (Fl_Window * win = dynamic_cast<Fl_Window *>(tmp)){
-	cerr << win->x()<< " " << cx << " " << win->y()<< " " << cy << " " << win->w() << " " << cw << " " << win->h() << " " << ch << endl; 
+	cerr << win->x()<< " " << cx << " " << win->y()<< " " << cy << " " << win->w() << " " << cw << " " << win->h() << " " << ch << '\n'; 
 	if (win->x()<cx || win->y()<cy || win->x()+win->w() >cx+cw || win->y()+win->h() >cy+ch )
 	  win->hide();
 	else {
@@ -1097,7 +1097,7 @@ namespace xcas {
     fl_clip_box(x(),y(),w(),h(),clip_x,clip_y,clip_w,clip_h);
     if (!clip_w || !clip_h)
       return;
-    // cerr << this << " " << x() << " " << y() << " " << w() << " " << h() << " " << clip_x << " " << clip_y << " " << clip_w << " " << clip_h << " " << int(damage()) << endl;
+    // cerr << this << " " << x() << " " << y() << " " << w() << " " << h() << " " << clip_x << " " << clip_y << " " << clip_w << " " << clip_h << " " << int(damage()) << '\n';
     fl_push_clip(clip_x,clip_y,clip_w,clip_h);
     // does not work...
     // hide_show_windows(this,clip_x,clip_y,clip_w,clip_h);
@@ -1124,7 +1124,7 @@ namespace xcas {
       }
     }
     if (modif){
-      // cerr << "init_sizes" << endl;
+      // cerr << "init_sizes" << '\n';
       init_sizes();
     }
     // Redraw widgets
@@ -1576,7 +1576,7 @@ namespace xcas {
     if (!pack->_modified || (input && input->visible()))
       return false;
     if (debug_infolevel)
-      cerr << "Autosaving " << autosave_filename << endl;
+      cerr << "Autosaving " << autosave_filename << '\n';
     bool res=pack->save_as(autosave_filename.c_str(),0,false,warn_user,false);
     pack->modified(false);
     return res;
@@ -1728,7 +1728,7 @@ namespace xcas {
       string message=string(gettext("Unable to open file "))+filename;
       if (warn_user)
 	fl_alert("%s",message.c_str());
-      cerr << message << endl;
+      cerr << message << '\n';
       if (url){
 	delete url;
 	url=0;
@@ -1806,6 +1806,97 @@ namespace xcas {
     return res;
   }
 
+  string casio2xws(const char * s,int ss,int l,GIAC_CONTEXT){
+    int pos=0;
+#if 0
+    ofstream of("log.xws");
+#else
+#ifdef HAVE_SSTREAM
+    ostringstream of;
+#else
+    ostrstream of;
+#endif
+#endif
+    int x=49,y=87,w=626,h=l+1;
+    unsigned const char * ptr=(unsigned const char*)s;
+    int L=((ptr[0]*256+ptr[1])*256+ptr[2])*256+ptr[3]; ptr+=4; pos+=4;
+    char buf_mode[L+1];
+    strncpy(buf_mode,(const char *)ptr,L); ptr+=L; pos+=L;
+    buf_mode[L]=0;
+#if 1
+    python_compat(0,contextptr);
+    gen vars(buf_mode,contextptr);
+    vars=eval(vars,1,contextptr);
+#else
+    int dh=5+h*(1+count(buf_mode,'\n'));
+    of << "// fltk 7Fl_Tile " << x << " " << y << " "<< w << " " << dh << '\n';
+    of << "[" << '\n';
+    of << "// fltk N4xcas16Xcas_Text_EditorE "<< x << " " << y << " "<< w << " " << dh << " " << h << " " << 0 << '\n';
+    y += dh;
+    of << L << " ," << '\n' << buf_mode << "," << '\n' << "]\n,\n";
+#endif
+    L=((ptr[0]*256+ptr[1])*256+ptr[2])*256+ptr[3]; ptr+=4; 
+    char buf_script[L+1];
+    strncpy(buf_script,(const char *)ptr,L); ptr+=L; pos+=L;
+    buf_script[L]=0;
+    int dh=50+h*(1+count(buf_script,'\n'));
+    of << "// fltk 7Fl_Tile " << x << " " << y << " "<< w << " " << dh << '\n';
+    of << "[" << '\n';
+    of << "// fltk N4Xcas7EditeurE "<< x << " " << y << " "<< w << " " << dh << " " << h << " " << 0 << '\n';
+    of << L << " ," << '\n' << buf_script << "," <<'\n' << "]\n,\n";
+    y += dh;
+    for (;pos<ss;){
+      L=ptr[0]*256+ptr[1]; ptr+=2; pos+=2;
+      if (L==0) break;
+      // ptr[0],ptr[1] cursor position ignored
+      int type=ptr[2]; ptr+=4; pos+=4;
+      char buf_[L+1];
+      char * buf=buf_;
+      strncpy(buf,(const char *)ptr,L); ptr+=L; pos+=L;
+      buf[L]=0;
+      dh=5+h*(1+count(buf,'\n'));
+      bool comment=false;
+      if (L>=2){
+	if (buf[0]=='#'){
+	  comment=true;
+	  buf++;
+	  L--;
+	}
+	if (!comment && buf[0]=='/') {
+	  if (buf[1]=='/'){
+	    comment=true;
+	    buf++;
+	    L-=2;
+	  }
+	  else {
+	    if (buf[1]=='*'){
+	      string s(string(buf).substr(2,L-4));
+	      strcpy(buf,s.c_str());
+	      comment=true;
+	      L-=4;
+	    }
+	  }
+	}
+      }
+      if (type==0){
+	of << "// fltk 7Fl_Tile " << x << " " << y << " "<< w << " " << dh << '\n';
+	of << "[" << '\n';
+	of << (comment?"// fltk N4xcas23Comment_Multiline_InputE ":"// fltk N4xcas16Xcas_Text_EditorE ")<< x << " " << y << " "<< w << " " << dh << " " << h << " " << 0 << '\n';
+	if (comment)
+	  of << replace(buf,'\n','£');
+	else
+	  of << L << " ," << '\n' << buf << "," ;
+	of << '\n' << "]\n,\n";
+	y += dh;
+      }
+    }
+#if 0
+    return "";
+#else
+    return of.str();
+#endif
+  }
+
   // Maple worksheet translate, returns new y position
   int mws2xws(istream & inf,ostream & of,int x,int y,int w,int h){
     string mapletxt;
@@ -1822,9 +1913,9 @@ namespace xcas {
 #endif
 	in_mws_translate(inf,os);
 	int dh=5+h*(1+count(string(os.str()).c_str(),'\n'));
-	of << "// fltk 7Fl_Tile " << x << " " << y << " "<< w << " " << dh << endl;
-	of << "[" << endl;
-	of << "// fltk maple_Multiline_Input_tab "<< x << " " << y << " "<< w << " " << dh << endl;
+	of << "// fltk 7Fl_Tile " << x << " " << y << " "<< w << " " << dh << '\n';
+	of << "[" << '\n';
+	of << "// fltk maple_Multiline_Input_tab "<< x << " " << y << " "<< w << " " << dh << '\n';
 	y += dh;
 	of << replace(os.str(),'\n','£');
 	of << "\n,\n]\n";
@@ -1839,9 +1930,9 @@ namespace xcas {
 #endif
 	  in_mws_translate(inf,os);
 	  int dh=5+h*(1+count(string(os.str()).c_str(),'\n'));
-	  of << "// fltk 7Fl_Tile " << x << " " << y << " "<< w << " " << dh << endl;
-	  of << "[" << endl;
-	  of << "// fltk maple_Multiline_Input "<< x << " " << y << " "<< w << " " << dh << endl;
+	  of << "// fltk 7Fl_Tile " << x << " " << y << " "<< w << " " << dh << '\n';
+	  of << "[" << '\n';
+	  of << "// fltk maple_Multiline_Input "<< x << " " << y << " "<< w << " " << dh << '\n';
 	  y += dh;
 	  of << replace(os.str(),'\n','£');
 	  of << "\n,\n]\n";
@@ -1891,7 +1982,7 @@ namespace xcas {
 	new_url(newfile);
       string xcasti=remove_extension(newfile)+".ti";
       ofstream out(xcasti.c_str());
-      out << tmp << endl;
+      out << tmp << '\n';
       out.close();
       History_Fold * o = get_history_fold(this);
       if (o){
@@ -1954,8 +2045,13 @@ namespace xcas {
     }
     string s;
     char c;
-    while (1){
+    bool casio=false;
+    int POS;
+    for (POS=0;;++POS){
       c=fgetc(f);
+      if (POS==0 && c==0){
+	casio=true;
+      }
       if (feof(f))
 	break;
       s += c;
@@ -2033,6 +2129,10 @@ namespace xcas {
 	fl_message("%s",gettext("Translating maple worksheet and setting compatibility mode to maple"));
 	xcas_mode(contextptr)=1;
       }
+      new_url((remove_extension(urlname)+".xws").c_str());
+    }
+    if (casio && ss>4){
+      s=casio2xws(s.c_str(),POS,fontsize,contextptr);
       new_url((remove_extension(urlname)+".xws").c_str());
     }
     bool res= _insert(this,s.c_str(),s.size(),before_position);
@@ -2457,7 +2557,7 @@ namespace xcas {
     // If this a concurrent call to a thread_eval in the same context
     // we do nothing
     if (is_context_busy(hp->contextptr)){
-      *logptr(hp->contextptr) << "Thread is busy. Try again later." << endl;
+      *logptr(hp->contextptr) << "Thread is busy. Try again later." << '\n';
       return;
     }
 #endif
@@ -2545,6 +2645,8 @@ namespace xcas {
 
   string mode2extension(int mode){
     switch (mode){
+    case -1:
+      return "xw";
     case 1:
       return "map";
     case 2:
@@ -2558,24 +2660,67 @@ namespace xcas {
     }
   }
 
+  string khicas_state(GIAC_CONTEXT){
+    giac::gen g(giac::_VARS(-1,contextptr)); 
+    int b=python_compat(contextptr);
+    python_compat(0,contextptr);
+    string s(g.print(contextptr));
+    python_compat(b,contextptr);
+    // if (b==0)  b=1; // impose Python mode
+    s += "; python_compat(";
+    s +=  giac::print_INT_(b);
+    s += ");angle_radian(";
+    s += angle_radian(contextptr)?'1':'0';
+    s += ");";
+    return s;
+  }
+
+  void endian_exchange(unsigned & l){
+    unsigned char * ptr=(unsigned char *)&l;
+    unsigned char c=ptr[0];
+    ptr[0]=ptr[3];
+    ptr[3]=c;
+    c=ptr[1];
+    ptr[1]=ptr[2];
+    ptr[2]=c;
+  }
+
+  void endian_exchange(unsigned short & l){
+    unsigned char * ptr=(unsigned char *)&l;
+    unsigned char c=ptr[0];
+    ptr[0]=ptr[1];
+    ptr[1]=c;
+  }
+
   void save_as_text(ostream & of,int mode,History_Pack * pack){
-    bool python=mode>=256;
-    mode = mode & 0xff;
     const giac::context * contextptr=pack?pack->contextptr:context0;
+    bool casio=mode==-1;
+    bool python=mode>=256;
+    if (casio){
+      mode=0;
+      //python=true;
+    }
+    mode = mode & 0xff;
     int save_maple_mode=xcas_mode(contextptr);
     int save_python=python_compat(contextptr);
     python_compat(python,contextptr);
     int n=pack->children();
+    vector<string> casiosave;
+    string casioedit;
     for (int i=0;i<n;i++){
       if (!of)
 	break;
       Fl_Widget * wid=pack->child(i);
       if (History_Fold * hf=dynamic_cast<History_Fold *>(wid)){
-	save_as_text(of,mode,hf->pack);
+	if (!casio)
+	  save_as_text(of,mode,hf->pack);
 	continue;
       }
       Fl_Group * g;
+      Fl_Widget *wid2=0;
       while ( (g=dynamic_cast<Fl_Group *>(wid)) ){ 
+	if (g->children()>2)
+	  wid2=g->child(g->children()-1);
 	if (Figure * fig=dynamic_cast<Figure *>(g))
 	  break;
 	if (Editeur * ed=dynamic_cast<Editeur *>(wid))
@@ -2588,41 +2733,103 @@ namespace xcas {
 	  break;
       }
       if (Editeur * ed=dynamic_cast<Editeur *>(wid)){
-	xcas_mode(contextptr)=mode;
-	gen g(ed->value(),contextptr);
-	if (g.is_symb_of_sommet(at_nodisp))
-	  g=g._SYMBptr->feuille;
-	if (g.is_symb_of_sommet(at_sto) && python_compat(contextptr))
-	  g=g._SYMBptr->feuille[0];
-	of << unlocalize(g.print(contextptr)) << endl;
-	xcas_mode(contextptr)=save_maple_mode;
+	if (casio)
+	  casioedit+=unlocalize(ed->value())+'\n';
+	else {
+	  xcas_mode(contextptr)=mode;
+	  gen g(ed->value(),contextptr);
+	  if (g.is_symb_of_sommet(at_nodisp))
+	    g=g._SYMBptr->feuille;
+	  if (g.is_symb_of_sommet(at_sto) && python_compat(contextptr))
+	    g=g._SYMBptr->feuille[0];
+	  string s(unlocalize(g.print(contextptr)));
+	  of << s << '\n';
+	  xcas_mode(contextptr)=save_maple_mode;
+	}
       }
       if (Xcas_Text_Editor * xed=dynamic_cast<Xcas_Text_Editor *>(wid)){
 	xcas_mode(contextptr)=mode;
-	of << unlocalize(xed->value()) << endl;
+	string s(unlocalize(xed->value()));
+	if (casio){
+	  casiosave.push_back(s);
+	  if (Equation * eq=dynamic_cast<Equation *>(wid2))
+	    casiosave.push_back(eq->get_data().print(contextptr));
+	  else {
+	    if (Fl_Group * gr=dynamic_cast<Fl_Group *>(wid2)){
+	      if (gr->children()){
+		if (Graph2d * g=dynamic_cast<Graph2d *>(gr->child(0)))
+		  casiosave.push_back("Graphic object");
+	      }
+	    }
+	    else casiosave.push_back("");
+	  }
+	}
+	else
+	  of << s << '\n';
 	xcas_mode(contextptr)=save_maple_mode;
       }
       if (Figure * fig=dynamic_cast<Figure *>(g)){
-	save_as_text(of,mode,fig->geo->hp);
+	if (!casio)
+	  save_as_text(of,mode,fig->geo->hp);
 	continue;
       }
-      if (Comment_Multiline_Input * co=dynamic_cast<Comment_Multiline_Input *>(wid))
-	of << (mode==1?"++ ":"/* ") << co->value() << (mode==1?" ++":" */") << endl;
+      if (Comment_Multiline_Input * co=dynamic_cast<Comment_Multiline_Input *>(wid)){
+	if (casio){
+	  casiosave.push_back("/*"+string(co->value())+"*/");
+	  casiosave.push_back("");
+	}
+	else
+	  of << (mode==1?"++ ":"/* ") << co->value() << (mode==1?" ++":" */") << '\n';
+      }
       if (Multiline_Input_tab * mi=dynamic_cast<Multiline_Input_tab *>(wid)){
-	if (strlen(mi->value())){
+	if (!casio && strlen(mi->value())){
 	  gen tmp=mi->g();
 	  xcas_mode(contextptr)=mode;
-	  of << tmp.print(contextptr) << " ;" << endl;
+	  of << tmp.print(contextptr) << " ;" << '\n';
 	  xcas_mode(contextptr)=save_maple_mode;
 	}
       }
       if (Equation * eq=dynamic_cast<Equation *>(wid)){
 	xcas_mode(contextptr)=mode;
-	of << eq->get_data().print(contextptr) << " ;" << endl;
+	string s(eq->get_data().print(contextptr));
+	if (casio){
+	  casiosave.push_back(s);
+	  casiosave.push_back("");
+	}
+	else
+	  of << s << " ;" << '\n';
 	xcas_mode(contextptr)=save_maple_mode;
       }
     }
     python_compat(save_python,contextptr);
+    if (!casio) return;
+    // output in casio mode
+    string s(khicas_state(contextptr));
+    unsigned l=s.size();
+    endian_exchange(l);
+    of.write((char *)&l,4);
+    of.write((const char *)s.c_str(),s.size());
+    l=casioedit.size();
+    endian_exchange(l);
+    of.write((char *)&l,4);
+    of.write((const char *)casioedit.c_str(),casioedit.size());
+    for (int i=0;i<casiosave.size();++i){
+      // assume 1 in/1 out
+      string & s=casiosave[i];
+      unsigned short l=s.size();
+      if (l==0) continue;
+      endian_exchange(l);
+      of.write((char *)&l,2);
+      l=0;
+      of.write((char *)&l,2);
+      char c=i%2?1:0;
+      of.write(&c,1);
+      c=1;
+      of.write(&c,1);
+      of.write(s.c_str(),s.size());
+    }
+    l=0;
+    of.write((char *)&l,4);
   }
 
   void History_cb_save_as_text(Fl_Widget * m,int mode){
@@ -2639,6 +2846,10 @@ namespace xcas {
 	save_as_text(of,mode,o->pack);
       }
     }
+  }
+
+  void History_cb_Save_as_xcas_casio(Fl_Widget* m , void*) {
+    History_cb_save_as_text(m,-1);
   }
 
   void History_cb_Save_as_xcas_text(Fl_Widget* m , void*) {
@@ -3146,9 +3357,9 @@ namespace xcas {
     string s=remove_extension(name);
 #ifdef WIN32
     system_no_deprecation((xcasroot()+"latex.bat "+s).c_str());
-    cerr << xcasroot()+"latex.bat "+s << endl;
+    cerr << xcasroot()+"latex.bat "+s << '\n';
     system_no_deprecation((xcasroot()+"xdvi.bat "+s+" &").c_str());
-    cerr << xcasroot()+"xdvi.bat "+s+" &" << endl;
+    cerr << xcasroot()+"xdvi.bat "+s+" &" << '\n';
 #else
     string path=get_path(s);
     s=remove_path(s);
@@ -3193,7 +3404,7 @@ namespace xcas {
     // const giac::context * contextptr = get_context(wid);
     static unsigned count=0;
     if (dynamic_cast<Figure *>(wid))
-      texof << "\\\\" << endl;
+      texof << "\\\\" << '\n';
     if (Fl_Group * g = dynamic_cast<Fl_Group *>(wid)){
       if (!g || !g->children())
 	return;
@@ -3201,38 +3412,38 @@ namespace xcas {
       if (History_Fold * hf = dynamic_cast<History_Fold *>(wid))
 	folded=hf->folded();
       if (folded)
-	texof << "%% begin hidden group" << endl;
+	texof << "%% begin hidden group" << '\n';
       int jmax=g->children();
       for (int j=0;j<jmax;j++){
 	Fl_Widget * wid = g->child(j);
 	historypack2tex(wid,level,texof,pack,name,number);
       }
       if (folded)
-	texof << "%% end hidden group" << endl;
+	texof << "%% end hidden group" << '\n';
     }
     if (Multiline_Input_tab * i =dynamic_cast<Multiline_Input_tab *>(wid)){
-      texof << "{\\tt " << translate_underscore(i->value()) << " } \\\\" << endl;
+      texof << "{\\tt " << translate_underscore(i->value()) << " } \\\\" << '\n';
       return;
     }
     if (Editeur * ed=dynamic_cast<Editeur *>(wid)){
-      texof << endl << "\\begin{verbatim}"<<endl;
-      texof << ed->value() << endl;
-      texof  << "\\end{verbatim}" << endl;
+      texof << '\n' << "\\begin{verbatim}"<<'\n';
+      texof << ed->value() << '\n';
+      texof  << "\\end{verbatim}" << '\n';
       return;
     }
     if (Xcas_Text_Editor * ed=dynamic_cast<Xcas_Text_Editor *>(wid)){
-      texof << "{\\tt " << translate_underscore(ed->value()) << " } \\\\" << endl;
+      texof << "{\\tt " << translate_underscore(ed->value()) << " } \\\\" << '\n';
       return;
     }
     if (const Flv_Table_Gen * t = dynamic_cast<const Flv_Table_Gen *>(wid)){
-      texof << "\n\\noindent\n" <<spread2tex(t->m,0,pack->contextptr) << endl ; // formule
-      texof << "\n\\noindent\n" << spread2tex(t->m,1,pack->contextptr) << endl << endl ; // formule
+      texof << "\n\\noindent\n" <<spread2tex(t->m,0,pack->contextptr) << '\n' ; // formule
+      texof << "\n\\noindent\n" << spread2tex(t->m,1,pack->contextptr) << '\n' << '\n' ; // formule
       return ;
     }
     if (Equation * eq=dynamic_cast<Equation *>(wid)){
-      texof << "\\begin{equation} \\label{eq:" << level << "}" << endl;
+      texof << "\\begin{equation} \\label{eq:" << level << "}" << '\n';
       texof << gen2tex(eq->get_data(),pack->contextptr) ;
-      texof << "\n\\end{equation}" << endl;
+      texof << "\n\\end{equation}" << '\n';
       return;
     }
     if (Fl_Input * i = dynamic_cast<Fl_Input *>(wid)){
@@ -3278,7 +3489,7 @@ namespace xcas {
       string filename=remove_extension(name)+print_INT_(number)+".eps";
       FILE * f=fopen(filename.c_str(),"w");
       if (f){
-	texof <<  "\\includegraphics[bb=0 0 400 "<< g->h() <<"]{" << filename << "}" << endl << endl ;
+	texof <<  "\\includegraphics[bb=0 0 400 "<< g->h() <<"]{" << filename << "}" << '\n' << '\n' ;
 	int gw=g->w();
 	g->resize(g->x(),g->y(),400,g->h());
 	g->printing=f;
@@ -3331,12 +3542,12 @@ namespace xcas {
     if (!texof)
       return;
     if (texheader){
-      texof << "% Generated by xcas" << endl;
+      texof << "% Generated by xcas" << '\n';
       texof << giac::tex_preamble ;
     }
     historypack2tex(hp,name,texof,selection);
     if (texheader)
-      texof << giac::tex_end << endl;
+      texof << giac::tex_end << '\n';
     texof.close();
   }
 
@@ -3588,7 +3799,7 @@ namespace xcas {
   
   void History_Fold::autosave_rm(){
     if (is_file_available(autosave_filename.c_str())){
-      cerr << "Autosave remove " << autosave_filename << endl;
+      cerr << "Autosave remove " << autosave_filename << '\n';
       unlink(autosave_filename.c_str());
     }
   }
@@ -3704,12 +3915,12 @@ namespace xcas {
       xcas::interrupt_button=false;
       xcas::History_Pack * hp =xcas::get_history_fold(b)->pack;
       context * cptr=hp?hp->contextptr:0;
-      cerr << gettext("STOP pressed. Trying to cancel cleanly") << std::endl;
+      cerr << gettext("STOP pressed. Trying to cancel cleanly") << '\n';
       if (!Fl::event_state(FL_SHIFT)){
 	giac::ctrl_c=true;
 	for (int j=0;j<300;j++){
 	  if (!giac::ctrl_c){
-	    *logptr(cptr) << gettext("Cleanly cancelled.") << std::endl;
+	    *logptr(cptr) << gettext("Cleanly cancelled.") << '\n';
 	    giac::interrupted=false;
 	    xcas::interrupt_button=true;
 	    return;
@@ -3718,7 +3929,7 @@ namespace xcas {
 	}
 	giac::ctrl_c=false;  giac::interrupted=false;
       }
-      *logptr(cptr) << gettext("Cancelling thread. Xcas may crash now or later :-( Consider saving and restarting Xcas.") << std::endl;
+      *logptr(cptr) << gettext("Cancelling thread. Xcas may crash now or later :-( Consider saving and restarting Xcas.") << '\n';
       xcas::interrupt_button=true;
       if (giac::is_context_busy(hp?hp->contextptr:0)){
         giac::kill_thread(true,hp?hp->contextptr:0);
@@ -3733,7 +3944,7 @@ namespace xcas {
       xcas::interrupt_button=false;
       xcas::History_Pack * hp =xcas::get_history_fold(b)->pack;
       context * cptr=hp?hp->contextptr:0;
-      *logptr(cptr) << gettext("STOP pressed. Trying to cancel cleanly") << std::endl;
+      *logptr(cptr) << gettext("STOP pressed. Trying to cancel cleanly") << '\n';
       if (!w){
 	Fl_Group::current(0);
 	w=new Fl_Window(200,50);
@@ -3759,7 +3970,7 @@ namespace xcas {
 	    if (!giac::ctrl_c){
 	       giac::interrupted=false;
 	      w->hide();
-	      *logptr(cptr) << gettext("Cleanly cancelled.") << std::endl;
+	      *logptr(cptr) << gettext("Cleanly cancelled.") << '\n';
 	      xcas::interrupt_button=true;
 	      return;
 	    }
@@ -3771,7 +3982,7 @@ namespace xcas {
       w->hide();
       xcas::interrupt_button=true;
       if (giac::is_context_busy(hp?hp->contextptr:0)){
-	*logptr(cptr) << gettext("Cancelling thread. Xcas may crash now or later :-( Consider saving and restarting Xcas.") << std::endl;
+	*logptr(cptr) << gettext("Cancelling thread. Xcas may crash now or later :-( Consider saving and restarting Xcas.") << '\n';
         giac::kill_thread(true,hp?hp->contextptr:0);
         return;
       }
@@ -3828,7 +4039,7 @@ namespace xcas {
       switch (giac::xcas_mode(ptr)){
       case 0: 
 	if (python_compat(ptr))
-	  mode_s += "python ";
+	  mode_s += python_compat(ptr)==2?"python ^==xor ":"python ^=** ";
 	else
 	  mode_s+="xcas "; 
 	break;
@@ -4263,7 +4474,7 @@ namespace xcas {
   }
 
   void DispG_Window::draw(){
-    //COUT << "DispG draw" << endl;
+    //COUT << "DispG draw" << '\n';
     Fl_Window::draw();
   }
 
@@ -4448,7 +4659,7 @@ namespace xcas {
     int clip_x,clip_y,clip_w,clip_h;
     fl_clip_box(x(),y(),w(),h(),clip_x,clip_y,clip_w,clip_h);
     fl_push_clip(clip_x,clip_y,clip_w,clip_h);
-    // cerr << this << " " << x() << " " << y() << " " << w() << " " << h() << " " << clip_x << " " << clip_y << " " << clip_w << " " << clip_h << " " << int(damage()) << endl;
+    // cerr << this << " " << x() << " " << y() << " " << w() << " " << h() << " " << clip_x << " " << clip_y << " " << clip_w << " " << clip_h << " " << int(damage()) << '\n';
     Fl_Scroll::draw();
     fl_pop_clip();
   }

@@ -317,6 +317,14 @@ namespace giac {
   extern const unary_function_ptr * const  at_divcrement;
   extern const unary_function_ptr * const  at_iquosto;
   extern const unary_function_ptr * const  at_iremsto;
+  extern const unary_function_ptr * const  at_andsto;
+  extern const unary_function_ptr * const  at_orsto;
+  extern const unary_function_ptr * const  at_xorsto;
+  extern const unary_function_ptr * const  at_shiftsto;
+  extern const unary_function_ptr * const  at_powsto;
+  gen _shiftsto(const gen & a,const context * contextptr);
+  extern const unary_function_ptr * const  at_rotatesto;
+  gen _rotatesto(const gen & a,const context * contextptr);
   gen sto(const gen & a,const gen & b,GIAC_CONTEXT);
   gen sto(const gen & a,const gen & b,bool in_place,GIAC_CONTEXT);  
   gen _sto(const gen & g,const context * contextptr);
@@ -491,6 +499,9 @@ namespace giac {
   extern const unary_function_ptr * const  at_Si;
   extern const unary_function_ptr * const  at_Ei ;
   extern const unary_function_ptr * const  at_Ei_f ;
+  extern const unary_function_ptr * const  at_LambertW;
+  extern const unary_function_ptr * const  at_LambertWs;
+  gen _LambertW(const gen & args,GIAC_CONTEXT);
 
   gen Psi(const gen & x,GIAC_CONTEXT);
   gen Psi(const gen & x,int n,GIAC_CONTEXT);

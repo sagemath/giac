@@ -530,7 +530,7 @@ namespace xcas {
       g=gen(tmp,contextptr);
     }
     catch (std::runtime_error & err){
-      cerr << err.what() << endl;
+      cerr << err.what() << '\n';
     }
     xcas_mode(contextptr)=save_maple_mode;
     python_compat(save_python,contextptr);
@@ -558,7 +558,7 @@ namespace xcas {
       g=gen(res,contextptr);
     }
     catch (std::runtime_error & err){
-      cerr << err.what() << endl;
+      cerr << err.what() << '\n';
       return;
     }
     int save_maple_mode=xcas_mode(contextptr);
@@ -591,7 +591,7 @@ namespace xcas {
       g=gen(res,contextptr);
     }
     catch (std::runtime_error & err){
-      cerr << err.what() << endl;
+      cerr << err.what() << '\n';
       return;
     }
     if (is_file_available(newfile.c_str())){
@@ -698,6 +698,13 @@ namespace xcas {
     }
   }
 
+  static void cb_Editeur_Translate_Python(Fl_Menu_* m , void*) {
+    Fl_Text_Editor * e = find_editor(m);
+    if (e){
+      editeur_translate(e,256); // not working
+    }
+  }
+
   static void cb_Editeur_Translate_Xcas(Fl_Menu_* m , void*) {
     Fl_Text_Editor * e = find_editor(m);
     if (e){
@@ -723,7 +730,8 @@ namespace xcas {
     static int program_counter=0;
     Fl_Text_Editor * e = find_editor(m);
     if (e){
-      string tmp,extension;
+      static string tmp;
+      string extension;
       if (Editeur * ed = dynamic_cast<Editeur *>(m->parent()))
 	extension=ed->extension;
       for (;;){
@@ -1150,7 +1158,7 @@ namespace xcas {
 	  g=gen(s,contextptr);
 	}
 	catch (std::runtime_error & e){
-	  cerr << e.what() << endl;
+	  cerr << e.what() << '\n';
 	}
 	lexer_close_parenthesis(close,contextptr);
 	if (giac::first_error_line(contextptr)){
@@ -1228,7 +1236,7 @@ namespace xcas {
       g=gen(res,contextptr);
     }
     catch (std::runtime_error & er){
-      cerr << er.what() << endl;
+      cerr << er.what() << '\n';
     }
     lexer_close_parenthesis(close,contextptr);
     if (giac::first_error_line(contextptr)){
@@ -1407,7 +1415,7 @@ namespace xcas {
 	    calc_mode(contextptr)=-38;
 	  g=gen(s,contextptr); 
 	} 
-	catch (std::runtime_error & e){ cerr << e.what() << endl; }
+	catch (std::runtime_error & e){ cerr << e.what() << '\n'; }
 	lexer_close_parenthesis(close,contextptr);
 	if (giac::first_error_line(contextptr)){
 	  int pos1=e->editor->buffer()->skip_lines(0,giac::first_error_line(contextptr)-1);
@@ -1884,6 +1892,8 @@ namespace xcas {
   }
 
   void cb_choose_func(Fl_Text_Editor * ed){
+    giac::context * contextptr = get_context(ed);
+    bool python=python_compat(contextptr);
     int dx=240,dy=300,l=14;
     if (ed->window()){
       dx=int(0.5*ed->window()->w());
@@ -1929,11 +1939,11 @@ namespace xcas {
     w->label((gettext("New function")));
     change_group_fontsize(w,l);
     w->set_modal();
+    if (python) locs->hide(); else locs->show();
     w->show();
     autosave_disabled=true;
     w->hotspot(w);
     Fl::focus(name);
-    context * contextptr=get_context(ed);
     int lang=language(contextptr);
     int r=-2;
     for (;;) {
@@ -1962,8 +1972,6 @@ namespace xcas {
     if (r==0){
       int i=0,addi=0; // i=ed->insert_position(),addi=0;
       string s;
-      giac::context * contextptr = get_context(ed);
-      bool python=python_compat(contextptr);
       switch (xcas_mode(contextptr)){
       case 0:
 	if (python)
@@ -1983,7 +1991,7 @@ namespace xcas {
 	    s+=":={";
 	}
 	s+="\n";
-	if (strlen(locs->value())){
+	if (!python && strlen(locs->value())){
 	  s+=python?"    # local ":"  local ";
 	  s+=locs->value();
 	  if (python) 
@@ -2434,28 +2442,28 @@ namespace xcas {
     {gettext("Prog"), 0,  0, 0, 64, 0, 0, 14, 56},
     {gettext("Load"), 0,  (Fl_Callback*)cb_Editeur_Load, 0, 0, 0, 0, 14, 56},
     {gettext("Insert"), 0,  0, 0, 64, 0, 0, 14, 56},
-    {gettext("file"), 0,  (Fl_Callback*)cb_Editeur_Insert_File, 0, 0, 0, 0, 14, 56},
-    {gettext("xcas text"), 0,  (Fl_Callback*)cb_Editeur_Insert_Xcas, 0, 0, 0, 0, 14, 56},
-    {gettext("xcas python text"), 0,  (Fl_Callback*)cb_Editeur_Insert_Python, 0, 0, 0, 0, 14, 56},
-    {gettext("maple text"), 0,  (Fl_Callback*)cb_Editeur_Insert_Maple, 0, 0, 0, 0, 14, 56},
-    {gettext("mupad text"), 0,  (Fl_Callback*)cb_Editeur_Insert_Mupad, 0, 0, 0, 0, 14, 56},
-    {gettext("ti text"), 0,  (Fl_Callback*)cb_Editeur_Insert_Ti, 0, 0, 0, 0, 14, 56},
+    {gettext("File"), 0,  (Fl_Callback*)cb_Editeur_Insert_File, 0, 0, 0, 0, 14, 56},
+    {gettext("Xcas text"), 0,  (Fl_Callback*)cb_Editeur_Insert_Xcas, 0, 0, 0, 0, 14, 56},
+    {gettext("Xcas Python text"), 0,  (Fl_Callback*)cb_Editeur_Insert_Python, 0, 0, 0, 0, 14, 56},
+    {gettext("Maple text"), 0,  (Fl_Callback*)cb_Editeur_Insert_Maple, 0, 0, 0, 0, 14, 56},
+    {gettext("Mupad text"), 0,  (Fl_Callback*)cb_Editeur_Insert_Mupad, 0, 0, 0, 0, 14, 56},
+    {gettext("TI text"), 0,  (Fl_Callback*)cb_Editeur_Insert_Ti, 0, 0, 0, 0, 14, 56},
     {0},
     {gettext("Save"), 0,  (Fl_Callback*)cb_Editeur_Save, 0, 0, 0, 0, 14, 56},
     {gettext("Save as"), 0,  (Fl_Callback*)cb_Editeur_Save_as, 0, 0, 0, 0, 14, 56},
     {gettext("File extension"), 0,  (Fl_Callback*)cb_Editeur_Extension, 0, 0, 0, 0, 14, 56},
     {gettext("Export"), 0,  0, 0, 64, 0, 0, 14, 56},
-    {gettext("xcas text"), 0,  (Fl_Callback*)cb_Editeur_Export_Xcas, 0, 0, 0, 0, 14, 56},
-    {gettext("xcas-python text"), 0,  (Fl_Callback*)cb_Editeur_Export_Python, 0, 0, 0, 0, 14, 56},
-    {gettext("maple text"), 0,  (Fl_Callback*)cb_Editeur_Export_Maple, 0, 0, 0, 0, 14, 56},
-    {gettext("mupad text"), 0,  (Fl_Callback*)cb_Editeur_Export_Mupad, 0, 0, 0, 0, 14, 56},
-    {gettext("ti text"), 0,  (Fl_Callback*)cb_Editeur_Export_Ti, 0, 0, 0, 0, 14, 56},
+    {gettext("Xcas text"), 0,  (Fl_Callback*)cb_Editeur_Export_Xcas, 0, 0, 0, 0, 14, 56},
+    {gettext("Xcas-python text"), 0,  (Fl_Callback*)cb_Editeur_Export_Python, 0, 0, 0, 0, 14, 56},
+    {gettext("Maple text"), 0,  (Fl_Callback*)cb_Editeur_Export_Maple, 0, 0, 0, 0, 14, 56},
+    {gettext("Mupad text"), 0,  (Fl_Callback*)cb_Editeur_Export_Mupad, 0, 0, 0, 0, 14, 56},
+    {gettext("TI text"), 0,  (Fl_Callback*)cb_Editeur_Export_Ti, 0, 0, 0, 0, 14, 56},
     {0},
     {gettext("Translate"), 0,  0, 0, 64, 0, 0, 14, 56},
-    {gettext("xcas"), 0,  (Fl_Callback*)cb_Editeur_Translate_Xcas, 0, 0, 0, 0, 14, 56},
-    {gettext("maple"), 0,  (Fl_Callback*)cb_Editeur_Translate_Maple, 0, 0, 0, 0, 14, 56},
-    {gettext("mupad"), 0,  (Fl_Callback*)cb_Editeur_Translate_Mupad, 0, 0, 0, 0, 14, 56},
-    {gettext("ti"), 0,  (Fl_Callback*)cb_Editeur_Translate_Ti, 0, 0, 0, 0, 14, 56},
+    {gettext("Xcas"), 0,  (Fl_Callback*)cb_Editeur_Translate_Xcas, 0, 0, 0, 0, 14, 56},
+    {gettext("Maple"), 0,  (Fl_Callback*)cb_Editeur_Translate_Maple, 0, 0, 0, 0, 14, 56},
+    {gettext("Mupad"), 0,  (Fl_Callback*)cb_Editeur_Translate_Mupad, 0, 0, 0, 0, 14, 56},
+    {gettext("TI"), 0,  (Fl_Callback*)cb_Editeur_Translate_Ti, 0, 0, 0, 0, 14, 56},
     {0},
     {gettext("Export/Print"), 0,  0, 0, 64, 0, 0, 14, 56},
     //    {gettext("latex preview"), 0,  (Fl_Callback*)cb_Tableur_LaTeX_Preview, 0, 0, 0, 0, 14, 56},
@@ -2487,8 +2495,8 @@ namespace xcas {
     {gettext("Test"), 0,  0, 0, 64, 0, 0, 14, 56},
     {gettext("new test"), 0,  (Fl_Callback *) cb_prg_si, 0, 0, 0, 0, 14, 56},
     {gettext("si alors sinon"), 0,  (Fl_Callback *) cb_prg_sialorssinon, 0, 0, 0, 0, 14, 56},
-    {gettext("if [then]"), 0,  (Fl_Callback *) cb_prg_ifthen, 0, 0, 0, 0, 14, 56},
-    {gettext("if [then] else"), 0,  (Fl_Callback *) cb_prg_ifthenelse, 0, 0, 0, 0, 14, 56},
+    {gettext("if"), 0,  (Fl_Callback *) cb_prg_ifthen, 0, 0, 0, 0, 14, 56},
+    {gettext("if else"), 0,  (Fl_Callback *) cb_prg_ifthenelse, 0, 0, 0, 0, 14, 56},
     {gettext("switch"), 0,  (Fl_Callback *) cb_prg_switch, 0, 0, 0, 0, 14, 56},
     {gettext("try catch"), 0,  (Fl_Callback *) cb_prg_trycatch, 0, 0, 0, 0, 14, 56},
     {0}, // end Test
@@ -2982,7 +2990,7 @@ namespace xcas {
     if (nl==1){
       fl_font(FL_HELVETICA,labelsize());
       double taille=1.4*fl_width(s.c_str());
-      // cerr << ch << " " << taille << " " << labelsize() << endl;
+      // cerr << ch << " " << taille << " " << labelsize() << '\n';
       if (taille>w()) // make enough room for scrollbar
 	increase_size(this,25+labelsize()-h());
       else 
@@ -3121,7 +3129,7 @@ namespace xcas {
 	if (!*ptr){
 	  fl_font(FL_HELVETICA,labelsize());
 	  double taille=1.4*fl_width(ch);
-	  // cerr << ch << " " << taille << " " << labelsize() << endl;
+	  // cerr << ch << " " << taille << " " << labelsize() << '\n';
 	  if (taille>w()){ // make enough room for scrollbar
 	    increase_size(this,25+labelsize()-h());
 	  }
@@ -3164,7 +3172,7 @@ namespace xcas {
 	    break;
 	}
 	if (i<curind){
-	  // std::cerr << "fixme del" << endl;
+	  // std::cerr << "fixme del" << '\n';
 	  for (;curind>i;--curind)
 	    Fl_Text_Editor::kf_backspace(0,this);
 	  break;

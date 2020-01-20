@@ -64,7 +64,7 @@ namespace std {
     void _destroy(){
       if (_taille>0){ 
 	if (_begin_immediate_vect) {
-	  // std::cerr << "delete " << _taille << endl;
+	  // std::cerr << "delete " << _taille << '\n';
 	  delete [] _begin_immediate_vect; 
 	}
       }
@@ -572,6 +572,7 @@ namespace std {
 	for (;_end!=_endalloc;++_end){
 	  *_end=value;
 	}
+	_end=_begin+n;
       }
     }
     void erase(_Tp * b,_Tp * e){

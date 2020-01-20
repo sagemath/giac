@@ -237,9 +237,10 @@ namespace giac {
     gen n(tmp),d(1);
     if (tmp.type==_VECT && tmp._VECTptr->size()==2){
       n=tmp._VECTptr->front();
+      if (n.type==_VECT) n.subtype=_POLY1__VECT;
       d=tmp._VECTptr->back();
     }
-    return eval(symbolic(at_rootof,makesequence(n,GEN2gen((GEN) G[1],vars))),1,context0)/d;
+    return eval(symbolic(at_rootof,makesequence(n,change_subtype(GEN2gen((GEN) G[1],vars),_POLY1__VECT))),1,context0)/d;
     find_or_make_symbol("Mod",tmp,0,false,context0);
     return symbolic(at_of,makesequence(tmp,gen(makevecteur(GEN2gen((GEN) G[2],vars),GEN2gen((GEN) G[1],vars)),_SEQ__VECT)));
   }
@@ -266,7 +267,7 @@ namespace giac {
 
   // WARNING: If g is a matrix this print the transpose of the matrix
   static string GEN2string(const GEN & g){
-    // cerr << typ(g) << " " << t_MAT << endl;
+    // cerr << typ(g) << " " << t_MAT << '\n';
     char * ch;
     string s;
     if ((typ(g)==t_MAT) || (typ(g)==t_COL)){
@@ -385,6 +386,8 @@ namespace giac {
   }
 
   static string pariprint(const gen & e,int varnum,GIAC_CONTEXT){
+    int py=python_compat(contextptr);
+    python_compat(0,contextptr);
     int save_maple_mode=xcas_mode(contextptr);
     xcas_mode(contextptr)=1;
     string res;
@@ -424,6 +427,7 @@ namespace giac {
       res=e.print(contextptr);
     }
     xcas_mode(contextptr)=save_maple_mode;
+    python_compat(py,contextptr);
     return res;
   }
   
@@ -524,12 +528,12 @@ namespace giac {
     if (e.type==_REAL)
       prec=mpfr_get_prec(e._REALptr->inf);
 #endif
-    const char * s=e.print(contextptr).c_str();
-    GEN g=strtor((char *)s,prec);
+    string s(e.print(contextptr));
+    GEN g=strtor(s.c_str(),prec);
     if (neg)
       g=gneg(g);
     if (debug_infolevel)
-      CERR << "real converted to pari " << GEN2gen(g,vecteur(0)) << endl;
+      CERR << "real converted to pari " << GEN2gen(g,vecteur(0)) << '\n';
     else e=GEN2gen(g,vecteur(0));
     // for some strange reason, converting g to a gen fixes a bug in conversion
     return g;
@@ -724,7 +728,7 @@ namespace giac {
       s+=",";
     }
     s+="]";
-    // cerr << s << endl;
+    // cerr << s << '\n';
     GEN pari_factmod=gp_read_str((char *) s.c_str());
     GEN pari_modulo=gen2GEN(modulo,vecteur(0),0);
     GEN pari_res=combine_factors(pari_a,pari_factmod,pari_modulo,0,1);
@@ -759,7 +763,7 @@ namespace giac {
 	if (pari_mutex_ptr) pthread_mutex_unlock(pari_mutex_ptr);    
 #endif
 	avma = av;
-	*logptr(contextptr) << gettext("Error in PARI subsystem") << endl;
+	*logptr(contextptr) << gettext("Error in PARI subsystem") << '\n';
 	PARI_stack_limit = save_pari_stack_limit ;
 	// setsizeerr();
 	return undef;
@@ -828,7 +832,7 @@ namespace giac {
 	if (pari_mutex_ptr) pthread_mutex_unlock(pari_mutex_ptr);    
 #endif
 	avma = av;
-	*logptr(contextptr) << gettext("Error in PARI subsystem") << endl;
+	*logptr(contextptr) << gettext("Error in PARI subsystem") << '\n';
 	// setsizeerr();
 	return undef;
       } 
@@ -843,7 +847,7 @@ namespace giac {
 	if (pari_mutex_ptr) pthread_mutex_unlock(pari_mutex_ptr);    
 #endif
 	avma = av;
-	*logptr(contextptr) << gettext("Error in PARI subsystem") << endl;
+	*logptr(contextptr) << gettext("Error in PARI subsystem") << '\n';
 	// setsizeerr();
 	return undef;
       } 
@@ -957,7 +961,7 @@ namespace giac {
 	      ((void (*)(ANYARG))call)(_ARGS_);
 	      res = gnil; break;
 	    }	  
-	  // cerr << GEN2string(res) << endl;
+	  // cerr << GEN2string(res) << '\n';
 	  gen resg(GEN2gen(res,vars));
 	  PARI_stack_limit = save_pari_stack_limit ;
 	  avma=av;
@@ -1080,7 +1084,7 @@ namespace giac {
     long av=get_pari_avma();
     GEN G=gen2GEN(change_subtype(p,_POLY1__VECT),vecteur(0),contextptr);
     if (debug_infolevel)
-      CERR << "pari_polroots " << GEN2gen(G,vecteur(1,vx_var)) << endl;
+      CERR << "pari_polroots " << GEN2gen(G,vecteur(1,vx_var)) << '\n';
     G=roots(G,prec);
     tmp=GEN2gen(G,vecteur(0));
     avma=av;

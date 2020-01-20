@@ -52,12 +52,33 @@ enum gt_error_code {
     _GT_ERR_CYCLE_NOT_FOUND=19,
     _GT_ERR_NAME_NOT_RECOGNIZED=20,
     _GT_ERR_NOT_A_SUBGRAPH=21,
-    _GT_ERR_GRAPH_IS_EMPTY=22,
+    _GT_ERR_GRAPH_IS_NULL=22,
     _GT_ERR_TAGVALUE_PAIR_EXPECTED=23,
     _GT_ERR_NOT_A_GRAPHIC_SEQUENCE=24,
     _GT_ERR_NOT_ACYCLIC_GRAPH=25,
     _GT_ERR_BICONNECTED_GRAPH_REQUIRED=26,
-    _GT_ERR_NOT_BIPARTITE=27
+    _GT_ERR_NOT_BIPARTITE=27,
+    _GT_ERR_WRONG_NUMBER_OF_ARGS=28,
+    _GT_ERR_POSITIVE_INTEGER_REQUIRED=29,
+    _GT_ERR_BAD_VERTICES=30
+};
+
+enum distribution_type {
+    _DISTR_UNIFORM,
+    _DISTR_POISSON,
+    _DISTR_EXPONENTIAL,
+    _DISTR_GEOMETRIC,
+    _DISTR_NORMAL,
+    _DISTR_FISHER,
+    _DISTR_CHISQUARE,
+    _DISTR_CAUCHY,
+    _DISTR_STUDENT,
+    _DISTR_MULTINOMIAL,
+    _DISTR_BINOMIAL,
+    _DISTR_GAMMA,
+    _DISTR_BETA,
+    _DISTR_WEIBULL,
+    _DISTR_DISCRETE
 };
 
 bool is_graphe(const gen &g,std::string &disp_out,GIAC_CONTEXT);
@@ -70,6 +91,7 @@ gen _digraph(const gen &g,GIAC_CONTEXT);
 gen _export_graph(const gen &g,GIAC_CONTEXT);
 gen _import_graph(const gen &g,GIAC_CONTEXT);
 gen _trail(const gen &g,GIAC_CONTEXT);
+gen _trail2edges(const gen &g,GIAC_CONTEXT);
 gen _draw_graph(const gen &g,GIAC_CONTEXT);
 gen _graph_complement(const gen &g,GIAC_CONTEXT);
 gen _induced_subgraph(const gen &g,GIAC_CONTEXT);
@@ -107,7 +129,7 @@ gen _biconnected_components(const gen &g,GIAC_CONTEXT);
 gen _connected_components(const gen &g,GIAC_CONTEXT);
 gen _departures(const gen &g,GIAC_CONTEXT);
 gen _incident_edges(const gen &g,GIAC_CONTEXT);
-gen _is_triangle_free(const gen &g,GIAC_CONTEXT);
+gen _number_of_triangles(const gen &g,GIAC_CONTEXT);
 gen _is_connected(const gen &g,GIAC_CONTEXT);
 gen _is_biconnected(const gen &g,GIAC_CONTEXT);
 gen _is_triconnected(const gen &g,GIAC_CONTEXT);
@@ -134,6 +156,7 @@ gen _is_directed(const gen &g,GIAC_CONTEXT);
 gen _minimum_degree(const gen &g,GIAC_CONTEXT);
 gen _maximum_degree(const gen &g,GIAC_CONTEXT);
 gen _is_regular(const gen &g,GIAC_CONTEXT);
+gen _is_strongly_regular(const gen &g,GIAC_CONTEXT);
 gen _neighbors(const gen &g,GIAC_CONTEXT);
 gen _number_of_vertices(const gen &g,GIAC_CONTEXT);
 gen _graph_vertices(const gen &g,GIAC_CONTEXT);
@@ -158,6 +181,7 @@ gen _odd_graph(const gen &g,GIAC_CONTEXT);
 gen _random_graph(const gen &g,GIAC_CONTEXT);
 gen _random_digraph(const gen &g,GIAC_CONTEXT);
 gen _random_regular_graph(const gen &g,GIAC_CONTEXT);
+gen _random_sequence_graph(const gen &g,GIAC_CONTEXT);
 gen _random_bipartite_graph(const gen &g,GIAC_CONTEXT);
 gen _random_tournament(const gen &g,GIAC_CONTEXT);
 gen _random_tree(const gen &g,GIAC_CONTEXT);
@@ -181,6 +205,7 @@ gen _graph_power(const gen &g,GIAC_CONTEXT);
 gen _vertex_distance(const gen &g,GIAC_CONTEXT);
 gen _shortest_path(const gen &g,GIAC_CONTEXT);
 gen _dijkstra(const gen &g,GIAC_CONTEXT);
+gen _bellman_ford(const gen &g,GIAC_CONTEXT);
 gen _allpairs_distance(const gen &g,GIAC_CONTEXT);
 gen _graph_diameter(const gen &g,GIAC_CONTEXT);
 gen _is_clique(const gen &g,GIAC_CONTEXT);
@@ -193,13 +218,13 @@ gen _maximum_independent_set(const gen &g,GIAC_CONTEXT);
 gen _independence_number(const gen &g,GIAC_CONTEXT);
 gen _strongly_connected_components(const gen &g,GIAC_CONTEXT);
 gen _is_strongly_connected(const gen &g,GIAC_CONTEXT);
+gen _condensation(const gen &g,GIAC_CONTEXT);
 gen _degree_sequence(const gen &g,GIAC_CONTEXT);
 gen _is_graphic_sequence(const gen &g,GIAC_CONTEXT);
 gen _sequence_graph(const gen &g,GIAC_CONTEXT);
 gen _girth(const gen &g,GIAC_CONTEXT);
 gen _odd_girth(const gen &g,GIAC_CONTEXT);
 gen _topologic_sort(const gen &g,GIAC_CONTEXT);
-gen _topological_sort(const gen &g,GIAC_CONTEXT);
 gen _is_acyclic(const gen &g,GIAC_CONTEXT);
 gen _is_arborescence(const gen &g,GIAC_CONTEXT);
 gen _graph_spectrum(const gen &g,GIAC_CONTEXT);
@@ -221,35 +246,43 @@ gen _clique_stats(const gen &g,GIAC_CONTEXT);
 gen _minimal_vertex_coloring(const gen &g,GIAC_CONTEXT);
 gen _transitive_closure(const gen &g,GIAC_CONTEXT);
 gen _line_graph(const gen &g,GIAC_CONTEXT);
-gen _edge_chromatic_number(const gen &g,GIAC_CONTEXT);
-gen _is_edge_colorable(const gen &g,GIAC_CONTEXT);
+gen _is_isomorphic(const gen &g,GIAC_CONTEXT);
+gen _graph_automorphisms(const gen &g,GIAC_CONTEXT);
+gen _canonical_labeling(const gen &g,GIAC_CONTEXT);
 gen _minimal_edge_coloring(const gen &g,GIAC_CONTEXT);
-//gen _spanning_polynomial(const gen &g,GIAC_CONTEXT);
-//gen _fundamental_cycle(const gen &g,GIAC_CONTEXT);
-//gen _mycielski(const gen &g,GIAC_CONTEXT);
-//gen _chromatic_index(const gen &g,GIAC_CONTEXT);
-//gen _circular_chromatic_index(const gen &g,GIAC_CONTEXT);
-//gen _circular_chromatic_number(const gen &g,GIAC_CONTEXT);
-//gen _circular_edge_chromatic_number(const gen &g,GIAC_CONTEXT);
-//gen _edge_connectivity(const gen &g,GIAC_CONTEXT);
-//gen _global_clustering_coefficient(const gen &g,GIAC_CONTEXT);
-//gen _is_isomorphic(const gen &g,GIAC_CONTEXT);
-//gen _maxflow(const gen &g,GIAC_CONTEXT);
-//gen _two_edge_connected_components(const gen &g,GIAC_CONTEXT);
-//gen _cycle_basis(const gen &g,GIAC_CONTEXT);
-//gen _is_cut_set(const gen &g,GIAC_CONTEXT);
-//gen _is_network(const gen &g,GIAC_CONTEXT);
-//gen _vertex_connectivity(const gen &g,GIAC_CONTEXT);
-//gen _is_hamiltonian(const gen &g,GIAC_CONTEXT);
-//gen _is_two_edge_connected(const gen &g,GIAC_CONTEXT);
-//gen _laplacian_matrix(const gen &g,GIAC_CONTEXT);
-//gen _local_clustering_coefficient(const gen &g,GIAC_CONTEXT);
-//gen _traveling_salesman(const gen &g,GIAC_CONTEXT);
+gen _chromatic_index(const gen &g,GIAC_CONTEXT);
+gen _is_hamiltonian(const gen &g,GIAC_CONTEXT);
+gen _traveling_salesman(const gen &g,GIAC_CONTEXT);
+gen _maxflow(const gen &g,GIAC_CONTEXT);
+gen _minimum_cut(const gen &g,GIAC_CONTEXT);
+gen _is_cut_set(const gen &g,GIAC_CONTEXT);
+gen _is_network(const gen &g,GIAC_CONTEXT);
+gen _random_network(const gen &g,GIAC_CONTEXT);
+gen _tutte_polynomial(const gen &g,GIAC_CONTEXT);
+gen _chromatic_polynomial(const gen &g,GIAC_CONTEXT);
+gen _flow_polynomial(const gen &g,GIAC_CONTEXT);
+gen _reliability_polynomial(const gen &g,GIAC_CONTEXT);
+gen _laplacian_matrix(const gen &g,GIAC_CONTEXT);
+gen _fundamental_cycle(const gen &g,GIAC_CONTEXT);
+gen _cycle_basis(const gen &g,GIAC_CONTEXT);
+gen _mycielski(const gen &g,GIAC_CONTEXT);
+gen _clustering_coefficient(const gen &g,GIAC_CONTEXT);
+gen _network_transitivity(const gen &g,GIAC_CONTEXT);
+gen _two_edge_connected_components(const gen &g,GIAC_CONTEXT);
+gen _is_two_edge_connected(const gen &g,GIAC_CONTEXT);
+gen _edge_connectivity(const gen &g,GIAC_CONTEXT);
+gen _vertex_connectivity(const gen &g,GIAC_CONTEXT);
+gen _tonnetz(const gen &g,GIAC_CONTEXT);
+gen _truncate_graph(const gen &g,GIAC_CONTEXT);
+gen _find_cycles(const gen &g,GIAC_CONTEXT);
+gen _kspaths(const gen &g,GIAC_CONTEXT);
 
 // GENERAL GIAC COMMANDS
 
 gen _foldl(const gen &g,GIAC_CONTEXT);
 gen _foldr(const gen &g,GIAC_CONTEXT);
+gen _randvar(const gen &g,GIAC_CONTEXT);
+gen _icomp(const gen &g,GIAC_CONTEXT);
 
 // FUNCTION POINTERS
 
