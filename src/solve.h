@@ -28,6 +28,8 @@
 #ifndef NO_NAMESPACE_GIAC
 namespace giac {
 #endif // ndef NO_NAMESPACE_GIAC
+  extern int intvar_counter;
+  extern int realvar_counter;
   vecteur lvarfracpow(const gen & e);
   std::string print_intvar_counter(GIAC_CONTEXT);
   std::string print_realvar_counter(GIAC_CONTEXT);
@@ -97,7 +99,13 @@ namespace giac {
   void sort_vectpoly(vectpoly::iterator it,vectpoly::iterator itend);
   void reduce(vectpoly & res,environment * env);
   void change_monomial_order(polynome & p,const gen & order);
-  vectpoly gbasis(const vectpoly & v,const gen & order,bool with_cocoa,bool with_f5,int & rur,environment * env,GIAC_CONTEXT,bool eliminate_flag); // with_f5 is in fact modular_check
+  struct gbasis_param_t {
+    bool eliminate_flag;
+    int reinject_begin;
+    int reinject_end;
+    int reinject_for_calc;
+  };
+  vectpoly gbasis(const vectpoly & v,const gen & order,bool with_cocoa,bool with_f5,int & rur,environment * env,GIAC_CONTEXT,gbasis_param_t gbasis_param); // with_f5 is in fact modular_check
   gen remove_equal(const gen & f);
   vecteur remove_equal(const_iterateur it,const_iterateur itend);
   vecteur gsolve(const vecteur & eq_orig,const vecteur & var,bool complexmode,int evalf_after,GIAC_CONTEXT);

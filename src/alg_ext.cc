@@ -226,6 +226,7 @@ namespace giac {
 	return zero;
       if (a._VECTptr->size()==1)
 	return a._VECTptr->front();
+      // a.subtype=_POLY1__VECT;
     }
     gen res;
 #ifdef SMARTPTR64
@@ -235,6 +236,7 @@ namespace giac {
 #endif
     res.type=_EXT;
     *(res._EXTptr+1) = v;
+    // if (v.type==_VECT) (res._EXTptr+1)->subtype=_POLY1__VECT;
     if (a.type==_FRAC){
       *res._EXTptr = a._FRACptr->num;
       return fraction(res,a._FRACptr->den);
@@ -271,6 +273,7 @@ namespace giac {
   gen select_root(const vecteur & v,GIAC_CONTEXT){
     int n=decimal_digits(contextptr);
     if (n<12) n=12;
+    if (n>307) n=307;
     double eps=std::pow(0.1,n);
     int rprec=int(n*3.3);
     vecteur a=proot(v,eps,rprec);
@@ -386,7 +389,7 @@ namespace giac {
     for (;it!=itend;++it){
       i=it->index.front();
       j=it->index.back();
-      // cerr << nb*(na-i-1)+nb-j-1 << " " << na*nb << endl;
+      // cerr << nb*(na-i-1)+nb-j-1 << " " << na*nb << '\n';
       v[nb*(na-i-1)+nb-j-1]=it->value;
     }
     return true;
@@ -864,11 +867,13 @@ namespace giac {
     }
     vecteur vb(innerdim);
     gen racine_max=undef;
+    bool deep_emb=false; // marker for deep embedding
     if (!trouve){
       // Change for multivariate polynomials p, added evaluation
       if (innerdim){
 	gen params;
-	*logptr(contextptr) << gettext("Warning, need to choose a branch for the root of a polynomial with parameters. This might be wrong.") << endl;
+	polynome pb(1),px(unsplitmultivarpoly(p,innerdim));
+	*logptr(contextptr) << gettext("Warning, need to choose a branch for the root of a polynomial with parameters. This might be wrong.") << '\n';
 	if (l && l->size()>=2){
 	  for (int i=1;i<l->size();++i){
 	    params=(*l)[i];
@@ -878,92 +883,132 @@ namespace giac {
 	  // IMPROVE: using context and *l look for assumptions
 	  if (params.type==_VECT){
 	    vecteur paramv=*params._VECTptr;
-	    for (unsigned j=0;j<paramv.size() && j<vb.size();++j){
-	      gen p=paramv[j];
-	      if (p.type!=_IDNT)
-		continue;
-	      if (p==cst_pi){
-		vb[j]=p;
-		continue;
-	      }
-	      gen g,g2=p._IDNTptr->eval(1,g,contextptr);
-	      if ((g2.type==_VECT) && (g2.subtype==_ASSUME__VECT)){
-		vecteur V=*g2._VECTptr;
-		if ( V.size()==3 && V[1].type==_VECT && V[2].type==_VECT){
-		  for (unsigned i=0;i<V[1]._VECTptr->size();++i){
-		    gen tmp=(*V[1]._VECTptr)[i];
-		    if (tmp.type==_VECT && tmp._VECTptr->size()==2){
-		      gen a=tmp._VECTptr->front(),b=tmp._VECTptr->back();
-		      if (a==minus_inf)
-			vb[j]=b-1;
-		      else {
-			if (b==plus_inf)
-			  vb[j]=a+1;
+	    int nessais=3*paramv.size();
+	    for (int essai=0;essai<nessais;++essai){
+	      for (unsigned j=0;j<paramv.size() && j<vb.size();++j){
+		gen p=paramv[j];
+		if (p.type!=_IDNT)
+		  continue;
+		if (p==cst_pi){
+		  vb[j]=p;
+		  continue;
+		}
+		gen g,g2=p._IDNTptr->eval(1,g,contextptr);
+		if ((g2.type==_VECT) && (g2.subtype==_ASSUME__VECT)){
+		  vecteur V=*g2._VECTptr;
+		  if (V.size()==2)
+		    vb[j]=V[1];
+		  if ( V.size()==3 && V[1].type==_VECT && V[2].type==_VECT){
+		    for (unsigned i=0;i<V[1]._VECTptr->size();++i){
+		      gen tmp=(*V[1]._VECTptr)[i];
+		      if (tmp.type==_VECT && tmp._VECTptr->size()==2){
+			gen a=tmp._VECTptr->front(),b=tmp._VECTptr->back();
+			int decal=1;
+			if (1 || essai)
+			  decal += int((giac_rand(contextptr)*100.0)/rand_max2);
+			if (a==minus_inf)
+			  vb[j]=b-decal;
 			else {
-			  if (a+b==0)
-			    vb[j]=b/2;
-			  else
-			    vb[j]=(a+b)/2;
+			  if (b==plus_inf)
+			    vb[j]=a+decal;
+			  else {
+			    if (a+b==0)
+			      vb[j]=(decal%2?a:b)/(decal+1);
+			    else
+			      vb[j]=(decal*a+b)/(decal+1);
+			  }
 			}
 		      }
 		    }
-		  }
-		} // end if V.size()==3
-	      } // end g2 assume_vect
-	    } // end for j
+		  } // end if V.size()==3
+		} // end g2 assume_vect
+	      } // end for j
+	      vecteur vb0=vb;
+	      find_good_eval(px,pb,vb); 
+	      if (vb0==vb)
+		break;
+	    } // end trying to find a good eval point satisfying assumptions
 	  } // end params.type==_VECT
 	}
 	vecteur vb0=vb;
-	polynome pb(1),px(unsplitmultivarpoly(p,innerdim));
-	find_good_eval(px,pb,vb); // need to modify find_good_eval for assumptions...
+	find_good_eval(px,pb,vb); // find_good_eval does not take care of assumptions, but vb should be ok (loop above)
 	if (vb==vb0)
-	  *logptr(contextptr) << gettext("The choice was done assuming ") << params << "=" << vb << endl;       
+	  *logptr(contextptr) << gettext("The choice was done assuming ") << params << "=" << vb << '\n';       
 	else 
-	  *logptr(contextptr) << gettext("Non regular value ") << vb0 << gettext(" was discarded and replaced randomly by ") << params << "=" << vb << endl;
-	racines=proot(polynome2poly1(pb));
+	  *logptr(contextptr) << gettext("Non regular value ") << vb0 << gettext(" was discarded and replaced randomly by ") << params << "=" << vb << '\n';
+	// checking for embedded polynomial coefficients
+	vector< monomial<gen> >::const_iterator it=pb.coord.begin(),itend=pb.coord.end();
+	for (;0 && it!=itend;++it){ // disabled, computations would be too complex
+	  if (it->value.type==_POLY){
+	    deep_emb=true;
+	    break;
+	  }
+	}
+	if (!deep_emb) 
+	  racines=proot(gen2vecteur(evalf(polynome2poly1(pb),1,contextptr)));
       }
       else
-	racines=proot(*b__VECT._VECTptr); 
+	racines=proot(*evalf(b__VECT,1,contextptr)._VECTptr); // evalf to avoid recursion if computing exact roots of b__VECT
       if (is_undef(racines)) return gensizeerr(contextptr);
       // racines= list of approx roots if b__VECT is numeric
       // empty if not numeric
       racine_max=in_select_root(racines,is_real(b__VECT,contextptr),contextptr);
-    }
-    if (!trouve && !is_undef(racine_max)){ // select root for b
+    } // if (!trouve)
+    if (!deep_emb && !trouve && !is_undef(racine_max)){ // select root for b
       // now eval each factor over racine_max and choose the one with
       // minimal absolute value
-      double min_abs=0;
-      for (;f_it!=f_itend;++f_it){
-	vecteur vtmp(polynome2poly1(f_it->fact));
-	gen tmp;
-	lcmdeno_converted(vtmp,tmp,contextptr);
-	int maxsave=max_sum_sqrt(contextptr);
-	max_sum_sqrt(0,contextptr);
-	if (innerdim)
-	  tmp=r2sym(vtmp,vecteur(1,vb),contextptr);
-	else
-	  tmp=r2sym(vtmp,vecteur(1,vecteur(0)),contextptr);
-	max_sum_sqrt(maxsave,contextptr);
-	tmp=evalf(tmp,1,contextptr);
-	if (tmp.type==_VECT && !tmp._VECTptr->empty())
-	  tmp=tmp/tmp._VECTptr->front();
-	gen f_racine_max(evalf_double(abs(horner(tmp,racine_max),contextptr),1,contextptr));
-	if (f_racine_max.type!=_DOUBLE_)
-	  continue;
-	double current_evaluation=fabs(f_racine_max._DOUBLE_val);
-	if (!trouve){
-	  trouve=true;
-	  min_abs=current_evaluation;
-	  p=f_it->fact;
-	}
-	else {
-	  if (min_abs>current_evaluation){
+      double min_abs=0,racine_max_d=evalf_double(abs(racine_max,contextptr),1,contextptr)._DOUBLE_val;
+      int ndig=14;
+      while (!trouve){
+	for (;f_it!=f_itend;++f_it){
+	  vecteur vtmp(polynome2poly1(f_it->fact));
+	  gen tmp;
+	  lcmdeno_converted(vtmp,tmp,contextptr);
+	  int maxsave=max_sum_sqrt(contextptr);
+	  max_sum_sqrt(0,contextptr);
+	  if (innerdim)
+	    tmp=r2sym(vtmp,vecteur(1,vb),contextptr);
+	  else
+	    tmp=r2sym(vtmp,vecteur(1,vecteur(0)),contextptr);
+	  max_sum_sqrt(maxsave,contextptr);
+#if defined HAVE_LIBMPFR && defined HAVE_LIBPARI // change for Martin Deraux big extensions
+	  if (ndig<15) 
+	    tmp=evalf(tmp,1,contextptr);
+	  else
+	    tmp=_evalf(makesequence(tmp,ndig),contextptr);
+#else 
+	  tmp=evalf(tmp,1,contextptr);
+#endif
+	  if (tmp.type==_VECT && !tmp._VECTptr->empty())
+	    tmp=tmp/tmp._VECTptr->front();
+	  gen f_racine_max(evalf_double(abs(horner(tmp,racine_max),contextptr),1,contextptr));
+	  if (f_racine_max.type!=_DOUBLE_)
+	    continue;
+	  double current_evaluation=fabs(f_racine_max._DOUBLE_val);
+	  if (!trouve){
+	    trouve=true;
 	    min_abs=current_evaluation;
 	    p=f_it->fact;
 	  }
+	  else {
+	    if (min_abs>current_evaluation){
+	      min_abs=current_evaluation;
+	      p=f_it->fact;
+	    }
+	  }
+	} // end for on f_it
+	if (min_abs>1e-4*racine_max_d){
+	  *logptr(contextptr) << "Precision problem choosing root in common_EXT, current precision " << ndig << endl;
+	  trouve=false;
+	  ndig=2*ndig;
+	  f_it=f.begin();
+#if defined HAVE_LIBMPFR && defined HAVE_LIBPARI
+	  if (ndig>1000)
+#endif
+	    break;
 	}
-      }
-    }
+      } // end while !trouve
+    } // end racine_max defined
     if (!trouve) {
       for (;f_it!=f_itend;++f_it){
 	if ( (b.type==_EXT) && is_zero(horner(polynome2poly1(f_it->fact,1),*b._EXTptr)) ){
@@ -1139,7 +1184,7 @@ namespace giac {
       return gentypeerr(gettext("rootof"));
     }
     if (e.type==_VECT && *e._VECTptr==makevecteur(1,0,1)){
-      *logptr(contextptr) << "rootof([1,0,1]) was converted to i" << endl;
+      *logptr(contextptr) << "rootof([1,0,1]) was converted to i" << '\n';
       return cst_i;
     }
     if (e._VECTptr->size()==2 && e._VECTptr->front().type!=_VECT){
@@ -1153,7 +1198,7 @@ namespace giac {
     if (has_num_coeff(e))
       return approx_rootof(e,contextptr);
     if (!lop(lvar(e),at_pow).empty()){
-      *logptr(contextptr) << gettext("Algebraic extensions not allowed in a rootof")<<endl;
+      *logptr(contextptr) << gettext("Algebraic extensions not allowed in a rootof")<<'\n';
       return approx_rootof(e,contextptr);
     }
     // should call factor before returning unevaluated rootof
@@ -1161,6 +1206,10 @@ namespace giac {
       vecteur v2=*e._VECTptr->back()._VECTptr;
       gen g(1);
       lcmdeno(v2,g,contextptr);
+      if (is_minus_one(v2[0]))
+	v2=-v2;
+      if (!is_one(v2[0]))
+	return gensizeerr("rootof minimal polynomial must be unitary");
       return symbolic(at_rootof,gen(makevecteur(e._VECTptr->front(),gen(v2,e._VECTptr->back().subtype)),e.subtype));
     }
     return symbolic(at_rootof,e);
@@ -1355,7 +1404,7 @@ namespace giac {
     else { 
       x=v[1]; a=v[2]; b=v[3]; 
       if (P.type==_VECT)
-	*logptr(contextptr) << gettext("Warning: variable name ignored: ") << x << endl;
+	*logptr(contextptr) << gettext("Warning: variable name ignored: ") << x << '\n';
     }
     gen ai=im(a,contextptr);
     gen bi=im(b,contextptr);
@@ -1597,7 +1646,7 @@ namespace giac {
 	sto(savevar,var,contextptr);
     }
     if (w.empty() && debug_infolevel)
-      *logptr(contextptr) << gettext("Warning: ") << df << gettext("=0: no solution found") << endl;
+      *logptr(contextptr) << gettext("Warning: ") << df << gettext("=0: no solution found") << '\n';
     vecteur wvar=makevecteur(cst_pi);
     lidnt(w,wvar,false);
     if (wvar.size()>1)

@@ -24,6 +24,9 @@ using namespace std;
 #include "gen.h"
 #include "help.h"
 #include <iostream>
+#if !defined GIAC_HAS_STO_38 && !defined NSPIRE && !defined FXCG && !defined POCKETCAS
+#include <fstream>
+#endif
 #include "global.h"
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -44,7 +47,7 @@ using namespace std;
 #include <sys/param.h>
 #endif
 
-#if !defined BESTA_OS && !defined NSPIRE && !defined FXCG && !defined NUMWORKS // test should always return true
+#if !defined BESTA_OS && !defined NSPIRE && !defined FXCG && !defined KHICAS // test should always return true
 #include <dirent.h>
 #endif
 
@@ -67,7 +70,7 @@ namespace giac {
   };
 
   const static_help_t static_help[]={
-#if !defined RTOS_THREADX && !defined BESTA_OS && !defined GIAC_HAS_STO_38 
+#if !defined RTOS_THREADX && !defined BESTA_OS && !defined GIAC_HAS_STO_38 && !defined(KHICAS) && !defined POCKETCAS
 #include "static_help.h"
 #else
     { "", { "", "", "", "",""}, "", "", "" },
@@ -189,9 +192,10 @@ namespace giac {
   // Run ./icas with export GIAC_DEBUG=-2 to print static_help.h and static_help_w.h, then sort in emacs
   // cascmd_fr -> longhelp.js: 
   static bool output_static_help(vector<aide> & v,const vector<int> & langv){
-#if !defined NSPIRE && !defined FXCG
+#if !defined NSPIRE && !defined FXCG && !defined GIAC_HAS_STO_38
     add_language(5,context0); // add german help de/aide_cas
     cout << "Generating xcascmds, for UI.xcascmds in xcas.js, sort and esc-x replace-string ctrl-Q ctrl-j ret ret" << endl;
+    cout << "Copy in python.js. For xcasmod.js, replace \",\" by | " << endl;
     cout << "Generating static_help.h (sort it in emacs)" << endl;
     cout << "Generating static_help_w.h (same but UTF16)" << endl;
     ofstream cmds("xcascmds");
@@ -204,11 +208,13 @@ namespace giac {
       of << '"' << output_quote(it->cmd_name) << '"' << ",";
       std::vector<localized_string> & blabla = it->blabla;
       sort(blabla.begin(),blabla.end());
-      int bs=int(blabla.size());
+      int blablapos=0;
       of << "{";
       for (int i=0;i<HELP_LANGUAGES;i++){
-	if (i<bs && i+1==blabla[i].language && equalposcomp(langv,i+1))
-	  of << '"' << output_quote(blabla[i].chaine) << '"' ;
+	if (i+1==blabla[blablapos].language && equalposcomp(langv,i+1)){
+	  of << '"' << output_quote(blabla[blablapos].chaine) << '"' ;
+	  blablapos++;
+	}
 	else
 	  of << 0 ;
 	if (i==HELP_LANGUAGES-1)
@@ -218,7 +224,7 @@ namespace giac {
       }
       of << "," << '"' << output_quote(it->syntax) << '"' << ',' ;
       std::vector<std::string> & examples = it->examples;
-      bs=int(examples.size());
+      int bs=int(examples.size());
       if (bs){
 	of << '"';
 	for (int i=0;i<bs;i++){
@@ -455,7 +461,7 @@ namespace giac {
   // FIXME: aide_cas may end with synonyms (# cmd synonym1 ...)
   void readhelp(vector<aide> & v,const char * f_name,int & count,bool warn){
     count=0;
-#if !defined NSPIRE && !defined FXCG
+#if !defined NSPIRE && !defined FXCG && !defined GIAC_HAS_STO_38
     if (access(f_name,R_OK)){
       if (warn)
 	std::cerr << "Help file " << f_name << " not found" << endl;
@@ -681,7 +687,7 @@ namespace giac {
     return result;
   }
 
-#if !defined(NSPIRE_NEWLIB) && !defined(RTOS_THREADX) && !defined(EMCC) &&!defined(NSPIRE) && !defined FXCG
+#if !defined(NSPIRE_NEWLIB) && !defined(RTOS_THREADX) && !defined(EMCC) &&!defined(NSPIRE) && !defined FXCG && !defined(KHICAS) && !defined GIAC_HAS_STO_38
   multimap<string,string> html_mtt,html_mall;
   std::vector<std::string> html_vtt,html_vall;
 
@@ -915,7 +921,7 @@ namespace giac {
     return 0;
   }
 
-#if ! (defined VISUALC || defined BESTA_OS || defined FREERTOS || defined NSPIRE || defined FXCG || defined NSPIRE_NEWLIB)
+#if ! (defined VISUALC || defined BESTA_OS || defined FREERTOS || defined NSPIRE || defined FXCG || defined NSPIRE_NEWLIB || defined(KHICAS)) 
 #if defined WIN32 || !defined DT_DIR
   static int dir_select (const struct dirent *d){
     string s(d->d_name);
@@ -937,7 +943,7 @@ namespace giac {
 #else
 // __APPLE_CC__ == 5666 on Mac OS X 10.6, 5658 on geogebra build system OS X 10.8
 // should check __APPLE__ OS X version instead!
-#if ( defined(__MAC_OS_X_VERSION_MAX_ALLOWED)&&  __MAC_OS_X_VERSION_MAX_ALLOWED<  1080 ) || ( defined(__IPHONE_OS_VERSION_MAX_ALLOWED)&&  __IPHONE_OS_VERSION_MAX_ALLOWED<  60100 ) || defined(__OpenBSD__) || ( defined(__FreeBSD_version)&&  __FreeBSD_version<800501)
+#if ( defined(__MAC_OS_X_VERSION_MAX_ALLOWED)&&  __MAC_OS_X_VERSION_MAX_ALLOWED<  1080 ) || ( defined(__IPHONE_OS_VERSION_MAX_ALLOWED)&&  __IPHONE_OS_VERSION_MAX_ALLOWED<  60100 ) || ( defined(__OpenBSD__)&& OpenBSD<201905) || ( defined(__FreeBSD_version)&&  __FreeBSD_version<800501)
   static int dir_select (struct dirent *d){
 #else
   static int dir_select (const struct dirent *d){
@@ -961,7 +967,7 @@ namespace giac {
 #endif // visualc
 
   void find_all_index(const std::string & subdir,multimap<std::string,std::string> & mtt,multimap<std::string,std::string> & mall){
-#if defined GNUWINCE || defined __MINGW_H || defined __ANDROID__ || defined EMCC || defined NSPIRE_NEWLIB || defined FXCG
+#if defined GNUWINCE || defined __MINGW_H || defined __ANDROID__ || defined EMCC || defined NSPIRE_NEWLIB || defined FXCG || defined KHICAS
     return;
 #else
     // cerr << "HTML help Scanning " << subdir << endl;

@@ -17,6 +17,9 @@
  */
 #ifndef _GIAC_GEN_H
 #define _GIAC_GEN_H
+#ifdef KHICAS
+extern size_t stackptr;
+#endif
 
 /* Warning: the size of a gen depend on the architecture and of compile-time flags
    Define -DSMARTPTR64 on 64 bit CPU if the pointers allocated by new are 48 bits
@@ -73,6 +76,8 @@
 namespace giac {
 #endif // ndef NO_NAMESPACE_GIAC
 
+  int sprint_int(char * s,int r);
+  void sprint_double(char * s,double d);
 
 #ifdef USE_GMP_REPLACEMENTS
 #undef HAVE_GMPXX_H
@@ -239,7 +244,7 @@ namespace giac {
       static std::string s; 
       s=this->print(0);
 #if 0 // ndef NSPIRE
-      CERR << s << std::endl;
+      CERR << s << '\n';
 #endif
       return s.c_str(); 
     }
@@ -565,13 +570,13 @@ namespace giac {
 #ifdef SMARTPTR64
     gen()  {
       * ((ulonglong * ) this)=0;
-#ifdef COMPILE_FOR_STABILITY
+#if defined COMPILE_FOR_STABILITY && !defined(POCKETCAS)
       control_c();
 #endif
     };
 #else
     gen(): type(_INT_),subtype(0),val(0) {
-#ifdef COMPILE_FOR_STABILITY
+#if defined COMPILE_FOR_STABILITY && !defined(POCKETCAS)
       control_c();
 #endif
     };
@@ -602,25 +607,25 @@ namespace giac {
     gen(int i) {
       * ((ulonglong * ) this)=0;
       val=i;
-#ifdef COMPILE_FOR_STABILITY
+#ifdef COMPILE_FOR_STABILITY 
       control_c();
 #endif
     };
     gen(size_t i) {
       * ((ulonglong * ) this)=0;
       val=int(i);
-#ifdef COMPILE_FOR_STABILITY
+#ifdef COMPILE_FOR_STABILITY 
       control_c();
 #endif
     };
 #else
     gen(int i): type(_INT_),subtype(0),val(i) {
-#ifdef COMPILE_FOR_STABILITY
+#if defined COMPILE_FOR_STABILITY && !defined(POCKETCAS)
       control_c();
 #endif
     };
     gen(size_t i): type(_INT_),subtype(0),val((int)i)  {
-#ifdef COMPILE_FOR_STABILITY
+#if defined COMPILE_FOR_STABILITY && !defined(POCKETCAS)
       control_c();
 #endif
     };
@@ -698,7 +703,7 @@ namespace giac {
 
     bool in_eval(int level,gen & evaled,const context * contextptr) const;
     inline gen eval(int level,const context * contextptr) const{
-      // CERR << "eval " << *this << " " << level << endl;
+      // CERR << "eval " << *this << " " << level << '\n';
       gen res;
       // return in_eval(level,res,contextptr)?res:*this;
       if (in_eval(level,res,contextptr))
@@ -777,12 +782,12 @@ namespace giac {
     bool is_integer() const ;
     bool is_constant() const;
     std::string print(GIAC_CONTEXT) const;
-    inline const char * printcharptr(GIAC_CONTEXT) const { return print(contextptr).c_str(); };
+    // inline const char * printcharptr(GIAC_CONTEXT) const { return print(contextptr).c_str(); };
     // if sptr==0, return length required, otherwise print at end of *sptr
     int sprint(std::string * sptr,GIAC_CONTEXT) const; 
     std::string print_universal(GIAC_CONTEXT) const;
     std::string print() const;
-    inline const char * printcharptr() const { return print().c_str(); };
+    //inline const char * printcharptr() const { return print().c_str(); };
     wchar_t * wprint(GIAC_CONTEXT) const ; 
     // print then convert to a malloc-ated wchar_t *
     void modify(int i) { *this =gen(i); };
@@ -860,7 +865,7 @@ namespace giac {
     vectpoly(size_t i,const polynome & p):std::vector<polynome>::vector(i,p) {};
     const char * dbgprint(){  
 #if !defined(NSPIRE) && !defined(FXCG)
-      CERR << *this << std::endl; 
+      CERR << *this << '\n'; 
 #endif
       return "Done";
     }
@@ -1247,7 +1252,7 @@ namespace giac {
       static std::string s;
       s=this->print(0);
 #if !defined( NSPIRE) && !defined(FXCG)
-      CERR << s << std::endl;
+      CERR << s << '\n';
 #endif
       return s.c_str();
     }
@@ -1268,6 +1273,9 @@ namespace giac {
   std::string print_the_type(int val,GIAC_CONTEXT);
 
   // I/O
+#ifdef KHICAS
+  stdostream & operator << (stdostream & os,const gen & a);
+#endif
 #ifdef NSPIRE
   template<class T> nio::ios_base<T> & operator<<(nio::ios_base<T> & os,const gen & a){
     return os << a.print(context0); 
@@ -1294,6 +1302,9 @@ namespace giac {
     std::string print(GIAC_CONTEXT) const ;
     const char * dbgprint() const ;
   };
+#if 0 // def KHICAS
+  stdostream & operator<<(stdostream & os,const monome & m){    return os << m.print() ;}
+#endif
 #ifdef NSPIRE
   template<class T> nio::ios_base<T> & operator<<(nio::ios_base<T> & os,const monome & m){    return os << m.print() ;}
 #else
@@ -1354,9 +1365,9 @@ namespace giac {
   // extern environment * env; 
 
   struct attributs {
-    int fontsize;
-    int background;
-    int text_color;
+    short int fontsize;
+    unsigned short int background;
+    unsigned short int text_color;
     attributs(int f,int b,int t): fontsize(f),background(b),text_color(t) {};
     attributs():fontsize(0),background(0),text_color(0) {};
   };
@@ -1364,18 +1375,23 @@ namespace giac {
   // Terminal data for EQW display
   struct eqwdata {
     gen g; 
-    attributs eqw_attributs;
+#if defined KHICAS || defined FXCG
+    short int x,y,dx,dy;
+    short int baseline;
+#else
     int x,y,dx,dy;
+    int baseline;
+#endif
     bool selected;
     bool active;
     bool hasbaseline;
     bool modifiable;
-    int baseline;
+    attributs eqw_attributs;
     eqwdata(int dxx,int dyy,int xx, int yy,const attributs & a,const gen& gg):g(gg),eqw_attributs(a),x(xx),y(yy),dx(dxx),dy(dyy),selected(false),active(false),hasbaseline(false),modifiable(true),baseline(0) {};
     eqwdata(int dxx,int dyy,int xx, int yy,const attributs & a,const gen& gg,int mybaseline):g(gg),eqw_attributs(a),x(xx),y(yy),dx(dxx),dy(dyy),selected(false),active(false),hasbaseline(true),modifiable(true),baseline(mybaseline) {};
     const char * dbgprint(){ 
 #if !defined( NSPIRE) && !defined(FXCG)
-      CERR << g << ":" << dx<< ","<< dy<< "+"<<x <<","<< y<< "," << baseline << "," << eqw_attributs.fontsize << "," << eqw_attributs.background << "," << eqw_attributs.text_color << std::endl; 
+      CERR << g << ":" << dx<< ","<< dy<< "+"<<x <<","<< y<< "," << baseline << "," << eqw_attributs.fontsize << "," << eqw_attributs.background << "," << eqw_attributs.text_color << '\n'; 
 #endif
       return "Done";
     }
@@ -1478,7 +1494,7 @@ namespace giac {
       static std::string s;
       s=this->print(context0);
 #if 0 // ndef NSPIRE
-      COUT << s << std::endl; 
+      COUT << s << '\n'; 
 #endif
       return s.c_str();
     }

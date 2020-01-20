@@ -12,7 +12,7 @@ libgiac_la_SOURCES = input_lexer.ll sym2poly.cc gausspol.cc threaded.cc \
   path.h lexer.h \
   input_lexer.h input_parser.h threaded.h vector.h \
   help.cc  lpsolve.cc optimization.cc signalprocessing.cc \
-  graphe.cc graphtheory.cc # Ugh..
+  graphe.cc graphtheory.cc nautywrapper.c markup.cc kdisplay.cc kadd.cc # Ugh..
 
 libgiac_la_LIBADD = $(NTL_LIBS) $(COCOA_LIBS) $(PARI_LIBS) $(GSL_LIBS)
 
@@ -27,7 +27,7 @@ pari.h cocoa.h giac.h first.h maple.h help.h tinymt32.h tinymt32_license.h \
 static.h static_extern.h static_lexer.h static_lexer_.h\
 lexer_tab_int.h \
 static_help.h giacPCH.h giacintl.h gmp_replacements.h myostream.h \
-lpsolve.h optimization.h signalprocessing.h graphe.h graphtheory.h
+lpsolve.h optimization.h signalprocessing.h graphe.h graphtheory.h nautywrapper.h markup.h kdisplay.h k_csdk.h 
 
 noinst_LTLIBRARIES = libxcas.la
 libxcas_la_LIBADD = libgiac.la $(GUI_LIBS)
@@ -47,11 +47,14 @@ libxcas_la_SOURCES = History.cc Input.cc Xcas1.cc Equation.cc Print.cc \
 ##libjavagiac_la_SOURCES = giac_wrap.cxx
 
 
-bin_PROGRAMS = icas xcas aide
+bin_PROGRAMS = icas xcas aide hevea2mml
 icas_SOURCES = icas.cc 
 icas_LDADD = libxcas.la $(GINSH_LIBS) $(GSL_LIBS) $(LAPACK_LIBS)
 aide_SOURCES = aide.cc
 aide_LDADD = libxcas.la $(GINSH_LIBS) $(GSL_LIBS) $(LAPACK_LIBS)
+hevea2mml_SOURCES = hevea2mml.cc lex_yy.c y_tab.c
+hevea2mml_LDADD = 
+
 
 AM_CPPFLAGS = -DIN_GIAC -I$(srcdir) -I$(top_srcdir) -I$(builddir) \
 	      -I$(top_builddir) $(GMP_CFLAGS) $(NTL_CFLAGS) \
@@ -80,10 +83,11 @@ EXTRA_DIST = .gdbinit xgiac pgiac prime.table gen_user \
 	Makefile.vcc config.h.vcc giac_oo.cpp giaclib.vcproj \
 	Makefile.android compile.android.arm compile.android.x86 config.h.android Makefile.mingw \
 	config.h.iphone Makefile.iphone \
-	config.h.numworks Makefile.numworks \
+	config.h.numworks.* Makefile.numworks.* stdstream \
 	f2c.h clapack.h blaswrap.h mklocal64 pnt_gen \
 	giac.i runme.java archive_java archive_java_linux32 archive_java_linux64  javascript.cxx giacjs.i README.javascript \
-	Makefile.jni README.jni README.nacl mkdylib mkdylib10 mkgiacpy mkgiacpy10 giac_wrap.cxx aspen_translate.h translate.cc
+	Makefile.jni README.jni README.nacl mkdylib mkdylib10 mkgiacpy mkgiacpy10 giac_wrap.cxx aspen_translate.h numworks_translate.h translate.cc \
+	itex2MML.* y_tab.h static_lexer_numworks.h static_lexer__numworks.h 
 
 bin_SCRIPTS = pgiac
 
@@ -96,5 +100,8 @@ install-exec-hook:
 	ln -sf icas $(DESTDIR)$(bindir)/giac
 	ln -sf xcas $(DESTDIR)$(bindir)/xcasnew
 ##	$(INSTALL_DATA) $(libgiac_la_SOURCES)  $(DESTDIR)$(docdir)/src
-##	$(INSTALL_DATA) $(top_srcdir)/config.h $(DESTDIR)$(includedir)/giac
+	mkdir -p $(DESTDIR)$(includedir)/giac
+	cp -f config.h $(DESTDIR)$(includedir)/giac
+	cp -f input_lexer.h $(DESTDIR)$(includedir)/giac
+	cp -f input_parser.h $(DESTDIR)$(includedir)/giac
 

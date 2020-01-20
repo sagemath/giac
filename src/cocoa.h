@@ -20,7 +20,7 @@
 #include "first.h"
 #include "gausspol.h"
 #include "gen.h"
-
+#include "solve.h"
 // GIAC_64VARS is currently compatible with GROEBNER_VARS 15 only
 // special code for polynomial up to 11 variables (max deg<32768) 
 //#define GROEBNER_VARS 11
@@ -44,7 +44,7 @@ namespace giac {
     unsigned char lex;
   };
 
-  bool gbasis8(const vectpoly & v,order_t & order,vectpoly & res,environment * env,bool modularalgo,bool modularcheck,int & rur,GIAC_CONTEXT,bool eliminate_flag);
+  bool gbasis8(const vectpoly & v,order_t & order,vectpoly & res,environment * env,bool modularalgo,bool modularcheck,int & rur,GIAC_CONTEXT,gbasis_param_t gbasis_param);
   bool greduce8(const vectpoly & v,const vectpoly & G,order_t & order,vectpoly & res,environment * env,GIAC_CONTEXT);
   longlong memory_usage();
 #endif

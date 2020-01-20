@@ -2099,6 +2099,7 @@ namespace giac {
       return;
     vecteur & v = *f._VECTptr;
     gen v0=v[0];
+    v0=evalf(v0,1,contextptr);
     bool est_hyperplan=v0.is_symb_of_sommet(at_hyperplan);
     string legende;
     vecteur style(get_style(v,legende));
@@ -2801,7 +2802,7 @@ namespace giac {
 	    glvertex(B,0,0,contextptr);
 	}
 	glEnd();
-	if (v0.subtype==_VECTOR__VECT){
+	if (v0.subtype==_VECTOR__VECT){ // FIXME
 	  double xB=evalf_double(B[0],1,contextptr)._DOUBLE_val;
 	  double yB=evalf_double(B[1],1,contextptr)._DOUBLE_val;
 	  double zB=evalf_double(B[2],1,contextptr)._DOUBLE_val;
@@ -2812,8 +2813,10 @@ namespace giac {
 	  double iA,jA,depthA,iB,jB,depthB,di,dj,dij;
 	  find_ij(xB,yB,zB,iB,jB,depthB);
 	  find_ij(xA,yA,zA,iA,jA,depthA);
+	  //COUT << iA << " " << iB << " " << jA << " " << jB << endl;
 	  di=iA-iB; dj=jA-jB;
 	  dij=std::sqrt(di*di+dj*dj);
+	  //COUT << dij << endl;
 	  if (dij){
 	    dij /= giacmin(5,int(dij/10))+width;
 	    di/=dij;
@@ -2823,11 +2826,14 @@ namespace giac {
 	    dj*=std::sqrt(3.0);
 	    double iC=iB+di+dip,jC=jB+dj+djp;
 	    double iD=iB+di-dip,jD=jB+dj-djp;
+	    //COUT << iC << " " << iD << " " << jC << " " << jD << endl;
 	    double xC,yC,zC,xD,yD,zD;
 	    find_xyz(iC,jC,depthB,xC,yC,zC);
 	    find_xyz(iD,jD,depthB,xD,yD,zD);
-	    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-	    glBegin(GL_POLYGON);
+	    //COUT << "vect 1" << xC << " " << yC << " " << zC << ", " << xB << " " << yB << " " << zB << ", " << xD << " " << yD << " " << zD << endl;
+	    //glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+	    //glBegin(GL_POLYGON);
+	    glBegin(GL_LINE_LOOP);
 	    glVertex3d(xB,yB,zB);
 	    glVertex3d(xC,yC,zC);
 	    glVertex3d(xD,yD,zD);
@@ -4134,7 +4140,7 @@ void freeglutStrokeCharacter( int character )
     return 0;
   }
   
-  int giac_renderer(const char * ch){
+int giac_renderer(const char * ch){
     // COUT << "giac_renderer " << ch << endl;
     int i=0,s=strlen(ch),w=400,h=250,fs=1,no=-1;
     if (s==0) return -1;
@@ -4150,6 +4156,7 @@ void freeglutStrokeCharacter( int character )
     }
     if (!openglptr)
       openglptr = new Opengl3d (400,250);
+    //openglptr->contextptr=contextptr;
     if (s){
       no=atoi(ch)-1;
       // COUT << no << " " << v3d.size() << endl;
@@ -4256,6 +4263,7 @@ void freeglutStrokeCharacter( int character )
       int w=0,h=0,fs;
       if (!openglptr)
 	openglptr = new Opengl3d (400,250);
+      openglptr->contextptr=contextptr;
       fs=init_screen(w,h,-1);
       if (fs)
 	return fs;

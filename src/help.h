@@ -19,7 +19,7 @@
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <fstream>
+//#include <fstream>
 #include <string>
 #include "vector.h"
 #include <map>
@@ -84,7 +84,7 @@ namespace giac {
   aide helpon(const std::string & demande,const std::vector<aide> & v,int language,int count,bool with_op=true);
   std::string writehelp(const aide & cur_aide,int language);
 
-#if !defined(NSPIRE_NEWLIB) && !defined(RTOS_THREADX) && !defined(EMCC) && !defined(NSPIRE) && !defined(FXCG)
+#if !defined(NSPIRE_NEWLIB) && !defined(RTOS_THREADX) && !defined(EMCC) && !defined(NSPIRE) && !defined(FXCG) && !defined KHICAS
   extern std::multimap<std::string,std::string> html_mtt,html_mall;
   extern std::vector<std::string> html_vtt,html_vall;
 

@@ -113,23 +113,23 @@ void latex_save_DispG(const char * filename) {
 
 void a_propos() {
   std::string s("xcas "); s+=GIAC_VERSION; s+=" (c) 2000-18, Bernard Parisse, Renee De Graeve\n";
-    s += "http://www-fourier.ujf-grenoble.fr/~parisse/giac.html\n";
+    s += "Optimization, signalprocessing, graph theory code and manuals: Luka Marohnić\n";
+    s += "http://www-fourier.univ-grenoble-alpes.fr/~parisse/giac.html\n";
     s += "If you like Xcas, please link your webpage to the above link to help other find it\n";
     s += "Software licensed under the GPL, General Public License version 3.0 or later\nSee the file COPYING in this package for more details\nOr browse http://www.gnu.org\n";
     s += "French documentation (c) Renee de Graeve\n";
     s += "This documentation is freely redistribuable for non commercial purpose\n";
     s += "Python giacpy module: Frederic Han\n";
-    s += "Optimization, signalprocessing, graph theory code: Luka Marohnić\n";
     s += "Math ML and SVG support initially written by Jean-Pierre Branchard\n";
     s += "OpenOffice interface: Christophe Devalland, Serge Moutou\n";
     s += "Qcas interface: Loic Le Coq, Frederic Han\n";
     s += "Androcas interface: Thomas Luka\n";
     s += "SmartCAS interface: Nicolas Pujol\n";
-    s += "Tutorial (dxcas) with B. Ycart\n";
+    s += "English user guide translation maintained by Jay Belanger\n";
     s += "Greek localization, Alkiviadis Akritas, Eugenia Kelepesi-Akritas, George Nasopoulos, Nikos Larisis\n";
     s += "Spanish localization, Xavier Vidaux, J. Manrique Lopez\n";
     s += "German short help localization, Philipp Rösch\n";
-    s += "English user guide contributions by Jay Belanger and Luka Marohnić\n";
+    s += "Tutorial (dxcas) with B. Ycart\n";
     s += "Debian package: Carlos Enrique Carleos Artime\n";
     s += "Mac OS X port thanks to Jean-Yves Avenard and IREM Grenoble\n";
     s += "Tablor by Guillaume Connan, Pgiac by Jean-Michel Sarlat\n";
@@ -138,7 +138,7 @@ void a_propos() {
     s += "Thanks to the geogebra team, especially Zoltán Kovács, Michael Borcherds, Markus Hohenwater, Zbyněk Konečný\n";
     s += "Xcas early testers: Christiane Serret (lycée de Crest),\nMichèle Gandit (lycée international de Grenoble)\nStephane Lejoly, Jean-Joel Bataille, Jean-Eric Visca, Thierry Xuereb\nPaul Magnien, Denis Le Fur, Phil Pham\nSébastien Celles, Gérard Vinel, Robert Rolland, Robert Sétif\nJuan Antonio Martinez Rojas, Nicolas Rosillo (Spain)\n";
     s += "Francois Maltey (Mupacs)\nFrederic Faure, Emilien Kia, Andreas Thillosen (giac)\n";
-    s += "Francois Boisson (grace a lui xcas est utilisable a l'agregation de maths)\n";
+    s += "Francois Boisson (grace a lui Xcas est utilisable a l'agregation de maths)\n";
     s += "Luc Briel, Georges Dubouloz, Emmanuel Gaunard, Laurent Hofer, Yvan Duron, Martin Deraux (bugs, suggestions)...\n";
     s += "Uses GMP, (c) T. Granlund & al.\n";
   #ifdef HAVE_LIBMPFR
@@ -146,6 +146,9 @@ void a_propos() {
   #endif //
   #ifdef HAVE_LIBMPFI
     s += "Arithmetic interval support by MPFI, Fabrice Rouillier, Nathalie Revol, Sylvain Chevillard, Hong Diep Nguyen, Christoph Lauter and Philippe Théveny \n";
+  #endif //
+  #ifdef HAVE_LIBECM
+    s += "Elliptic Curve Method support by ECM, Paul Zimmermann, Cyril Bouvier, David Cleaver, Pierrick Gaudry, Brian Gladman, Jim Fougeron, Laurent Fousse, Alexander Kruppa, Francois Morain, Dave Newman, Jason S. Papadopoulos\n";
   #endif //
   #ifdef HAVE_LIBCOCOA
     s += "Alternative Groebner Basis code by CoCoA, J. Abbott & al. \n";
@@ -667,7 +670,8 @@ void cb_Insert_ItemName(Fl_Widget * w , void*) {
   	  eqwptr->replace_selection(giac::symbolic(*tmp._FUNCptr,eqwptr->get_selection()));
   	return;
         }
-        menu_buffer += '(';
+        if (!Xcas_automatic_completion_browser->value())
+          menu_buffer += '(';
       }
       static std::string ans;
       ans=menu_buffer;
@@ -751,7 +755,7 @@ void load_autorecover_data() {
       if (f){
         fclose(f);
        // Xcas_Main_Window_->hide();
-  #if 1
+  #if 0
        int n=fl_choice(gettext("Choose syntax compatibility"),gettext("Python"),gettext("Xcas"),gettext("Other")),mm=-1; // n==2 other
       if (n<2) n=1-n;
   #else
@@ -965,7 +969,7 @@ static void cb_Xcas_CloneOffline(Fl_Menu_*, void*) {
 }
 
 static void cb_Xcas_CloneOnline(Fl_Menu_*, void*) {
-  std::string html5="http://www-fourier.ujf-grenoble.fr/~parisse/xcasfr.html#"+xcas::widget_html5(Xcas_current_session()); std::cout << html5 << std::endl; giac::system_browser_command(html5);
+  std::string html5="http://www-fourier.univ-grenoble-alpes.fr/~parisse/xcasfr.html#"+xcas::widget_html5(Xcas_current_session()); std::cout << html5 << std::endl; giac::system_browser_command(html5);
 }
 
 static void cb_Xcas_Insert_Session(Fl_Menu_*, void*) {
@@ -998,6 +1002,10 @@ static void cb_Xcas_save_current_session_as(Fl_Menu_*, void*) {
 
 static void cb_Xcas_save_all_sessions(Fl_Menu_*, void*) {
   Xcas_save_all(Xcas_Main_Tab);
+}
+
+static void cb_Xcas_Export_Khicas(Fl_Menu_*, void*) {
+  xcas::History_cb_Save_as_xcas_casio(Xcas_current_session(),0);
 }
 
 static void cb_Xcas_Export_Xcas(Fl_Menu_*, void*) {
@@ -1209,6 +1217,23 @@ static void cb_Xcas_general_config_(Fl_Menu_*, void*) {
 static void cb_Xcas_Set_Xcas0(Fl_Menu_*, void*) {
   const giac::context * contextptr=Xcas_get_context();
 giac::xcas_mode(contextptr)=0;
+giac::python_compat(contextptr)=0;
+xcas_user_level=0;
+Xcas_update_mode();
+}
+
+static void cb_Xcas_Set_Python0(Fl_Menu_*, void*) {
+  const giac::context * contextptr=Xcas_get_context();
+giac::xcas_mode(contextptr)=0;
+giac::python_compat(contextptr)=1;
+xcas_user_level=0;
+Xcas_update_mode();
+}
+
+static void cb_Xcas_Set_Python0xor(Fl_Menu_*, void*) {
+  const giac::context * contextptr=Xcas_get_context();
+giac::xcas_mode(contextptr)=0;
+giac::python_compat(contextptr)=2;
 xcas_user_level=0;
 Xcas_update_mode();
 }
@@ -1594,19 +1619,19 @@ static void cb_Xcas_help_PARI(Fl_Menu_*, void*) {
 
 static void cb_Xcas_help_forum(Fl_Menu_*, void*) {
   const giac::context * contextptr = xcas::get_context(xcas::Xcas_input_focus);
- giac::system_browser_command(giac::language(contextptr)==4?"http://www.inf.uth.gr/xcas/":"http://xcas.e.ujf-grenoble.fr/XCAS");
+ giac::system_browser_command(giac::language(contextptr)==4?"http://www.inf.uth.gr/xcas/":"https://xcas.univ-grenoble-alpes.fr/forum");
 }
 
 static void cb_Xcas_help_lycee_card(Fl_Menu_*, void*) {
-  giac::system_browser_command("http://www-fourier.ujf-grenoble.fr/~parisse/irem/placlycee.pdf");
+  giac::system_browser_command("http://www-fourier.univ-grenoble-alpes.fr/~parisse/irem/placlycee.pdf");
 }
 
 static void cb_Xcas_help_lycee(Fl_Menu_*, void*) {
-  giac::system_browser_command("http://www-fourier.ujf-grenoble.fr/~parisse/irem.html");
+  giac::system_browser_command("http://www-fourier.univ-grenoble-alpes.fr/~parisse/irem.html");
 }
 
 static void cb_Xcas_help_algo_lycee(Fl_Menu_*, void*) {
-  giac::system_browser_command("http://www-fourier.ujf-grenoble.fr/~parisse/algoxcas.html");
+  giac::system_browser_command("http://www-fourier.univ-grenoble-alpes.fr/~parisse/algoxcas.html");
 }
 
 static void cb_Xcas_help_connan(Fl_Menu_*, void*) {
@@ -1626,21 +1651,21 @@ static void cb_Xcas_help_han(Fl_Menu_*, void*) {
 }
 
 static void cb_Xcas_help_capes(Fl_Menu_*, void*) {
-  giac::system_browser_command("http://www-fourier.ujf-grenoble.fr/~parisse/capes.html");
+  giac::system_browser_command("http://www-fourier.univ-grenoble-alpes.fr/~parisse/capes.html");
 }
 
 static void cb_Xcas_help_agreg(Fl_Menu_*, void*) {
-  giac::system_browser_command("http://www-fourier.ujf-grenoble.fr/~parisse/agreg.html");
+  giac::system_browser_command("http://www-fourier.univ-grenoble-alpes.fr/~parisse/agreg.html");
 }
 
 static void cb_Xcas_help_agregint(Fl_Menu_*, void*) {
-  giac::system_browser_command("http://www-fourier.ujf-grenoble.fr/~parisse/agregint.html");
+  giac::system_browser_command("http://www-fourier.univ-grenoble-alpes.fr/~parisse/agregint.html");
 }
 
 static void cb_Xcas_help_load(Fl_Menu_*, void*) {
   #ifdef WIN32
   fl_message("%s","Xcas will launch your browser to get the help archive giacshare.tgz.\nAfter the download is completed, please unarchive casdoc.tgz\nin the Xcas directory (c:Ês by default)");
- giac::system_browser_command("http://www-fourier.ujf-grenoble.fr/~parisse/giac/casdoc.tgz");
+ giac::system_browser_command("http://www-fourier.univ-grenoble-alpes.fr/~parisse/giac/casdoc.tgz");
  return;
 #endif
   std::string path=giac::xcasroot();
@@ -1652,8 +1677,8 @@ static void cb_Xcas_help_load(Fl_Menu_*, void*) {
  path=path.substr(0,i+1)+"share";
  i=fl_ask("%s",("Check that you can write over "+path+",\ncheck that your Internet connection is ready\nand check that wget, tar and gzip are installed.\nProceed?").c_str());
   if (i){
-    fl_message("%s",("Executing: mkdir /tmp ; cd /tmp && wget http://www-fourier.ujf-grenoble.fr/~parisse/giac/giacshare.tgz && cd "+path+" && tar xvfz /tmp/giacshare.tgz").c_str());
-    system(("mkdir /tmp ; cd /tmp && wget http://www-fourier.ujf-grenoble.fr/~parisse/giac/giacshare.tgz && cd "+path+" && tar xvfz /tmp/giacshare.tgz").c_str());
+    fl_message("%s",("Executing: mkdir /tmp ; cd /tmp && wget http://www-fourier.univ-grenoble-alpes.fr/~parisse/giac/giacshare.tgz && cd "+path+" && tar xvfz /tmp/giacshare.tgz").c_str());
+    system(("mkdir /tmp ; cd /tmp && wget http://www-fourier.univ-grenoble-alpes.fr/~parisse/giac/giacshare.tgz && cd "+path+" && tar xvfz /tmp/giacshare.tgz").c_str());
   };
 }
 
@@ -1880,8 +1905,8 @@ Fl_Menu_Item menu_Xcas_main_menu[] = {
  {0,0,0,0,0,0,0,0,0},
  {"Open (recovery mode)", 0,  (Fl_Callback*)cb_Xcas_open_recovery, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Import", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {"maple worksheet", 0,  (Fl_Callback*)cb_Xcas_open_maple, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"ti89 program", 0,  (Fl_Callback*)cb_Xcas_open_ti89, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Maple worksheet", 0,  (Fl_Callback*)cb_Xcas_open_maple, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"TI89 program", 0,  (Fl_Callback*)cb_Xcas_open_ti89, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"V200 program", 0,  (Fl_Callback*)cb_Xcas_open_v200, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
  {"Clone", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
@@ -1889,32 +1914,33 @@ Fl_Menu_Item menu_Xcas_main_menu[] = {
  {"Online", 0,  (Fl_Callback*)cb_Xcas_CloneOnline, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
  {"Insert", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {"xcas session", 0,  (Fl_Callback*)cb_Xcas_Insert_Session, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"xcas Firefox link", 0,  (Fl_Callback*)cb_Xcas_Firefox_Insert_Session, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"figure", 0,  (Fl_Callback*)cb_Xcas_Insert_Figure, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"spreadsheet", 0,  (Fl_Callback*)cb_Xcas_Insert_Tableur, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"program", 0,  (Fl_Callback*)cb_Xcas_Insert_Program, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Xcas session", 0,  (Fl_Callback*)cb_Xcas_Insert_Session, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Xcas Firefox link", 0,  (Fl_Callback*)cb_Xcas_Firefox_Insert_Session, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Figure", 0,  (Fl_Callback*)cb_Xcas_Insert_Figure, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Spreadsheet", 0,  (Fl_Callback*)cb_Xcas_Insert_Tableur, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Program", 0,  (Fl_Callback*)cb_Xcas_Insert_Program, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
  {"Save", 0x80073,  (Fl_Callback*)cb_Xcas_save_current_session, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Save as", 0,  (Fl_Callback*)cb_Xcas_save_current_session_as, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Save all", 0,  (Fl_Callback*)cb_Xcas_save_all_sessions, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Export as", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {"xcas text", 0,  (Fl_Callback*)cb_Xcas_Export_Xcas, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"xcas-python text", 0,  (Fl_Callback*)cb_Xcas_Export_XcasPy, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"maple text", 0,  (Fl_Callback*)cb_Xcas_Export_Maple, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"mupad text", 0,  (Fl_Callback*)cb_Xcas_Export_Mupad, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"ti text", 0,  (Fl_Callback*)cb_Xcas_Export_TI, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"KhiCas", 0,  (Fl_Callback*)cb_Xcas_Export_Khicas, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Xcas text", 0,  (Fl_Callback*)cb_Xcas_Export_Xcas, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Xcas-Python text", 0,  (Fl_Callback*)cb_Xcas_Export_XcasPy, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Maple text", 0,  (Fl_Callback*)cb_Xcas_Export_Maple, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Mupad text", 0,  (Fl_Callback*)cb_Xcas_Export_Mupad, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"TI text", 0,  (Fl_Callback*)cb_Xcas_Export_TI, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
  {"Kill", 0,  (Fl_Callback*)cb_Xcas_Close, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Print", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {"preview", 0,  (Fl_Callback*)cb_Xcas_Print_Preview, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"to printer", 0,  (Fl_Callback*)cb_Xcas_Print_Printer, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"preview selected levels", 0,  (Fl_Callback*)cb_Xcas_Print_Preview_Selected, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Preview", 0,  (Fl_Callback*)cb_Xcas_Print_Preview, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"To printer", 0,  (Fl_Callback*)cb_Xcas_Print_Printer, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Preview selected levels", 0,  (Fl_Callback*)cb_Xcas_Print_Preview_Selected, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
  {"LaTeX", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {"latex preview", 0,  (Fl_Callback*)cb_Xcas_LaTeX_Print_Preview, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"latex print", 0,  (Fl_Callback*)cb_Xcas_LaTeX_Print_Printer, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"latex print selection", 0,  (Fl_Callback*)cb_Xcas_LaTeX_Print_Selection, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"LaTeX preview", 0,  (Fl_Callback*)cb_Xcas_LaTeX_Print_Preview, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"LaTeX print", 0,  (Fl_Callback*)cb_Xcas_LaTeX_Print_Printer, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"LaTeX print selection", 0,  (Fl_Callback*)cb_Xcas_LaTeX_Print_Selection, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
  {"Screen capture", 0,  (Fl_Callback*)cb_Xcas_screen_capture, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"--- ", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
@@ -1932,7 +1958,7 @@ Fl_Menu_Item menu_Xcas_main_menu[] = {
  {"Redo", 0x40079,  (Fl_Callback*)cb_Xcas_Redo, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Paste", 0,  (Fl_Callback*)cb_Xcas_Paste, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Del selected levels", 0,  (Fl_Callback*)cb_Xcas_Delete, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"selection -> LaTeX", 0x40074,  (Fl_Callback*)cb_Xcas_Tex_Selection, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Selection -> LaTeX", 0x40074,  (Fl_Callback*)cb_Xcas_Tex_Selection, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"New entry", 0x8006e,  (Fl_Callback*)cb_Xcas_Add_Entry1, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"New parameter", 0x40070,  (Fl_Callback*)cb_Xcas_Add_Parameter, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Insert newline", 0,  (Fl_Callback*)cb_Xcas_Insert_Newline, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
@@ -1946,48 +1972,50 @@ Fl_Menu_Item menu_Xcas_main_menu[] = {
  {"Graph configuration", 0,  (Fl_Callback*)cb_Xcas_graph_config_, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"General configuration", 0,  (Fl_Callback*)cb_Xcas_general_config_, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Mode (syntax)", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {"xcas", 0,  (Fl_Callback*)cb_Xcas_Set_Xcas0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"maple", 0,  (Fl_Callback*)cb_Xcas_Set_Maple0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"mupad", 0,  (Fl_Callback*)cb_Xcas_Set_Mupad0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"ti89/92", 0,  (Fl_Callback*)cb_Xcas_Set_TI0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Xcas", 0,  (Fl_Callback*)cb_Xcas_Set_Xcas0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Python ^==**", 0,  (Fl_Callback*)cb_Xcas_Set_Python0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Python ^==xor", 0,  (Fl_Callback*)cb_Xcas_Set_Python0xor, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Maple", 0,  (Fl_Callback*)cb_Xcas_Set_Maple0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Mupad", 0,  (Fl_Callback*)cb_Xcas_Set_Mupad0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"TI89/92", 0,  (Fl_Callback*)cb_Xcas_Set_TI0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
  {"Show", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
  {"DispG", 0x80064,  (Fl_Callback*)cb_Xcas_show_DispG, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"keyboard", 0,  (Fl_Callback*)cb_Xcas_show_keyboard, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"bandeau", 0,  (Fl_Callback*)cb_Xcas_show_bandeau, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"msg", 0,  (Fl_Callback*)cb_Xcas_show_msg, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Keyboard", 0,  (Fl_Callback*)cb_Xcas_show_keyboard, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Bandeau", 0,  (Fl_Callback*)cb_Xcas_show_bandeau, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Msg", 0,  (Fl_Callback*)cb_Xcas_show_msg, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Show script window", 0,  (Fl_Callback*)cb_Xcas_show_script_window, 0, 16, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
  {"Hide", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
  {"DispG", 0,  (Fl_Callback*)cb_Xcas_hide_DispG, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"keyboard", 0,  (Fl_Callback*)cb_Xcas_hide_keyboard, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"bandeau", 0,  (Fl_Callback*)cb_Xcas_hide_bandeau, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"msg", 0,  (Fl_Callback*)cb_Xcas_hide_msg, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Keyboard", 0,  (Fl_Callback*)cb_Xcas_hide_keyboard, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Bandeau", 0,  (Fl_Callback*)cb_Xcas_hide_bandeau, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Msg", 0,  (Fl_Callback*)cb_Xcas_hide_msg, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
  {"Index language", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {"francais", 0,  (Fl_Callback*)cb_Xcas_index_Francais, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"english", 0,  (Fl_Callback*)cb_Xcas_index_English, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"espanol", 0,  (Fl_Callback*)cb_Xcas_index_Espanol, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"greek", 0,  (Fl_Callback*)cb_Xcas_index_Greek, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"chinese", 0,  (Fl_Callback*)cb_Xcas_index_Chinese, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"deutsch", 0,  (Fl_Callback*)cb_Xcas_index_German, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Francais", 0,  (Fl_Callback*)cb_Xcas_index_Francais, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"English", 0,  (Fl_Callback*)cb_Xcas_index_English, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Espanol", 0,  (Fl_Callback*)cb_Xcas_index_Espanol, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Greek", 0,  (Fl_Callback*)cb_Xcas_index_Greek, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Chinese", 0,  (Fl_Callback*)cb_Xcas_index_Chinese, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Deutsch", 0,  (Fl_Callback*)cb_Xcas_index_German, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
  {"Colors", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {"default background", 0,  (Fl_Callback*)cb_Xcas_background_color_item, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"input text", 0,  (Fl_Callback*)cb_Xcas_input_text_color, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"input background", 0,  (Fl_Callback*)cb_Xcas_input_text_background_color, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"comment text", 0,  (Fl_Callback*)cb_Xcas_comment_color_item, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"comment background", 0,  (Fl_Callback*)cb_Xcas_comment_background_color_item, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"log text", 0,  (Fl_Callback*)cb_Xcas_log_color_item, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"log background", 0,  (Fl_Callback*)cb_Xcas_log_background_color_item, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"equation text", 0,  (Fl_Callback*)cb_Xcas_equation_color_item, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"equation background", 0,  (Fl_Callback*)cb_Xcas_equation_background_color_item, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"editor text", 0,  (Fl_Callback*)cb_Xcas_editor_color_item, 0, 16, FL_NORMAL_LABEL, 0, 14, 0},
- {"editor background", 0,  (Fl_Callback*)cb_Xcas_editor_background_color_item, 0, 16, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Default background", 0,  (Fl_Callback*)cb_Xcas_background_color_item, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Input text", 0,  (Fl_Callback*)cb_Xcas_input_text_color, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Input background", 0,  (Fl_Callback*)cb_Xcas_input_text_background_color, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Comment text", 0,  (Fl_Callback*)cb_Xcas_comment_color_item, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Comment background", 0,  (Fl_Callback*)cb_Xcas_comment_background_color_item, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Log text", 0,  (Fl_Callback*)cb_Xcas_log_color_item, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Log background", 0,  (Fl_Callback*)cb_Xcas_log_background_color_item, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Equation text", 0,  (Fl_Callback*)cb_Xcas_equation_color_item, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Equation background", 0,  (Fl_Callback*)cb_Xcas_equation_background_color_item, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Editor text", 0,  (Fl_Callback*)cb_Xcas_editor_color_item, 0, 16, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Editor background", 0,  (Fl_Callback*)cb_Xcas_editor_background_color_item, 0, 16, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
  {"Session font", 0,  (Fl_Callback*)cb_Xcas_change_current_fontsize, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"All fonts", 0,  (Fl_Callback*)cb_Xcas_change_fontsize, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"browser", 0,  (Fl_Callback*)cb_Xcas_browser, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Browser", 0,  (Fl_Callback*)cb_Xcas_browser, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Save configuration", 0,  (Fl_Callback*)cb_Save_config, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
  {"Help", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
@@ -2024,7 +2052,7 @@ Fl_Menu_Item menu_Xcas_main_menu[] = {
  {0,0,0,0,0,0,0,0,0},
  {"Start with CAS", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
  {"Tutorial", 0,  (Fl_Callback*)cb_Xcas_help_tutorial, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"solutions", 0,  (Fl_Callback*)cb_Xcas_help_solution, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Solutions", 0,  (Fl_Callback*)cb_Xcas_help_solution, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
  {"Tutoriel algo", 0,  (Fl_Callback*)cb_Xcas_help_start_algoseconde, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Rebuild help cache", 0,  (Fl_Callback*)cb_Xcas_help_make_index, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
@@ -2088,8 +2116,8 @@ Fl_Menu_Item menu_Xcas_main_menu[] = {
  {"rem: remainder (poly. synthetic division)", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"abcuv: Solve a.u+b.v=c for polynomials", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"chinrem: Chinese remainder for polynomials", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"%: Z/pZ, p premier", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"GF: Corps fini non premier", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"%: Z/pZ, p prime", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"GF: Finite non prime fields", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
  {"Linear algebra", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
  {"matrix: Create a matrix", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
@@ -2104,7 +2132,7 @@ Fl_Menu_Item menu_Xcas_main_menu[] = {
  {0,0,0,0,0,0,0,0,0},
  {"Proba", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
  {"binomial: Binomial distribution", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"comb: comb(n.k) k parmi n", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"comb: comb(n,k) n choose k", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"normald: Normal density", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"seq: list", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"rand: random number", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
@@ -2902,7 +2930,7 @@ show_rpn_menu(rpn_menu_page);
 xcas::No_Focus_Button *Xcas_CST_Key=(xcas::No_Focus_Button *)0;
 
 static void cb_Xcas_CST_Key(xcas::No_Focus_Button*, void*) {
-  giac::gen e=giac::protecteval(giac::CST__IDNT_e,2,0);
+  giac::gen e=giac::protecteval(giac::CST__IDNT_e,2,Xcas_get_context());
   if (e.type==giac::_VECT){
     rpn_menu=*e._VECTptr;
     show_rpn_menu(0);
@@ -3141,34 +3169,34 @@ xcas::DispG_Window *Xcas_DispG_Window_=(xcas::DispG_Window *)0;
 
 Fl_Menu_Bar *Xcas_DispG_Menu=(Fl_Menu_Bar *)0;
 
-static void cb_preview(Fl_Menu_*, void*) {
+static void cb_Preview(Fl_Menu_*, void*) {
   xcas::widget_ps_print(Xcas_DispG_,"DispG",true,3,true,true,true);
 }
 
-static void cb_print(Fl_Menu_*, void*) {
+static void cb_Print(Fl_Menu_*, void*) {
   xcas::widget_print(Xcas_DispG_);
 }
 
-static void cb_latex(Fl_Menu_*, void*) {
+static void cb_LaTeX(Fl_Menu_*, void*) {
   latex_save_DispG("DispG.tex"); xcas::xdvi("DispG.tex");
 }
 
-static void cb_latex1(Fl_Menu_*, void*) {
+static void cb_LaTeX1(Fl_Menu_*, void*) {
   latex_save_DispG("DispG.tex"); xcas::dvips("DispG.tex");
 }
 
-static void cb_close(Fl_Menu_*, void*) {
+static void cb_Close(Fl_Menu_*, void*) {
   Xcas_DispG_Window_->hide();
 }
 
 unsigned char menu_Xcas_DispG_Menu_i18n_done = 0;
 Fl_Menu_Item menu_Xcas_DispG_Menu[] = {
  {"Print", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {"preview", 0,  (Fl_Callback*)cb_preview, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"print", 0,  (Fl_Callback*)cb_print, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"latex preview", 0,  (Fl_Callback*)cb_latex, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"latex print", 0,  (Fl_Callback*)cb_latex1, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
- {"close", 0,  (Fl_Callback*)cb_close, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Preview", 0,  (Fl_Callback*)cb_Preview, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Print", 0,  (Fl_Callback*)cb_Print, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"LaTeX preview", 0,  (Fl_Callback*)cb_LaTeX, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"LaTeX print", 0,  (Fl_Callback*)cb_LaTeX1, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Close", 0,  (Fl_Callback*)cb_Close, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
  {0,0,0,0,0,0,0,0,0}
 };
@@ -3196,7 +3224,7 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
     { Xcas_main_menu = new Fl_Menu_Bar(0, 0, 775, 25);
       if (!menu_Xcas_main_menu_i18n_done) {
         int i=0;
-        for ( ; i<336; i++)
+        for ( ; i<339; i++)
           if (menu_Xcas_main_menu[i].label())
             menu_Xcas_main_menu[i].label(gettext(menu_Xcas_main_menu[i].label()));
         menu_Xcas_main_menu_i18n_done = 1;
@@ -5369,7 +5397,7 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
     for (int i=argstart;i<argc;++i){
       load_filename(argv[i],false);
       if (link){
-        std::string html5="http://www-fourier.ujf-grenoble.fr/~parisse/xcasfr.html#"+xcas::widget_html5(Xcas_current_session()); std::cout << html5 << std::endl; giac::system_browser_command(html5);
+        std::string html5="http://www-fourier.univ-grenoble-alpes.fr/~parisse/xcasfr.html#"+xcas::widget_html5(Xcas_current_session()); std::cout << html5 << std::endl; giac::system_browser_command(html5);
       }
     }
     if (link){
@@ -5377,6 +5405,7 @@ Fl_Window* Xcas_run(int argc,char ** argv) {
     }
   }
   else make_history();
+    giac::python_compat(0,giac::context0);  // otherwise factor(x^4-4,sqrt(2)) fails if pari is disabled
     bool running=true;
   #ifdef WIN32
     static std::string windowname=std::string("Xcas ")+GIAC_VERSION+" (win"+giac::print_INT_(8*sizeof(long))+")";
@@ -5453,21 +5482,21 @@ int main(int argc,char ** argv) {
   fl_message("%s",gettext("Please close this window and run update.bat in the Xcas installation directory"));
   #else
   #ifdef __APPLE__
-  system("cd ~ && rm -f ~/Desktop/xcas_osx6.dmg.gz && open http://www-fourier.ujf-grenoble.fr/~parisse/giac/xcas_osx6.dmg.gz &");
+  system("cd ~ && rm -f ~/Desktop/xcas_osx6.dmg.gz && open http://www-fourier.univ-grenoble-alpes.fr/~parisse/giac/xcas_osx6.dmg.gz &");
   #else
   if (giac::is_file_available("/usr/bin/xcas")){
     if (giac::is_file_available("/usr/bin/apt-get"))
       system("xterm -e 'sudo apt-get update ; sudo apt-get install giac'");
     else
   #ifdef __x86_64__ 
-      system("xterm -e 'rm -f giac64.rpm && wget http://www-fourier.ujf-grenoble.fr/~parisse/giac/giac64.rpm && sudo rpm -e giac && sudo rpm -U gia64c.rpm'");    
+      system("xterm -e 'rm -f giac64.rpm && wget http://www-fourier.univ-grenoble-alpes.fr/~parisse/giac/giac64.rpm && sudo rpm -e giac && sudo rpm -U gia64c.rpm'");    
   #else
-      system("xterm -e 'rm -f giac32.rpm && wget http://www-fourier.ujf-grenoble.fr/~parisse/giac/giac32.rpm && sudo rpm -e giac && sudo rpm -U giac32.rpm'");    
+      system("xterm -e 'rm -f giac32.rpm && wget http://www-fourier.univ-grenoble-alpes.fr/~parisse/giac/giac32.rpm && sudo rpm -e giac && sudo rpm -U giac32.rpm'");    
   #endif
   }
   else {
     if (giac::is_file_available("/usr/local/bin/xcas")){
-      system("cd /tmp && wget http://www-fourier.ujf-grenoble.fr/~parisse/giac/xcas.tgz && cd /usr/local && xterm -e 'sudo tar xvfz tmp/xcas.tgz' &");
+      system("cd /tmp && wget http://www-fourier.univ-grenoble-alpes.fr/~parisse/giac/xcas.tgz && cd /usr/local && xterm -e 'sudo tar xvfz tmp/xcas.tgz' &");
     }
     else
       fl_alert("%s","Update implemented only for debian/rpm packages");

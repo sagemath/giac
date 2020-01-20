@@ -21,6 +21,10 @@
 #ifndef _GIAC_FIRST_H_
 #define _GIAC_FIRST_H_
 
+#ifdef NUMWORKS
+#define KHICAS 1
+#endif
+
 #ifndef GIAC_VERSION
 #define GIAC_VERSION VERSION
 #endif
@@ -137,7 +141,12 @@ int my_sprintf(char * s, const char * format, ...);
 #ifdef WITH_MYOSTREAM
 #include "myostream.h"
 #else
+#if defined KHICAS //&& defined STATIC_BUILTIN_LEXER_FUNCTION
+#include "stdstream"
+#define my_ostream stdostream
+#else
 #define my_ostream std::ostream
+#endif
 #endif
 
 #ifdef x86_64
@@ -157,7 +166,7 @@ int my_sprintf(char * s, const char * format, ...);
 #define CLOCK_T int
 #endif
 
-#if !defined HAVE_ALLOCA_H && !defined GIAC_HAS_STO_38
+#if !defined HAVE_ALLOCA_H && !defined GIAC_HAS_STO_38 && !defined KHICAS
 #define alloca _alloca
 #endif
 
@@ -283,7 +292,7 @@ typedef unsigned long long ulonglong;
 // #define PSEUDO_MOD accelerates cyclic* gbasis computation significantly
 // from int_multilinear_combination in vecteur.cc (from rref?)
 #ifdef FIR
-#if !(defined(BESTA_OS) || defined(WINDOWS) || defined(OSXIOS) || defined(FIR_LINUX) || defined(FIR_ANDROID) || defined(FREERTOS) )
+#if !(defined(BESTA_OS) || defined(WINDOWS) || defined(OSXIOS) || defined(FIR_LINUX) || defined(FIR_ANDROID) || defined(FREERTOS) || defined(PRIMEWEBASM))
 // was #if !(defined(IOS) || defined(__ANDROID__)) && !defined(OSX) && !defined(LINUX)
 #define PSEUDO_MOD 
 #endif

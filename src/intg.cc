@@ -95,7 +95,25 @@ namespace giac {
     bool save_complex_mode=complex_mode(contextptr);
     complex_mode(true,contextptr);
     gen res=subst(e,x,newx,false,contextptr);
-    res=eval(res,1,contextptr);
+    // avoid rewrite of fractional powers
+    vecteur v=lop(newx,at_pow);
+    int i=0;
+    for (;i<v.size();++i){
+      gen tmp=v[i];
+      if (tmp.is_symb_of_sommet(at_pow)){
+	tmp=tmp._SYMBptr->feuille;
+	if (tmp.type==_VECT && tmp._VECTptr->size()==2){
+	  tmp=tmp._VECTptr->back();
+	  if (tmp.type==_FRAC && tmp._FRACptr->den.type==_INT_ ){
+	    tmp=tmp._FRACptr->den;
+	    if (tmp.val % 2==1)
+	      break;
+	  }
+	}
+      }
+    }				 
+    if (i==v.size()) 
+      res=eval(res,1,contextptr);
     complex_mode(save_complex_mode,contextptr);
     return res;
   }
@@ -306,6 +324,13 @@ namespace giac {
     }
   }
 
+  static gen normal_norootof(const gen & g,GIAC_CONTEXT){
+    gen res=normal(g,contextptr);
+    if (!lop(res,at_rootof).empty())
+      res=ratnormal(normalize_sqrt(g,contextptr),contextptr);
+    return res;
+  }
+
   // eval N at X=e with e=x*exp(i*dephasage*pi/n)/(X-e)+conj and integrate
   static gen substconj_(const gen & N,const gen & X,const gen & x,const gen & dephasage_,bool residue_only,GIAC_CONTEXT){
     int mode=angle_mode(contextptr);
@@ -324,10 +349,10 @@ namespace giac {
     gen e=x*(c+cst_i*s);
     gen b=subst(N,X,e,false,contextptr),rb,ib;
     reim(b,rb,ib,contextptr);
-    gen N2=normal(-2*ib,contextptr); // same
+    gen N2=normal_norootof(-2*ib,contextptr); // same
     if (residue_only)
       return N2*sign(s*x,contextptr);
-    gen res=normal(rb,contextptr)*symbolic(at_ln,pow(X,2)+ratnormal(-2*c*x,contextptr)*X+x.squarenorm(contextptr)); 
+    gen res=normal_norootof(rb,contextptr)*symbolic(at_ln,pow(X,2)+ratnormal(-2*c*x,contextptr)*X+x.squarenorm(contextptr)); 
     gen atanterm=pi/cst_pi*symbolic(at_atan,(X-c*x)/(s*x));
     if (X.is_symb_of_sommet(at_tan))
       atanterm += pi*sign(s*x,contextptr)*symbolic(at_floor,X._SYMBptr->feuille/pi+plus_one_half);
@@ -415,7 +440,7 @@ namespace giac {
       else
 	c=pow(c,inv(n,contextptr),contextptr);
       if (!residue_only)
-	res += normal(subst(N,X,c,false,contextptr),contextptr)*lnabs2(X-c,X,contextptr)+normal(subst(N,X,-c,false,contextptr),contextptr)*lnabs2(X+c,X,contextptr);
+	res += normal_norootof(subst(N,X,c,false,contextptr),contextptr)*lnabs2(X-c,X,contextptr)+normal_norootof(subst(N,X,-c,false,contextptr),contextptr)*lnabs2(X+c,X,contextptr);
       for (int i=1;i<n/2;++i)
 	res += substconj(N,X,c,gen(2*i)/n*cst_pi,residue_only,contextptr);
     }
@@ -428,6 +453,100 @@ namespace giac {
 	res += substconj(N,X,c,gen(2*i+1)/n*cst_pi,residue_only,contextptr);
     }
     return res;
+  }
+
+  gen symb_atan(const polynome & d_,const polynome & a_,const vecteur & l,GIAC_CONTEXT){
+    polynome d(d_),a(a_);
+    simplify(d,a);
+    if (a.coord.empty())
+      return 0;
+    gen D=r2e(d,l,contextptr);
+    if (is_positive(-D*a.coord.front().value,contextptr))
+      return -symb_atan(r2e(-a,l,contextptr)/D);
+    return symb_atan(r2e(a,l,contextptr)/D);
+  }
+
+  // im(ln(a+i*b)), a and b polynomials rewritten as sum of atan without denominators
+  // im(ln(a+i*b)+ln(u-i*v))=im(ln(a*u+b*v)+i(b*u-a*v))
+  gen ln2sumatan(const polynome & a,const polynome & b,const vecteur & l,GIAC_CONTEXT){
+    if (a.lexsorted_degree()>b.lexsorted_degree())
+      return -ln2sumatan(b,a,l,contextptr);
+    polynome u,v,d;
+    egcd(a,b,u,v,d);
+    if (v.coord.empty()){ // a divides b
+      return symb_atan(a,b,l,contextptr);
+    }
+    gen tmp=-ln2sumatan(v,u,l,contextptr);
+    tmp += symb_atan(d,b*u-a*v,l,contextptr);
+    return tmp;
+  }
+  gen ln2sumatan(const gen & a,const gen & b,const vecteur & l,GIAC_CONTEXT){
+    //return symb_atan(b/a);
+    gen A=e2r(a,l,contextptr),An,Ad;
+    gen B=e2r(b,l,contextptr),Bn,Bd;
+    fxnd(A,An,Ad);
+    fxnd(B,Bn,Bd);
+    An=Bd*An;
+    Bn=Ad*Bn;
+    if (An.type==_POLY && Bn.type==_POLY)
+      return ln2sumatan(*An._POLYptr,*Bn._POLYptr,l,contextptr);
+    if (Bn.type!=_POLY)
+      return -symb_atan(a/b);
+    return symb_atan(b/a);
+  }
+
+  static bool integrate_rothstein_trager(const polynome & num,const vecteur & v,const vecteur & l,const gen & X,gen & res,int intmode,GIAC_CONTEXT){
+    // Improve: csolve for resultant(num-t*v',v)
+    // Example a:=diff(atan((x^2-2x)/(x-1))); b:=int(a);
+    // v=[1,-4,5,-2,1], roots for resultant +/-i/2
+    // sum t*ln(gcd(n-t*d',d))
+    // if t is complex and v real
+    // t*ln()+conjugate=re(t)*ln(|gcd|^2)-im(t)*atan(im(gcd)/re(gcd))
+    gen N=r2e(num,l,contextptr);
+    vecteur Nv(lvar(N));
+    if (1 || Nv==vecteur(1,X)){ // do it for univariate only
+      gen D=r2e(poly12polynome(v,1),l,contextptr);
+      gen Dprime=r2e(poly12polynome(derivative(v),1),l,contextptr);
+      gen tres(identificateur("tresultant"));
+      gen R=_resultant(makesequence(N-tres*Dprime,D,X),contextptr);
+      gen Rprime=derive(R,tres,contextptr);
+      R=_quo(makesequence(R,gcd(R,Rprime,contextptr),tres),contextptr);
+      gen Rdeg=_degree(makesequence(R,tres),contextptr);
+      gen Rt=solve(R,tres,1,contextptr); // _cSolve(makesequence(R,tres),contextptr);
+      if (Rdeg.type==_INT_ && Rt.type==_VECT && Rt._VECTptr->size()==Rdeg.val){
+	vecteur w=*Rt._VECTptr;
+	bool reel=vect_is_real(v,contextptr);
+	if (!has_num_coeff(w)){
+	  for (size_t wi=0;wi<w.size();++wi){
+	    gen racine=w[wi];
+	    if (has_op(normal(racine,contextptr),*at_rootof))
+	      return false;
+	    gen G=gcd(N-racine*Dprime,D,contextptr);
+	    if (reel){
+	      gen racr,raci;
+	      reim(racine,racr,raci,contextptr);
+	      if (is_zero(raci,contextptr))
+		res += racine*symb_ln(symb_abs(G));
+	      else {
+		if (wi<w.size()-1 && w[wi]==conj(w[wi+1],contextptr)){
+		  gen gcdr,gcdi;
+		  reim(G,gcdr,gcdi,contextptr);
+		  res += racr*symb_ln(gcdr*gcdr+gcdi*gcdi)-2*raci*ln2sumatan(gcdr,gcdi,l,contextptr);
+		  ++wi;
+		}
+		else
+		  res += racine*symb_ln(G);
+	      }
+	    }
+	    else {
+	      res += racine*symb_ln(G);
+	    }
+	  }
+	  return true;
+	}
+      }
+    }
+    return false;
   }
 
   // integration of cyclotomic-type denominators
@@ -468,7 +587,7 @@ namespace giac {
 	gen c2=(-b+sqrtdelta)/2/a;
 	gen N=r2e(num,l,contextptr)*X/d/sqrtdelta;
 	if (is_zero(im(a,contextptr)) && is_zero(im(b,contextptr)) && is_zero(im(c,contextptr))){
-	  if (is_positive(delta,contextptr)){
+	  if (!is_positive(-delta,contextptr)){
 	    res += makelnatan(N/c2,X,c2,d,residue_only,contextptr);
 	    res -= makelnatan(N/c1,X,c1,d,residue_only,contextptr);
 	    return true;
@@ -499,15 +618,15 @@ namespace giac {
     } // end if d==2 and n==2d
     gen c=normal(-b/a,contextptr);
     if (n%d)
-      return false;
+      return residue_only?false:integrate_rothstein_trager(num,v,l,X,res,intmode,contextptr);
     if (d!=n){ 
       // rescale and check cyclotomic
       gen tw=v.back()/pow(*it/v.front(),n/d);
       if (tw.type!=_INT_ && tw.type!=_POLY)
-	return false;
+	return residue_only?false:integrate_rothstein_trager(num,v,l,X,res,intmode,contextptr);
       tw=r2e(v/v.front(),lprime,contextptr);
       if (tw.type!=_VECT)
-	return false;
+	return residue_only?false:integrate_rothstein_trager(num,v,l,X,res,intmode,contextptr);
       vecteur w=*tw._VECTptr;
       vecteur w_copy=w;
       c=pow(r2e(*it/v.front(),lprime,contextptr),inv(d,contextptr),contextptr);
@@ -530,14 +649,14 @@ namespace giac {
 	deg=is_cyclotomic(w,epsilon(contextptr));
       }
       if (!deg)
-	return false;
+	return residue_only?false:integrate_rothstein_trager(num,v,l,X,res,intmode,contextptr);
       if ( (intmode &2)==0)
 	gprintf(step_cyclotomic,gettext("Integrate rational fraction with denominator a cyclotomic polynomial, roots are primitive roots of %gen=0"),makevecteur(a*symb_pow(vx_var,deg)+b),contextptr);
       // int(num/(a*X^n+b),X)=sum(x=rootof(-b/a),num*x/(-n*b)*ln(X-x))
       vecteur vprime=derivative(v),V,Vprime,d;
       egcd(v,vprime,0,V,Vprime,d);
       if (d.size()!=1)
-	return false;
+	return residue_only?false:integrate_rothstein_trager(num,v,l,X,res,intmode,contextptr);
       gen dd=d.front();
       // 1/vprime=Vprime/d      
       gen N=normal(_quorem(makesequence(r2e(num,l,contextptr)*horner(r2e(Vprime,lprime,contextptr),X),horner(r2e(v,lprime,contextptr),X),X),contextptr)[1]/r2e(dd,lprime,contextptr),contextptr);
@@ -1086,7 +1205,7 @@ namespace giac {
 	  if (tmpv.type==_FRAC){
 	    if (tmpv._FRACptr->den.type==_VECT){
 	      if (tmpv._FRACptr->den._VECTptr->size()!=1){
-		*logptr(contextptr) << "Internal error integrating sqrt" << endl;
+		*logptr(contextptr) << "Internal error integrating sqrt" << '\n';
 		return false;
 	      }
 	      tmpv._FRACptr->den=tmpv._FRACptr->den._VECTptr->front();
@@ -1571,7 +1690,7 @@ namespace giac {
     if (lprime.front().type!=_VECT) return gensizeerr(gettext("in integrate_rational"));
     lprime.front()=cdr_VECT(*(lprime.front()._VECTptr));
     gen r=e2r(e,l,contextptr);
-    // cout << "Int " << r << endl;
+    // cout << "Int " << r << '\n';
     gen r_num,r_den;
     fxnd(r,r_num,r_den);
     if (r_num.type==_EXT){
@@ -1775,6 +1894,8 @@ namespace giac {
     vector< pf<gen> >::const_iterator itend=pfdecomp.end();
     vector< pf<gen> > intdecomp,finaldecomp;
     for (;it!=itend;++it){
+      if (it->den.lexsorted_degree()==0) 
+	continue;
       const pf<gen> & single =intreduce_pf(*it,intdecomp);
       if ( (it->mult>1) && (intmode & 2)==0){
 	gen fact1=pow(r2e(it->fact,l,contextptr),it->mult,contextptr);
@@ -2015,7 +2136,7 @@ namespace giac {
     case 3: // tan
       switch (utrig){
       case 1: // tan^2=1/(1-sin^2)-1
-	fx=pow(inv(1-pow(gen_x,-2),contextptr)-1,fexp);
+	fx=pow(inv(1-pow(gen_x,2),contextptr)-1,fexp);
 	return true;
       case 2: // tan^2=1/cos^2-1
 	fx=pow(pow(gen_x,-2)-1,fexp);
@@ -2085,7 +2206,8 @@ namespace giac {
 	  if (!is_rewritable_as_f_of(fu,tmpu,tmpfx,gen_x,contextptr))
 	    return in_is_rewritable_as_f_of(fu,u,fx,gen_x,contextptr);;
 	  fx=complex_subst(tmpfx,gen_x,gen_x-alpha,contextptr);
-	  return true;
+	  if (!has_i(fx)) // FIX for int(x^3/sqrt(1-x^2),x,-1,0);
+	    return true;
 	}
       }
     }
@@ -2152,7 +2274,7 @@ namespace giac {
       l3.push_back(tmpi);
       l4.push_back(*it);
     }      
-    *logptr(contextptr) << gettext("Warning, integration of abs or sign assumes constant sign by intervals (correct if the argument is real):\nCheck ") << l1 << endl;
+    *logptr(contextptr) << gettext("Warning, integration of abs or sign assumes constant sign by intervals (correct if the argument is real):\nCheck ") << l1 << '\n';
     e=complex_subst(e,l1,l2,contextptr);
     res=integrate_id_rem(e,gen_x,remains_to_integrate,contextptr,intmode);
     gen resadd;
@@ -2161,7 +2283,12 @@ namespace giac {
     for (int j=0;j<i;++j){
       gen val=l4[j],a,b,r;
       if (val.is_symb_of_sommet(at_sign)){
-	if (is_linear_wrt(val._SYMBptr->feuille,gen_x,a,b,contextptr) && ((has_evalf(a,r,1,contextptr) && has_evalf(b,r,1,contextptr)) || lvar(res)==lidnt(res))){
+	gen val2=val._SYMBptr->feuille;
+	if (val2.is_symb_of_sommet(at_sin) || val2.is_symb_of_sommet(at_tan))
+	  val2=val2._SYMBptr->feuille;
+	bool warn=true;
+	if (is_linear_wrt(val2,gen_x,a,b,contextptr) && ((has_evalf(a,r,1,contextptr) && has_evalf(b,r,1,contextptr)) || lvar(res)==lidnt(res))){
+	  warn=val._SYMBptr->feuille!=val2;
 	  r=-b/a;
 	  vecteur l5(l4);
 #if 1
@@ -2178,12 +2305,12 @@ namespace giac {
 #endif
 	  gen tmp=ratnormal((limit(liminf,id_x,r,-1,contextptr)-limit(limsup,id_x,r,1,contextptr))/2,contextptr)*val;
 	  if (is_undef(tmp) || is_inf(tmp))
-	    *logptr(contextptr) << gettext("Unable to cancel step at ")+r.print(contextptr) + " of " << limsup << "-" << liminf << endl;
+	    *logptr(contextptr) << gettext("Unable to cancel step at ")+r.print(contextptr) + " of " << limsup << "-" << liminf << '\n';
 	  else
 	    resadd += tmp;
 	}
-	else
-	  *logptr(contextptr) << gettext("Discontinuities at zeroes of ") << val._SYMBptr->feuille << " were not checked" << endl;
+	if (warn)
+	  *logptr(contextptr) << gettext("Discontinuities at zeroes of ") << val._SYMBptr->feuille << " were not checked" << '\n';
       }
     }
     remains_to_integrate=complex_subst(remains_to_integrate,l3,l4,contextptr);
@@ -2297,7 +2424,7 @@ namespace giac {
     subst1=mergevecteur(l1surd,l1NTHROOT);
     subst2=mergevecteur(l2surd,l2NTHROOT);
     if (!subst1.empty())
-      *logptr(contextptr) << gettext("Temporary replacing surd/NTHROOT by fractional powers") << endl;
+      *logptr(contextptr) << gettext("Temporary replacing surd/NTHROOT by fractional powers") << '\n';
   }
 
   bool is_elementary(const vecteur & v,const gen & x){
@@ -2311,10 +2438,40 @@ namespace giac {
     return true;
   }
 
+  bool when2sign(gen &e,const gen &gen_x,GIAC_CONTEXT){
+    vecteur lwhen(lop(e,at_when));
+    if (!lwhen.empty()) lwhen=lvarx(lwhen,gen_x);
+    if (!lwhen.empty()){
+      vecteur l2;
+      const_iterateur it=lwhen.begin(),itend=lwhen.end();
+      int i=0;
+      for (;it!=itend;++it,++i){
+	gen tmp=it->_SYMBptr->feuille,repl;
+	if (tmp.type!=_VECT || tmp._VECTptr->size()!=3)
+	  return false;
+	vecteur & whenargs = *tmp._VECTptr;
+	tmp = whenargs[0];
+	if ( (tmp.is_symb_of_sommet(at_superieur_strict) || 
+	     tmp.is_symb_of_sommet(at_superieur_egal) ) &&
+	     (repl=tmp._SYMBptr->feuille).type==_VECT && repl._VECTptr->size()==2){
+	  repl=repl._VECTptr->back()-repl._VECTptr->front();
+	  repl=(symbolic(at_sign,repl)+1)/2;
+	}
+	else {
+	  repl=symbolic(at_same,gen(makevecteur(tmp,0),_SEQ__VECT));
+	  repl=symbolic(at_sign,repl);
+	}
+	l2.push_back(whenargs[1]+repl*(whenargs[2]-whenargs[1]));
+      }
+      e=complex_subst(e,lwhen,l2,contextptr);      
+    }
+    return true;
+  }
+
   // intmode bit 0 is used for sqrt int control, bit 1 control step/step info
   gen integrate_id_rem(const gen & e_orig,const gen & gen_x,gen & remains_to_integrate,GIAC_CONTEXT,int intmode){
 #ifdef LOGINT
-    *logptr(contextptr) << gettext("integrate id_rem ") << e_orig << endl;
+    *logptr(contextptr) << gettext("integrate id_rem ") << e_orig << '\n';
 #endif
     remains_to_integrate=0;
     gen e(e_orig);
@@ -2339,44 +2496,20 @@ namespace giac {
     vecteur lpiece(lop(e,at_piecewise));
     if (!lpiece.empty()) lpiece=lvarx(lpiece,gen_x);
     if (!lpiece.empty()){
-      *logptr(contextptr) << gettext("Warning: piecewise indefinite integration does not return a continuous antiderivative") << endl;
+      *logptr(contextptr) << gettext("Warning: piecewise indefinite integration does not return a continuous antiderivative") << '\n';
       gen piece=lpiece.front();
       if (piece.is_symb_of_sommet(at_piecewise))
 	return integrate_piecewise(e,piece,gen_x,remains_to_integrate,contextptr,intmode);
     }
 #ifdef LOGINT
-    *logptr(contextptr) << gettext("integrate step -2 ") << e << endl;
+    *logptr(contextptr) << gettext("integrate step -2 ") << e << '\n';
 #endif
     // Step -1: replace ifte(a,b,c) by b+sign(a==0)*(c-b)
     // if a is A1>A2 or A1>=A2 condition, the sign(a==0) is replaced by (sign(A2-A1)+1)/2
-    vecteur lwhen(lop(e,at_when));
-    if (!lwhen.empty()) lwhen=lvarx(lwhen,gen_x);
-    if (!lwhen.empty()){
-      vecteur l2;
-      const_iterateur it=lwhen.begin(),itend=lwhen.end();
-      int i=0;
-      for (;it!=itend;++it,++i){
-	gen tmp=it->_SYMBptr->feuille,repl;
-	if (tmp.type!=_VECT || tmp._VECTptr->size()!=3)
-	  return gensizeerr(gettext("Bad when ")+it->print(contextptr));
-	vecteur & whenargs = *tmp._VECTptr;
-	tmp = whenargs[0];
-	if ( (tmp.is_symb_of_sommet(at_superieur_strict) || 
-	     tmp.is_symb_of_sommet(at_superieur_egal) ) &&
-	     (repl=tmp._SYMBptr->feuille).type==_VECT && repl._VECTptr->size()==2){
-	  repl=repl._VECTptr->back()-repl._VECTptr->front();
-	  repl=(symbolic(at_sign,repl)+1)/2;
-	}
-	else {
-	  repl=symbolic(at_same,gen(makevecteur(tmp,0),_SEQ__VECT));
-	  repl=symbolic(at_sign,repl);
-	}
-	l2.push_back(whenargs[1]+repl*(whenargs[2]-whenargs[1]));
-      }
-      e=complex_subst(e,lwhen,l2,contextptr);      
-    }
+    if (!when2sign(e,gen_x,contextptr))
+      return gensizeerr(gettext("Bad when ")+e.print(contextptr));
 #ifdef LOGINT
-    *logptr(contextptr) << gettext("integrate step 0 ") << e << endl;
+    *logptr(contextptr) << gettext("integrate step 0 ") << e << '\n';
 #endif
     // Step 0: replace abs(var_dep_x) with sign*var_dep_x
     // and then sign() with a constant
@@ -2428,7 +2561,7 @@ namespace giac {
     }
 #endif
 #ifdef LOGINT
-    *logptr(contextptr) << gettext("integrate step 1 ") << e << endl;
+    *logptr(contextptr) << gettext("integrate step 1 ") << e << '\n';
 #endif
     if (u==at_sum && f.type==_VECT && f._VECTptr->size()==4){
       vecteur & fv=*f._VECTptr;
@@ -2437,7 +2570,7 @@ namespace giac {
       if (!is_zero(derive(fv[2],gen_x,contextptr)) || !is_zero(derive(fv[3],gen_x,contextptr)) )
 	return gensizeerr("Boundaries of sum depends on integration variables");
       if (is_inf(fv[2])||is_inf(fv[3]))
-	*logptr(contextptr) << "Warning: assuming integration and sum commutes" << endl;
+	*logptr(contextptr) << "Warning: assuming integration and sum commutes" << '\n';
       gen res=integrate_id_rem(fv[0],gen_x,remains_to_integrate,contextptr,intmode);
       res=_sum(makesequence(res,fv[1],fv[2],fv[3]),contextptr);
       if (!is_zero(remains_to_integrate))
@@ -2465,6 +2598,16 @@ namespace giac {
 	e=e2;
 	v=v2;
 	rvarsize=int(v2.size());
+      }
+      if (rvarsize==2){
+	e2=simplifier(e,contextptr);
+	v2.clear();
+	v2.push_back(gen_x);
+	rlvarx(e2,gen_x,v2);
+	if (v2.size()==1 || (v2.size()==2 && taille(v2[1],100)<taille(v[1],100))){
+	  e=e2;
+	  v=v2;
+	}
       }
     }
     vecteur rvar=v;
@@ -2597,7 +2740,7 @@ namespace giac {
       }
     }
 #ifdef LOGINT
-    *logptr(contextptr) << gettext("integrate step 2 ") << e << endl;
+    *logptr(contextptr) << gettext("integrate step 2 ") << e << '\n';
 #endif
     if (e.type!=_SYMB){
       if (e==gen_x)
@@ -2653,7 +2796,9 @@ namespace giac {
 	fu=symbolic(at_prod,gen(vv,_SEQ__VECT));
       }
       gen cst=extract_cst(u,gen_x,contextptr);
-      if (is_rewritable_as_f_of(fu,u,fx,gen_x,contextptr)){
+      bool recur=rvarsize>2 && gen_x.type==_IDNT && strcmp(gen_x._IDNTptr->id_name,"t_nostep")==0 && u.is_symb_of_sommet(at_pow); // workaround for some stupid integrals like integrate(sin((d*x + c)^(2/3)*b + a)/(f*x + E),x);
+      if (!recur && 
+	  is_rewritable_as_f_of(fu,u,fx,gen_x,contextptr)){
 	fx=cst*fx;
 	if ( (intmode & 2)==0)
 	  gprintf(step_fuuprime,gettext("Integration of %gen: f(u)*u' where f=%gen->%gen and u=%gen"),makevecteur(e,gen_x,fx,u),contextptr);
@@ -2687,7 +2832,7 @@ namespace giac {
       }
     }
 #ifdef LOGINT
-    *logptr(contextptr) << gettext("integrate step 3 ") << e << endl;
+    *logptr(contextptr) << gettext("integrate step 3 ") << e << '\n';
 #endif
     // Step3: rational fraction?
     if (rvarsize==1){
@@ -2699,6 +2844,23 @@ namespace giac {
       if (rvar[i].is_symb_of_sommet(at_pow)){
 	do_risch=false;
 	break;
+      }
+    }
+    // minimal support for LambertW
+    if (has_op(rvar,*at_LambertW)){
+      vecteur vw(lop(rvar,at_LambertW));
+      gen a,b;
+      if (vw.size()==1 && is_linear_wrt(vw[0]._SYMBptr->feuille,gen_x,a,b,contextptr)){
+	// W(ax+b) inside, change of variables ax+b=z*exp(z)
+	// W(ax+b)=z, dx=(z+1)*exp(z)*dz/a
+	vecteur substin(makevecteur(vw[0],gen_x));
+	vecteur substout(makevecteur(gen_x,(gen_x*symbolic(at_exp,gen_x))));
+	gen tmpe=complex_subst(e,substin,substout,contextptr)*(gen_x+1)*symbolic(at_exp,gen_x)/a,tmprem;
+	gen tmpres=linear_integrate_nostep(tmpe,gen_x,tmprem,intmode,contextptr);
+	substout[1]=symbolic(at_exp,gen_x); substin[1]=(a*gen_x+b)/vw[0];
+	remains_to_integrate=complex_subst(tmprem,substout,substin,contextptr);
+	res=complex_subst(tmpres,substout,substin,contextptr);
+	return res;
       }
     }
     // square roots
@@ -3024,7 +3186,7 @@ namespace giac {
     if (tmp.type!=_DOUBLE_ && tmp.type!=_CPLX)
       return exactvalue;
     if (debug_infolevel)
-      *logptr(contextptr) << gettext("Checking exact value of integral with numeric approximation")<<endl;
+      *logptr(contextptr) << gettext("Checking exact value of integral with numeric approximation")<<'\n';
     gen tmp2;
     if (!tegral(f,x,a,b,1e-6,(1<<10),tmp2,true,contextptr))
       return exactvalue;
@@ -3034,7 +3196,7 @@ namespace giac {
 	 abs(tmp-tmp2,contextptr)._DOUBLE_val<=1e-3*abs(tmp2,contextptr)._DOUBLE_val
 	 )
       return simplifier(exactvalue,contextptr);
-    *logptr(contextptr) << gettext("Error while checking exact value with approximate value, returning both!") << endl;
+    *logptr(contextptr) << gettext("Error while checking exact value with approximate value, returning both!") << '\n';
     return makevecteur(exactvalue,tmp2);
   }
 
@@ -3105,9 +3267,9 @@ namespace giac {
   // "unary" version
   gen _integrate(const gen & args,GIAC_CONTEXT){
     if (complex_variables(contextptr))
-      *logptr(contextptr) << gettext("Warning, complex variables is set, this can lead to fairly complex answers. It is recommended to switch off complex variables in the settings or by complex_variables:=0; and declare individual variables to be complex by e.g. assume(a,complex).") << endl;
+      *logptr(contextptr) << gettext("Warning, complex variables is set, this can lead to fairly complex answers. It is recommended to switch off complex variables in the settings or by complex_variables:=0; and declare individual variables to be complex by e.g. assume(a,complex).") << '\n';
 #ifdef LOGINT
-    *logptr(contextptr) << gettext("integrate begin") << endl;
+    *logptr(contextptr) << gettext("integrate begin") << '\n';
 #endif
     if ( args.type==_STRNG && args.subtype==-1) return  args;
     vecteur v(gen2vecteur(args));
@@ -3292,7 +3454,7 @@ namespace giac {
       }
     } catch (std::runtime_error & err){
       last_evaled_argptr(contextptr)=NULL;
-      CERR << "Unable to eval " << v[0] << ": " << err.what() << endl;
+      CERR << "Unable to eval " << v[0] << ": " << err.what() << '\n';
     }
 #endif
     keep_acosh_asinh(b_acosh,contextptr);
@@ -3304,6 +3466,7 @@ namespace giac {
     }
     gen rem,borne_inf,borne_sup,res,v0orig,aorig,borig;
     if (s==4){
+#ifndef POCKETCAS
       if ( (has_num_coeff(v[0]) ||
 	    v[2].type==_FLOAT_ || v[2].type==_DOUBLE_ || v[2].type==_REAL ||
 	    v[3].type==_FLOAT_ || v[3].type==_DOUBLE_ || v[3].type==_REAL)){
@@ -3315,6 +3478,7 @@ namespace giac {
 	if (ld==vecteur(1,v[1]) || ld.empty())
 	  return intnum(gen(makevecteur(v[0],v[1],v[2],v[3]),_SEQ__VECT),false,contextptr,true);
       }
+#endif
       v0orig=v[0];
       aorig=borne_inf=v[2];
       borig=borne_sup=v[3];
@@ -3326,13 +3490,13 @@ namespace giac {
       if (!lfloor.empty()){
 	gen a,b,l,cond=lfloor.front()._SYMBptr->feuille,tmp;
 	if (lvarx(cond,x).size()>1 || !is_linear_wrt(cond,x,a,b,contextptr) ){
-	  *logptr(contextptr) << gettext("Floor definite integration: can only handle linear < or > condition") << endl;
+	  *logptr(contextptr) << gettext("Floor definite integration: can only handle linear < or > condition") << '\n';
 	  if (!tegral(v0orig,x,aorig,borig,1e-12,(1<<10),res,true,contextptr))
 	    return undef;
 	  return res;
 	}
 	if (is_inf(borne_inf) || is_inf(borne_sup)){
-	  *logptr(contextptr) << gettext("Floor definite integration: unable to handle infinite boundaries") << endl;
+	  *logptr(contextptr) << gettext("Floor definite integration: unable to handle infinite boundaries") << '\n';
 	}
 	else {
 	  // find integers of the form a*x+b in [borne_inf,borne_sup]
@@ -3389,12 +3553,19 @@ namespace giac {
 	for (int i=0;i<vs/2;++i){
 	  bool unable=true;
 	  gen cond=piecev[2*i];
+	  if (is_zero(cond))
+	    continue;
+	  if (is_one(cond)){
+	    gen tmp=quotesubst(v[0],piece,piecev[2*i+1],contextptr);
+	    res += _integrate(gen(makevecteur(tmp,x,borne_inf,borne_sup),_SEQ__VECT),contextptr);
+	    return ck_int_numerically(v0orig,x,aorig,borig,(chsign?-res:res),contextptr);
+	  }
 	  if (is_equal(cond) || cond.is_symb_of_sommet(at_same)){
-	    *logptr(contextptr) << gettext("Assuming false condition ") << cond << endl;
+	    *logptr(contextptr) << gettext("Assuming false condition ") << cond << '\n';
 	    continue;
 	  }
 	  if (cond.is_symb_of_sommet(at_different)){
-	    *logptr(contextptr) << gettext("Assuming true condition ") << cond << endl;
+	    *logptr(contextptr) << gettext("Assuming true condition ") << cond << '\n';
 	    v[0]=quotesubst(v[0],piece,piecev[2*i+1],contextptr);
 	    res += _integrate(gen(makevecteur(v[0],x,borne_inf,borne_sup),_SEQ__VECT),contextptr);
 	    return ck_int_numerically(v0orig,x,aorig,borig,(chsign?-res:res),contextptr);
@@ -3409,7 +3580,7 @@ namespace giac {
 	  }
 	  gen a,b,l;
 	  if (unable || !is_linear_wrt(cond,x,a,b,contextptr)){
-	    *logptr(contextptr) << gettext("Piecewise definite integration: can only handle linear < or > condition") << endl;
+	    *logptr(contextptr) << gettext("Piecewise definite integration: can only handle linear < or > condition") << '\n';
 	    if (!tegral(v0orig,x,aorig,borig,1e-12,(1<<10),res,true,contextptr))
 	      return undef;
 	    return res;
@@ -3551,7 +3722,7 @@ namespace giac {
       }
     } catch (std::runtime_error & e){
       last_evaled_argptr(contextptr)=NULL;
-      *logptr(contextptr) << "Error trying to find limit of " << primitive << endl;
+      *logptr(contextptr) << "Error trying to find limit of " << primitive << '\n';
       return symbolic(at_integrate,makesequence(v[0],x,borne_inf,borne_sup));
     }
 #endif
@@ -3563,9 +3734,22 @@ namespace giac {
       res=subst(primitive,*x._IDNTptr,borne_sup,false,contextptr)-subst(primitive,*x._IDNTptr,borne_inf,false,contextptr);
     }
     vecteur sp;
-    sp=lidnt(evalf(makevecteur(primitive,borne_inf,borne_sup),1,contextptr));
+    gen prim2(primitive);
+    // remove multiplicative constants to compute sp
+    if (prim2.is_symb_of_sommet(at_prod)){
+      gen primf=prim2._SYMBptr->feuille;
+      if (primf.type==_VECT){
+	vecteur primv=*primf._VECTptr,primv2;
+	for (int i=0;i<primv.size();++i){
+	  if (contains(lidnt(primv[i]),x))
+	    primv2.push_back(primv[i]);
+	}
+	prim2=symbolic(at_prod,gen(primv2,_SEQ__VECT));
+      }
+    }
+    sp=lidnt(evalf(makevecteur(prim2,borne_inf,borne_sup),1,contextptr));
     if (sp.size()>1){
-      *logptr(contextptr) << gettext("No checks were made for singular points of antiderivative ")+primitive.print(contextptr)+gettext(" for definite integration in [")+borne_inf.print(contextptr)+","+borne_sup.print(contextptr)+"]" << endl ;
+      *logptr(contextptr) << gettext("No checks were made for singular points of antiderivative ")+primitive.print(contextptr)+gettext(" for definite integration in [")+borne_inf.print(contextptr)+","+borne_sup.print(contextptr)+"]" << '\n' ;
       sp.clear();
     }
     else {
@@ -3584,7 +3768,7 @@ namespace giac {
       else
 	sp=protect_find_singularities(primitive,*x._IDNTptr,0,contextptr);
       if (is_undef(sp)){
-	*logptr(contextptr) << gettext("Unable to find singular points of antiderivative") << endl ;
+	*logptr(contextptr) << gettext("Unable to find singular points of antiderivative") << '\n' ;
 	if (!tegral(v0orig,x,aorig,borig,1e-12,(1<<10),res,true,contextptr))
 	  return undef;
 	return res;
@@ -3939,7 +4123,9 @@ namespace giac {
 	}
       }
       value=i30;
-      // minimal number of intervals added for int(frac(x),x,0,6.4)
+      // could add a minimal number of intervals for integrals like
+      // integrate(when(x > 2, 1,2),x,0,2.01) or int(frac(x),x,0,6.01)
+      // but one will always find intervals where this would fail
       if (!is_undef(ERR) && is_greater(eps,ERR/I30ABS,contextptr)) 
 	return true;
       // cut interval at maxerrpos in 2 parts
@@ -3948,14 +4134,14 @@ namespace giac {
       if (A==C || B==C){
 	// can not subdivise anymore
 	if (is_greater(1e-4,ERR/I30ABS,contextptr)){
-	  *logptr(contextptr) << "Low accuracy, error estimate " << ERR/I30ABS << "\nError might be underestimated if initial boundary was +/-infinity" << endl;
+	  *logptr(contextptr) << "Low accuracy, error estimate " << ERR/I30ABS << "\nError might be underestimated if initial boundary was +/-infinity" << '\n';
 	  return true;
 	}
 	return false; 
       }
       if (!tegral_util(f,x,A,C,i30,i30abs,err,contextptr)){
 	if (is_greater(1e-4,ERR/I30ABS,contextptr)){
-	  *logptr(contextptr) << "Low accuracy, error estimate " << ERR/I30ABS << "\nError might be underestimated if initial boundary was +/-infinity" << endl;
+	  *logptr(contextptr) << "Low accuracy, error estimate " << ERR/I30ABS << "\nError might be underestimated if initial boundary was +/-infinity" << '\n';
 	  return true;
 	}
 	return false;
@@ -3963,7 +4149,7 @@ namespace giac {
       v[maxerrpos]=makevecteur(A,C,i30,i30abs,err);
       if (!tegral_util(f,x,C,B,i30,i30abs,err,contextptr)){
 	if (is_greater(1e-4,ERR/I30ABS,contextptr)){
-	  *logptr(contextptr) << "Low accuracy, error estimate " << ERR/I30ABS << "\nError might be underestimated if initial boundary was +/-infinity" << endl;
+	  *logptr(contextptr) << "Low accuracy, error estimate " << ERR/I30ABS << "\nError might be underestimated if initial boundary was +/-infinity" << '\n';
 	  return true;
 	}
 	return false;
@@ -3986,7 +4172,7 @@ namespace giac {
     if (!romberg_method && tegral(f,x,a,b,eps,(1 << nmax),value,exactcheck,contextptr))
       return value;
     if (!romberg_method)
-      *logptr(contextptr) << "Adaptive method failure, will try with Romberg, last approximation was " << value << endl;
+      *logptr(contextptr) << "Adaptive method failure, will try with Romberg, last approximation was " << value << '\n';
     // a, b and eps should be evalf-ed, and eps>0
     gen h=b-a;
     vecteur old_line,cur_line;
@@ -4002,7 +4188,7 @@ namespace giac {
 #endif
     if (is_inf(old_line[0])|| is_undef(old_line[0]) || !lop(old_line[0],at_bounded_function).empty()){
       // FIXME middle point in arbitrary precision
-      *logptr(contextptr) << gettext("Infinity or undefined limit at bounds.\nUsing middle point Romberg method") << endl;
+      *logptr(contextptr) << gettext("Infinity or undefined limit at bounds.\nUsing middle point Romberg method") << '\n';
       gen y=(a+b)/2;
       gen fy=subst(f,x,y,false,contextptr);
       // Workaround for undefined middle point
@@ -4055,7 +4241,7 @@ namespace giac {
       }
       if (calc_mode(contextptr)==1)
 	return undef;
-      *logptr(contextptr) << gettext("Unable to find numeric integral using Romberg method, returning the last approximations") << endl;
+      *logptr(contextptr) << gettext("Unable to find numeric integral using Romberg method, returning the last approximations") << '\n';
       cur_line=is_undef(value)?makevecteur(old_line.back(),cur_line.back()):makevecteur(cur_line.back(),value);
       return cur_line;
       // return rombergo(f,x,a,b,nmax,contextptr);
@@ -4097,7 +4283,7 @@ namespace giac {
     }
     if (calc_mode(contextptr)==1)
       return undef;
-    *logptr(contextptr) << gettext("Unable to find numeric integral using Romberg method, returning the last approximations") << endl;
+    *logptr(contextptr) << gettext("Unable to find numeric integral using Romberg method, returning the last approximations") << '\n';
     cur_line=is_undef(value)?makevecteur(old_line.back(),cur_line.back()):makevecteur(cur_line.back(),value);
     return cur_line;
   }
@@ -4797,7 +4983,9 @@ namespace giac {
     if (v.size()==1)
       v=gen2vecteur(eval(g,contextptr));
     if (v.size()<4){
-      gen v2=eval(v[2],1,contextptr);
+      gen v2;
+      if (v.size()==3)
+	v2=eval(v[2],1,contextptr);
       if (type==0 && v.size()==3 && v2.type==_VECT){
 	// for example seq(2^k,k,[1,2,5])
 	gen f=_unapply(makesequence(v[0],v[1]),contextptr);
@@ -4807,7 +4995,7 @@ namespace giac {
 	gen f=v[1]._SYMBptr->feuille;
 	gen v1=f[0];
 	gen v2=f[1]._SYMBptr->feuille[0],v3=f[1]._SYMBptr->feuille[1];
-	return seqprod(makevecteur(v[0],v1,v2,v3,v[2]),type,contextptr);
+	return change_subtype(seqprod(makevecteur(v[0],v1,v2,v3,v[2]),type,contextptr),_SEQ__VECT);
       }
       if (v.size()==3 && !v[1].is_symb_of_sommet(at_equal) && g.subtype==_SEQ__VECT)
 	return change_subtype(seqprod(gen(makevecteur(symb_interval(v[0],v[1]),v[2]),_SEQ__VECT),type,contextptr),0);
@@ -5372,7 +5560,7 @@ namespace giac {
 #ifndef NO_STDEXCEPT
     }
     catch (std::runtime_error & err){
-      CERR << err.what() << endl;
+      CERR << err.what() << '\n';
       int n=par->odesolve_system.dimension,i=0;
       for (double * dydt_it=dydt;i<n;++i,++dydt_it){
 	*dydt_it=m_undef;
@@ -5448,7 +5636,7 @@ namespace giac {
 #ifndef NO_STDEXCEPT
     }
     catch (std::runtime_error & err){
-      CERR << err.what() << endl;
+      CERR << err.what() << '\n';
       int n=par->odesolve_system.dimension,i=0;
       for (double * dydt_it=dfdt;i<n;++i,++dydt_it){
 	*dydt_it=m_undef;
@@ -5608,7 +5796,7 @@ namespace giac {
 	if (status != GSL_SUCCESS)
 	  return gensizeerr(gettext("RK8 evolve not successfull"));
 	if (debug_infolevel>5)
-	  CERR << nstep << ":" << t << ",y5=" << double2vecteur(y,dim) << endl;
+	  CERR << nstep << ":" << t << ",y5=" << double2vecteur(y,dim) << '\n';
 	if (return_curve)  {
 	  if ( (t-oldt)> tstep/2 || t==t1){
 	    oldt=t;
@@ -5618,7 +5806,7 @@ namespace giac {
 	      resv.push_back(makevecteur(t,double2vecteur(y,dim)));
 	  }
 	  for (int i=0;i<dim;++i){
-	    // CERR << y[i] << endl;
+	    // CERR << y[i] << '\n';
 	    if ( ymin && ymax && ( y[i]<ymin[i] || y[i]>ymax[i]) )
 	      do_while=false;
 	  }
@@ -5668,7 +5856,11 @@ namespace giac {
        if (err<=hoptimal) then time += h; y_init=RK5_final; h=min(hoptimal,t_final-t_current)
        else h=hoptimal
      */
+#ifdef KHICAS
+    gen tolerance=epsilon(contextptr)>1e-9?epsilon(contextptr):1e-9;
+#else
     gen tolerance=epsilon(contextptr)>1e-12?epsilon(contextptr):1e-12;
+#endif
     vecteur yt(dim+1),ytvar(yv);
     for (int i=0;i<dim;++i)
       yt[i]=y0v[i];
@@ -5754,7 +5946,7 @@ namespace giac {
       if (err==0 || is_undef(hopt))
 	break;
       if (debug_infolevel>5)
-	CERR << nstep << ":" << t_e << ",y5=" << y_final5 << ",y4=" << y_final4 << " " << tstep << " hopt=" << hopt << " err=" << err << endl;
+	CERR << nstep << ":" << t_e << ",y5=" << y_final5 << ",y4=" << y_final4 << " " << tstep << " hopt=" << hopt << " err=" << err << '\n';
       if (is_strictly_greater(err,tolerance,contextptr)){
 	// reject step
 	tstep=hopt._DOUBLE_val;
@@ -5774,7 +5966,7 @@ namespace giac {
 	if (!iscomplex){
 	  // check boundaries for y_final5
 	  for (int i=0;i<dim;++i){
-	    // CERR << y[i] << endl;
+	    // CERR << y[i] << '\n';
 	    if ( ymin && ymax && ( y_final5[i]._DOUBLE_val< ymin[i] || y_final5[i]._DOUBLE_val>ymax[i]) )
 	      do_while=false;
 	  }
@@ -5840,7 +6032,7 @@ namespace giac {
       }
       else {
 	if (tmin>0 || tmax<0 || tmin>tmax || tstep<=0)
-	  *logptr(contextptr) << gettext("Warning time reversal") << endl;
+	  *logptr(contextptr) << gettext("Warning time reversal") << '\n';
 	t0=tmin;
 	t1=tmax;
       }
@@ -5950,23 +6142,39 @@ namespace giac {
   static define_unary_function_eval (__ibpdv,&_ibpdv,_ibpdv_s);
   define_unary_function_ptr5( at_ibpdv ,alias_at_ibpdv,&__ibpdv,0,true);
 
+  void fourier_assume(const gen &n,GIAC_CONTEXT){
+    if (n.type==_IDNT && eval(n,1,contextptr)==n){
+      *logptr(contextptr) << "Running assume(" << n << ",integer)" << '\n';
+      sto(gen(makevecteur(change_subtype(2,1)),_ASSUME__VECT),n,contextptr);
+    }
+  }
+
   gen fourier_an(const gen & f,const gen & x,const gen & T,const gen & n,const gen & a,GIAC_CONTEXT){
     gen primi,iT=inv(T,contextptr);
     gen omega=2*cst_pi*iT;
+    fourier_assume(n,contextptr);
     primi=_integrate(gen(makevecteur(f*cos(omega*n*x,contextptr),x,a,ratnormal(a+T,contextptr)),_SEQ__VECT),contextptr);
     gen an=iT*primi;
     if (n!=0) 
       an=2*an;
     return has_num_coeff(an)?an:recursive_normal(an,contextptr);
   }
+  bool get_fourier(vecteur & v){
+    if (v.size()==2) 
+      v=makevecteur(v[0],vx_var,cst_two_pi,v[1],-cst_pi);
+    if (v.size()==3) 
+      v=makevecteur(v[0],v[1],cst_two_pi,v[2],-cst_pi);
+    if (v.size()==4) v.push_back(0);
+    return v.size()==5;
+  }
   gen _fourier_an(const gen & args,GIAC_CONTEXT){
     if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type!=_VECT) return gensizeerr(contextptr);
     vecteur v(*args._VECTptr);
-    if (v.size()==4) v.push_back(0);
-    if (v.size()!=5) return gensizeerr(contextptr);
-    gen f=v[0],x=v[1],T=v[2],n=v[3],a=v[4];
-    return fourier_an(f,x,T,n,a,contextptr);
+    if (!get_fourier(v)) return gensizeerr(contextptr);
+    return fourier_an(v[0],v[1],v[2],v[3],v[4],contextptr);
+    //gen f=v[0],x=v[1],T=v[2],n=v[3],a=v[4];
+    //return fourier_an(f,x,T,n,a,contextptr);
   }
   static const char _fourier_an_s []="fourier_an";
   static define_unary_function_eval (__fourier_an,&_fourier_an,_fourier_an_s);
@@ -5974,6 +6182,7 @@ namespace giac {
 
 
   gen fourier_bn(const gen & f,const gen & x,const gen & T,const gen & n,const gen & a,GIAC_CONTEXT){
+    fourier_assume(n,contextptr);
     gen primi,iT=inv(T,contextptr);
     gen omega=2*cst_pi*iT;
     primi=_integrate(gen(makevecteur(f*sin(omega*n*x,contextptr),x,a,ratnormal(a+T,contextptr)),_SEQ__VECT),contextptr);
@@ -5984,16 +6193,17 @@ namespace giac {
     if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type!=_VECT) return gensizeerr(contextptr);
     vecteur v(*args._VECTptr);
-    if (v.size()==4) v.push_back(0);
-    if (v.size()!=5) return gensizeerr(contextptr);
-    gen f=v[0],x=v[1],T=v[2],n=v[3],a=v[4];
-    return fourier_bn(f,x,T,n,a,contextptr);
+    if (!get_fourier(v)) return gensizeerr(contextptr);
+    return fourier_bn(v[0],v[1],v[2],v[3],v[4],contextptr);
+    // gen f=v[0],x=v[1],T=v[2],n=v[3],a=v[4];
+    // return fourier_bn(f,x,T,n,a,contextptr);
   } 
   static const char _fourier_bn_s []="fourier_bn";
   static define_unary_function_eval (__fourier_bn,&_fourier_bn,_fourier_bn_s);
   define_unary_function_ptr5( at_fourier_bn ,alias_at_fourier_bn,&__fourier_bn,0,true);
   
   gen fourier_cn(const gen & f,const gen & x,const gen & T,const gen & n,const gen & a,GIAC_CONTEXT){
+    fourier_assume(n,contextptr);
     gen primi,iT=inv(T,contextptr);
     gen omega=2*cst_pi*iT;
     primi=_integrate(gen(makevecteur(f*exp(-cst_i*omega*n*x,contextptr),x,a,ratnormal(a+T,contextptr)),_SEQ__VECT),contextptr);
@@ -6004,10 +6214,10 @@ namespace giac {
     if ( args.type==_STRNG && args.subtype==-1) return  args;
     if (args.type!=_VECT) return gensizeerr(contextptr);
     vecteur v(*args._VECTptr);
-    if (v.size()==4) v.push_back(0);
-    if (v.size()!=5) return gensizeerr(contextptr);
-    gen f=v[0],x=v[1],T=v[2],n=v[3],a=v[4];
-    return fourier_cn(f,x,T,n,a,contextptr);
+    if (!get_fourier(v)) return gensizeerr(contextptr);
+    return fourier_cn(v[0],v[1],v[2],v[3],v[4],contextptr);
+    // gen f=v[0],x=v[1],T=v[2],n=v[3],a=v[4];
+    // return fourier_cn(f,x,T,n,a,contextptr);
   } 
 
   static const char _fourier_cn_s []="fourier_cn";
@@ -6025,8 +6235,7 @@ namespace giac {
     if (gv.size()!=4 && gv.size()!=2)
       return gensizeerr(contextptr);
     gen & e=gv[0],x,a,b;
-    if (e.type!=_SYMB)
-      return gentypeerr(contextptr);
+    //if (e.type!=_SYMB && e.type!=_IDNT) return gentypeerr(contextptr);
     vecteur vars(*_lname(e,contextptr)._VECTptr);
     if (vars.empty())
       return e;

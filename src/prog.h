@@ -29,7 +29,7 @@ namespace giac {
   extern bool user_screen; 
   extern int user_screen_io_x,user_screen_io_y,user_screen_fontsize;
   extern const int rand_max2; // replace RAND_MAX if giac_rand(contextptr) is used
-  extern bool warn_equal_in_prog;
+  extern bool warn_equal_in_prog,warn_symb_program_sto;
 
   struct user_function;
   struct module_info {
@@ -76,6 +76,8 @@ namespace giac {
   gen quote_program(const gen & args,GIAC_CONTEXT);
   gen _program(const gen & args,const gen & name,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_program ;
+  // parser helper
+  gen symb_test_equal(const gen & a,const gen & op,const gen & b);
   void adjust_sst_at(const gen & name,GIAC_CONTEXT); //used in symbolic.cc by nr_eval
   void program_leave(const gen & save_debug_info,bool save_sst_mode,debug_struct * dbgptr);
 
@@ -297,6 +299,9 @@ namespace giac {
 
   gen _all_trig_solutions(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_all_trig_solutions;
+
+  gen _increasing_power(const gen & args,GIAC_CONTEXT);
+  extern const unary_function_ptr * const  at_increasing_power;
 
   gen _ntl_on(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_ntl_on;
@@ -621,6 +626,7 @@ namespace giac {
   vecteur mksa_convert(const gen & g,GIAC_CONTEXT);
   gen _ufactor(const gen & g,GIAC_CONTEXT);
   gen _usimplify(const gen & g,GIAC_CONTEXT);
+  extern const unary_function_ptr * const  at_regrouper;  
 
   extern const mksa_unit __m_unit;
   extern const mksa_unit __kg_unit;
@@ -806,6 +812,7 @@ namespace giac {
   extern gen _mol_unit;
   extern gen _cd_unit;
   extern gen _E_unit;
+#ifndef STATIC_BUILTIN_LEXER_FUNCTIONS
   // other metric units in m,kg,s,A
   extern gen _Bq_unit;
   extern gen _C_unit;
@@ -955,6 +962,7 @@ namespace giac {
   extern gen cst_Vm;
   extern gen cst_kBoltzmann;
   extern gen cst_NA;
+#endif // STATIC_BUILTIN_LEXER_FUNCTIONS
 #endif // NO_PHYSICAL_CONSTANTS
 #ifndef FXCG
   const unary_function_ptr * binary_op_tab();
@@ -1007,6 +1015,7 @@ namespace giac {
   gen _struct_dot(const gen & g,GIAC_CONTEXT);
   // replace := by = in builtin commands (for Python compatible mode)
   gen denest_sto(const gen & g);
+  gen os_nary_workaround(const gen & g); // replace [[a,b,...]] by a,b,...
 
   extern const unary_function_ptr * const  at_index ;
   gen _index(const gen & args,GIAC_CONTEXT);

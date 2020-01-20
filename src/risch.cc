@@ -531,7 +531,7 @@ namespace giac {
     int s=int(l.size());
     vecteur l1(l.begin()+1,l.end());
     gen r=e2r(coeff,l,contextptr),ar=e2r(a,l,contextptr);
-    // cout << "Int " << r << endl;
+    // cout << "Int " << r << '\n';
     gen r_num,r_den;
     fxnd(r,r_num,r_den);
     if (r_num.type==_EXT)
@@ -698,7 +698,7 @@ namespace giac {
       vl.push_back(e2r(vx[i],l,contextptr));
     vecteur l1(l.begin()+1,l.end());
     gen r=e2r(e,l,contextptr);
-    // cout << "Int " << r << endl;
+    // cout << "Int " << r << '\n';
     gen r_num,r_den;
     fxnd(r,r_num,r_den);
     if (r_num.type==_EXT){
@@ -834,7 +834,9 @@ namespace giac {
       vecteur tmpv=rlvarx(tmp,x);
       vecteur tmpw(tmpv.size());
       gen tmpcst=subst(tmp,tmpv,tmpw,false,contextptr);
-      v2[i]=exp(tmpcst,contextptr)*exp(ratnormal(tmp-tmpcst,contextptr),contextptr);
+      tmpcst=exp(tmpcst,contextptr)*exp(ratnormal(tmp-tmpcst,contextptr),contextptr);
+      if (!is_inf(tmpcst) && !is_undef(tmpcst))
+	v2[i]=tmpcst;
     }
     e=subst(e,v1,v2,false,contextptr);
 #else
