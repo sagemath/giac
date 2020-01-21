@@ -8,6 +8,7 @@ giac (1.5.0.85+dfsg1-1) UNRELEASED; urgency=medium
     - Remove d/compat and use dh-compat 12. 
     - Bump std-ver to 4.4.1. 
     - Refreshed patches. 
+    - Add fix_input_parser.patch to fix upstream's code. 
 
  -- Julien Puydt <jpuydt@debian.org>  Mon, 20 Jan 2020 21:02:06 +0100
 
