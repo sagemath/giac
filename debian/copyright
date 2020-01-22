@@ -1,6 +1,6 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: giac
-Upstream-Contact: Bernard Parisse <parisse@fourier.ujf-grenoble.fr>
+Upstream-Contact: Bernard Parisse <parisse@univ-grenoble-alpes.fr>
 Source: ftp://ftp-fourier.ujf-grenoble.fr/xcas/
 Files-Excluded:
 # Embedded libraries
@@ -58,21 +58,21 @@ Files-Excluded:
  doc/fr/*
 
 Files: *
-Copyright: 2000-2017 Bernard Parisse <parisse@fourier.ujf-grenoble.fr>
+Copyright: 2000-2017 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
 License: GPL-3+
 
 Files: src/gauss.cc src/isom.* src/renee.cc
-Copyright: 2001-2014 Renée de Graeve <degraeve@fourier.ujf-grenoble.fr>
+Copyright: 2001-2014 Renée de Graeve <degraeve@univ-grenoble-alpes.fr>
 License: GPL-3+
 
 Files: src/ifactor.cc src/misc.cc src/permu.cc
-Copyright: 2001-2007 Bernard Parisse <parisse@fourier.ujf-grenoble.fr>
-           2001-2007 Renée de Graeve <degraeve@fourier.ujf-grenoble.fr>
+Copyright: 2001-2007 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
+           2001-2007 Renée de Graeve <degraeve@univ-grenoble-alpes.fr>
 License: GPL-3+
 
 Files: src/solve.*
-Copyright: 2000-2014 Bernard Parisse <parisse@fourier.ujf-grenoble.fr>
-           2000-2014 Renée de Graeve <degraeve@fourier.ujf-grenoble.fr>
+Copyright: 2000-2014 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
+           2000-2014 Renée de Graeve <degraeve@univ-grenoble-alpes.fr>
            1992 Michael J. D. Powell <M.J.D.Powell@damtp.cam.ac.uk>
            2004 Jean-Sebastien Roy <js@jeannot.org>
 License: GPL-3+
@@ -83,7 +83,7 @@ License: GPL-3+
 
 Files: src/input_lexer.* src/input_parser.yy
 Copyright: 1999-2000 Johannes Gutenberg University Mainz, Germany
-           2000-2007 Bernard Parisse <parisse@fourier.ujf-grenoble.fr>
+           2000-2007 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
 License: GPL-3+
 
 Files: src/tinymt32.*
@@ -115,8 +115,8 @@ Comment:
  it under the same terms as Perl itself.
 
 Files: doc/aide_cas
-Copyright: 2000-2017 Bernard Parisse <parisse@fourier.ujf-grenoble.fr>
-           2000-2017 Renée de Graeve <degraeve@fourier.ujf-grenoble.fr>
+Copyright: 2000-2017 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
+           2000-2017 Renée de Graeve <degraeve@univ-grenoble-alpes.fr>
            2000-2017 Jose Manrique Lopez de la Fuente <jsmanrique_lopez@yahoo.es>
            2000-2017 X. Vidaux <xvidaux@udec.cl>
            2000-2017 Alkis Akritas <akritas@uth.gr>
@@ -124,20 +124,20 @@ License: GPL-3+
 
 Files: doc/en/cascmd_en.tex doc/en/giacxcas.tex doc/en/slipres.tex
        doc/el/cascmd_el.tex
-Copyright: 2002-2009 Bernard Parisse <parisse@fourier.ujf-grenoble.fr>
-           2002-2009 Renée de Graeve <degraeve@fourier.ujf-grenoble.fr>
+Copyright: 2002-2009 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
+           2002-2009 Renée de Graeve <degraeve@univ-grenoble-alpes.fr>
 License: GPL-3+
 
 Files: doc/en/casinter.tex
-Copyright: 2007-2009 Bernard Parisse <parisse@fourier.ujf-grenoble.fr>
+Copyright: 2007-2009 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
 License: GFDL-NIV-1.2+
 
 Files: doc/en/giac_us.texinfo
-Copyright: 2000-2009 Bernard Parisse <parisse@fourier.ujf-grenoble.fr>
+Copyright: 2000-2009 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
 License: GPL-3+
 
 Files: doc/es/giac_es.texinfo
-Copyright: 2000-2002 Bernard Parisse <parisse@fourier.ujf-grenoble.fr>
+Copyright: 2000-2002 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
            2002 Jose Manrique Lopez de la Fuente <jsmanrique_lopez@yahoo.es>
 License: GPL-2+
 
@@ -163,11 +163,11 @@ Copyright: 2014 Carleos Artime <carleos@pinon.ccu.uniovi.es>
 License: GPL-3+
 
 Files: debian/upstream-doc-fr/*
-Copyright: 2000-2017 Bernard Parisse <parisse@fourier.ujf-grenoble.fr>
+Copyright: 2000-2017 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
 License: GPL-3+
 
 Files: debian/upstream-doc-fr/Makefile.am.Debian
-Copyright: 2000-2017 Bernard Parisse <parisse@fourier.ujf-grenoble.fr>
+Copyright: 2000-2017 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
            2017 Ximin Luo <infinity0@debian.org>
 License: GPL-3+
 
