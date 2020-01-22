@@ -154,6 +154,7 @@ License: GPL-3+
 Files: debian/*
 Copyright: 2009 Gilles Filippini <gilles.filippini@free.fr>
            2017 Ximin Luo <infinity0@debian.org>
+           2020 Julien Puydt <jpuydt@debian.org>
 License: GPL-3+
 
 Files: debian/man/*
