@@ -6,7 +6,7 @@ giac (1.5.0.85+dfsg1-1) UNRELEASED; urgency=medium
     - Quote full text of BSD license in d/copyright
       (the /usr/share/common-licenses/ file is going away) 
     - Remove d/compat and use dh-compat 12. 
-    - Bump std-ver to 4.4.1. 
+    - Bump std-ver to 4.5.0. 
     - Refreshed patches. 
     - Add fix_input_parser.patch to fix upstream's code. 
     - Refresh d/rules patches. 
