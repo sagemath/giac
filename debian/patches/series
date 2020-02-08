@@ -30,3 +30,4 @@ d-dont-include-remote-scripts.patch
 d-workaround-armhf-hang.patch
 fix_input_parser.patch
 fix_doc_s390x.patch
+disable_gbasis_swap.patch

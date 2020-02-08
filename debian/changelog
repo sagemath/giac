@@ -2,6 +2,7 @@ giac (1.5.0.85+dfsg1-2) UNRELEASED; urgency=medium
 
   * Update B.Parisse's email adress (the university changed name!).
   * Add patch to fix building the documentation on S390X.
+  * Add patch to fix Groebner basis computation on S390X.
 
  -- Julien Puydt <jpuydt@debian.org>  Wed, 22 Jan 2020 08:16:23 +0100
 
