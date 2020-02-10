@@ -47,6 +47,9 @@ override_dh_auto_test-arch:
 	cp check/TP16-sol.cas.out1 check/TP16-sol.cas.out2
 	cp check/integrate.out check/integrate.out2
 	patch -p1 < debian/patches/test-fixes-data.patch
+ifneq (,$(filter $(DEB_HOST_ARCH),s390x))
+	patch -p1 < debian/patches/fix_S390X_numerical_noise.patch
+endif
 	dh_auto_test -a -D check -- VERBOSE=1
 
 override_dh_auto_test-indep:

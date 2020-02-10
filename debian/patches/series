@@ -16,8 +16,9 @@ split-build-install.patch
 
 ## Test data patches
 test-fixes.patch
-# This is applied in d/rules, leave it unapplied here
+# Those are applied in d/rules, leave them unapplied here
 #test-fixes-data.patch
+#fix_S390X_numerical_noise.patch 
 
 
 
