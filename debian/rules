@@ -10,7 +10,7 @@
 # but it's not enough, there are still segfaults to fix.
 # See http://xcas.univ-grenoble-alpes.fr/forum/viewtopic.php?f=3&t=1874
 ifeq ($(DEB_HOST_ARCH_ENDIAN),big)
-export DEB_CPPFLAGS_MAINT_APPEND  = -DDOUBLEVAL
+export DEB_CPPFLAGS_MAINT_APPEND  = -DDOUBLEVAL -DBIGENDIAN
 endif
 
 # Use ccache if pkg.giac.ccache build-profile is active.
