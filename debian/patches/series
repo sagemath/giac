@@ -26,7 +26,6 @@ test-fixes.patch
 
 d-dont-build-files-excluded.patch
 d-find-doc-files-at-buildtime.patch
-d-workaround-hevea-bugs.patch
 d-dont-include-remote-scripts.patch
 d-workaround-armhf-hang.patch
 fix_input_parser.patch

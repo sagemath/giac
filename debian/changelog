@@ -3,8 +3,9 @@ giac (1.5.0.85+dfsg1-3) UNRELEASED; urgency=medium
   * Rename fix_S390_numerical_noise to fix_bigendian_numerical_noise,
     and use it on all bigendian.
   * Change forum links to new uri following university name change.
+  * Drop patch to workaround hevea bugs (now useless).
 
- -- Julien Puydt <jpuydt@debian.org>  Wed, 12 Feb 2020 21:44:15 +0100
+ -- Julien Puydt <jpuydt@debian.org>  Wed, 12 Feb 2020 22:47:27 +0100
 
 giac (1.5.0.85+dfsg1-2) unstable; urgency=medium
 
