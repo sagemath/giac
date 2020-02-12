@@ -1,6 +1,6 @@
 # Copied from upstream but with most things stripped except "keywords"
 # Plus special build instructions for algo.{pdf,html} from upstream:
-# http://xcas.e.ujf-grenoble.fr/XCAS/viewtopic.php?p=8755#p8755
+# http://xcas.univ-grenoble-alpes.fr/forum/viewtopic.php?p=8755#p8755
 
 TEX_LOCAL = algo.tex
 

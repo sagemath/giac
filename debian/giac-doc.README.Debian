@@ -9,7 +9,7 @@ https://people.debian.org/~bap/dfsg-faq.html#no_commercial
 
 For more information see:
 
-https://xcas.e.ujf-grenoble.fr/XCAS/viewtopic.php?f=19&t=1777
+https://xcas.univ-grenoble-alpes.fr/forum/viewtopic.php?f=19&t=1777
 
 The only document in doc/fr which is available under a DFSG-free license is
 algo.tex. This is provided in this Debian package, however the interactive
