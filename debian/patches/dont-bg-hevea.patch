@@ -8,7 +8,7 @@ Forwarded: TODO
  	  COUT << "File " << outfile << " created" << outfile << '\n' << "Then I will run pdflatex " << giac::remove_extension(outfile) << '\n' ;
  	  if (dohevea){
 -	    std::string cmd="hevea -fix "+infile_+" &";
-+	    std::string cmd="hevea -fix "+infile_" &";
++	    std::string cmd="hevea -fix "+infile_;
  	    COUT << "Running " << cmd << '\n';
  	    giac::system_no_deprecation(cmd.c_str());
  	  }
