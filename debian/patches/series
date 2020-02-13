@@ -14,13 +14,8 @@ missing-build-rules.patch
 split-build-install.patch
 #no-X-deps-icas.patch # see README.source for details
 
-## Test data patches
-test-fixes.patch
-# Those are applied in d/rules, leave them unapplied here
-#test-fixes-data.patch
-#fix_bigendian_numerical_noise.patch 
-
-
+## Current checks only work on AMD64
+arch_solid_checks.patch
 
 ### Debian only
 
