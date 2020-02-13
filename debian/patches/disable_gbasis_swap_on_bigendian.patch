@@ -1,0 +1,23 @@
+Description: disable GBASIS_SWAP on bigendian arches
+Author: Bernard Parisse
+Forwarded: comes from upstream
+
+--- giac.orig/src/cocoa.cc
++++ giac/src/cocoa.cc
+@@ -441,7 +441,7 @@
+   
+ #if !defined CAS38_DISABLED && !defined FXCG
+   //#define GBASIS_SELECT_TOTAL_DEGREE
+-#if GROEBNER_VARS!=15 // double revlex ordering is not compatible with indices swapping
++#if GROEBNER_VARS!=15 && !defined BIGENDIAN // double revlex ordering is not compatible with indices swapping
+ #define GBASIS_SWAP 
+ #endif
+   // minimal numbers of pair to reduce simultaneously with f4buchberger
+@@ -14832,7 +14832,6 @@
+     }
+   }
+ 
+-  #define GBASIS_SWAP 
+ #ifndef NO_STDEXCEPT
+   #define GIAC_TDEG_T14
+ #endif
