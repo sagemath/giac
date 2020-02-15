@@ -1,21 +1,21 @@
 ### For upstreaming
 
 ## Issues with other programs, or version matches
-fix-gettext-options.patch
-no-useless-deps.patch
-system-gl2ps.patch
-version-bison-3.patch
-dont-bg-hevea.patch
-u-version-pari-2.11.patch
-fix-pdf-errors.patch
+fix-gettext-options.patch # upstreamed
+no-useless-deps.patch # refused
+system-gl2ps.patch # refused
+version-bison-3.patch # refused
+dont-bg-hevea.patch # upstream doesn't know - says hevea2mml should be used
+u-version-pari-2.11.patch # upstream doesn't know
+fix-pdf-errors.patch # upstream doesn't know
 
 ## Build script patches
-missing-build-rules.patch
-split-build-install.patch
+missing-build-rules.patch # not for upstream
+split-build-install.patch # upstream doesn't know - says hevea2mml should be used
 #no-X-deps-icas.patch # see README.source for details
 
 ## Current checks only work on AMD64
-arch_solid_checks.patch
+arch_solid_checks.patch # upstream doesn't know
 
 ### Debian only
 
@@ -23,6 +23,6 @@ d-dont-build-files-excluded.patch
 d-find-doc-files-at-buildtime.patch
 d-dont-include-remote-scripts.patch
 d-workaround-armhf-hang.patch
-fix_input_parser.patch
-fix_doc_s390x.patch
-disable_gbasis_swap_on_bigendian.patch
+fix_input_parser.patch # upstreamed
+fix_doc_s390x.patch # upstreamed
+disable_gbasis_swap_on_bigendian.patch # upstreamed
