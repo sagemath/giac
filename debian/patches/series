@@ -22,7 +22,6 @@ arch_solid_checks.patch # upstream doesn't know
 d-dont-build-files-excluded.patch
 d-find-doc-files-at-buildtime.patch
 d-dont-include-remote-scripts.patch
-d-workaround-armhf-hang.patch
 fix_input_parser.patch # upstreamed
 fix_doc_s390x.patch # upstreamed
 disable_gbasis_swap_on_bigendian.patch # upstreamed

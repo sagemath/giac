@@ -1,3 +1,9 @@
+giac (1.5.0.85+dfsg1-4) UNRELEASED; urgency=medium
+
+  * Drop now unneeded patch for armhf.
+
+ -- Julien Puydt <jpuydt@debian.org>  Mon, 17 Feb 2020 06:43:52 +0100
+
 giac (1.5.0.85+dfsg1-3) unstable; urgency=medium
 
   * Rename fix_S390_numerical_noise to fix_bigendian_numerical_noise,
