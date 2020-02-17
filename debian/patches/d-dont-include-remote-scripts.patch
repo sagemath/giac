@@ -167,3 +167,55 @@ This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
    document.getElementsByTagName("head")[0].appendChild(script);
  })();
  }
+--- giac.orig/doc/castex.tex
++++ giac/doc/castex.tex
+@@ -183,7 +183,7 @@
+ %  (function () {
+ %   var script = document.createElement("script");
+ %   script.type = "text/javascript";
+-%   script.src  = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML";
++%   script.src  = "file:///usr/share/javascript/mathjax/MathJax.js?config=TeX-MML-AM_CHTML";
+ %   document.getElementsByTagName("head")[0].appendChild(script);
+ % })();
+ % }
+--- giac.orig/doc/test.html
++++ giac/doc/test.html
+@@ -58,7 +58,7 @@
+  (function () {
+   var script = document.createElement("script");
+   script.type = "text/javascript";
+-  script.src  = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML";
++  script.src  = "file:///usr/share/javascript/mathjax/MathJax.js?config=TeX-MML-AM_CHTML";
+   document.getElementsByTagName("head")[0].appendChild(script);
+ })();
+ }
+@@ -133,17 +133,17 @@
+ preamble of your L<sup>A</sup>T<sub>E</sub>X source file
+ and add one of the commands <code>\begin{giacjshere}</code><a id="hevea_default0"></a>
+ <code>\begin{giacjs}</code><a id="hevea_default1"></a> or 
+-<code>\begin{giacjsonline}</code><a id="hevea_default2"></a>
++<code>\begin{giacjshere}</code><a id="hevea_default2"></a>
+ just after <code>\begin{document}</code>: the difference is that the javascript
+ kernel <code>giac.js</code>
+ will either be found from the same place where the file was downloaded
+ or on the hard disk (assuming that Giac/Xcas is
+ installed on the target computer) or downloaded from Giac Internet website.
+ You must also add the corresponding command <code>\end{giacjs}</code> or
+-<code>\end{giacjsonline}</code> just before <code>\end{document}</code>.
++<code>\end{giacjshere}</code> just before <code>\end{document}</code>.
+ You should add the command <code>\tableofcontents</code><a id="hevea_default3"></a> then
+ <code>\printindex</code><a id="hevea_default4"></a> just after
+-<code>\begin{giacjsonline}</code> (and add <code>\makeindex</code> somewhere).</p><p>Inline command with Mathml or 2d graph output 
++<code>\begin{giacjshere}</code> (and add <code>\makeindex</code> somewhere).</p><p>Inline command with Mathml or 2d graph output 
+ <code>\giacinputmath{}</code> or <code>\giaccmdmath{}{}</code> :<br>
+ <code>\giacinputmath{factor(x^10-1)}</code><a id="hevea_default5"></a><br>
+ <br><textarea onkeypress="UI.ckenter(event,this,2)" 
+@@ -1107,7 +1107,7 @@
+   if (UI.usemathjax){
+     var script = document.createElement("script");
+     script.type = "text/javascript";
+-    script.src  = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
++    script.src  = "file:///usr/share/javascript/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+     document.getElementsByTagName("head")[0].appendChild(script);
+   }
+   var elem= document.getElementById('controlindex');
