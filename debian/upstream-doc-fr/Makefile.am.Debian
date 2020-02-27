@@ -8,6 +8,8 @@ PDF_LOCAL = algo.pdf
 
 HTML_LOCAL = algo.html
 
+HTML_STAMPS = algo.stamp
+
 FIGURES = ellipse*
 
 EXTRA_DIST = $(TEX_LOCAL) $(HTML_LOCAL) $(FIGURES) $(PDF_LOCAL)
@@ -16,7 +18,7 @@ the_LANG = fr
 thelangdocdir = $(docdir)/$(the_LANG)
 dist_thelangdoc_DATA = keywords
 
-all-local: $(PDF_LOCAL) $(HTML_LOCAL)
+all-local: $(PDF_LOCAL) $(HTML_STAMPS)
 
 install-data-local: all-local
 	$(install_sh) -d $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
@@ -31,6 +33,16 @@ install-exec-hook:
 giacfr.tex: ../giacfr.tex
 	cp "$<" "$@"
 
-%.pdf %.html: %.tex giacfr.tex
-	xvfb-run -a env XCAS_ROOT=../../ ../../src/icas "$<"
+%.pdf: %.tex giacfr.tex
+	XCAS_ROOT=../../ ../../src/icas $<
 	set -e; for i in $@; do test -e $$i; done
+
+%.stamp: %.tex giacfr.tex
+	hevea -fix $<
+	tdir=`echo $< | sed -e 's/\.tex//'`; \
+	imagen -png -pdf -mag 2000 $$tdir; \
+	$(install_sh) -d $$tdir ; \
+	hacha $$tdir.html -o $$tdir/index.html ; \
+	touch $$tdir.png ; \
+	cp -r $$tdir*.png $$tdir ; \
+	touch $@
