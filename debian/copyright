@@ -13,8 +13,8 @@ Files-Excluded:
  doc/giac.js
  doc/giac.wasm
  doc/giacwasm.js
+ doc/giacwasm.wasm
  doc/jump-to-line.js
- doc/matchrackets.js
  doc/python.js
  doc/searchcursor.js
  doc/search.js
@@ -24,7 +24,7 @@ Files-Excluded:
  doc/xcasmode.js
 # Autoconf intermediate files and other irrelevant cruft
  */*iphone* */Makefile.osx */Makefile.win*
- configure config.guess config.sub config.log config.h.* config/* aclocal.m4 m4/* */Makefile.in
+ configure config.guess config.sub config.h.* config/* aclocal.m4 m4/* */Makefile.in
  po/Makefile.in.in
  po/*.gmo
  po/*.pot

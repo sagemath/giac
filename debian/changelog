@@ -2,6 +2,7 @@ giac (1.5.0.85+dfsg1-4) UNRELEASED; urgency=medium
 
   * Drop now unneeded patch for armhf.
   * Update d-dont-include-remote-scripts patch.
+  * Update excluded files in d/copyright.
 
  -- Julien Puydt <jpuydt@debian.org>  Mon, 17 Feb 2020 06:43:52 +0100
 
