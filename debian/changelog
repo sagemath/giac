@@ -1,9 +1,8 @@
 giac (1.5.0.87+dfsg1-1) UNRELEASED; urgency=medium
 
-  * Drop now unneeded patch for armhf.
-  * Update d-dont-include-remote-scripts patch.
   * Update excluded files in d/copyright.
   * New upstream release 1.5.0.87.
+  * Drop many patches, update remaining ones.
 
  -- Julien Puydt <jpuydt@debian.org>  Thu, 27 Feb 2020 09:58:49 +0100
 
