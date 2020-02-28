@@ -1,11 +1,11 @@
-giac (1.5.0.87+dfsg1-1) UNRELEASED; urgency=medium
+giac (1.5.0.87+dfsg1-1) unstable; urgency=medium
 
   * Update excluded files in d/copyright.
   * New upstream release 1.5.0.87.
   * Drop many patches, update remaining ones.
   * Refresh d/uptream-doc-fr/algo.tex from upstream.
 
- -- Julien Puydt <jpuydt@debian.org>  Thu, 27 Feb 2020 09:58:49 +0100
+ -- Julien Puydt <jpuydt@debian.org>  Fri, 28 Feb 2020 11:01:14 +0100
 
 giac (1.5.0.85+dfsg1-3) unstable; urgency=medium
 
