@@ -1,3 +1,9 @@
+giac (1.5.0.87+dfsg1-2) UNRELEASED; urgency=medium
+
+  * Remove code for bigendian in d/rules : upstream does it now.
+
+ -- Julien Puydt <jpuydt@debian.org>  Sat, 29 Feb 2020 16:39:47 +0100
+
 giac (1.5.0.87+dfsg1-1) unstable; urgency=medium
 
   * Update excluded files in d/copyright.
