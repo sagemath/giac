@@ -1,9 +1,9 @@
-giac (1.5.0.87+dfsg1-3) UNRELEASED; urgency=medium
+giac (1.5.0.87+dfsg1-3) unstable; urgency=medium
 
   * Re-add code for bigendian in d/rules : not good
    enough yet.
 
- -- Julien Puydt <jpuydt@debian.org>  Sun, 01 Mar 2020 19:01:08 +0100
+ -- Julien Puydt <jpuydt@debian.org>  Tue, 03 Mar 2020 08:34:07 +0100
 
 giac (1.5.0.87+dfsg1-2) unstable; urgency=medium
 
