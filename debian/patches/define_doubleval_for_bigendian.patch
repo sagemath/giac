@@ -1,0 +1,18 @@
+Description: force defining DOUBLEVAL when compiling on bigendian
+Author: Julien Puydt
+Forwarded: yes
+
+--- giac.orig/configure.in
++++ giac/configure.in
+@@ -43,6 +43,11 @@
+ dnl Check for standard C+headers
+ GINAC_STD_CXX_HEADERS
+ 
++dnl Define DOUBLEVAL if bigendian
++if test "x$ac_cv_c_bigendian" = "xyes"; then
++	CXXFLAGS="$CXXFLAGS -DDOUBLEVAL"
++fi
++
+ dnl Check for GMP
+ CONFIG_TOMMATH="no"
+ AC_ARG_ENABLE([tommath],

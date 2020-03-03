@@ -3,10 +3,6 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
-ifeq ($(DEB_HOST_ARCH_ENDIAN),big)
-	export DEB_CPPFLAGS_MAINT_APPEND=-DDOUBLEVAL
-endif
-
 %:
 	dh "$@" --with autoreconf
 
