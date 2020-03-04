@@ -1,8 +1,8 @@
-giac (1.5.0.87+dfsg1-4) UNRELEASED; urgency=medium
+giac (1.5.0.87+dfsg1-4) unstable; urgency=medium
 
   * Add patch to deal correctly with the bigendian situation.
 
- -- Julien Puydt <jpuydt@debian.org>  Tue, 03 Mar 2020 14:37:46 +0100
+ -- Julien Puydt <jpuydt@debian.org>  Wed, 04 Mar 2020 08:18:55 +0100
 
 giac (1.5.0.87+dfsg1-3) unstable; urgency=medium
 
