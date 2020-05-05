@@ -1,7 +1,7 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: giac
 Upstream-Contact: Bernard Parisse <parisse@univ-grenoble-alpes.fr>
-Source: ftp://ftp-fourier.ujf-grenoble.fr/xcas/
+Source: https://www-fourier.ujf-grenoble.fr/~parisse/giac.html
 Files-Excluded:
 # Embedded libraries
  pariinl.h
