@@ -1,9 +1,10 @@
-giac (1.5.0.87+dfsg1-5) UNRELEASED; urgency=medium
+giac (1.5.0.87+dfsg1-5) experimental; urgency=medium
 
   * Set the date to the last update in algo.tex so its build becomes
   reproducible.
+  * Use experimental pari code to fix locking issues with pari.
 
- -- Julien Puydt <jpuydt@debian.org>  Sat, 23 May 2020 22:30:43 +0200
+ -- Julien Puydt <jpuydt@debian.org>  Wed, 27 May 2020 07:45:47 +0200
 
 giac (1.5.0.87+dfsg1-4) unstable; urgency=medium
 
