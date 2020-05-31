@@ -1,3 +1,9 @@
+giac (1.5.0.87+dfsg1-7) unstable; urgency=medium
+
+  * Really upload to unstable.
+
+ -- Julien Puydt <jpuydt@debian.org>  Sun, 31 May 2020 13:00:08 +0200
+
 giac (1.5.0.87+dfsg1-6) experimental; urgency=medium
 
   * Uploading to unstable : the experimental pari code is
