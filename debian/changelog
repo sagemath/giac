@@ -1,3 +1,11 @@
+giac (1.5.0.87+dfsg1-6) experimental; urgency=medium
+
+  * Uploading to unstable : the experimental pari code is
+  accepted upstream, will be in the next official version,
+  and fixes an armhf issue. (Closes: #961122)
+
+ -- Julien Puydt <jpuydt@debian.org>  Sun, 31 May 2020 10:33:10 +0200
+
 giac (1.5.0.87+dfsg1-5) experimental; urgency=medium
 
   * Set the date to the last update in algo.tex so its build becomes
