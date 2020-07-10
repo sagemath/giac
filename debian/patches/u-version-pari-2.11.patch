@@ -1,3 +1,7 @@
+Description: make tests pass with a recent pari
+Author: Ximin Luo
+Forwarded: yes
+
 --- giac.orig/check/TP11-sol.cas.out1
 +++ giac/check/TP11-sol.cas.out1
 @@ -10,7 +10,7 @@
