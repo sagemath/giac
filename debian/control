@@ -1,7 +1,7 @@
 Source: giac
 Section: science
 Priority: optional
-Maintainer: Debian Science Maintainers <debian-science-maintainers@lists.alioth.debian.org>
+Maintainer: Debian Science Maintainers <debian-science-maintainers@alioth-lists.debian.net>
 Uploaders: Ximin Luo <infinity0@debian.org>, Gilles Filippini <pini@debian.org>, Julien Puydt <jpuydt@debian.org>
 Build-Depends:
  debhelper-compat (= 12),
