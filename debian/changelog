@@ -2,6 +2,7 @@ giac (1.6.0.7+dfsg1-1) UNRELEASED; urgency=medium
 
   * New upstream release.
   * Refresh patches.
+  * Document split-build-install.patch.
 
  -- Julien Puydt <jpuydt@debian.org>  Fri, 10 Jul 2020 18:00:32 +0200
 

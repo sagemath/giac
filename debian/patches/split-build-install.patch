@@ -1,3 +1,7 @@
+Description: split the build install in several targets
+Author: Ximin Luo
+Forwarded: Debian-specific
+
 --- giac.orig/doc/en/Makefile.am
 +++ giac/doc/en/Makefile.am
 @@ -34,7 +34,9 @@
