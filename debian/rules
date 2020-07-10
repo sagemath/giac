@@ -19,8 +19,6 @@ endif
 export HOME=/nonexistent
 
 override_dh_autoreconf:
-# Use experimental pari code
-	cp debian/pari.cc src/
 # Deal with embedded stuff
 	find doc/ -maxdepth 1 -type d -exec ln -sf /usr/share/texmf/tex/texinfo/texinfo.tex '{}/' \;
 # Deal with emscripten placeholder
