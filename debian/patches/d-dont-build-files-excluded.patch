@@ -15,7 +15,7 @@ Forwarded: not-needed
  $(PACKAGE)-$(VERSION).tar.gz: dist
 --- giac.orig/configure.in
 +++ giac/configure.in
-@@ -468,8 +468,6 @@
+@@ -476,8 +476,6 @@
  doc/es/Makefile
  doc/fr/Makefile
  doc/el/Makefile
@@ -24,7 +24,7 @@ Forwarded: not-needed
  doc/local/Makefile
  doc/pt/Makefile
  doc/zh/Makefile
-@@ -477,8 +475,6 @@
+@@ -485,8 +483,6 @@
  intl/Makefile
  po/Makefile.in
  examples/Makefile

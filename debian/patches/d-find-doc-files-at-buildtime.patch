@@ -6,7 +6,7 @@ Forwarded: not-needed
 
 --- giac.orig/src/global.cc
 +++ giac/src/global.cc
-@@ -2776,6 +2776,10 @@
+@@ -2799,6 +2799,10 @@
        string s=getenv("XCAS_ROOT");
        return s;
      }

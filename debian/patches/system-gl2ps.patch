@@ -15,7 +15,7 @@ Forwarded: TODO
 --- giac.orig/src/Makefile.am
 +++ giac/src/Makefile.am
 @@ -30,17 +30,17 @@
- lpsolve.h optimization.h signalprocessing.h graphe.h graphtheory.h nautywrapper.h markup.h kdisplay.h k_csdk.h 
+ lpsolve.h optimization.h signalprocessing.h graphe.h graphtheory.h nautywrapper.h markup.h kdisplay.h k_csdk.h k_defs.h
  
  noinst_LTLIBRARIES = libxcas.la
 -libxcas_la_LIBADD = libgiac.la $(GUI_LIBS)

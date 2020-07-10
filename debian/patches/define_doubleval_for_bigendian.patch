@@ -4,9 +4,9 @@ Forwarded: yes
 
 --- giac.orig/configure.in
 +++ giac/configure.in
-@@ -43,6 +43,11 @@
- dnl Check for standard C+headers
- GINAC_STD_CXX_HEADERS
+@@ -49,6 +49,11 @@
+ fi
+ 
  
 +dnl Define DOUBLEVAL if bigendian
 +if test "x$ac_cv_c_bigendian" = "xyes"; then
