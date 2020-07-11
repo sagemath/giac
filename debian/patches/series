@@ -19,3 +19,4 @@ d-dont-build-files-excluded.patch
 d-find-doc-files-at-buildtime.patch
 d-dont-include-remote-scripts.patch
 define_doubleval_for_bigendian.patch
+fix_typos.patch

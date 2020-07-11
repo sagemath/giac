@@ -12,6 +12,7 @@ giac (1.6.0.7+dfsg1-1) UNRELEASED; urgency=medium
   * Fix typo in manpage.
   * Bump dh compat to 13.
   * Add workaround for badly encoded files.
+  * Add patch to fix typos both in the code and user-text.
 
  -- Julien Puydt <jpuydt@debian.org>  Fri, 10 Jul 2020 18:00:32 +0200
 
