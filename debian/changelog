@@ -8,6 +8,7 @@ giac (1.6.0.7+dfsg1-1) UNRELEASED; urgency=medium
   * Remove trailing whitespaces in d/changelog.
   * Drop experimental pari code (upstreamed).
   * Document that rules doesn't require root.
+  * Update section for the libgiac0 package.
 
  -- Julien Puydt <jpuydt@debian.org>  Fri, 10 Jul 2020 18:00:32 +0200
 
