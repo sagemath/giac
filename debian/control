@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Debian Science Maintainers <debian-science-maintainers@alioth-lists.debian.net>
 Uploaders: Ximin Luo <infinity0@debian.org>, Gilles Filippini <pini@debian.org>, Julien Puydt <jpuydt@debian.org>
 Build-Depends:
- debhelper-compat (= 12),
+ debhelper-compat (= 13),
  automake,
  patch,
  bison,

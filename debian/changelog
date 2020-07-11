@@ -10,6 +10,7 @@ giac (1.6.0.7+dfsg1-1) UNRELEASED; urgency=medium
   * Document that rules doesn't require root.
   * Update section for the libgiac0 package.
   * Fix typo in manpage.
+  * Bump dh compat to 13.
 
  -- Julien Puydt <jpuydt@debian.org>  Fri, 10 Jul 2020 18:00:32 +0200
 
