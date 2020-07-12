@@ -1,4 +1,4 @@
-giac (1.6.0.7+dfsg1-1) UNRELEASED; urgency=medium
+giac (1.6.0.7+dfsg1-1) unstable; urgency=medium
 
   * New upstream release.
   * Refresh patches.
@@ -15,7 +15,7 @@ giac (1.6.0.7+dfsg1-1) UNRELEASED; urgency=medium
   * Add patch to fix typos both in the code and user-text.
   * Drop copyright for an excluded file.
 
- -- Julien Puydt <jpuydt@debian.org>  Fri, 10 Jul 2020 18:00:32 +0200
+ -- Julien Puydt <jpuydt@debian.org>  Sun, 12 Jul 2020 09:15:43 +0200
 
 giac (1.5.0.87+dfsg1-7) unstable; urgency=medium
 
