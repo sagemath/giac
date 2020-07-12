@@ -30,7 +30,7 @@ Files-Excluded:
  po/*.pot
  intl/*
  src/mk* src/config.h
- mkdebian mkdebian2 debian debianold
+ mkdebian mkdebian2 debiandebianold
 # Build output, we regenerate these instead
  check/*.tst
  path.h src/path.h
@@ -141,7 +141,7 @@ Copyright: 2000-2002 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
            2002 Jose Manrique Lopez de la Fuente <jsmanrique_lopez@yahoo.es>
 License: GPL-2+
 
-Files: doc/matchbrackets.js doc/xcasmode.js
+Files: doc/matchbrackets.js
 Copyright: 2011-2017 Marijn Haverbeke and others
 License: Expat
 
