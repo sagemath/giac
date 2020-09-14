@@ -2,6 +2,7 @@ giac (1.6.0.17+dfsg1-1) UNRELEASED; urgency=medium
 
   * Package new upstream release.
   * Drop the patch to unbreak 32 bits architectures (upstreamed).
+  * Drop the patch to force defining DOUBLEVAL on bigendian (upstreamed).
 
  -- Julien Puydt <jpuydt@debian.org>  Mon, 14 Sep 2020 12:38:24 +0200
 
