@@ -434,6 +434,10 @@ ALL_LINGUAS="es fr el pt it en zh de"
 AM_GNU_GETTEXT
 AM_GNU_GETTEXT_VERSION([0.14.5])
 AC_CHECK_LIB(intl, main)
+dnl auto-check will work if the function checked is alone in a file
+dnl and independant from the whole micropython library
+dnl otherwise it will fail because it depends on giac
+dnl AC_CHECK_LIB(micropython,mp_version)
 
 AC_PROG_EGREP
 CONFIG_DOC_PROGS="yes"
@@ -466,6 +470,10 @@ AC_CHECK_HEADERS(sstream, AC_DEFINE(HAVE_SSTREAM,1), )
 dnl CXXFLAGS="$CXXFLAGS -fno-strict-aliasing -DSMARTPTR64"
 CXXFLAGS="$CXXFLAGS -fno-strict-aliasing -DGIAC_GENERIC_CONSTANTS"
 
+dnl enables MicroPython, -fpermissive to avoid failure on Debian 10
+LDFLAGS="$LDFLAGS -L. -L.. -lmicropython"
+CXXFLAGS="$CXXFLAGS -DHAVE_LIBMICROPYTHON -fpermissive"
+
 dnl Output makefiles etc.
 AC_OUTPUT([
 Makefile
@@ -487,6 +495,20 @@ po/Makefile.in
 examples/Makefile
 debianold/Makefile
 debian/Makefile
+micropython-1.12/Makefile
+micropython-1.12/docs/Makefile
+micropython-1.12/drivers/Makefile
+micropython-1.12/examples/Makefile
+micropython-1.12/extmod/Makefile
+micropython-1.12/lib/Makefile
+micropython-1.12/logo/Makefile
+micropython-1.12/nspire/Makefile
+micropython-1.12/numworks/Makefile
+micropython-1.12/ports/Makefile
+micropython-1.12/py/Makefile
+micropython-1.12/tests/Makefile
+micropython-1.12/tools/Makefile
+micropython-1.12/unix/Makefile
 ])
 
 echo "Adding link . to giac in src"
