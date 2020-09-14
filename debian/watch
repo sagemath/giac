@@ -4,7 +4,7 @@ opts="\
 dversionmangle=s/\+dfsg.*$//,\
 uversionmangle=s/(.+)-(\d+)/$1.$2/,\
 repack,\
-repacksuffix=+dfsg1,\
+repacksuffix=+dfsg2,\
 compression=xz,\
 " \
 https://www-fourier.ujf-grenoble.fr/~parisse/debian/dists/stable/main/source/giac_(.*)\.tar\.gz

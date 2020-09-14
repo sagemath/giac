@@ -11,7 +11,6 @@ Files-Excluded:
  doc/dialog.*
  doc/FileSaver.js
  doc/giac.js
- doc/giac.wasm
  doc/giacwasm.js
  doc/giacwasm.wasm
  doc/jump-to-line.js
@@ -22,6 +21,7 @@ Files-Excluded:
  doc/show-hint.*
  doc/w3data.js
  doc/xcasmode.js
+ micropython-1.12
 # Autoconf intermediate files and other irrelevant cruft
  */*iphone* */Makefile.osx */Makefile.win*
  configure config.guess config.sub config.h.* config/* aclocal.m4 m4/* */Makefile.in
@@ -29,11 +29,11 @@ Files-Excluded:
  po/*.gmo
  po/*.pot
  intl/*
- src/mk* src/config.h
- mkdebian mkdebian2 debiandebianold
+ src/mk* src/config.h.*
+ mkdebian mkdebian2 debian debianold
 # Build output, we regenerate these instead
  check/*.tst
- path.h src/path.h
+ src/path.h
  src/input_lexer.cc
  src/lexer.h
  src/input_parser.cc
@@ -48,7 +48,6 @@ Files-Excluded:
  doc/*/casinter/*
  doc/*/tutoriel/*
  doc/testfr.html
- doc/algoseconde.html
 # Build output, we don't need it
  src/ipaq_usr.tgz
 # Non DFSG-free doc/fr (C) Renée de Graeve
