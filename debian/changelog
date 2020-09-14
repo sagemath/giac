@@ -5,6 +5,7 @@ giac (1.6.0.17+dfsg2-1) UNRELEASED; urgency=medium
   * Drop the patch to force defining DOUBLEVAL on bigendian (upstreamed).
   * Refresh the other patches.
   * Update the files excluded list and associated patch (bump to dfsg2).
+  * Update lintian overrides.
 
  -- Julien Puydt <jpuydt@debian.org>  Mon, 14 Sep 2020 15:38:13 +0200
 

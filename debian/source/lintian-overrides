@@ -1,6 +1,5 @@
 # False positive, very long regex for giac syntax
 giac source: source-is-missing doc/xcas.js line length is * characters (>*)
-giac source: source-is-missing doc/xcasfrwasm.html line length is * characters (>*)
 
 # Format-specification bug, see #649530
-giac source: missing-license-paragraph-in-dep5-copyright *+ (paragraph at line *)
+giac source: missing-license-paragraph-in-dep5-copyright *+ (line *)
