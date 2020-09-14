@@ -1,4 +1,4 @@
-giac (1.6.0.17+dfsg2-1) UNRELEASED; urgency=medium
+giac (1.6.0.17+dfsg2-1) unstable; urgency=medium
 
   * Package new upstream release.
   * Drop the patch to unbreak 32 bits architectures (upstreamed).
@@ -8,7 +8,7 @@ giac (1.6.0.17+dfsg2-1) UNRELEASED; urgency=medium
   * Update lintian overrides.
   * Update the list of files needing transcoding to unicode.
 
- -- Julien Puydt <jpuydt@debian.org>  Mon, 14 Sep 2020 15:38:13 +0200
+ -- Julien Puydt <jpuydt@debian.org>  Mon, 14 Sep 2020 17:34:26 +0200
 
 giac (1.6.0.7+dfsg1-2) unstable; urgency=medium
 
