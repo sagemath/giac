@@ -2,140 +2,6 @@ Description: fix quite a few typos in the code and user-oriented text
 Author: Julien Puydt
 Forwarded: yes
 
---- giac.orig/src/Editeur.cc
-+++ giac/src/Editeur.cc
-@@ -2582,7 +2582,7 @@
-       nxt_button = new Fl_Button(x+w/3,y,w/12,L);
-       nxt_button->labelsize(labelsize());
-       nxt_button->label(gettext("nxt"));
--      nxt_button->tooltip(gettext("Find next occurence (defined by Edit->Search)"));
-+      nxt_button->tooltip(gettext("Find next occurrence (defined by Edit->Search)"));
-       nxt_button->callback((Fl_Callback *) cb_Editeur_Next);
-       if (parent()==window()){
- 	exec_button = new Save_Focus_Button(x+w/3-w/12,y,w/12,L);
---- giac.orig/src/Equation.cc
-+++ giac/src/Equation.cc
-@@ -560,7 +560,7 @@
- 
-   // vertical merge with same baseline
-   // for vertical merge of hp,yp at top (like ^) add fontsize to yp
--  // at bottom (like lower bound of int) substract fontsize from yp
-+  // at bottom (like lower bound of int) subtract fontsize from yp
-   void Equation_vertical_adjust(int hp,int yp,int & h,int & y){
-     int yf=min(y,yp);
-     h=max(y+h,yp+hp)-yf;
---- giac.orig/src/Graph.cc
-+++ giac/src/Graph.cc
-@@ -4818,7 +4818,7 @@
- 	    }
- 	    else {
- 	      fl_arc(deltax+round(i0-i1),deltay+round(j0-j1),round(2*i1),round(2*j1),anglei*180/M_PI,anglef*180/M_PI);
--	      if (v.size()>=4){ // if cercle has the optionnal 5th arg
-+	      if (v.size()>=4){ // if cercle has the optional 5th arg
- 		if (v[3]==2)
- 		  petite_fleche(i0+i1*std::cos(anglem),j0-j1*std::sin(anglem),-i1*std::sin(anglem),-j1*std::cos(anglem),deltax,deltay,width);
- 		else {
-@@ -6105,19 +6105,19 @@
-       fcnzuv->tooltip(gettext("Expression of z wrt to u and v (e.g u-v)"));
-       varnamet=new Fl_Input(dx/2,2+dy/lignes,dx/2-4,dy/lignes-4,gettext("Var"));
-       varnamet->value("t");
--      varnamet->tooltip(gettext("Independant variable name (e.g t)"));
-+      varnamet->tooltip(gettext("Independent variable name (e.g t)"));
-       varnameu=new Fl_Input(dx/4,2+dy/lignes,dx/4-4,dy/lignes-4,gettext("1st var"));
-       varnameu->value("u");
--      varnameu->tooltip(gettext("First independant variable name (e.g u)"));
-+      varnameu->tooltip(gettext("First independent variable name (e.g u)"));
-       varnamev=new Fl_Input(3*dx/4,2+dy/lignes,dx/4-4,dy/lignes-4,gettext("2nd var"));
-       varnamev->value("v");
--      varnamev->tooltip(gettext("Second independant variable name (e.g v)"));
-+      varnamev->tooltip(gettext("Second independent variable name (e.g v)"));
-       varnamex=new Fl_Input(dx/4,2+dy/lignes,dx/4-4,dy/lignes-4,gettext("1st var"));
-       varnamex->value("x");
--      varnamex->tooltip(gettext("First independant variable name (e.g x)"));
-+      varnamex->tooltip(gettext("First independent variable name (e.g x)"));
-       varnamey=new Fl_Input(3*dx/4,2+dy/lignes,dx/4-4,dy/lignes-4,gettext("2nd var"));
-       varnamey->value("y");
--      varnamey->tooltip(gettext("Second independant variable name (e.g y)"));
-+      varnamey->tooltip(gettext("Second independent variable name (e.g y)"));
-       varnametfield=new Fl_Input(dx/4,2+dy/lignes,dx/4-4,dy/lignes-4,gettext("Time var"));
-       varnametfield->value("t");
-       varnametfield->tooltip(gettext("Time variable name"));
---- giac.orig/src/Tableur.cc
-+++ giac/src/Tableur.cc
-@@ -1488,7 +1488,7 @@
-       decimal_sep=new Fl_Input(dx/4,2+dy/4,dx/4-2,dy/4-4,gettext("Decimal"));
-       decimal_sep->tooltip(gettext("One character used for decimal digit separator, like . or ,"));
-       end_file=new Fl_Input(3*dx/4,2+dy/4,dx/4-2,dy/4-4,gettext("Endfile"));
--      end_file->tooltip(gettext("Stop reading at first occurence of this character, leave blank for none"));
-+      end_file->tooltip(gettext("Stop reading at first occurrence of this character, leave blank for none"));
-       import_syntax = new Fl_Check_Button(dx/4,2+2*dy/4,dx/4-2,dy/4-4,gettext("Start row=1"));
-       import_syntax->value(1);
-       button0 = new Fl_Return_Button(2,2+3*dy/4,dx/2-4,dy/4-4);
-@@ -1794,36 +1794,36 @@
-       fcn3d->tooltip(gettext("Expression of the function (e.g x-y^2)"));
-       varname=new Fl_Input(dx/4,2+dy/lignes,dx/4-4,dy/lignes-4,gettext("1st var"));
-       varname->value("x");
--      varname->tooltip(gettext("Independant variable name (e.g x)"));
-+      varname->tooltip(gettext("Independent variable name (e.g x)"));
-       varnamey=new Fl_Input(3*dx/4,2+dy/lignes,dx/4-4,dy/lignes-4,gettext("2nd var"));
-       varnamey->value("y");
--      varnamey->tooltip(gettext("Second independant variable name (e.g y)"));
-+      varnamey->tooltip(gettext("Second independent variable name (e.g y)"));
-       xmin = new Fl_Value_Input(dx/6,2+2*dy/lignes,dx/6-2,dy/lignes-4,gettext("xmin"));
-       xmin->value(-4);
-       xmin->step(0.5);
--      xmin->tooltip(gettext("Minimal value for 1st independant variable"));
-+      xmin->tooltip(gettext("Minimal value for 1st independent variable"));
-       xstep = new Fl_Value_Input(3*dx/6,2+2*dy/lignes,dx/6-2,dy/lignes-4,gettext("xstep"));
-       xstep->value(0.5);
-       xstep->step(0.01);
--      xstep->tooltip(gettext("Discretization step for 1st independant variable"));
-+      xstep->tooltip(gettext("Discretization step for 1st independent variable"));
-       xmax = new Fl_Value_Input(5*dx/6,2+2*dy/lignes,dx/6-2,dy/lignes-4,gettext("xmax"));
-       xmax->value(4);
-       xmax->step(0.5);
--      xmax->tooltip(gettext("Maximal value for 1st independant variable"));
-+      xmax->tooltip(gettext("Maximal value for 1st independent variable"));
-       target = new Fl_Input(dx/6,2+3*dy/lignes,dx/6-2,dy/lignes-4,gettext("Target"));
-       target->tooltip(gettext("Name of the first of two columns that will be overwritten by the tablefunc"));
-       ymin = new Fl_Value_Input(dx/6,2+3*dy/lignes,dx/6-2,dy/lignes-4,gettext("ymin"));
-       ymin->value(-4);
-       ymin->step(0.5);
--      ymin->tooltip(gettext("Minimal value for 2nd independant variable"));
-+      ymin->tooltip(gettext("Minimal value for 2nd independent variable"));
-       ystep = new Fl_Value_Input(3*dx/6,2+3*dy/lignes,dx/6-2,dy/lignes-4,gettext("ystep"));
-       ystep->value(0.5);
-       ystep->step(0.01);
--      ystep->tooltip(gettext("Discretization step for 2nd independant variable"));
-+      ystep->tooltip(gettext("Discretization step for 2nd independent variable"));
-       ymax = new Fl_Value_Input(5*dx/6,2+3*dy/lignes,dx/6-2,dy/lignes-4,gettext("ymax"));
-       ymax->value(4);
-       ymax->step(0.5);
--      ymin->tooltip(gettext("Maximal value for 2nd independant variable"));
-+      ymin->tooltip(gettext("Maximal value for 2nd independent variable"));
-       methode = new Fl_Menu_Button(0,2+3*dy/lignes,dx/3-2,dy/lignes-4,gettext("Choose"));
-       methode->menu(Xcas_Menu_Methodes);
-       Xcas_Methodes_Output = new Fl_Output(4*dx/6,2+3*dy/lignes,dx/3-2,dy/lignes-4,gettext("int. method"));
-@@ -2061,7 +2061,7 @@
-       fcn->tooltip(gettext("Expression of u_(n+1) in terms of a variable=u_n, e.g. 1/2*(x+2/x)\nOr expression of u_(n+k+1) in terms of a list of variables=[u_n,...,u_(n+k)], e.g. x+y"));
-       varname=new Fl_Input(dx/2,2+dy/lignes,dx/2-4,dy/lignes-4,gettext("Variable(s)"));
-       varname->value("x");
--      varname->tooltip(gettext("Independant variable name representing u_n, e.g. x\nOr list of independant variables representing u_n,...,u_(n+k), e.g. [x,y]"));
-+      varname->tooltip(gettext("Independent variable name representing u_n, e.g. x\nOr list of independent variables representing u_n,...,u_(n+k), e.g. [x,y]"));
-       u0name = new Fl_Input(0,2+2*dy/lignes,dx/8,dy/lignes-4);
-       u0name->value("u0");
-       u0name->tooltip(gettext("Name of the initial value of un"));
---- giac.orig/src/Tableur.h
-+++ giac/src/Tableur.h
-@@ -48,7 +48,7 @@
-   extern Fl_Menu_Item Tableur_menu[];
-   class Flv_Table_Gen;
-   bool iscell_range(const giac::gen & g,const giac::matrice & m,giac::matrice & mselect,Flv_Table_Gen * ptr);
--  // Returns 0 if not a cell range, 1 if vc is made of successives integers, n if of n independant columns, set absolu to true if IDNT are used for cols
-+  // Returns 0 if not a cell range, 1 if vc is made of successives integers, n if of n independent columns, set absolu to true if IDNT are used for cols
-   int iscell_range(const giac::gen & g,const giac::matrice & m,giac::matrice & mselect,Flv_Table_Gen * sptr,int & r1,int & r2,std::vector<int> & vc,bool & absolu);
- 
-   bool tablefunc_dialog(Fl_Widget * spread_ptr,std::string & arg,bool plot,int type,const std::string & title);
 --- giac.orig/src/aspen_translate.h
 +++ giac/src/aspen_translate.h
 @@ -290,7 +290,7 @@
@@ -176,179 +42,9 @@ Forwarded: yes
  {"Unknown instruction tag:",0,"未知说明标签:","Tag inconnu:","Unbekanntes Anweisungstag:","Etiqueta de instrucción desconocida:","Onbekende instructietag:","Etiqueta de instruções desconhecida:","不明な指示タグ:"},
  {"Unknown secondary tag",0,"未知副标签","Tag secondaire inconnu","Unbekanntes sekundäres Tag","Etiqueta secundaria desconocida","Onbekende secundaire tag","Etiqueta secundária desconhecida","不明な第2タグ"},
  {"Unknown subsop rule ",0,"未知 subsop 规则 ","subsop : règle inconnue ","Unbekannte subsop-Regel ","Regla de subsop desconocida ","Onbekende subsop regel ","Regra subsop desconhecida ","不明なsubsop規則 "},
---- giac.orig/src/cocoa.cc
-+++ giac/src/cocoa.cc
-@@ -2637,7 +2637,7 @@
- 	c=0;
- 	C=0;
-       }
--      // extract from heap all terms having m as monomials, substract from c
-+      // extract from heap all terms having m as monomials, subtract from c
-       while (!H.empty() && H.front().u==m){
- 	std::pop_heap(H.begin(),H.end(),key);
- 	heap_t<tdeg_t> & current=H.back(); // was root node of the heap
-@@ -3856,7 +3856,7 @@
-       }
-       if (R)
- 	R->coord.push_back(T_unsigned<modint,tdeg_t>(1,m));
--      // extract from heap all terms having m as monomials, substract from c
-+      // extract from heap all terms having m as monomials, subtract from c
-       while (!H.empty() && H.front().u==m){
- 	std::pop_heap(H.begin(),H.end(),key);
- 	heap_t<tdeg_t> & current=H.back(); // was root node of the heap
-@@ -4000,7 +4000,7 @@
-       }
-       if (R)
- 	R->coord.push_back(T_unsigned<modint,tdeg_t>(1,m));
--      // extract from heap all terms having m as monomials, substract from c
-+      // extract from heap all terms having m as monomials, subtract from c
-       while (!H.empty() && H_[H.front()].u==m){
- 	std::pop_heap(H.begin(),H.end(),keyheap);
- 	heap_t<tdeg_t> & current=H_[H.back()]; // was root node of the heap
-@@ -10649,7 +10649,7 @@
-       }
-       //CERR << m << '\n';
-       R.push_back(m);
--      // extract from heap all terms having m as monomials, substract from c
-+      // extract from heap all terms having m as monomials, subtract from c
-       while (!H.empty() && H_[H.front()].u==m){
- 	heap_t<tdeg_t> & current=H_[H.front()]; // was root node of the heap
- 	const zpolymod<tdeg_t> & gcurrent = g[G[current.i]];
-@@ -12039,7 +12039,7 @@
-     // If several pairs share the same right term, 
-     // reduce the right term without leading monomial once
-     // reduce corresponding left terms without leading monomial 
--    // substract
-+    // subtract
-     f4buchbergerv.resize(Bs);
-     zinfo_t<tdeg_t> info_tmp;
-     unsigned nonzero = unsigned(Bs);
-@@ -14604,7 +14604,7 @@
- 	    int epsp=P[i].type==_ZINT?mpz_sizeinbase(*P[i]._ZINTptr,10):8-int(std::ceil(2*std::log10(terms)));
- 	    if (epsp>termsmin)
- 	      epsp=termsmin;
--	    *logptr(contextptr) << gettext("Running a probabilistic check for the reconstructed Groebner basis. If successfull, error probability is less than ") << eps << gettext(" and is estimated to be less than 10^-") << epsp << gettext(". Use proba_epsilon:=0 to certify (this takes more time).") << '\n';
-+	    *logptr(contextptr) << gettext("Running a probabilistic check for the reconstructed Groebner basis. If successful, error probability is less than ") << eps << gettext(" and is estimated to be less than 10^-") << epsp << gettext(". Use proba_epsilon:=0 to certify (this takes more time).") << '\n';
- 	  }
- 	  G.clear();
- 	  if (eps<1.01e-10){
-@@ -14772,7 +14772,7 @@
- 	    int epsp=mpz_sizeinbase(*P[i]._ZINTptr,10)-int(std::ceil(2*std::log10(terms)));
- 	    if (epsp>termsmin)
- 	      epsp=termsmin;
--	    *logptr(contextptr) << gettext("Running a probabilistic check for the reconstructed Groebner basis. If successfull, error probability is less than ") << eps << gettext(" and is estimated to be less than 10^-") << epsp << gettext(". Use proba_epsilon:=0 to certify (this takes more time).") << '\n';
-+	    *logptr(contextptr) << gettext("Running a probabilistic check for the reconstructed Groebner basis. If successful, error probability is less than ") << eps << gettext(" and is estimated to be less than 10^-") << epsp << gettext(". Use proba_epsilon:=0 to certify (this takes more time).") << '\n';
- 	  }
- 	  G.clear();
- 	  if (eps<6e-8 && !is_gbasis(W[i],eps*1.677e7,modularcheck)){
---- giac.orig/src/desolve.cc
-+++ giac/src/desolve.cc
-@@ -1077,9 +1077,9 @@
-     num=false;
-     // if x_orig.type==_VECT || y_orig.type==_VECT, they should be evaled
-     if (x_orig.type!=_VECT && eval(x_orig,1,contextptr)!=x_orig)
--      return gensizeerr("Independant variable assigned. Run purge("+x_orig.print(contextptr)+")\n");
-+      return gensizeerr("Independent variable assigned. Run purge("+x_orig.print(contextptr)+")\n");
-     if (y_orig.type!=_VECT && eval(y_orig,1,contextptr)!=y_orig)
--      return gensizeerr("Dependant variable assigned. Run purge("+y_orig.print(contextptr)+")\n");
-+      return gensizeerr("Dependent variable assigned. Run purge("+y_orig.print(contextptr)+")\n");
-     gen x(x_orig);
-     if ( (x_orig.type==_VECT) && (x_orig._VECTptr->size()==1) )
-       x=x_orig._VECTptr->front();
---- giac.orig/src/ezgcd.cc
-+++ giac/src/ezgcd.cc
-@@ -1560,7 +1560,7 @@
-       if (result)
- 	res=pres;
-       else
--	return gensizeerr(gettext("GCD not successfull"));
-+	return gensizeerr(gettext("GCD not successful"));
-     }
-     return r2e(res,lv,contextptr);
-   }
---- giac.orig/src/gen.cc
-+++ giac/src/gen.cc
-@@ -4914,12 +4914,12 @@
- 	  return symbolic(at_program,gen(makevecteur(var1,0,operator_plus(res1,res2,contextptr)),_SEQ__VECT));
-       }
-       if (!is_constant_wrt(b,var1,contextptr))
--	*logptr(contextptr) << "Warning function+constant with constant dependant of mute variable" << '\n';
-+	*logptr(contextptr) << "Warning function+constant with constant dependent of mute variable" << '\n';
-       return symbolic(at_program,gen(makevecteur(var1,0,operator_plus(res1,b,contextptr)),_SEQ__VECT));
-     }
-     if (is_algebraic_program(b,var2,res2)){
-       if (!is_constant_wrt(a,var2,contextptr))
--	*logptr(contextptr) << "Warning constant+function with constant dependant of mute variable" << '\n';
-+	*logptr(contextptr) << "Warning constant+function with constant dependent of mute variable" << '\n';
-       return symbolic(at_program,gen(makevecteur(var2,0,operator_plus(a,res2,contextptr)),_SEQ__VECT));
-     }
-     if (a.type==_VECT){
-@@ -6999,12 +6999,12 @@
- 	  return symbolic(at_program,gen(makevecteur(var1,0,operator_times(res1,res2,contextptr)),_SEQ__VECT));
-       }
-       if (!is_constant_wrt(b,var1,contextptr))
--	*logptr(contextptr) << "Warning function*constant with constant dependant of mute variable" << '\n';
-+	*logptr(contextptr) << "Warning function*constant with constant dependent of mute variable" << '\n';
-       return symbolic(at_program,gen(makevecteur(var1,0,operator_times(res1,b,contextptr)),_SEQ__VECT));
-     }
-     if (is_algebraic_program(b,var2,res2)){
-       if (!is_constant_wrt(a,var2,contextptr))
--	*logptr(contextptr) << "Warning constant*function with constant dependant of mute variable" << '\n';
-+	*logptr(contextptr) << "Warning constant*function with constant dependent of mute variable" << '\n';
-       return symbolic(at_program,gen(makevecteur(var2,0,operator_times(a,res2,contextptr)),_SEQ__VECT));
-     }
-     if (is_inf(a)){
-@@ -7888,12 +7888,12 @@
- 	      return symbolic(at_program,gen(makevecteur(var1,0,rdiv(res1,res2,contextptr)),_SEQ__VECT));
- 	  }
- 	  if (!is_constant_wrt(b,var1,contextptr))
--	    *logptr(contextptr) << "Warning function/constant with constant dependant of mute variable" << '\n';
-+	    *logptr(contextptr) << "Warning function/constant with constant dependent of mute variable" << '\n';
- 	  return symbolic(at_program,gen(makevecteur(var1,0,rdiv(res1,b,contextptr)),_SEQ__VECT));
- 	}
- 	if (is_algebraic_program(b,var2,res2)){
- 	  if (!is_constant_wrt(a,var2,contextptr))
--	    *logptr(contextptr) << "Warning constant/function with constant dependant of mute variable" << '\n';
-+	    *logptr(contextptr) << "Warning constant/function with constant dependent of mute variable" << '\n';
- 	  return symbolic(at_program,gen(makevecteur(var2,0,rdiv(a,res2,contextptr)),_SEQ__VECT));	
- 	}
-       }
---- giac.orig/src/gen.h
-+++ giac/src/gen.h
-@@ -1240,7 +1240,7 @@
-       return false;
-     }
-     virtual bool operator == (const gen_user & a) const { return (*this) == gen(a); }
--    // must redefine > AND <= since we do not have symetrical type arguments
-+    // must redefine > AND <= since we do not have symmetrical type arguments
-     virtual gen operator > (const gen &) const { return gensizeerr(gettext("> not redefined")); }
-     virtual gen operator > (const gen_user & a) const { return superieur_strict(*this, gen(a),0); }
-     virtual gen operator <= (const gen &) const { return gensizeerr(gettext("<= not redefined")); }
---- giac.orig/src/global.cc
-+++ giac/src/global.cc
-@@ -5353,7 +5353,7 @@
-     int nb[256],pointdecsep=0,commadecsep=0; 
-     for (int i=0;i<256;++i)
-       nb[i]=0;
--    // count occurence of each char
-+    // count occurrence of each char
-     // and detect decimal separator between . or ,
-     for (int i=1;i<count-1;++i){
-       if (data[i]=='[' || data[i]==']')
---- giac.orig/src/global.h
-+++ giac/src/global.h
-@@ -970,7 +970,7 @@
- 
-   void read_config(const std::string & name,GIAC_CONTEXT,bool verbose=true);
-   void protected_read_config(GIAC_CONTEXT,bool verbose=true);
--  vecteur remove_multiples(vecteur & v); // sort v and return list without multiple occurences
-+  vecteur remove_multiples(vecteur & v); // sort v and return list without multiple occurrences
-   int equalposcomp(const std::vector<int> v,int i);
-   int equalposcomp(const std::vector<short int> v,int i);
-   int equalposcomp(int tab[],int f);
 --- giac.orig/src/help.cc
 +++ giac/src/help.cc
-@@ -872,7 +872,7 @@
+@@ -1077,7 +1077,7 @@
  	  break;
  	}
  	if (s>8 && tmp.substr(s-8,8)=="</B></A>"){
@@ -359,15 +55,6 @@ Forwarded: yes
  	    if (tmp[l]=='<' && tmp[l+1]=='A')
 --- giac.orig/src/intg.cc
 +++ giac/src/intg.cc
-@@ -4446,7 +4446,7 @@
- *		If P=Sigma a_k x^k then write linear system for a_k
- *		Columns of the matrix of the system are lines
- *		of the Pascal triangle without the first element
--*		(since we must substract identity matrix to the triangle)
-+*		(since we must subtract identity matrix to the triangle)
- *		a_1 a_2 a_3 ... a_n+1		coeff of Q
- *		1   1   1	1	X^0
- *		0   2	3	n+1	X^1
 @@ -5841,7 +5841,7 @@
  					     &t, t1, &h,
  					     y);
@@ -377,65 +64,11 @@ Forwarded: yes
  	if (debug_infolevel>5)
  	  CERR << nstep << ":" << t << ",y5=" << double2vecteur(y,dim) << '\n';
  	if (return_curve)  {
---- giac.orig/src/intgab.cc
-+++ giac/src/intgab.cc
-@@ -531,7 +531,7 @@
-       Tabcuv(D1,D2,R,U,V,C); // R/D=(D1*U+D2*V)/(C*D1*D2) -> V/(C*D1)
-       Dp=C*D1;
-       R=V; // back to integrating 2*Re(R/Dp)
--      // find R/Dp at 0, real part should be substracted
-+      // find R/Dp at 0, real part should be subtracted
-       vecteur Rv(polynome2poly1(R,1)),Dv(polynome2poly1(Dp,1)),Qv(polynome2poly1(Q,1));
-       vecteur vX1(vX.begin()+1,vX.end());
-       Rv=*r2sym(Rv,vX1,contextptr)._VECTptr;
-@@ -1505,8 +1505,8 @@
-   static bool sumab_ps(const polynome & Q,const polynome & R,const vecteur & v,const gen & a,const gen & x,const gen & g,bool est_reel,const polynome & p,const polynome & s,gen & res,GIAC_CONTEXT){
-     // p corresponds to derivation, s to integration
-     // cerr << "p=" << p << " s=" << s << " Q=" << Q << " R=" << R << '\n';
--    // Q must be independant of x
--    // If R is independant of x we use the geometric series
-+    // Q must be independent of x
-+    // If R is independent of x we use the geometric series
-     // If R=x-integer the exponential (must change bounds by integer)
-     // If R=2x(2x+1) sinh/cosh etc.
-     if (Q.degree(0)==0){
-@@ -1560,7 +1560,7 @@
- 	  // hence the sum is exp(Q)*(w[0]+w[1]*Q+...)
- 	  reverse(w.begin(),w.end());
- 	  gen tmp1=symb_horner(w,gx)*exp(gx,contextptr),remains;
--	  // substract sum(p(n)*Q^(n-R0)/(n-R0)!,n=R0..a-1)
-+	  // subtract sum(p(n)*Q^(n-R0)/(n-R0)!,n=R0..a-1)
- 	  for (int n=R0.val;n<a.val;++n){
- 	    tmp1 -= subst(Pg,x,n,false,contextptr)*pow(Qg,n-R0.val)/factorial(n-R0.val);
- 	  }
-@@ -1622,7 +1622,7 @@
- 	  vecteur w=divided_differences(vx,vy);
- 	  reverse(w.begin(),w.end());
- 	  gen tmp=symb_horner(w,gx)*exp(gx,contextptr),remains;
--	  // substract sum(...,k=0..r*a-R0-1)
-+	  // subtract sum(...,k=0..r*a-R0-1)
- 	  for (int k=0;k<r*a.val-r0;++k){
- 	    // pow(Qg,k) replaced by pow(gx,k) for assume(x>0);somme(x^(4n+1)/(4n+1)!,n,1,inf);
- 	    tmp -= subst(Pg,x,(k+R0)/r,false,contextptr)*pow(gx,k)/factorial(k);
-@@ -1823,11 +1823,11 @@
- 	      for (int i=0;i<diffb.val;++i)
- 		res += simplify(limit(g,*x._IDNTptr,trueb+1+i,0,contextptr),contextptr);
- 	    }
--	    else { // b<=trueb substract sum(g,x,b+1,trueb)
-+	    else { // b<=trueb subtract sum(g,x,b+1,trueb)
- 	      for (int i=0;i<-diffb.val;++i)
- 		res -= simplify(limit(g,*x._IDNTptr,b+1+i,0,contextptr),contextptr); 
- 	    }
--	    if (diffa.val>0){ // a>truea : substract sum(g,x,truea,a-1)
-+	    if (diffa.val>0){ // a>truea : subtract sum(g,x,truea,a-1)
- 	      for (int i=0;i<diffa.val;++i)
- 		res -= simplify(limit(g,*x._IDNTptr,truea+i,0,contextptr),contextptr);
- 	    }
 --- giac.orig/src/kdisplay.cc
 +++ giac/src/kdisplay.cc
-@@ -1108,12 +1108,12 @@
+@@ -1188,12 +1188,12 @@
    {"avance n", "avance ", "Turtle forward n steps, default n=10", "#avance 30", 0, CAT_CATEGORY_LOGO},
-   {"axes", "axes", "Axes visible or not axes=1 or 0", "#axes=0", 0, CAT_CATEGORY_PROGCMD << 8},
+   {"axes", "axes", "Axes visible or not axes=1 or 0", "#axes=0", 0, CAT_CATEGORY_PROGCMD << 8|XCAS_ONLY},
    {"baisse_crayon ", "baisse_crayon ", "Turtle moves with the pen writing.", 0, 0, CAT_CATEGORY_LOGO},
 -  {"barplot(list)", 0, "Bar plot of 1-d statistic serie data in list.", "[3/2,2,1,1/2,3,2,3/2]", 0, CAT_CATEGORY_STATS},
 +  {"barplot(list)", 0, "Bar plot of 1-d statistic series data in list.", "[3/2,2,1,1/2,3,2,3/2]", 0, CAT_CATEGORY_STATS},
@@ -446,9 +79,9 @@ Forwarded: yes
 -  {"camembert(list)", 0, "Camembert pie-chart of a 1-d statistical serie.", "[[\"France\",6],[\"Germany\",12],[\"Switzerland\",5]]", 0, CAT_CATEGORY_STATS},
 +  {"camembert(list)", 0, "Camembert pie-chart of a 1-d statistical series.", "[[\"France\",6],[\"Germany\",12],[\"Switzerland\",5]]", 0, CAT_CATEGORY_STATS},
    {"cache_tortue ", "cache_tortue ", "Hide turtle (once the picture has been drawn).", 0, 0, CAT_CATEGORY_LOGO},
-   {"ceiling(x)", 0, "Smallest integer not less than x", "1.2", 0, CAT_CATEGORY_REAL},
+   {"ceil(x)", 0, "Smallest integer not less than x", "1.2", 0, CAT_CATEGORY_REAL},
    {"cfactor(p)", 0, "Factorization over C.", "x^4-1", 0, CAT_CATEGORY_ALGEBRA | (CAT_CATEGORY_COMPLEXNUM << 8)},
-@@ -1182,7 +1182,7 @@
+@@ -1262,7 +1262,7 @@
    {"gcd(a,b,...)", 0, "Greatest common divisor. See also iegcd and egcd for extended GCD.", "23,13", "x^2-1,x^3-1", CAT_CATEGORY_ARIT | (CAT_CATEGORY_POLYNOMIAL << 8)},
    {"gl_x", "gl_x", "Display settings X gl_x=xmin..xmax", "#gl_x=0..2", 0, CAT_CATEGORY_PROGCMD},
    {"gl_y", "gl_y", "Display settings Y gl_y=ymin..ymax", "#gl_y=-1..1", 0, CAT_CATEGORY_PROGCMD},
@@ -457,7 +90,7 @@ Forwarded: yes
    {"green", "green", "Display option", "#display=green", 0, CAT_CATEGORY_PROGCMD},
    {"halftan(expr)", 0, "Convert cos, sin, tan with tan(angle/2).","cos(x)", 0, CAT_CATEGORY_TRIG},
    {"hermite(n)", 0, "n-th Hermite polynomial", "10", 0, CAT_CATEGORY_POLYNOMIAL},
-@@ -1244,7 +1244,7 @@
+@@ -1324,7 +1324,7 @@
    {"plotarea(expr,x=a..b,[n,meth])", 0, "Area under curve with specified quadrature.", "1/x,x=1..3,2,trapezoid", 0, CAT_CATEGORY_PLOT},
  #endif
    {"plotcontour(expr,[x=xm..xM,y=ym..yM],levels)", 0, "Levels of expr.", "x^2+2y^2,[x=-2..2,y=-2..2],[1,2]", 0, CAT_CATEGORY_PLOT},
@@ -466,23 +99,7 @@ Forwarded: yes
    {"plotlist(list)", 0, "Plot a list", "[3/2,2,1,1/2,3,2,3/2]", 0, CAT_CATEGORY_PLOT},
    {"plotode(f(t,y),[t=tmin..tmax,y],[t0,y0])", 0, "Plot solution of differential equation y'=f(t,y), y(t0)=y0.", "sin(t*y),[t=-3..3,y],[0,1]", 0, CAT_CATEGORY_PLOT},
    {"plotparam([x,y],t)", 0, "Parametric plot. For example plotparam([sin(3t),cos(2t)],t,0,pi) or plotparam(exp(i*t),t,0,pi)", "[sin(3t),cos(2t)],t,0,pi", "[t^2,t^3],t=-1..1,tstep=0.1", CAT_CATEGORY_PLOT},
-@@ -1333,11 +1333,11 @@
- 
-   const char aide_khicas_string[]="Aide Khicas";
- #ifdef NUMWORKS
--  const char shortcuts_fr_string[]="Raccourcis clavier (shell et editeur)\nshift-/: %\nalpha shift \": '\nshift--: \\\nshift-*: factor\nshift-+: normal\nshift-1 a 6: selon bandeau en bas\nshift-7: matrices\nshift-8: listes\nshift-9:arithmetique\nshift-0: polynomes\nshift-.: reels\nshift-10^: programme\nvar: liste des variables (shell) ou dessin tortue (editeur)\n\nshift-x^y (sto) renvoie =>\n=>+: partfrac\n=>*: factor\n=>sin/cos/tan\n=>=>: solve\n\nShell:\nshift-5: Editeur 2d ou graphique ou texte selon objet\nshift-6: editeur texte\n+ ou - modifie un parametre en surbrillance\n\nEditeur d'expressions\nshift-cut: defaire/refaire (1 fois)\npave directionnel: deplace la selection dans l'arborescence de l'expression\nshift-droit/gauche echange selection avec argument a droite ou a gauche\nalpha-droit/gauche dans une somme ou un produit: augmente la selection avec argument droit ou gauche\nshift-4: Editer selection, shift-5: taille police + ou - grande\nEXE: evaluer la selection\nshift-6: valeur approchee\nBackspace: supprime l'operateur racine de la selection\n\nEditeur de scripts\nEXE: passage a la ligne\nshift-CUT: defaire/refaire (1 fois)\nshift-COPY: marque le debut de la selection, deplacer le curseur vers la fin puis Backspace pour effacer ou shift-COPY pour copier sans effacer. shift-PASTE pour coller.\nHome-6 recherche seule: entrer un mot puis EXE puis EXE. Taper EXE pour l'occurence suivante, Back pour annuler.\nHome-6 remplacer: entrer un mot puis EXE puis le remplacement et EXE. Taper EXE ou Back pour remplacer ou non et passer a l'occurence suivante, AC pour annuler\nOK: tester syntaxe\n\nRaccourcis Graphes:\n+ - zoom\n(-): zoomout selon y\n*: autoscale\n/: orthonormalisation\nOPTN: axes on/off";
--  const char shortcuts_en_string[]="Keyboard shortcuts (shell and editor)\nshift-/: %\nalpha shift \": '\nshift--: \\\nshift-*: factor\nshift-+: normal\nshift-1 to 6: cf. screen bottom\nshift-7: matrices\nshift-8: lists\nshift-9:arithmetic\nshift-0: polynomials\nshift-.: reals\nshift-10^: programs\nvar: variables list (shell) or turtle screen (editor)\n\nshift-x^y (sto) returns =>\n=>+: partfrac\n=>*: factor\n=>sin/cos/tan\n=>=>: solve\n\nShell:\nshift-5: 2d editor or graph or text\nshift-6: text edit\n+ ou - modifies selected slider\n\nExpressions editor\nshift-cut: undo/redo (1 fois)\nkeypad: move selection inside expression tree\nshift-right/left exchange selection with right or left argument\nalpha-right/left: inside a sum or product: increase selection with right or left argument\nshift-4: Edit selection, shift-5: change fontsize\nEXE: eval selection\nshift-6: approx value\nBackspace: suppress selection's rootnode operator\n\nScript Editor\nEXE: newline\nshift-CUT: undo/redo (1 time)\nshift-COPY: marks selection begin, move the cursor to the end, then hit Backspace to erase or shift-COPY to copy (no erase). shift-PASTE to paste.\nHome-6 search: enter a word then EXE then again EXE. Type EXE for next occurence, Back to cancel.\nHome-6 replace: enter a word then EXE then replacement word then EXE. Type EXE or Back to replace or ignore and go to next occurence, AC to cancel\nOK: test syntax\n\nGraph shortcuts:\n+ - zoom\n(-): zoomout along y\n*: autoscale\n/: orthonormalization\nOPTN: axes on/off";
-+  const char shortcuts_fr_string[]="Raccourcis clavier (shell et editeur)\nshift-/: %\nalpha shift \": '\nshift--: \\\nshift-*: factor\nshift-+: normal\nshift-1 a 6: selon bandeau en bas\nshift-7: matrices\nshift-8: listes\nshift-9:arithmetique\nshift-0: polynomes\nshift-.: reels\nshift-10^: programme\nvar: liste des variables (shell) ou dessin tortue (editeur)\n\nshift-x^y (sto) renvoie =>\n=>+: partfrac\n=>*: factor\n=>sin/cos/tan\n=>=>: solve\n\nShell:\nshift-5: Editeur 2d ou graphique ou texte selon objet\nshift-6: editeur texte\n+ ou - modifie un parametre en surbrillance\n\nEditeur d'expressions\nshift-cut: defaire/refaire (1 fois)\npave directionnel: deplace la selection dans l'arborescence de l'expression\nshift-droit/gauche echange selection avec argument a droite ou a gauche\nalpha-droit/gauche dans une somme ou un produit: augmente la selection avec argument droit ou gauche\nshift-4: Editer selection, shift-5: taille police + ou - grande\nEXE: evaluer la selection\nshift-6: valeur approchee\nBackspace: supprime l'operateur racine de la selection\n\nEditeur de scripts\nEXE: passage a la ligne\nshift-CUT: defaire/refaire (1 fois)\nshift-COPY: marque le debut de la selection, deplacer le curseur vers la fin puis Backspace pour effacer ou shift-COPY pour copier sans effacer. shift-PASTE pour coller.\nHome-6 recherche seule: entrer un mot puis EXE puis EXE. Taper EXE pour l'occurrence suivante, Back pour annuler.\nHome-6 remplacer: entrer un mot puis EXE puis le remplacement et EXE. Taper EXE ou Back pour remplacer ou non et passer a l'occurrence suivante, AC pour annuler\nOK: tester syntaxe\n\nRaccourcis Graphes:\n+ - zoom\n(-): zoomout selon y\n*: autoscale\n/: orthonormalisation\nOPTN: axes on/off";
-+  const char shortcuts_en_string[]="Keyboard shortcuts (shell and editor)\nshift-/: %\nalpha shift \": '\nshift--: \\\nshift-*: factor\nshift-+: normal\nshift-1 to 6: cf. screen bottom\nshift-7: matrices\nshift-8: lists\nshift-9:arithmetic\nshift-0: polynomials\nshift-.: reals\nshift-10^: programs\nvar: variables list (shell) or turtle screen (editor)\n\nshift-x^y (sto) returns =>\n=>+: partfrac\n=>*: factor\n=>sin/cos/tan\n=>=>: solve\n\nShell:\nshift-5: 2d editor or graph or text\nshift-6: text edit\n+ ou - modifies selected slider\n\nExpressions editor\nshift-cut: undo/redo (1 fois)\nkeypad: move selection inside expression tree\nshift-right/left exchange selection with right or left argument\nalpha-right/left: inside a sum or product: increase selection with right or left argument\nshift-4: Edit selection, shift-5: change fontsize\nEXE: eval selection\nshift-6: approx value\nBackspace: suppress selection's rootnode operator\n\nScript Editor\nEXE: newline\nshift-CUT: undo/redo (1 time)\nshift-COPY: marks selection begin, move the cursor to the end, then hit Backspace to erase or shift-COPY to copy (no erase). shift-PASTE to paste.\nHome-6 search: enter a word then EXE then again EXE. Type EXE for next occurrence, Back to cancel.\nHome-6 replace: enter a word then EXE then replacement word then EXE. Type EXE or Back to replace or ignore and go to next occurrence, AC to cancel\nOK: test syntax\n\nGraph shortcuts:\n+ - zoom\n(-): zoomout along y\n*: autoscale\n/: orthonormalization\nOPTN: axes on/off";
- #else
--  const char shortcuts_fr_string[]="Raccourcis clavier (shell et editeur)\nlivre: aide/complete\ntab: complete (shell)/indente (editeur)\nshift-/: %\nshift *: '\nctrl-/: \\\nshift-1 a 6: selon bandeau en bas\nshift-7: matrices\nshift-8: listes\nshift-9:arithmetique\nshift-0: complexes\nshift-.: reels\nctrl P: programme\nvar: liste des variables (shell) ou dessin tortue (editeur)\n\nctrl-var (sto) renvoie =>\n=>+: partfrac\n=>*: factor\n=>sin/cos/tan\n=>=>: solve\n\nShell:\nshift-5: Editeur 2d ou graphique ou texte selon objet\nshift-4: editeur texte\n+ ou - modifie un parametre en surbrillance\n\nEditeur d'expressions\nctrl z: defaire/refaire (1 fois)\npave directionnel: deplace la selection dans l'arborescence de l'expression\nshift-droit/gauche echange selection avec argument a droite ou a gauche\nctrl droit/gauche dans une somme ou un produit: augmente la selection avec argument droit ou gauche\nshift-4: Editer selection, shift-5: taille police + ou - grande\nenter: evaluer la selection\nshift-6: valeur approchee\nDel: supprime l'operateur racine de la selection\n\nEditeur de scripts\nenter: passage a la ligne\nctrl z: defaire/refaire (1 fois)\nctrl c: marque le debut de la selection, deplacer le curseur vers la fin puis Del pour effacer ou ctrl c pour copier sans effacer. ctrl v pour coller.\nMenu-6 recherche seule: entrer un mot puis enter puis enter. Taper enter pour l'occurence suivante, esc pour annuler.\nMenu-6 remplacer: entrer un mot puis enter puis le remplacement et enter. Taper enter ou esc pour remplacer ou non et passer a l'occurence suivante, ctrl del pour annuler\nvalidation (a droite de U): tester syntaxe\n\nRaccourcis Graphes:\n+ - zoom\n(-): zoomout selon y\n*: autoscale\n/: orthonormalisation\nOPTN: axes on/off";
--  const char shortcuts_en_string[]="Keyboard shortcuts (shell and editor)\nbook: help or completion\ntab: completion (shell), indent (editor)\nshift-/: %\nalpha shift *: '\nctrl-/: \\\nshift-1 a 6: see at bottom\nshift-7: matrices\nshift-8: listes\nshift-9:arithmetic\nshift-0: complexes\nshift-.: reals\nctrl P: program\nvar: variables list (shell) or turtle screen (editor)\n\nctrl var (sto) returns =>\n=>+: partfrac\n=>*: factor\n=>sin/cos/tan\n=>=>: solve\n\nShell:\nshift-5: 2d editor or graph or text\nshift-4: text edit\n+ ou - modifies selected slider\n\nExpressions editor\nctrl z: undo/redo (1 fois)\nkeypad: move selection inside expression tree\nshift-right/left exchange selection with right or left argument\nalpha-right/left: inside a sum or product: increase selection with right or left argument\nshift-4: Edit selection, shift-5: change fontsize\nenter: eval selection\nshift-6: approx value\nDel: suppress selection's rootnode operator\n\nScript Editor\nenter: newline\nctrl z: undo/redo (1 time)\nctrl c: marks selection begin, move the cursor to the end, then hit Del to erase or ctrl c to copy (no erase). ctrl v to paste.\nMenu-6 search: enter a word then enter then again enter. Type enter for next occurence, esc to cancel.\nMenu-6 replace: enter a word then enter then replacement word then enter. Type enter or esc to replace or ignore and go to next occurence, AC to cancel\nOK: test syntax\n\nGraph shortcuts:\n+ - zoom\n(-): zoomout along y\n*: autoscale\n/: orthonormalization\nOPTN: axes on/off";
-+  const char shortcuts_fr_string[]="Raccourcis clavier (shell et editeur)\nlivre: aide/complete\ntab: complete (shell)/indente (editeur)\nshift-/: %\nshift *: '\nctrl-/: \\\nshift-1 a 6: selon bandeau en bas\nshift-7: matrices\nshift-8: listes\nshift-9:arithmetique\nshift-0: complexes\nshift-.: reels\nctrl P: programme\nvar: liste des variables (shell) ou dessin tortue (editeur)\n\nctrl-var (sto) renvoie =>\n=>+: partfrac\n=>*: factor\n=>sin/cos/tan\n=>=>: solve\n\nShell:\nshift-5: Editeur 2d ou graphique ou texte selon objet\nshift-4: editeur texte\n+ ou - modifie un parametre en surbrillance\n\nEditeur d'expressions\nctrl z: defaire/refaire (1 fois)\npave directionnel: deplace la selection dans l'arborescence de l'expression\nshift-droit/gauche echange selection avec argument a droite ou a gauche\nctrl droit/gauche dans une somme ou un produit: augmente la selection avec argument droit ou gauche\nshift-4: Editer selection, shift-5: taille police + ou - grande\nenter: evaluer la selection\nshift-6: valeur approchee\nDel: supprime l'operateur racine de la selection\n\nEditeur de scripts\nenter: passage a la ligne\nctrl z: defaire/refaire (1 fois)\nctrl c: marque le debut de la selection, deplacer le curseur vers la fin puis Del pour effacer ou ctrl c pour copier sans effacer. ctrl v pour coller.\nMenu-6 recherche seule: entrer un mot puis enter puis enter. Taper enter pour l'occurrence suivante, esc pour annuler.\nMenu-6 remplacer: entrer un mot puis enter puis le remplacement et enter. Taper enter ou esc pour remplacer ou non et passer a l'occurrence suivante, ctrl del pour annuler\nvalidation (a droite de U): tester syntaxe\n\nRaccourcis Graphes:\n+ - zoom\n(-): zoomout selon y\n*: autoscale\n/: orthonormalisation\nOPTN: axes on/off";
-+  const char shortcuts_en_string[]="Keyboard shortcuts (shell and editor)\nbook: help or completion\ntab: completion (shell), indent (editor)\nshift-/: %\nalpha shift *: '\nctrl-/: \\\nshift-1 a 6: see at bottom\nshift-7: matrices\nshift-8: listes\nshift-9:arithmetic\nshift-0: complexes\nshift-.: reals\nctrl P: program\nvar: variables list (shell) or turtle screen (editor)\n\nctrl var (sto) returns =>\n=>+: partfrac\n=>*: factor\n=>sin/cos/tan\n=>=>: solve\n\nShell:\nshift-5: 2d editor or graph or text\nshift-4: text edit\n+ ou - modifies selected slider\n\nExpressions editor\nctrl z: undo/redo (1 fois)\nkeypad: move selection inside expression tree\nshift-right/left exchange selection with right or left argument\nalpha-right/left: inside a sum or product: increase selection with right or left argument\nshift-4: Edit selection, shift-5: change fontsize\nenter: eval selection\nshift-6: approx value\nDel: suppress selection's rootnode operator\n\nScript Editor\nenter: newline\nctrl z: undo/redo (1 time)\nctrl c: marks selection begin, move the cursor to the end, then hit Del to erase or ctrl c to copy (no erase). ctrl v to paste.\nMenu-6 search: enter a word then enter then again enter. Type enter for next occurrence, esc to cancel.\nMenu-6 replace: enter a word then enter then replacement word then enter. Type enter or esc to replace or ignore and go to next occurrence, AC to cancel\nOK: test syntax\n\nGraph shortcuts:\n+ - zoom\n(-): zoomout along y\n*: autoscale\n/: orthonormalization\nOPTN: axes on/off";
- #endif
-   
-   const char apropos_fr_string[]="Giac/Xcas 1.6.0, (c) 2020 B. Parisse et R. De Graeve, www-fourier.univ-grenoble-alpes.fr/~parisse.\nKhicas, interface pour calculatrices par B. Parisse, license GPL version 2, adaptee de l'interface d'Eigenmath pour Casio, G. Maia (http://gbl08ma.com), Mike Smith, Nemhardy, LePhenixNoir, ...\nPortage sur Numworks par Damien Nicolet. Remerciements a Jean-Baptiste Boric et Maxime Friess\nPortage sur Nspire grace a Fabian Vogt (firebird-emu, ndless...).\nTable periodique d'apres Maxime Friess\nRemerciements au site tiplanet, en particulier Xavier Andreani, Adrien Bertrand, Lionel Debroux";
-@@ -3454,7 +3454,7 @@
+@@ -3668,7 +3668,7 @@
  
    // vertical merge with same baseline
    // for vertical merge of hp,yp at top (like ^) add fontsize to yp
@@ -491,7 +108,7 @@ Forwarded: yes
    void Equation_vertical_adjust(int hp,int yp,int & h,int & y){
      int yf=min(y,yp);
      h=max(y+h,yp+hp)-yf;
-@@ -4926,7 +4926,7 @@
+@@ -5141,7 +5141,7 @@
  	      fl_pie(deltax+round(i0-i1),deltay+round(j0-j1),round(2*i1),round(2*j1),full?0:anglei*180/M_PI+.5,full?360:anglef*180/M_PI+.5,couleur,false);
  	    else {
  	      fl_arc(deltax+round(i0-i1),deltay+round(j0-j1),round(2*i1),round(2*j1),full?0:anglei*180/M_PI+.5,full?360:anglef*180/M_PI+.5,couleur);
@@ -500,59 +117,6 @@ Forwarded: yes
  		if (v[3]==2)
  		  petite_fleche(i0+i1*std::cos(anglem),j0-j1*std::sin(anglem),-i1*std::sin(anglem),-j1*std::cos(anglem),deltax,deltay,width,couleur);
  		else {
---- giac.orig/src/maple.cc
-+++ giac/src/maple.cc
-@@ -812,7 +812,7 @@
-     gen v((*args._VECTptr)[1]);
-     gen f(args._VECTptr->front());
-     if (f.type==_STRNG && v.type==_STRNG){
--      // (Python-like) count occurences of v in f
-+      // (Python-like) count occurrences of v in f
-       int count=0,pos=-1,s=f._STRNGptr->size();
-       for (;pos<s;++count){
- 	pos=f._STRNGptr->find(*v._STRNGptr,pos+1);
---- giac.orig/src/misc.cc
-+++ giac/src/misc.cc
-@@ -5688,7 +5688,7 @@
-   // returns a list of n polynomials with respect to x
-   // to get the value of the spline, find the right interval hence polynomial
-   // and call horner(poly,value-xi)
--  // x and d are optionnal, if not precised d is 3
-+  // x and d are optional, if not precised d is 3
-   gen _spline(const gen & g,GIAC_CONTEXT){
-     if ( g.type==_STRNG && g.subtype==-1) return  g;
-     if (g.type!=_VECT || g._VECTptr->size()<2)
---- giac.orig/src/modpoly.cc
-+++ giac/src/modpoly.cc
-@@ -606,7 +606,7 @@
- 	else
- 	  inplace=!is_zero((*th_it)-(*other_it));
-       }
--      if (inplace){ // in-place substraction
-+      if (inplace){ // in-place subtraction
- 	modpoly::iterator th=new_coord.begin();
- 	if (env && env->moduloon){
- 	  for (;m>n;++th,--m)
-@@ -2322,7 +2322,7 @@
-       return (modulo(*a._ZINTptr,m)-p)%m==0;
-     if (a.type==_INT_)
-       return (a.val-p)%m==0;
--    CERR << "Unknow type in reconstruction " << a << '\n';
-+    CERR << "Unknown type in reconstruction " << a << '\n';
-     return false;
-   }
- 
---- giac.orig/src/moyal.cc
-+++ giac/src/moyal.cc
-@@ -3516,7 +3516,7 @@
-   //      = 3/ data (list of values)
-   // arg2 = 1/ p proportion
-   //      = 2, 3/ mu population mean, or data
--  // arg3 optionnal for 2, 3/: sigma. If not given and 
-+  // arg3 optional for 2, 3/: sigma. If not given and
-   //        arg1=[int,int] and arg2=p in ]0,1[, sigma is derived from p
-   // nextarg < > or != alternative hypothesis 
-   // nextarg optional alpha level of confidence, default value 0.05
 --- giac.orig/src/numworks_translate.h
 +++ giac/src/numworks_translate.h
 @@ -290,7 +290,7 @@
@@ -593,151 +157,9 @@ Forwarded: yes
  {"Unknown instruction tag:",0,"未知说明标签:","Tag inconnu:","Unbekanntes Anweisungstag:","Etiqueta de instrucción desconocida:","Onbekende instructietag:","Etiqueta de instrucões desconhecida:","不明な指示タグ:"},
  {"Unknown secondary tag",0,"未知副标签","Tag secondaire inconnu","Unbekanntes sekundäres Tag","Etiqueta secundaria desconocida","Onbekende secundaire tag","Etiqueta secundária desconhecida","不明な第2タグ"},
  {"Unknown subsop rule ",0,"未知 subsop 规则 ","subsop : regle inconnue ","Unbekannte subsop-Regel ","Regla de subsop desconocida ","Onbekende subsop regel ","Regra subsop desconhecida ","不明なsubsop規則 "},
---- giac.orig/src/optimization.cc
-+++ giac/src/optimization.cc
-@@ -2836,7 +2836,7 @@
-         }
-     }
-     if (constr.empty()) {
--        *logptr(contextptr) << "Error: no contraints detected\n";
-+        *logptr(contextptr) << "Error: no constraints detected\n";
-         return gensizeerr(contextptr);
-     }
-     bool feasible=true;
---- giac.orig/src/plot.cc
-+++ giac/src/plot.cc
-@@ -5985,7 +5985,7 @@
-   static define_unary_function_eval (__perimetre,&_perimetre,_perimetre_s);
-   define_unary_function_ptr5( at_perimetre ,alias_at_perimetre,&__perimetre,0,true);
- 
--  // angle accepts an optionnal last argument as a string
-+  // angle accepts an optional last argument as a string
-   // for legends, if the string has a terminal =, the value of
-   // the angle is added to the legend
-   gen angle(const vecteur & v1,const vecteur & v2,GIAC_CONTEXT){
-@@ -6552,7 +6552,7 @@
-   // def_x is the definition of x as read from history
-   static bool reeval_with_1arg_quoted(const gen & x,gen & res,gen & def_x,GIAC_CONTEXT){
-     // CERR << x << " " << res << " " << history_in(contextptr) << '\n';
--    // find first occurence of storing something in x in the history
-+    // find first occurrence of storing something in x in the history
-     def_x=undef;
-     const_iterateur it0=history_in(contextptr).begin()-1,itend=history_in(contextptr).end(),itpos,it;
-     it=itend-1;
---- giac.orig/src/plot3d.cc
-+++ giac/src/plot3d.cc
-@@ -822,7 +822,7 @@
-     gen s[12];
-     gen centre=v[0],s1=v[1],s2=v[2];
-     gen v1g(s1-centre),v2g(s2-centre);
--    // Icosaedre=s1+symetric of s1 with respect to center
-+    // Icosaedre=s1+symmetric of s1 with respect to center
-     // + 2* 5 points as a pentagon on 2 plans perpendicular to centre->s1
-     // If the distance of the 2 // plans is 1 to the center
-     // Then the 5 vertices are at distance 2 to the intersection axe/plan
---- giac.orig/src/poly.h
-+++ giac/src/poly.h
-@@ -992,7 +992,7 @@
-       it=r.coord.begin();
-       itend=r.coord.end();
-       // compute 2 terms of the quotient in one iteration,
--      // this will save one long substraction
-+      // this will save one long subtraction
-       tensor<T> a0(Tnextcoeff<T>(it,itend)),a1(a0.dim);
-       if (exactquo && it==itend)
- 	return false;
---- giac.orig/src/prog.cc
-+++ giac/src/prog.cc
-@@ -1035,7 +1035,7 @@
-       a=a._SYMBptr->feuille[0];
-       return;
-     }
--    b=string2gen(gettext("Unitialized parameter ")+a.print(contextptr),false);
-+    b=string2gen(gettext("Uninitialized parameter ")+a.print(contextptr),false);
-     b.subtype=-1;
-   }
- 
-@@ -3126,7 +3126,7 @@
-       if (it->type==_IDNT){
- 	names.push_back(*it);
- #if 1
--	gen err=string2gen(gettext("Unitialized local variable ")+it->print(contextptr),false);
-+	gen err=string2gen(gettext("Uninitialized local variable ")+it->print(contextptr),false);
- 	err.subtype=-1;
- 	values.push_back(err);
- #else
-@@ -3673,7 +3673,7 @@
-       if (selecting)
- 	return symb_select(args);
-       else {
--	if (f.type==_VECT){ // remove 1st occurence of v
-+	if (f.type==_VECT){ // remove 1st occurrence of v
- 	  vecteur w=*f._VECTptr;
- 	  for (unsigned i=0;i<w.size();++i){
- 	    if (w[i]==v){
---- giac.orig/src/quater.cc
-+++ giac/src/quater.cc
-@@ -896,7 +896,7 @@
-   }
- 
-   // a[astart..aend[ + b[bstart..bend[ to res
--  // M==0 integer addition, M==-1 integer substraction, else gf_char2
-+  // M==0 integer addition, M==-1 integer subtraction, else gf_char2
-   void gf_char2_addp(const vector<int> & a,int astart,int aend,const vector<int> &b,int bstart,int bend,vector<int> & res,int M){
-     res.clear();
-     res.reserve(giacmax(aend-astart,bend-bstart));
---- giac.orig/src/risch.cc
-+++ giac/src/risch.cc
-@@ -771,7 +771,7 @@
- 	// Logarithmic part: compute resultant of num - t * den
- 	polynome p1(s);
- 	polynome pres=rothstein_trager_resultant(tmp.num,tmp.den,vl,p1,contextptr);
--	// Factorization, should return 1st order factor independant of
-+	// Factorization, should return 1st order factor independent of
- 	// the tower variables
- 	factorization vden;
- 	gen extra_div=1;
-@@ -898,7 +898,7 @@
-       remsum += rem;
-     }
-     res = res+risch_lin(remsum,x,remains_to_integrate,contextptr);
--    if (is_zero(res)){ // perhaps we should derive res and substract it from e_orig
-+    if (is_zero(res)){ // perhaps we should derive res and subtract it from e_orig
-       remains_to_integrate=e_orig;
-     }
-     else {
---- giac.orig/src/series.cc
-+++ giac/src/series.cc
-@@ -1780,7 +1780,7 @@
- 	  if (!pintegrate(s,t,contextptr))
- 	    return false;
- 	  gen remains,primit=sparse_poly12gen(s,x,remains,false);
--	  // then compose primit at bounds and substract
-+	  // then compose primit at bounds and subtract
- 	  primit=subst(primit,t,tempfv[3],false,contextptr)-subst(primit,t,tempfv[2],false,contextptr);
- 	  if (!series__SPOL1(primit,x,lim_point,ordre,direction,s,contextptr))
- 	    return false;
 --- giac.orig/src/solve.cc
 +++ giac/src/solve.cc
-@@ -5376,7 +5376,7 @@
-     swap(C,G);
-   }
- 
--  // first occurence in v: i<0 not found, i>=0 means v[i]==idx
-+  // first occurrence in v: i<0 not found, i>=0 means v[i]==idx
-   int find(const vector<index_m> & v,const index_m & idx){
-     unsigned debut=0,fin=unsigned(v.size()); // search in [debut,fin[
-     if (v.empty() || i_lex_is_strictly_greater(v[0],idx))
-@@ -7254,7 +7254,7 @@
-     vectpoly rescocoa;
-     if (!env.moduloon && with_cocoa && cocoa_greduce(vectpoly(1,p),eqp,order,rescocoa))
-       return r2e(rescocoa.front(),l,contextptr);
--    // FIXME: get constant term, substract one to get the correct constant
-+    // FIXME: get constant term, subtract one to get the correct constant
-     // gen C(p.constant_term());
-     // eq=eq-C+plus_one;
-     // p=*eq._POLYptr;
-@@ -7542,7 +7542,7 @@
+@@ -7553,7 +7553,7 @@
  	  }
  	}
  	if (1 || curdeg==1){
@@ -746,55 +168,9 @@ Forwarded: yes
  	  gen besteq(0),bestvar(0); int bestpos=-1,n0deps=-1;
  	  for (int i=0;i<int(poselim.size());++i){
  	    gen curvar=elim[poselim[i]];
---- giac.orig/src/sparse.cc
-+++ giac/src/sparse.cc
-@@ -1298,7 +1298,7 @@
-       }
-       phik.swap(phiknew);
-     }
--    *logptr(contextptr) << gettext("Warning! Leaving Gauss-Seidel iterative algorithm after maximal number of iterations. Check that your matrix is symetric definite.") << '\n';
-+    *logptr(contextptr) << gettext("Warning! Leaving Gauss-Seidel iterative algorithm after maximal number of iterations. Check that your matrix is symmetric definite.") << '\n';
-     return phik;   
- #else
-     std::vector<giac_double> b=b_orig;
-@@ -1347,7 +1347,7 @@
- 	return xn;
-       }
-     }
--    *logptr(contextptr) << gettext("Warning! Leaving Gauss-Seidel iterative algorithm after maximal number of iterations. Check that your matrix is symetric definite.") << '\n';
-+    *logptr(contextptr) << gettext("Warning! Leaving Gauss-Seidel iterative algorithm after maximal number of iterations. Check that your matrix is symmetric definite.") << '\n';
-     return xn;   
- #endif 
-   }
 --- giac.orig/src/static_help.h
 +++ giac/src/static_help.h
-@@ -17,14 +17,14 @@
- {"+&",{"Concaténation de 2 chaînes ou addition terme à terme de 2 expressions ou 2 listes ou 2 matrices (opérateur infixé, compatibilité TI).","String concatenation or addition element by element of 2 expressions or 2 lists or 2 matrix (infixed operator, TI compatibility).","Concatenación de 2 cadenas o suma componente por componente de 2 expresiónes o 2 listas o 2 matrices (operador infijo, compatibilidad TI).","Συνένωση αλφαριθμητικών ή πρόσθεση στοιχείο-στοιχείο 2 παραστάσεων ή 2 λιστών ή 2 πινάκων (εντεθειμένος τελεστής, συμβατότητα με TI).","Verkettung zweier Strings oder Addition per Element von zwei Ausdrücke, Listen oder Matrizen (infix-Operator, TI Kompatibilität) "},""," \"bon\"+&\"jour\"; 1+&2; [1,2]+&[3,4,5]","concat"},
- {"+=",{"Opérateur infixé : a+=b est équivalent à a:=a+b.","Infixed operator : a+=b equivalent to a:=a+b.","Operador infijo : a+=b equivalente a a:=a+b.","Εντεθειμένος τελεστής : a+=b είναι ισοδύναμο με a:=a+b.","Infix-Operator"},""," a:=2;a+=3; a:=\"abc\";a+=\"d\"","sto,:="},
- {"+infinity",{"Plus infini","Plus infinity","Mas infinito","Συν άπειρο","Plus unendlich"},"",0,"infinity,-infinity"},
--{"-",{"soustraction terme à terme de 2 expressions ou 2 listes ou 2 matrices ou de 2 points (opérateur infixé).","substraction element by element of 2 expressions or 2 lists or 2 matrix or of 2 points (infixed operator).","resta componente por componente de 2 expresiónes o 2 listas o 2 matrices o 2 puntos (operador infijo).","αφαίρεσ στοιχείο-στοιχείο 2 παραστάσεων ή 2 λιστών ή 2 πινάκων ή 2 σημεία (εντεθειμένος τελεστής).",0},"Lst||Expr||Pnt, ||Lst||Expr||Pnt"," 1-2; [1,2]-[3,4,5]; point(2+i)-point(1+2i); point(2+i)-(1+2i)",".-"},
-+{"-",{"soustraction terme à terme de 2 expressions ou 2 listes ou 2 matrices ou de 2 points (opérateur infixé).","subtraction element by element of 2 expressions or 2 lists or 2 matrix or of 2 points (infixed operator).","resta componente por componente de 2 expresiónes o 2 listas o 2 matrices o 2 puntos (operador infijo).","αφαίρεσ στοιχείο-στοιχείο 2 παραστάσεων ή 2 λιστών ή 2 πινάκων ή 2 σημεία (εντεθειμένος τελεστής).",0},"Lst||Expr||Pnt, ||Lst||Expr||Pnt"," 1-2; [1,2]-[3,4,5]; point(2+i)-point(1+2i); point(2+i)-(1+2i)",".-"},
- {"-<",{"Opérateur infixé (équivalent à l'instruction préfixée couleur) qui définit les attributs d'une figure géométrique.","Infixed operator (equivalent to the prefixed instruction color) which define the attributes of a geometrical figure.","Operador infijo (equivalente a la instrucción prefija color) que define los atributos de una figura geométrica.","Εντεθειμένος τελεστής (ισοδύναμος με την προτεθειμένη εντολή χρώματος) που καθορίζει τις ιδιότητες μιας γεωμετρικής αναπαράστασης.","Infix-Operator (äquivalent zum Präfix-Operator color), der die Attribute eines geometrischen Objekts definiert."},""," square(0,1) -< filled+red; square(0,2) -< green; square(0,2) -< green+dash_line; square(0,2) -< filled","color"},
- {"-=",{"Opérateur infixé : a-=b est équivalent à a:=a-b.","Infixed operator : a-=b equivalent to a:=a-b.","Operador infijo : a-=b equivalente a a:=a-b.","Εντεθειμένος τελεστής : a-=b είναι ισοδύναμο με a:=a-b.","Infix operator : a-=b äquivalent zu a:=a-b"},""," a:=2;a-=3",":="},
- {"->",{"Opérateur infixé qui définit une fonction utilisateur: x->f(x).","Infixed operator which define an user function: x->f(x).","Operador infijo que define una función definida por el usuario: x->f(x).","Εντεθειμένος τελεστής που καθορίζει μια συνάρτηση ως απεικόνιση: x->f(x).","Inifix-Operator der eine benutzerspezifische Funktion definiert:  x->f(x)."},""," x -> sin(x); f:= (x,y)->sin(x+y)+sin(x-y); k:=(x,y)->{if (x!=y) 0; else 1;}; g:=(x,y)->return(sin(x+y),sin(x-y))","for,if,local,{}"},
- {"-infinity",{"Moins infini","Minus infinity","Menos infinito","Πλην άπειρο","Minus unendlich"},"",0,"infinity,+infinity,inf"},
- {".*",{"Exécute le produit terme à terme de 2 listes ou de 2 matrices de même dimension (opérateur infixé, compatibilité TI).","Performs an element by element multiplication of 2 lists or 2 matrix with the same size dimension (infixed operator, TI compatibility).","Ejecuta el producto componente por componente de 2 listas o 2 matrices con el mismo dimensión(operador infijo, compatibilidad TI).","Εκτελεί πολλαπλασιασμό στοιχείο-στοιχείο 2 λιστών ή 2 πινάκων με τον ίδιο διάσταση (εντεθειμένος τελεστής, συμβατότητα με TI).","Vollführt eine Multiplikation per Element von 2 Listen oder 2 Matrizen (infix-Operator, TI kompatibel)"},""," [[1,2],[3,4]] .* [[3,4],[5,6]]; [1,2] .* [5,6]","hadamard,./,.^"},
- {".+",{"Exécute l'addition terme à terme de 2 listes ou de 2 matrices ou ajoute $a$ à chaque terme de la liste ou de la matrice (opérateur infixé, compatibilité TI).","Performs an element by element addition of 2 lists or 2 matrix or add $a$ at each element of the list or matrix (infixed operator, TI compatibility).","Ejecuta la suma componente por componente de 2 listas o 2 matrices (operador infijo, compatibilidad TI).","Εκτελεί πρόσθεση στοιχείο-στοιχείο 2 λιστών ή 2 πινάκων (εντεθειμένος τελεστής, συμβατότητα με TI).","Vollführt eine Summe Element zu Element von 2 Listen oder 2 Matrizen. Alternativ wird $a$ zu jedem Element einer Liste oder Matrix addiert. (infix-Operator, TI kompatibel)"},""," [1,2,3].+4; [[1,2],[3,4]].+5; [[1,2],[3,4]].+[5,6]; [[1,2],[3,4]].+[[3,4],[5,6]]; [1,2] .+ [5,6]",".-"},
--{".-",{"Exécute la soustraction terme à terme de 2 listes ou de 2 matrices ou retranche $a$ à chaque terme de la liste ou de la matrice (opérateur infixé, compatibilité TI).","Performs an element by element subtraction of 2 lists or 2 matrix or substract $a$ at each element of the list or matrix (infixed operator, TI compatibility).","Ejecuta la resta componente por componente de 2 listas o 2 matrices (operador infijo, compatibilidad TI).","Εκτελεί αφαίρεση στοιχείο-στοιχείο 2 λιστών ή 2 πινάκων (εντεθειμένος τελεστής, συμβατότητα με TI).","Vollführt eine Subtraktion per Element von 2 List oder 2 Matrizen. Alternativ wird $a$ von jedem Element einer Liste oder Matrix subtrahiert. (infix-Operator, TI kompatibel)"},""," [1,2,3].-4; [[1,2],[3,4]].-5; [[1,2],[3,4]] .- [[3,4],[5,6]]; [1,2] .- [5,6]",".+"},
-+{".-",{"Exécute la soustraction terme à terme de 2 listes ou de 2 matrices ou retranche $a$ à chaque terme de la liste ou de la matrice (opérateur infixé, compatibilité TI).","Performs an element by element subtraction of 2 lists or 2 matrix or subtract $a$ at each element of the list or matrix (infixed operator, TI compatibility).","Ejecuta la resta componente por componente de 2 listas o 2 matrices (operador infijo, compatibilidad TI).","Εκτελεί αφαίρεση στοιχείο-στοιχείο 2 λιστών ή 2 πινάκων (εντεθειμένος τελεστής, συμβατότητα με TI).","Vollführt eine Subtraktion per Element von 2 List oder 2 Matrizen. Alternativ wird $a$ von jedem Element einer Liste oder Matrix subtrahiert. (infix-Operator, TI kompatibel)"},""," [1,2,3].-4; [[1,2],[3,4]].-5; [[1,2],[3,4]] .- [[3,4],[5,6]]; [1,2] .- [5,6]",".+"},
- {"./",{"Exécute la division terme à terme de 2 listes ou de 2 matrices (opérateur infixé, compatibilité TI).","Performs an element by element division of 2 lists or 2 matrix (infixed operator, TI compatibility).","Ejecuta la división componente por componente de 2 listas o 2 matrices (operador infijo, compatibilidad TI).","Εκτελεί διαίρεση στοιχείο-στοιχείο 2 λιστών ή 2 πινάκων (εντεθειμένος τελεστής, συμβατότητα με TI).","Vollführt eine Division per Element von 2 Listen oder 2 Matrizen (infix-Operator, TI kompatibel)"},""," [[1,2],[3,4]] ./ [[3,4],[5,6]]; [1,2] ./ [5,6]",".*"},
- {".^",{"Élève à la puissance chaque élément de la matrice (opérateur infixé, compatibilité TI).","Calculates the power of each element of the matrix (infixed operator, TI compatibility).","Calcula la potencia de cada elemento de la matriz (operador infijo, compatibilidad TI).","Υπολογίζει τη δύναμη κάθε στοίχειου του πίνακα (εντεθειμένος τελεστής, συμβατότητα με TI).","Berechnet die Potenz eines jeden Elements einer Matrix (infix-Operator, TI kompatibel) "},""," [[1,2],[3,4]] .^ 3",".*"},
- {"/%",{"Quotient euclidien de 2 entiers ou de 2 entiers de Gauss : c'est la version infixée de iquo.","Euclidean quotient of 2 integers : it is the infixed version of iquo.","Cociente euclídeo de 2 enteros : es la versión infija de iquo.","Ευκλείδιο πηλίκο 2 ακεραίων : εντεθειμένη μορφή του iquo.",0},"Intg(a),Intg(b)","irem(125,15);irem(125,41);irem(-7,3);irem(25+12*i,5+7*i)","mod"},
-@@ -494,7 +494,7 @@
- {"backward",{"La tortue recule de n pas (par défaut n=10).","The turtle takes n steps back (by default n=10).","La tortuga vuelve por atrás de n pasos (por defecto n=10).","Η χελώνα κάνει n βήματα πίσω (προεπιλογή n=10).","Gibt das charakteristische Polynom von A und die Streichungsmatrizen von A-xI."},"NULL or Real(n)"," recule 30;recule(30)","avance,saute"},
- {"baisse_crayon",{"Baisse le crayon pour que la tortue bouge en laissant des traces.","Puts the pencil down so that the turtle move with traces.","Baja el lápiz para que la tortuga mueva dejando marcas.","Κατεβάζει το μολύβι ώστε η χελώνα να κινείται και να αφήνει ίχνη.","Nimmt den Stift herunter, sodass sich die Schildkröte mit Spuren bewegt."},"","baisse_crayon()","leve_crayon,crayon"},
- {"bandwidth",{0,"Option for the kernel_density command.",0,0,0},"Opt",0,"kernel_density,bins"},
--{"bar_plot",{"Trace un ou des diagrammes en bâtons d'une série statistique à 1 variable.","Draws barplot of a one variable statistical serie.","Muestra el gráfico de barras de una serie estadística en una variable.","Σχεδιάζει το διάγραμμα ράβδων μιας στατιστικής σειράς με 1 μεταβλητή.","Zeichnet ein Balkendiagramm einer statistischen Reihe mit einer Variablen."},"","bar_plot([[\"France\",6],[\"Allemagne\",12],[\"Suisse\",5]]);bar_plot([3/2,2/3,5/4,4/5,7/6,6/7,9/8,8/9,11/10]);bar_plot([[2,\"xyz\",\"abc\"],[\"A\",2,5],[\"B\",5,6],[\"C\",7,7]])","camembert,histogram,frequencies"},
-+{"bar_plot",{"Trace un ou des diagrammes en bâtons d'une série statistique à 1 variable.","Draws barplot of a one variable statistical series.","Muestra el gráfico de barras de una serie estadística en una variable.","Σχεδιάζει το διάγραμμα ράβδων μιας στατιστικής σειράς με 1 μεταβλητή.","Zeichnet ein Balkendiagramm einer statistischen Reihe mit einer Variablen."},"","bar_plot([[\"France\",6],[\"Allemagne\",12],[\"Suisse\",5]]);bar_plot([3/2,2/3,5/4,4/5,7/6,6/7,9/8,8/9,11/10]);bar_plot([[2,\"xyz\",\"abc\"],[\"A\",2,5],[\"B\",5,6],[\"C\",7,7]])","camembert,histogram,frequencies"},
- {"bartlett_hann_window",{0,"Applies the Bartlett-Hann windowing function to the given signal u (or to the elements with indices between n1 and n2) and returns the result in a new list.",0,0,0},"Lst,[Interval(n1..n2)]"," scatterplot(bartlett_hann_window(randvector(1000,0..1)))","blackman_harris_window,blackman_window,bohman_window,cosine_window,gaussian_window,hamming_window,hann_poisson_window,hann_window,parzen_window,poisson_window,riemann_window,triangle_window,tukey_window,welch_window"},
- {"barycenter",{"barycentre([point1,coeff1],...) trace le barycentre de point1 poids coeff1...","barycenter([point1,coeff1],...) draws the barycenter of point1 with weight coeff1...","barycenter([point1,coeff1],...) traza el baricentro de point1 con peso coeff1...","barycenter([point1,coeff1],...) σχεδιάζει το βαρύκεντρο του point1 με βάρος coeff1...","barycenter([Punkt1,Koeffizient1],…) zeichnet das Baryzentrum von Punkt1 mit Gewicht Koeffizient1."},"","barycenter([point(-1),1],[point(1+i),2],[point(1-i),1]);barycenter([[point(-1),1],[point(1+i),2],[point(1-i),1]]);barycenter([point(-1),point(1+i),point(1-i)],[1,2,1])","isobarycenter,midpoint"},
- {"base",{"Option de convert : convert(p,base,b)= [a0,a1,..an] ou convert([a0,a1,..an],base,b)=p avec p=a0+a1*b+....an*b^(n-1) et p écrit en base 10.","Option for convert : convert(p,base,b)= [a0,a1,..an] or convert([a0,a1,..an],base,b)=p with p=a0+a1*b+....an*b^(n-1).","Opción para convert : convert(p,base,b)=[a0,a1,..an] o convert([a0,a1,..an],base,b)=p con p=a0+a1*b+....an*b^(n-1).","Όρισμα της convert : convert(p,base,b)= [a0,a1,..an] ή convert([a0,a1,..an],base,b)=p όπου p=a0+a1*b+....an*b^(n-1) και p γραμμένο στην βάση 10.","Option für convert: convert(p,base,b)= [a0,a1,..an] oder convert([a0,a1,..an],base,b)=p mit p=a0+a1*b+....an*b^(n-1)."},""," convert(123,base,8); convert([3,7,1],base,8); horner(revlist([3,7,1]),8)","convert,horner,revlist"},
-@@ -532,7 +532,7 @@
+@@ -534,7 +534,7 @@
  {"blue",{"Option de la commande affichage (ou display) pour afficher en couleur.","Option of the display command to display with color.","Opción de la instrucción display para colores.","Επιλογή της εντολής display (ή affichage) για εμφάνιση χρωμάτων.",0},"Opt"," F:=display(point(2+1.5*i),red); F:=display(point(2+1.5*i),point_point+green)","display"},
  {"bohman_window",{0,"Applies the Bohman windowing function to the given signal u (or to the elements with indices between n1 and n2) and returns the result in a new list.",0,0,0},"Lst,[Interval(n1..n2)]"," scatterplot(bohman_window(randvector(1000,0..1)))","blackman_harris_window,blackman_window,bartlett_hann_window,cosine_window,gaussian_window,hamming_window,hann_poisson_window,hann_window,parzen_window,poisson_window,riemann_window,triangle_window,tukey_window,welch_window"},
  {"border",{"Renvoie la matrice formée par A bordée de b en dernière colonne, si nrows(A)=size(b), border(A,b)=tran(append(tran(A),b)).","Returns the matrix obtained by bording A with b as latest column, if nrows(A)=size(b), border(A,b)=tran(append(tran(A),b)).","Devuelve la matriz formada por A con b en el borde como última columna, si nrows(A)=size(b), border(a,b)=tran(append(tran(A),b)).","Επιστρέφει τον πίνακα που δημιουργείται από τον Α έχοντας το b ως την τελευταία στήλη, αν nrows(A)=size(b), border(A,b)=tran(append(tran(A),b)).","Gibt die Matrix zurück, die man erhält, wenn man b von rechts an A anfügt. Wenn nrows(A)=size(b), border(A,b)=tran(append(tran(A),b))."},"","border([[1,2,3,4],[4,5,6,8],[7,8,9,10]],[1,3,5]);border([[1,2,3],[4,5,6],[7,8,9]],[1,0,1])","tran,append,augment"},
@@ -803,7 +179,7 @@ Forwarded: yes
  {"break",{"Pour interrompre une boucle: while (cond) {inst1; if (cond) {inst2;break;}}.","Interrupts a loop: while (cond) {inst1; if (cond) {inst2;break;}}.","Interrumpe un bucle: while (cond) {inst1; if (cond) {inst2;break;}}.","Διακόπτει έναν βρόχο: while (cond) {inst1; if (cond) {inst2;break;}}.","Unterbricht eine Schleife: while (Bedingung) {Instruktion1; if (Bedingung) {Instruktion2;break;}}."},"","  f(a,b):={local r;while (1==1){if (b==0){break;} r:=irem(a,b);a:=b;b:=r;}a;}","continue"},
  {"breakpoint",{"Ajoute un point d'arrêt.","Adds a breakpoint.","Añade un punto de ruptura.","Προσθήκη ενός σημείου διακοπής","Fügt einen breakpoint hinzu (einen Punkt zum Stoppen)."},"","breakpoint(1)","rmbreakpoint"},
  {"brent_solver",{"Argument de fsolve indiquant la méthode pour résoudre numériquement une équation.","Argument for fsolve giving the method for solving an numerical equation.","Argumento para fsolve indicando el método para la resolución numérica de una ecuación.","Όρισμα για την εντολή fsolve που δίνει τη μέθοδο για την επίλυση μιας εξίσωσης (προσέγγιση της ρίζας).","Gibt das charakteristische Polynom von A und die Streichungsmatrizen von A-xI."},"Opt"," fsolve(cos(x)=x,x,0..1,bisection_solver); fsolve(cos(x)=x,x,0..1,brent_solver); fsolve(cos(x)=x,x,0..1,falsepos_solver); fsolve(cos(x)=x,x,0,newton_solver); fsolve(cos(x)=x,x,0,secant_solver); fsolve(cos(x)=x,x,0,steffenson_solver)","fsolve"},
-@@ -544,7 +544,7 @@
+@@ -546,7 +546,7 @@
  {"cSolve",{"Renvoie la liste des solutions complexes d'une équation ou la matrice dont les lignes sont solutions dans ℂ d'un système d'équations polynomiales.","Returns the list of complex solutions of an equation or a matrix where the rows are ℂ-solutions of a system of polynomial equations.","Devuelve la matriz cuyas filas son soluciones en ℂ del sistema de ecuaciones polinomiales.","Επιστρέφει τον πίνακα όπου οι γραμμές είναι λύσεις στο ℂ ενός συστήματος πολυωνυμικών εξισώσεων.",0},"LstEq,LstVar","csolve(x^4-1,x);csolve(x^4-y^4 and x+y=2,[x,y]);csolve(x^4-y^4 and x+y=0 and x^2=2*x,[x,y]);csolve(u*v-u=v and v^2=u,[u,v])","cZeros,solve,fslove"},
  {"cZeros",{"Renvoie la liste des éléments complexes qui annulent l'expression Xpr ou la matrice dont les lignes sont les solutions du système : Xpr1=0,Xpr2=0...","Returns the list of complex elements solution of Xpr=0 or the matrix where the lines are the solutions of the system : Xpr1=0,Xpr2=0...","Devuelve la lista de elementos complejos solución de Xpr=0 o la matriz donde las filas son las soluciones del sistema: Xpr1=0, Xpr2=0,..","Επιστρέφει μια λίστα από μιγαδικά στοιχεία λύσεις της Xpr=0 ή τον πίνακα οι γραμμές του οποίου είναι λύσεις του συστήματος : Xpr1=0,Xpr2=0...","Gibt die Liste der komplexen Lösungen von Xpr=0 an oder die Matrix, bei der die Zeile die Lösung des Systems: Xpr1=0, Xpr2=0,.. ist."},"","cZeros(x^2-1);cZeros([x^2-1,x^2-y^2],[x,y])","solve"},
  {"cache_tortue",{"Cache la tortue.","Hides the turtle.","Esconde la tortuga.","Αποκρύπτει τη χελώνα.","Versteckt die Schildkröte."},"","cache_tortue()","montre_tortue"},
@@ -812,7 +188,7 @@ Forwarded: yes
  {"canonical_form",{"Forme canonique du trinôme de degré 2.","Canonical_form of a 2 degree polynomial.","Forma canónica de un polinomio de grado 2.","Κανονική μορφή ενός πολυωνύμου 2ου βαθμού.","kanonische Form eines Polynoms zweiten Grades."},"","canonical_form(2*x^2-12*x+1);canonical_form(2*a^2-12*a+1,a)",""},
  {"canonical_labeling",{0,"Returns the permutation representing the canonical labeling of G.",0,0,0},"Graph(G)","canonical_labeling(graph(\"petersen\"))","isomorphic_copy,relabel_vertices"},
  {"cap",{"Retourne le cap de la tortue en degrés ou tourne la tortue selon l'argument.","Returns the turtle cap in degrees or turns the turtle with the cap given by the argument.","Devuelve la dirección de la tortuga en grados o gira la tortuga según el argumento.","Επιστρέφει την φορά (ή πορεία του καβουκιού) της χελώνας σε μοίρες ή στρέφει τη χελώνα με βάση το όρισμα που δίνεται.","Gibt die Orientierung der Schildkröte wieder in Grad oder dreht die Schildkröte abhängig vom Argument."},""," cap;cap();cap 90","position,initialise"},
-@@ -777,8 +777,8 @@
+@@ -781,8 +781,8 @@
  {"duration",{0,"Returns the duration of an audio clip, in seconds.",0,0,0},"Lst(clip)","duration(readwav(\"/some/file\"))","bit_depth,channels,channel_data,samplerate"},
  {"e",{"exp(1)","exp(1)","exp(1)","exp(1)","exp(1)"},""," evalf(e)","i,pi"},
  {"e2r",{"Renvoie la liste des coefficients d'un polynôme par rapport au 2ème argument ou si le 2ème argument est une liste renvoie le format interne du polynôme.","Returns the coefficients of a polynomial with respect to the 2nd argument or if the second argument is a list the internal format of the polynomial.","Devuelve los coeficientes de un polinomio con respecto al segundo argumento.","Επιστρέφει την λίστα των συντελεστών ενός πολυωνύμου αναφορικά με το 2ο όρισμα.",0},"Expr, LstVar or [Var]","symb2poly(x*3+2.1);symb2poly(3*x*y+2*y+1,y);symb2poly(3*x*y+2*y+1,x,y);symb2poly(3*x*y+2*y+1,[x,y]);symb2poly(-x^4+x*3*y+2+y^2*z,[x,y,z]);symb2poly(-x^4+x*3*y+2+y^2*z,[x,y,z])","poly2symb,r2e"},
@@ -823,7 +199,7 @@ Forwarded: yes
  {"ecm_factor",{"Factorisation d'un entier n par la methode des courbes elliptiques, B1 parametre optionnel de friabilite","Factorization of integer n by the Elliptic Curve Method algorithm, B1 smoothness optional parameter","Calcula los vectores propios de una matriz diagonalizable.","Υπολογίζει τα ιδιοδιανύσματα (ως στήλες) ενός διαγωνιοποιήσιμου πίνακα.","Berechnet die Eigenvektoren einer diagonalisierbaren Matrix."},"Intg(a),[Intg(B1)]","ecm_factor(1000000000000000003000000000000000000000000000000000031000000000000000093)",0},
  {"ecris",{"Écris la chaîne s avec la fonte n (par défaut n=14) au point [x,y] (par défaut à la place de la tortue).","Write the string s with the fount n (by default n=14) at the point [x,y] (by default at the point where the turtle is).","Escribe la cadena s con la fuente n (por defecto n=14) en el punto [x,y] (por defecto en el lugar de la tortuga).","Γράφει την συμβολοσειρά s με μέγεθος γραμματοσειράς n (προεπιλογή n=14) στο σημείο [x,y] (προεπιλογή είναι το σημείο όπου βρίσκεται η χελώνα).","Schreibe einen String s mit der Schriftart n (ohne Spezifikation n=14) am Punkt [x,y] (ohne Spezifikation dort, wo die Schildkröte ist."},"","ecris(\"bonjour\");ecris(\"bonjour\",20);ecris(\"bonjour\",20,30,10);ecris(bonjour,20,30,10)","signe"},
  {"edge_connectivity",{0,"Returns the largest integer k for which G is k-edge connected, meaning that G remains connected after fewer than k edges are removed.",0,0,0},"graph(G)","edge_connectivity(graph(\"petersen\"));edge_connectivity(graph(\"clebsch\"));edge_connectivity(complete_graph(5))","is_two_edge_connected,is_edge_cut,vertex_connectivity"},
-@@ -956,7 +956,7 @@
+@@ -961,7 +961,7 @@
  {"gauche",{"Renvoie la partie gauche d'une égalité, d'un intervalle, d'une liste ou d'une chaîne.","Returns the left part of an equality, of an interval, of a list or of a string.","Devuelve la parte izquierda de una igualdad, de un intervalo, de una lista o de una cadena.","Επιστρέφει το αριστερό μέρος μια ισότητας, ενός διαστήματος, μιας λίστας ή μιας συμβολοσειράς.",0},"Equal(a=b) or Interval(a..b) or Str,Intg","left(a=b);left(x^2+1=5);left(1..5);left(\"abcdefg\",3)","right,mid,tail,head"},
  {"gauss",{"Décompose une forme quadratique en somme/différence de carrés","Split a quadratic form as a sum/difference of square","Descompone una forma cuadrática como suma/diferencia de cuadrados","Διάσπαση μιας τετραγωνικής μορφής σε άθροισμα και διαφορά τετραγώνων","Spaltet eine quadratische Form in Summen und Differenzen von Quadraten auf."},"","gauss(x^2+2*a*x*y,[x,y])","cholesky"},
  {"gauss15",{"Option de la commande area","Option of the area command","Opción del comando area","Επιλογή της εντολής area","Gibt das Polynom zurück, das durch die Liste (Nullstellen oder Pole, Multiplizität) beschrieben wird."},"Opt"," area(x^2,x=0..1,5,simpson); area(x^2,x=0..1,5,rombergt); area(x^2,x=0..1,5,rombergm);area(x^2,x=0..1,5,gauss15)","area"},
@@ -832,7 +208,7 @@ Forwarded: yes
  {"gaussian_window",{0,"Applies the Gaussian windowing function with parameter 0<a<=0.5 (by default a=0.1) to the given signal u (or to the elements with indices between n1 and n2) and returns the result in a new list.",0,0,0},"Lst,[Real(a)],[Interval(n1..n2)]"," scatterplot(gaussian_window(randvector(1000,0..1),0.4))","blackman_harris_window,blackman_window,bohman_window,cosine_window,bartlett_hann_window,hamming_window,hann_poisson_window,hann_window,parzen_window,poisson_window,riemann_window,triangle_window,tukey_window,welch_window"},
  {"gaussjord",{"Réduction sous forme échelonnée de AX=b (M=A|(-b)) [Réduction sur les k premières colonnes].","Row reduction to echelon form of AX=b (M=A|(-b)) [Reduction on columns 0..k-1]","Reducción a la forma escalonada de AX=b (M=A|(-b)) [Reducción sobre los columnas 0..k-1].","Αναγωγή σε κλιμακωτή μορφή του AX=b (M=A|(-b)).",0},"Mtrx(M),[Intg(k)]||Opt","rref([[3,1,-2],[3,2,2]]);rref([[2,1,1,-1],[1,1,2,-1],[1,2,1,-4]]);rref([[2,1,1,-1],[1,1,2,-1],[1,2,1,-4]],2);rref([[1,1,0,0,-a1],[0,1,1,0,-a2],[0,0,1,1,-a3],[1,0,0,1,-a4]],keep_pivot)","ker,image,det,Rref,pivot,ref,keep_pivot"},
  {"gaussquad",{"Renvoie la valeur approchée de integrate(f(x),x,a,b) par une quadrature de Gauss adaptative à 15 points.","Returns the approximate value of integrate(f(x),x,a,b) by adaptive Gaussian quadratures with 15 points.","Devuelve el valor aproximado de integrate(f(x),x,a,b)  por el método de Gauss.","Επιστρέφει την προσεγγιστική τιμή του ολοκληρώματος(f(x),x,a,b) με τη μέθοδο του Gauss.","Gibt den ungefähren Wert von integrate(f(x),x,a,b) durch adaptive Gauß-Quadratur mit 15 Punkten zurück."},"","gaussquad(exp(x^2),x,0,1);gaussquad(x^2,x,0,1);gaussquad(exp(-x^2),x,-1,1)","integrate,romberg"},
-@@ -1060,7 +1060,7 @@
+@@ -1065,7 +1065,7 @@
  {"highlight_vertex",{0,"Change the color of vertex v resp. colors of vertices from V in G to c resp. C (green by default) and return the modified copy of G.",0,0,0},"Graph(G),Vrtx(v)||Lst(V),[Color(c)||Lst(C)]"," draw_graph(highlight_vertex(cycle_graph(3),1))","highlight_edges,highlight_subgraph,highlight_trail"},
  {"highpass",{0,"Returns the result of applying a simple first-order highpass RC filter with cutoff frequency c (the default samplerate is 44100) to the given signal s.",0,0,0},"Lst(s),Real(c),[Intg(samplerate)]"," f:=unapply(periodic(sign(x),x,-1/880,1/880),x):;s:=createwav(apply(f,soundsec(1))):;playsnd(highpass(s,5000))","lowpass,moving_average"},
  {"hilbert",{"Renvoie la n-ième matrice de Hilbert : Hjk=1/(j+k+1) j,k=1..n","Returns the order n Hilbert matrix : Hjk=1/(j+k+1) j,k=1..n","Devuelve la matriz n-ésima de Hilbert: Hjk=1/(j+k+1) j,k=1..n","Επιστρέφει τον n-στής τάξης πίνακα Hilbert : Hjk=1/(j+k+1) j,k=1..n","Gibt die Hilbert-Matrix der Ordnung n zurück: Hjk=1/(j+k+1) j,k=1..n"},"","hilbert(4)",""},
@@ -841,7 +217,7 @@ Forwarded: yes
  {"hold",{"Retourne son argument sans l'évaluer (et aussi a:=quote(a) qui purge a).","Returns its argument unevaluated (and also a:=quote(a) that purge a).","Devuelve su argumento sin evaluarlo (y también a:=quote(a) que purge a).","Αναστολή υπολογισμών. Επιστρέφει το όρισμα μη-αποτιμημένο (και επίσης a:=quote(a) καθαρίζει το a).","Boolesche Auswertung des Arguments."},"Expr","quote(1+2);quote(1/x+1/(x-1));quote((x+1)*(x-1))",""},
  {"homothety",{"homothetie(C,k,A)=point A1 tel que vect(C,A1)=k*vect(C,A) i.e en 2d est la similitude de centre C, de rapport abs(k) et d'angle arg(k).","homothety(C,k,A)=point A1 such as vect(C,A1)=k*vect(C,A) i.e in 2d it is the similarity center C, coeff abs(k) and angle arg(k).","homothety(C,k,A)=punto A1 tal que vect(C,A1)=k*vect(C,A) es decir, en 2o es la semejanza de centro C, de coeficiente abs(k) y de ángulo arg(k).","homothety(C,k,A)=σημείο Α1 τέτοιο ώστε vect(C,A1)=k*vect(C,A) π.χ. σε 2-Δ είναι το κέντρο ομοιότητας C, αναφορικά με abs(k) και γωνίας arg(k).","homothety(C,k,A)=Punkt A1 sodass vect(C,A1)=k*vect(C,A) in 2D ist es also das Ähnlichkeitszentrum C, abs(k) ist das Verhältnis und arg(k) ist der Winkel."},"","homothety(1+i,1/3,i);homothety(point(1,1,1),1/3,point(0,1,0)); h:=homothety(1+i,1/3);h(i); h:=homothety(point(1,1,1),1/3);h(point(0,1,0))","similarity,inversion"},
  {"horner",{"Renvoie la valeur P(a) calculée selon la méthode de Hörner. La syntaxe horner(liste_alpha_i,liste_x_i,x) permet d'utiliser les differences divisees pour evaluer un polynome d'interpolation en x.","Returns the value of P(a) calculated with Horner's method. With horner(liste_alpha_i,liste_x_i,x), evals an interpolation polynomial from the divided differences at x.","Devuelve el valor de P(a) calculado según el método de Horner.","Επιστρέφει την τιμή P(a) υπολογισμένη με τη μέθοδο Horner.","Gibt den Wert von P(a) berechnet durch das Horner-Schema zurück. horner(liste_alpha_i,liste_x_i,x) erlaubt es die Auswertung mit Hilfe der geteilten Differenzen durchzuführen, die ein Interpolationspolynom bei x berechnen. "},"","horner(x^2+1,2);horner([1,0,1],2);horner(x^2+y*x+y^3-1,2,y); X:=[0.0,1.0,2.0]; A:=lagrange(X,exp,lagrange); horner(A,X,1.5);","convert,base,revlist"},
-@@ -1281,7 +1281,7 @@
+@@ -1286,7 +1286,7 @@
  {"lineariser_trigo",{"Linéarisation trigonométrique","Trigonometric linearization","Linealización trigonométrica","Τριγωνομετρική γραμμικοποίηση","Gibt die Reihe n oder die Folge der Reihen n1..n2 der Matrix A zurück, oder mit den optionalen Argumenten: count,count_eq,count_inf,count_sup."},"ExprTrig","tlin(sin(x)^3);tlin(cos(x)*cos(y))","texpand,lin"},
  {"linfnorm",{"Triple norme d'une matrice subordonnée à la norme linfini.","Matrix norm induced by linfinity norm.","Devuelve el valor de epsilon de la configuración del CAS.","Επιστρέφει την τιμή του έψιλον της ρύθμισης του CAS.","Gibt den Wert von Epsilon der CAS-Konfiguration zurück."},"Mtrx","linfnorm([[1,2,3],[3,-9,6],[4,5,6]])","l1norm,l2norm,matrix_norm,frobenius_norm"},
  {"linsolve",{"Résolution d'un système d'équations linéaires.","Linear equations system solver.","Resolución de un sistema de ecuaciones lineales.","Επιλύει σύστημα γραμμικών εξισώσεων.","Löst lineare Gleichungssysteme."},"","linsolve([x+y+z=1,x-y=2,2*x-z=3],[x,y,z]);linsolve([m*x+y=a,x+m*y=b],[x,y]);linsolve([x+y-z-1,x-y+1,x-y-z-1]%2,[x,y,z]);linsolve([[3,4],[1,2]],[0,1]); p,l,u:=lu([[3,4],[1,2]]); linsolve(p,l,u,[0,1]) ;linsolve([2*x+y+z=1,x+y+2*z=1,x+2*y+z=4],[x,y,z]);linsolve([[2,1,1],[1,1,2],[1,2,1]],[1,1,4]); p,l,u:=lu([[2,1,1],[1,1,2],[1,2,1]]);linsolve(p,l,u,[1,1,4]); a:=[[100,2],[2,100]];linsolve(evalf(a),[0,1]);","solve,proot,simult,gaussjord,pivot,ref,conjugate_gradient"},
@@ -849,8 +225,8 @@ Forwarded: yes
 +{"linspace",{"linspace(a,b,n) génère une liste de n éléments régulièrement espacés entre a et b, par défaut n=100 (commande compatible scilab).","linspace(a,b,n) creates a list of n elements at regular intervals between a and b, by default n=100 (compatibility with scilab).",0,0,"linspace(a,b,n) generiert eine Liste aus n aequidistanten Elementen zwischen a und b, ohne Spezifikation n=100 (kompatibel mit scilab)"},"","linspace(0,1,11)",0},
  {"lis",{"Instruction dans un programme permettant l'entrée d'une expression qui sera stockée dans var.","Instruction in a program so that you can input an expression and store it in var.","Instrucción en un programa que permite introducir una expresión y guardarla en var.","Εντολή σε ένα πρόγραμμα για την εισαγωγή μιας παράστασης και αποθήκευση στη var.",0},"[Str],Var(Var)","input(\"age\",a)","InputStr,output"},
  {"lis_phrase",{"Instruction dans un programme permettant l'entrée d'une chaîne de caractères qui sera stockée dans var.","Instruction in a program so that you can input a string and store it in var.","Instrucción en un programa que permite introducir una cadena de caracteres y guardarla en var.","Εντολή σε ένα πρόγραμμα για την εισαγωγή μιας συμβολοσειράς που θα αποθηκευτεί στη var.","(S,A,L,O):=lll(M), Kurzbasis eines Gitters (L*O=A*M=S)."},"[Str],Var(Var)","InputStr(\"nom?\",N)","input"},
- {"list",{"Option de la commande convert ou convertir (n-poly=>list).","Option of the convert or convertir command (n-poly=>list).","Opción del comando convert o convertir (n-poly=>list).","Επιλογή της εντολής convert ή convertir (n-poly=>list).","Option des convert oder convertir Befehls (n-poly=>list)."},""," convert(symb2poly(10x^3*y+12x^2*y^2,[x,y]),list)","symb2poly,convert"},
-@@ -1397,7 +1397,7 @@
+ {"list",{"Conversion en liste.","Convert to a list","Opción del comando convert o convertir (n-poly=>list).","Επιλογή της εντολής convert ή convertir (n-poly=>list).","Option des convert oder convertir Befehls (n-poly=>list)."},"","list((1,2))","symb2poly,convert"},
+@@ -1402,7 +1402,7 @@
  {"mods",{"Retourne le reste symétrique de la division euclidienne de 2 entiers.","Returns the Euclidean symmetric remainder of two integers.","Devuelve el resto simétrico de la división euclidiana de 2 enteros.","Επιστρέφει το Ευκλείδιο συμμετρικό υπόλοιπο 2 ακεραίων.",0},"Intg,Intg","smod(8,3);smod(10,4);smod(11,7)","irem,iquo,mod,fracmod"},
  {"monotonic",{"Renvoie un reel qui croit strictement en fonction du temps ecoule","Returns a real that increases as time passes","En un programa, crea entradas: Dialog{Title(\"título\");Text(\"Alumno\"+string(c));Request(\"Nombre=\",a);Request(\"Edad=\",b);DropDown(\"Nivel\",[\"un\",\"dos\"],n);} (se puede reemplazar {} con EndDlog al final).","Σε ένα πρόγραμμα, εκτελεί καταχωρήσεις :Dialog{Title(\"title\");Text(\"Pupil\"+ string(c));Request(\"Name=\",a);Request(\"Age=\",b);DropDown(\"Level\",[\"un\",\"deux\"],n);} (το {} μπορεί να αντικατασταθεί με EndDlog στο τέλος).","Schneidet das Polynom P bei Ordnung n ab."},"","monotonic()",0},
  {"montre_tortue",{"Montre la tortue.","Shows the turtle.","Muestra la tortuga.","Εμφανίζει τη χελώνα.","Zeigt die Schildkröte."},"","montre_tortue()","cache_tortue"},
@@ -859,7 +235,7 @@ Forwarded: yes
  {"moving_average",{0,"Applies a moving average filter of length n to a signal sample A, and returns its result as an array of length nops(A)-n+1.",0,0,0},"Lst(A),Intg(n)"," snd:=soundsec(2):;data:=0.5*threshold(3*sin(2*pi*220*snd),[-1.0,1.0])+randvector(length(snd),normald,0,0.05):;moving_average(data,25)","lowpass"},
  {"moyal",{"Produit de Moyal de 2 symboles.","Moyal product of 2 symbols.","Producto de Moyal de 2 expresiones simbólicas.","Γινόμενο Moyal 2 συμβόλων.","Moyal-Produkt zweier Symbole."},"","moyal(x^2+y^4,x^4-y^2,[x,y],5)",""},
  {"moyenne",{"Moyenne d'une liste pondérée par le deuxième argument ou des colonnes d'une matrice.","Mean of a list with the second argument as pound or of the columns of a matrix.","Promedio de una lista ponderada, con el segundo argumento como peso, o de las columnas de una matriz.","Μέση τιμή μιας λίστας με το δεύτερο όρισμα ως οδηγό ή των στηλών ενός πίνακα.",0},"Lst||Mtrx,[Lst]","mean([1,2,3]);mean([1,2,3],[1,2,3]);mean([[1,2,3],[1,2,3]])","stddev"},
-@@ -1647,7 +1647,7 @@
+@@ -1654,7 +1654,7 @@
  {"randNorm",{"Renvoie un réel aléatoirement distribué selon la loi normale N(mu,sigma).","Returns a random real with normal distribution N(mu,sigma).","Devuelve un número aleatorio distribuido según la ley normal N(mu,sigma).","Επιστρέφει έναν τυχαίο πραγματικό με κανονική κατανομή N(μ,σ).","Gibt das kleinste gemeinsame Vielfache von 2 Polynomen mit mehreren Variablen oder 2 ganzen Zahlen oder 2 rationalen Zahlen zurück. "},"Real(mu),Real(sigma)","randnorm(0,1);randnorm(2,1)","rand,randpoly,ranm,randvector,randexp,randbinomial,randpoisson,randgeometric,randmultinomial"},
  {"randPoly",{"Renvoie un polynôme de variable var (ou x), de degré n et dont les coefficients sont des entiers aléatoires équirépartis sur -99,+99 ou selon une loi.","Returns a polynomial of variable var (or x), of degree n and where the coefficients are random integers in the range -99 through 99 with uniform distribution or according to a law.","Devuelve el polinomio de variable var (o x), de grado n y cuyos coeficientes son enteros aleatorios equirepartidos entre -99 y 99.","Επιστρέφει ένα πολυώνυμο μεταβλητής var (ή x), βαθμού n και του οποίου οι συντελεστές είναι τυχαίοι ακέραιοι από -99 μέχρι 99 ομοιόμορφα κατανεμημένοι.","Gibt den Rest der Division eines Polynoms durch eine Gröbnerbasis zurück."},"[Var(Var)],Intg(n),[law]","randpoly(5);randpoly(t,8);randpoly(t,8,-1..1);randpoly([x,y],[10,3]);randpoly([x,y],[10,3],1 mod 7); GF(2,8,g);randpoly(t,8,g);randpoly([x,y],[2,3],g)","ranm,randvector"},
  {"randbetad",{"Renvoie un réel aléatoirement distribué selon la loi Beta de paramètre a>0 et b>0","Returns a random real according to the Beta distribution of parameter a>0 and b>0","Devuelve un número aleatorio distribuido según la ley Beta (parámetro a>0, b>0).","Επιλογή της εντολής display (ή affichage) για μια γραμμή.",0},"Real(a),Real(b)","randbetad(1,2);randbetad(1.5,4)","rand,randpoly,randnorm,randvector"},
@@ -868,7 +244,7 @@ Forwarded: yes
  {"randchisquare",{"Renvoie un entier aléatoirement distribué selon la loi du chi^2 ayant n degrés de liberté, χ^2(n).","Returns a random integer with chi^2 distribution, χ^2(n).","Devuelve un número aleatorio distribuido según la ley Chi-cuadrado, χ^2(n).","Επιστρέφει έναν τυχαίο πραγματικό με κατανομή χ^2(n).","Gibt eine zufällige ganze Zahl zurück, der die chi^2-Verteilung chi^2(n) zugrunde liegt (n Anzahl der Freiheitsgrade)."},"","randchisquare(5);randchisquare(2)","rand,randpoly,ranm,randvector,randexp,randbinomial,randnorm,randgeometric,randmultinomial"},
  {"randexp",{"Renvoie un réel aléatoirement distribué selon la loi exponentielle de paramètre a>0.","Returns a random real according to the exponential distribution of parameter a>0.","Devuelve un número aleatorio distribuido según la ley exponencial (parámetro a>0).","Επιστρέφει έναν τυχαίο πραγματικό με Εκθετικό κατανομή (παράμετρο a>0).","Gibt die zufällige reelle Zahl mit Exponential-Verteilung mit Parameter a>0 zurück."},"","randexp(1);randexp(2)","rand,randpoly,randnorm,randvector"},
  {"randfisher",{"Renvoie un entier aléatoirement distribué selon la loi de Fisher-Snedecor F(n,m).","Returns a random integer with Fisher-Snedecor distribution F(n,m).","Devuelve un número aleatorio distribuido según la ley Fisher-Snedecor F(n,m).","Επιστρέφει έναν τυχαίο πραγματικό με κατανομή Fisher-Snedecor F(n,m).","Gibt die zufällige ganze Zahl mit Fisher-Snedecor-Verteilung F(n,m) zurück."},"","randfisher(5,2);randfisher(2,4)","rand,randpoly,ranm,randvector,randexp,randbinomial,randnorm,randgeometric,randmultinomial"},
-@@ -1864,9 +1864,9 @@
+@@ -1875,9 +1875,9 @@
  {"star_graph",{0,"Returns the complete bipartite graph complete_graph(1,n).",0,0,0},"Intg(n)","star_graph(5)","complete_graph,wheel_graph"},
  {"star_point",{"Option de la commande affichage (ou display) pour un point.","Option of the display command for a point.","Opción de la instrucción display para un punto.","Επιλογή της εντολής display (ή affichage) για ένα σημείο.","equation gibt die kartesische Gleichung einer Kurve an. "},"Opt"," F:=display(point(2+1.5*i),point_point); F:=display(point(2+1.5*i),rhombus_point)","display"},
  {"start",{"Boucle en mode RPN.","RPN loop.","Bucle en modo RPN.","Βρόχος σε λειτουργία RPN (Αντίστροφος Πολωνικός Συμβολισμός).","RPN Schleife."},"",0,""},
@@ -881,81 +257,3 @@ Forwarded: yes
  {"steffenson_solver",{"Argument de fsolve indiquant la méthode pour résoudre numériquement une équation.","Argument for fsolve giving the method for solving an numerical equation.","Argumento para fsolve indicando el método para la resolución numérica de una ecuación.","Όρισμα για την εντολή fsolve που δίνει τη μέθοδο για την επίλυση μιας εξίσωσης (προσέγγιση της ρίζας).","Liste der Variablen eines Objektes (mit rationaler Abhängigkeit). "},"Opt"," fsolve(cos(x)=x,x,0..1,bisection_solver); fsolve(cos(x)=x,x,0..1,brent_solver); fsolve(cos(x)=x,x,0..1,falsepos_solver); fsolve(cos(x)=x,x,0,newton_solver); fsolve(cos(x)=x,x,0,secant_solver); fsolve(cos(x)=x,x,0,steffenson_solver)","fsolve"},
  {"step",{"Saut de la variable dans une itération (taille du saut).","Step in an iteration (step size of incrementation).","Incremento en una iteración (tamaño del salto).","Μέγεθος βήματος μεταβλητής μέσα σε βρόχο.","Schrittgröße in einer Iteration"},""," s:=0;for j from 1 to 10 step 2 do s:=s+j end_for; s:=0;for j from 1 step 2 to 10 do s:=s+j end_for; s:=0;for j from 1 to 10 by 2 do s:=s+j end_for; s:=0;for j from 1 by 2 to 10 do s:=s+j end_for; s:=0;pour j de 1 jusque 10 pas 2 do s:=s+j fpour; s:=0;pour j de 1 pas 2 jusque 10 do s:=s+j fpour","for,pour"},
  {"stereo2mono",{0,"Returns an audio clip with all channels in the input clip downmixed to a single one.",0,0,0},"Lst(clip)","stereo2mono(readwav(\"/some/file\"))","channel_data,mean,createwav"},
---- giac.orig/src/symbolic.cc
-+++ giac/src/symbolic.cc
-@@ -1123,7 +1123,7 @@
- 	case nr_eval_vect:
- 	  // end eval of vecteur, store value in res
- 	  if (oldsubtype==_SET__VECT && !argl.empty()){
--	    // remove multiple occurences
-+	    // remove multiple occurrences
- 	    islesscomplexthanf_sort(argl.begin(),argl.end());
- 	    vecteur tmp;
- 	    tmp.reserve(argl.size());
---- giac.orig/src/threaded.cc
-+++ giac/src/threaded.cc
-@@ -4916,7 +4916,7 @@
- 	if (test==prevtest && hashdivrem(p0,test,Pcof,tmprem,vars,pminmodulo,0,true)==1 && tmprem.empty()){
- 	  if (hashdivrem(q0,test,Qcof,tmprem,vars,pminmodulo,0,true)==1 && tmprem.empty()){
- 	    if (debug_infolevel)
--	      CERR << CLOCK() << " algmodgcd hashdivrem sucess" << '\n';
-+	      CERR << CLOCK() << " algmodgcd hashdivrem success" << '\n';
- 	    D=test;
- 	    return 1;
- 	  }
---- giac.orig/src/vecteur.cc
-+++ giac/src/vecteur.cc
-@@ -2944,7 +2944,7 @@
-       return;
-     }
-     vecteur::const_iterator itb=b.begin(), itbend=b.end();
--    if (&a==&res){ // in-place substract
-+    if (&a==&res){ // in-place subtract
-       vecteur::iterator ita=res.begin(), itaend=res.end();
-       for (;(ita!=itaend)&&(itb!=itbend);++ita,++itb){
- 	operator_minus_eq(*ita,*itb,context0);
-@@ -5854,7 +5854,7 @@
-       longlong & aj=*ak;
-       const int * mjk=&m[j+l][j+c];
-       aj = ((aj % p) * invmod(*mjk,p)) %p;
--      // aj is now computed, substract m_jk*aj from ak for all k>j
-+      // aj is now computed, subtract m_jk*aj from ak for all k>j
-       for (++mjk,++ak;ak<aend;++mjk,++ak){
- 	*ak -= *mjk*aj;
-       }
-@@ -5891,7 +5891,7 @@
-       a1j = ((a1j % p) * tmp) %p;
-       a2j = ((a2j % p) * tmp) %p;
-       a3j = ((a3j % p) * tmp) %p;
--      // aj is now computed, substract m_jk*aj from ak for all k>j
-+      // aj is now computed, subtract m_jk*aj from ak for all k>j
-       for (++mjk,++a0k,++a1k,++a2k,++a3k;a0k<a0end;++mjk,++a0k,++a1k,++a2k,++a3k){
- 	tmp=*mjk;
- 	if (!tmp) continue;
-@@ -5916,7 +5916,7 @@
-       double & aj=*ak;
-       const double * mjk=&m[j+l][j+c];
-       aj = (aj) / (*mjk);
--      // aj is now computed, substract m_jk*aj from ak for all k>j
-+      // aj is now computed, subtract m_jk*aj from ak for all k>j
-       for (++mjk,++ak;ak<aend;++mjk,++ak){
- 	*ak -= *mjk*aj;
-       }
-@@ -5953,7 +5953,7 @@
-       a1j = ((a1j) * tmp) ;
-       a2j = ((a2j) * tmp) ;
-       a3j = ((a3j) * tmp) ;
--      // aj is now computed, substract m_jk*aj from ak for all k>j
-+      // aj is now computed, subtract m_jk*aj from ak for all k>j
-       for (++mjk,++a0k,++a1k,++a2k,++a3k;a0k<a0end;++mjk,++a0k,++a1k,++a2k,++a3k){
- 	tmp=*mjk;
- 	if (!tmp) continue;
-@@ -7856,7 +7856,7 @@
-       if (NL.empty()) continue;
-       for (int C=c;C<cmax;++C)
- 	buffer[C]=NL[C];
--      // substract lines in pivots[k].first from column pivots[k].second to cmax
-+      // subtract lines in pivots[k].first from column pivots[k].second to cmax
-       for (int line=lstart;line<lstart+ps;++line){
- 	int col=pivots[line-lstart];
- 	if (col<0) continue;

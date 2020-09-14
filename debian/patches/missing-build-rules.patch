@@ -43,7 +43,7 @@ This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
    help.cc  lpsolve.cc optimization.cc signalprocessing.cc \
    graphe.cc graphtheory.cc nautywrapper.c markup.cc kdisplay.cc kadd.cc # Ugh..
  
-@@ -105,3 +106,10 @@
+@@ -106,3 +107,10 @@
  	cp -f input_lexer.h $(DESTDIR)$(includedir)/giac
  	cp -f input_parser.h $(DESTDIR)$(includedir)/giac
  
