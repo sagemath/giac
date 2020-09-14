@@ -1,3 +1,9 @@
+giac (1.6.0.17+dfsg1-1) UNRELEASED; urgency=medium
+
+  * Package new upstream release.
+
+ -- Julien Puydt <jpuydt@debian.org>  Mon, 14 Sep 2020 12:38:24 +0200
+
 giac (1.6.0.7+dfsg1-2) unstable; urgency=medium
 
   * Add patch to unbreak 32bits (given by upstream, will
