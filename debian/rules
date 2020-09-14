@@ -73,6 +73,9 @@ ENCODING_FILES = \
 	/usr/share/giac/doc/en/casinter/casinter005.html \
 	/usr/share/giac/doc/en/casinter/casinter006.html \
 	/usr/share/giac/doc/en/casinter/index.html \
+	/usr/share/giac/doc/en/html_mall \
+	/usr/share/giac/doc/en/html_mtt \
+	/usr/share/giac/doc/en/html_vall \
 	/usr/share/giac/examples/arit/codage.cas \
 	/usr/share/giac/examples/demo/e05.tex \
 	/usr/share/giac/examples/geo/geo2 \
