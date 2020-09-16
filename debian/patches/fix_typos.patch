@@ -44,7 +44,7 @@ Forwarded: yes
  {"Unknown subsop rule ",0,"未知 subsop 规则 ","subsop : règle inconnue ","Unbekannte subsop-Regel ","Regla de subsop desconocida ","Onbekende subsop regel ","Regra subsop desconhecida ","不明なsubsop規則 "},
 --- giac.orig/src/help.cc
 +++ giac/src/help.cc
-@@ -1077,7 +1077,7 @@
+@@ -1084,7 +1084,7 @@
  	  break;
  	}
  	if (s>8 && tmp.substr(s-8,8)=="</B></A>"){
@@ -66,7 +66,7 @@ Forwarded: yes
  	if (return_curve)  {
 --- giac.orig/src/kdisplay.cc
 +++ giac/src/kdisplay.cc
-@@ -1188,12 +1188,12 @@
+@@ -1189,12 +1189,12 @@
    {"avance n", "avance ", "Turtle forward n steps, default n=10", "#avance 30", 0, CAT_CATEGORY_LOGO},
    {"axes", "axes", "Axes visible or not axes=1 or 0", "#axes=0", 0, CAT_CATEGORY_PROGCMD << 8|XCAS_ONLY},
    {"baisse_crayon ", "baisse_crayon ", "Turtle moves with the pen writing.", 0, 0, CAT_CATEGORY_LOGO},
@@ -81,7 +81,7 @@ Forwarded: yes
    {"cache_tortue ", "cache_tortue ", "Hide turtle (once the picture has been drawn).", 0, 0, CAT_CATEGORY_LOGO},
    {"ceil(x)", 0, "Smallest integer not less than x", "1.2", 0, CAT_CATEGORY_REAL},
    {"cfactor(p)", 0, "Factorization over C.", "x^4-1", 0, CAT_CATEGORY_ALGEBRA | (CAT_CATEGORY_COMPLEXNUM << 8)},
-@@ -1262,7 +1262,7 @@
+@@ -1263,7 +1263,7 @@
    {"gcd(a,b,...)", 0, "Greatest common divisor. See also iegcd and egcd for extended GCD.", "23,13", "x^2-1,x^3-1", CAT_CATEGORY_ARIT | (CAT_CATEGORY_POLYNOMIAL << 8)},
    {"gl_x", "gl_x", "Display settings X gl_x=xmin..xmax", "#gl_x=0..2", 0, CAT_CATEGORY_PROGCMD},
    {"gl_y", "gl_y", "Display settings Y gl_y=ymin..ymax", "#gl_y=-1..1", 0, CAT_CATEGORY_PROGCMD},
@@ -90,7 +90,7 @@ Forwarded: yes
    {"green", "green", "Display option", "#display=green", 0, CAT_CATEGORY_PROGCMD},
    {"halftan(expr)", 0, "Convert cos, sin, tan with tan(angle/2).","cos(x)", 0, CAT_CATEGORY_TRIG},
    {"hermite(n)", 0, "n-th Hermite polynomial", "10", 0, CAT_CATEGORY_POLYNOMIAL},
-@@ -1324,7 +1324,7 @@
+@@ -1325,7 +1325,7 @@
    {"plotarea(expr,x=a..b,[n,meth])", 0, "Area under curve with specified quadrature.", "1/x,x=1..3,2,trapezoid", 0, CAT_CATEGORY_PLOT},
  #endif
    {"plotcontour(expr,[x=xm..xM,y=ym..yM],levels)", 0, "Levels of expr.", "x^2+2y^2,[x=-2..2,y=-2..2],[1,2]", 0, CAT_CATEGORY_PLOT},
@@ -99,7 +99,7 @@ Forwarded: yes
    {"plotlist(list)", 0, "Plot a list", "[3/2,2,1,1/2,3,2,3/2]", 0, CAT_CATEGORY_PLOT},
    {"plotode(f(t,y),[t=tmin..tmax,y],[t0,y0])", 0, "Plot solution of differential equation y'=f(t,y), y(t0)=y0.", "sin(t*y),[t=-3..3,y],[0,1]", 0, CAT_CATEGORY_PLOT},
    {"plotparam([x,y],t)", 0, "Parametric plot. For example plotparam([sin(3t),cos(2t)],t,0,pi) or plotparam(exp(i*t),t,0,pi)", "[sin(3t),cos(2t)],t,0,pi", "[t^2,t^3],t=-1..1,tstep=0.1", CAT_CATEGORY_PLOT},
-@@ -3668,7 +3668,7 @@
+@@ -3669,7 +3669,7 @@
  
    // vertical merge with same baseline
    // for vertical merge of hp,yp at top (like ^) add fontsize to yp
@@ -108,7 +108,7 @@ Forwarded: yes
    void Equation_vertical_adjust(int hp,int yp,int & h,int & y){
      int yf=min(y,yp);
      h=max(y+h,yp+hp)-yf;
-@@ -5141,7 +5141,7 @@
+@@ -5142,7 +5142,7 @@
  	      fl_pie(deltax+round(i0-i1),deltay+round(j0-j1),round(2*i1),round(2*j1),full?0:anglei*180/M_PI+.5,full?360:anglef*180/M_PI+.5,couleur,false);
  	    else {
  	      fl_arc(deltax+round(i0-i1),deltay+round(j0-j1),round(2*i1),round(2*j1),full?0:anglei*180/M_PI+.5,full?360:anglef*180/M_PI+.5,couleur);
@@ -159,7 +159,7 @@ Forwarded: yes
  {"Unknown subsop rule ",0,"未知 subsop 规则 ","subsop : regle inconnue ","Unbekannte subsop-Regel ","Regla de subsop desconocida ","Onbekende subsop regel ","Regra subsop desconhecida ","不明なsubsop規則 "},
 --- giac.orig/src/solve.cc
 +++ giac/src/solve.cc
-@@ -7553,7 +7553,7 @@
+@@ -7567,7 +7567,7 @@
  	  }
  	}
  	if (1 || curdeg==1){

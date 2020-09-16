@@ -3,6 +3,7 @@ giac (1.6.0.23+dfsg1-1) UNRELEASED; urgency=medium
   * Update the files excluded list before importing a newer version (hence
    dropping again to dfsg1).
   * New upstream release.
+  * Refresh patches.
 
  -- Julien Puydt <jpuydt@debian.org>  Wed, 16 Sep 2020 17:10:19 +0200
 
