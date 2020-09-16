@@ -21,7 +21,6 @@ Files-Excluded:
  doc/show-hint.*
  doc/w3data.js
  doc/xcasmode.js
- micropython-1.12
 # Autoconf intermediate files and other irrelevant cruft
  */*iphone* */Makefile.osx */Makefile.win*
  configure config.guess config.sub config.h.* config/* aclocal.m4 m4/* */Makefile.in
@@ -33,6 +32,7 @@ Files-Excluded:
  mkdebian mkdebian2 debian debianold
 # Build output, we regenerate these instead
  check/*.tst
+ libmicropython.a
  src/path.h
  src/input_lexer.cc
  src/lexer.h
@@ -59,6 +59,11 @@ Files-Excluded:
 Files: *
 Copyright: 2000-2017 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
 License: GPL-3+
+
+Files: micropython-1.12/*
+Copyright: 2003-1019 Damien P. George
+           2020 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
+License: Expat
 
 Files: src/gauss.cc src/isom.* src/renee.cc
 Copyright: 2001-2014 Renée de Graeve <degraeve@univ-grenoble-alpes.fr>

@@ -1,3 +1,10 @@
+giac (1.6.0.17+dfsg2-2) UNRELEASED; urgency=medium
+
+  * Update the files excluded list before importing a newer version (hence
+   dropping again to dfsg1).
+
+ -- Julien Puydt <jpuydt@debian.org>  Wed, 16 Sep 2020 12:03:49 +0200
+
 giac (1.6.0.17+dfsg2-1) unstable; urgency=medium
 
   * Package new upstream release.
