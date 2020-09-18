@@ -4,6 +4,7 @@ giac (1.6.0.23+dfsg1-1) UNRELEASED; urgency=medium
    dropping again to dfsg1).
   * New upstream release.
   * Refresh patches.
+  * Don't fix the encoding of index files.
 
  -- Julien Puydt <jpuydt@debian.org>  Wed, 16 Sep 2020 17:10:19 +0200
 

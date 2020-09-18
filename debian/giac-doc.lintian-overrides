@@ -1,0 +1,6 @@
+# Those are index files : they have a special format, so it's a false positive
+giac-doc: national-encoding usr/share/giac/doc/el/html_mtt
+giac-doc: national-encoding usr/share/giac/doc/el/html_vall
+giac-doc: national-encoding usr/share/giac/doc/en/html_mall
+giac-doc: national-encoding usr/share/giac/doc/en/html_mtt
+giac-doc: national-encoding usr/share/giac/doc/en/html_vall
