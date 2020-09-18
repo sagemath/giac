@@ -1,4 +1,4 @@
-giac (1.6.0.23+dfsg1-1) UNRELEASED; urgency=medium
+giac (1.6.0.23+dfsg1-1) unstable; urgency=medium
 
   * Update the files excluded list before importing a newer version (hence
    dropping again to dfsg1).
@@ -6,7 +6,7 @@ giac (1.6.0.23+dfsg1-1) UNRELEASED; urgency=medium
   * Refresh patches.
   * Don't fix the encoding of index files.
 
- -- Julien Puydt <jpuydt@debian.org>  Wed, 16 Sep 2020 17:10:19 +0200
+ -- Julien Puydt <jpuydt@debian.org>  Fri, 18 Sep 2020 08:49:51 +0200
 
 giac (1.6.0.17+dfsg2-1) unstable; urgency=medium
 
