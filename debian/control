@@ -9,6 +9,7 @@ Build-Depends:
  patch,
  bison,
  flex,
+ python3,
  libtool,
  libgl2ps-dev,
  libgmp3-dev,
