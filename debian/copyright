@@ -32,7 +32,6 @@ Files-Excluded:
  mkdebian mkdebian2 debian debianold
 # Build output, we regenerate these instead
  check/*.tst
- libmicropython.a
  src/path.h
  src/input_lexer.cc
  src/lexer.h
