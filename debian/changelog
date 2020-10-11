@@ -1,8 +1,8 @@
-giac (1.6.0.25+dfsg1-1) UNRELEASED; urgency=medium
+giac (1.6.0.25+dfsg1-1) unstable; urgency=medium
 
   * New upstream release.
 
- -- Julien Puydt <jpuydt@debian.org>  Sat, 10 Oct 2020 22:05:48 +0200
+ -- Julien Puydt <jpuydt@debian.org>  Sun, 11 Oct 2020 09:40:52 +0200
 
 giac (1.6.0.23+dfsg1-2) unstable; urgency=medium
 
