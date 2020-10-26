@@ -1,3 +1,4 @@
 /usr/include/giac
 /usr/lib/*/libgiac.so
 /usr/lib/*/libgiac.a
+config.h /usr/include/giac/

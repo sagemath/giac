@@ -1,3 +1,9 @@
+giac (1.6.0.25+dfsg1-2) unstable; urgency=medium
+
+  * Install config.h. (Closes: #972827)
+
+ -- Julien Puydt <jpuydt@debian.org>  Mon, 26 Oct 2020 16:44:10 +0100
+
 giac (1.6.0.25+dfsg1-1) unstable; urgency=medium
 
   * New upstream release.
