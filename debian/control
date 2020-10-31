@@ -52,7 +52,7 @@ Vcs-Git: https://salsa.debian.org/science-team/giac.git
 
 Package: libgiac0
 Section: libs
-Architecture: any
+Architecture: amd64 arm64 armel armhf i386 mips64el mipsel
 Multi-Arch: same
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Suggests: giac-doc
@@ -65,7 +65,7 @@ Description: Computer Algebra System C++ library
  This package contains the shared libraries needed to run programs using giac.
 
 Package: libgiac-dev
-Architecture: any
+Architecture: amd64 arm64 armel armhf i386 mips64el mipsel
 Multi-Arch: same
 Section: libdevel
 Depends: ${misc:Depends}, libgiac0 (= ${binary:Version})
@@ -79,7 +79,7 @@ Description: Computer Algebra System C++ library - Development files
  development files needed to build software that uses giac.
 
 Package: xcas
-Architecture: any
+Architecture: amd64 arm64 armel armhf i386 mips64el mipsel
 Multi-Arch: allowed
 Depends: ${shlibs:Depends}, ${misc:Depends}, ${perl:Depends}, libgiac0 (= ${binary:Version})
 Suggests: giac-doc,
