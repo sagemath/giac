@@ -55,7 +55,7 @@ Forwarded: yes
  	    if (tmp[l]=='<' && tmp[l+1]=='A')
 --- giac.orig/src/intg.cc
 +++ giac/src/intg.cc
-@@ -5841,7 +5841,7 @@
+@@ -5885,7 +5885,7 @@
  					     &t, t1, &h,
  					     y);
  	if (status != GSL_SUCCESS)
@@ -159,7 +159,7 @@ Forwarded: yes
  {"Unknown subsop rule ",0,"未知 subsop 规则 ","subsop : regle inconnue ","Unbekannte subsop-Regel ","Regla de subsop desconocida ","Onbekende subsop regel ","Regra subsop desconhecida ","不明なsubsop規則 "},
 --- giac.orig/src/solve.cc
 +++ giac/src/solve.cc
-@@ -7567,7 +7567,7 @@
+@@ -7580,7 +7580,7 @@
  	  }
  	}
  	if (1 || curdeg==1){

@@ -86,7 +86,7 @@ Forwarded: not-needed
  #	$(INSTALL_DATA) $(HTML_LOCAL) $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
 --- giac.orig/configure.ac
 +++ giac/configure.ac
-@@ -484,8 +484,6 @@
+@@ -500,8 +500,6 @@
  doc/es/Makefile
  doc/fr/Makefile
  doc/el/Makefile
@@ -95,7 +95,7 @@ Forwarded: not-needed
  doc/local/Makefile
  doc/pt/Makefile
  doc/zh/Makefile
-@@ -493,8 +491,6 @@
+@@ -509,8 +507,6 @@
  intl/Makefile
  po/Makefile.in
  examples/Makefile
