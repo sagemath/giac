@@ -1,9 +1,9 @@
-giac (1.6.0.25+dfsg1-3) UNRELEASED; urgency=medium
+giac (1.6.0.25+dfsg1-3) unstable; urgency=medium
 
   * Mark the actually supported architectures. (Closes: #855080, #855081)
   * Add patch larger_pari_mem_size to avoid segfaults.
 
- -- Julien Puydt <jpuydt@debian.org>  Sat, 31 Oct 2020 16:55:22 +0100
+ -- Julien Puydt <jpuydt@debian.org>  Tue, 03 Nov 2020 08:57:20 +0100
 
 giac (1.6.0.25+dfsg1-2) unstable; urgency=medium
 
