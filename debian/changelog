@@ -1,9 +1,9 @@
-giac (1.6.0.31+dfsg1-1) UNRELEASED; urgency=medium
+giac (1.6.0.31+dfsg1-1) unstable; urgency=medium
 
   * Drop the larger_pari_mem_size patch (upstreamed).
   * Bump std-vers to 4.5.1.
 
- -- Julien Puydt <jpuydt@debian.org>  Sun, 22 Nov 2020 21:44:51 +0100
+ -- Julien Puydt <jpuydt@debian.org>  Sun, 22 Nov 2020 21:46:42 +0100
 
 giac (1.6.0.25+dfsg1-3) unstable; urgency=medium
 
