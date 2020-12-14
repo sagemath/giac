@@ -66,7 +66,14 @@ Description: Computer Algebra System C++ library
 Package: libgiac-dev
 Architecture: amd64 arm64 armel armhf i386 mips64el mipsel
 Section: libdevel
-Depends: libgiac0 (= ${binary:Version}), ${misc:Depends}
+Depends: libfltk1.3-dev,
+         libgiac0 (= ${binary:Version}),
+         libgmp-dev,
+         libgsl-dev,
+         libmpfi-dev,
+         libmpfr-dev,
+         libntl-dev,
+         ${misc:Depends}
 Description: Computer Algebra System C++ library - Development files
  Giac is a computer algebra system, following the development of the CAS for HP
  calculators. It has fast implementation of algorithms for polynomial
