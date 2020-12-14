@@ -2,48 +2,47 @@ Source: giac
 Section: science
 Priority: optional
 Maintainer: Debian Science Maintainers <debian-science-maintainers@alioth-lists.debian.net>
-Uploaders: Ximin Luo <infinity0@debian.org>, Gilles Filippini <pini@debian.org>, Julien Puydt <jpuydt@debian.org>
-Build-Depends:
- debhelper-compat (= 13),
- automake,
- patch,
- bison,
- flex,
- python3,
- libtool,
- libgl2ps-dev,
- libgmp3-dev,
- libgsl-dev,
- libntl-dev,
- libmpfr-dev,
- libmpfi-dev,
- libpari-dev,
- libreadline-dev,
- zlib1g-dev,
- libfltk1.3-dev,
- libfontconfig1-dev,
- libglu1-mesa-dev,
- libjpeg-dev,
- libpng-dev,
- libxext-dev,
- libxft-dev,
- libxinerama-dev,
-# for the info pages in arch-specific packages
- texinfo,
-Build-Depends-Indep:
- hevea <!nodoc>,
- imagemagick <!nodoc>,
- latex2html <!nodoc>,
- libjs-codemirror <!nodoc>,
- libjs-mathjax <!nodoc>,
- texlive-binaries <!nodoc>,
- texlive-font-utils <!nodoc>,
- texlive-science <!nodoc>,
- texlive-pstricks <!nodoc>,
- texlive-lang-all <!nodoc>,
- texlive-latex-recommended <!nodoc>,
- xauth <!nodoc>,
- xvfb <!nodoc>,
+Uploaders: Ximin Luo <infinity0@debian.org>,
+           Gilles Filippini <pini@debian.org>,
+           Julien Puydt <jpuydt@debian.org>
+Build-Depends: automake,
+               bison,
+               debhelper-compat (= 13),
+               flex,
+               libfltk1.3-dev,
+               libfontconfig1-dev,
+               libgl2ps-dev,
+               libglu1-mesa-dev,
+               libgmp3-dev,
+               libgsl-dev,
+               libjpeg-dev,
+               libmpfi-dev,
+               libmpfr-dev,
+               libntl-dev,
+               libpari-dev,
+               libpng-dev,
+               libreadline-dev,
+               libtool,
+               libxext-dev,
+               libxft-dev,
+               libxinerama-dev,
+               patch,
+               python3,
+               texinfo,
+               zlib1g-dev
+Build-Depends-Indep: hevea <!nodoc>,
+                     imagemagick <!nodoc>,
+                     latex2html <!nodoc>,
+                     libjs-codemirror <!nodoc>,
+                     libjs-mathjax <!nodoc>,
+                     texlive-binaries <!nodoc>,
+                     texlive-font-utils <!nodoc>,
+                     texlive-lang-all <!nodoc>,
+                     texlive-latex-recommended <!nodoc>,
+                     texlive-pstricks <!nodoc>,
+                     texlive-science <!nodoc>,
+                     xauth <!nodoc>,
+                     xvfb <!nodoc>
 Standards-Version: 4.5.1
 Rules-Requires-Root: no
 Homepage: https://www-fourier.ujf-grenoble.fr/~parisse/giac.html
@@ -54,7 +53,7 @@ Package: libgiac0
 Section: libs
 Architecture: amd64 arm64 armel armhf i386 mips64el mipsel
 Multi-Arch: same
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${misc:Depends}, ${shlibs:Depends}
 Suggests: giac-doc
 Description: Computer Algebra System C++ library
  Giac is a computer algebra system, following the development of the CAS for HP
@@ -67,7 +66,7 @@ Description: Computer Algebra System C++ library
 Package: libgiac-dev
 Architecture: amd64 arm64 armel armhf i386 mips64el mipsel
 Section: libdevel
-Depends: ${misc:Depends}, libgiac0 (= ${binary:Version})
+Depends: libgiac0 (= ${binary:Version}), ${misc:Depends}
 Description: Computer Algebra System C++ library - Development files
  Giac is a computer algebra system, following the development of the CAS for HP
  calculators. It has fast implementation of algorithms for polynomial
@@ -80,17 +79,19 @@ Description: Computer Algebra System C++ library - Development files
 Package: xcas
 Architecture: amd64 arm64 armel armhf i386 mips64el mipsel
 Multi-Arch: allowed
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${perl:Depends}, libgiac0 (= ${binary:Version})
+Depends: libgiac0 (= ${binary:Version}),
+         ${misc:Depends},
+         ${perl:Depends},
+         ${shlibs:Depends}
 Suggests: giac-doc,
-# xcas calls system() in quite a bunch of places for optional behaviour
- hevea,
- imagemagick,
- kbd,
- netpbm,
- texlive-binaries,
- texlive-latex-base,
- wget,
- xterm,
+          hevea,
+          imagemagick,
+          kbd,
+          netpbm,
+          texlive-binaries,
+          texlive-latex-base,
+          wget,
+          xterm
 Description: Computer Algebra System - console and graphical calculator
  Giac is a computer algebra system, following the development of the CAS for HP
  calculators. It has fast implementation of algorithms for polynomial
@@ -104,7 +105,7 @@ Package: giac-doc
 Architecture: all
 Multi-Arch: foreign
 Section: doc
-Depends: ${misc:Depends}, libjs-codemirror, libjs-mathjax, xcas
+Depends: libjs-codemirror, libjs-mathjax, xcas, ${misc:Depends}
 Recommends: xcas (= ${binary:Version})
 Description: Computer Algebra System - documentation
  Giac is a computer algebra system, following the development of the CAS for HP

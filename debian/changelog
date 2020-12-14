@@ -1,6 +1,7 @@
 giac (1.6.0.31+dfsg1-2) UNRELEASED; urgency=medium
 
   * Unmark -dev as Multi-Arch: same following hinter.
+  * Run wrap-and-sort for cleaner files.
 
  -- Julien Puydt <jpuydt@debian.org>  Mon, 14 Dec 2020 09:14:42 +0100
 
