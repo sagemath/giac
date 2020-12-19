@@ -170,7 +170,7 @@ namespace giac {
 #endif
 
 #ifdef TIMEOUT
-#ifndef EMCC
+#if !defined(EMCC) && !defined(EMCC2)
   double time(int ){
     return double(CLOCK())/1000000; // CLOCKS_PER_SEC;
   }
@@ -203,7 +203,7 @@ namespace giac {
       if (caseval_n >=caseval_mod){
 	caseval_n=0; 
 	caseval_current=time(0); 
-#ifdef EMCC
+#if defined(EMCC) || defined(EMCC2)
 	if (difftime(caseval_current,caseval_begin)>caseval_maxtime)
 #else
 	if (caseval_current>caseval_maxtime+caseval_begin)
@@ -324,7 +324,7 @@ extern "C" void Sleep(unsigned int miliSecond);
   void language(int b,GIAC_CONTEXT){
     if (contextptr && contextptr->globalptr )
       contextptr->globalptr->_language_=b;
-#ifndef EMCC
+#if !defined(EMCC) && !defined(EMCC2)
     else
 #endif
       _language_=b;
@@ -1201,7 +1201,7 @@ extern "C" void Sleep(unsigned int miliSecond);
       res=contextptr->globalptr->_logptr_;
     else
       res= _logptr_;
-#ifdef EMCC
+#if defined(EMCC) || defined(EMCC2)
     return res?res:&COUT;
 #else
 #ifdef FXCG
@@ -1882,7 +1882,7 @@ extern "C" void Sleep(unsigned int miliSecond);
   const int BUFFER_SIZE=512;
 #else
   int CALL_LAPACK=1111;
-#ifdef EMCC
+#if defined(EMCC) || defined(EMCC2)
   int LIST_SIZE_LIMIT = 10000000 ;
 #else
   int LIST_SIZE_LIMIT = 500000000 ;
@@ -3288,7 +3288,7 @@ extern "C" void Sleep(unsigned int miliSecond);
     if (!equalposcomp(lexer_localization_vector(),i)){
       lexer_localization_vector().push_back(i);
       update_lexer_localization(lexer_localization_vector(),lexer_localization_map(),back_lexer_localization_map(),contextptr);
-#ifndef EMCC
+#if !defined(EMCC) && !defined(EMCC2)
       if (vector_aide_ptr()){
 	// add locale command description
 	int count;
@@ -3386,7 +3386,7 @@ extern "C" void Sleep(unsigned int miliSecond);
   }
 
   std::string set_language(int i,GIAC_CONTEXT){
-#ifdef EMCC
+#if defined(EMCC) || defined(EMCC2)
     if (language(contextptr)!=i){
       language(i,contextptr);
       add_language(i,contextptr);
@@ -3729,7 +3729,7 @@ extern "C" void Sleep(unsigned int miliSecond);
 
 #ifndef HAVE_NO_SYS_TIMES_H
    double delta_tms(struct tms tmp1,struct tms tmp2){
-#if defined(HAVE_SYSCONF) && !defined(EMCC)
+#if defined(HAVE_SYSCONF) && !defined(EMCC) && !defined(EMCC2)
      return double( tmp2.tms_utime+tmp2.tms_stime+tmp2.tms_cutime+tmp2.tms_cstime-(tmp1.tms_utime+tmp1.tms_stime+tmp1.tms_cutime+tmp1.tms_cstime) )/sysconf(_SC_CLK_TCK);
 #else
     return double( tmp2.tms_utime+tmp2.tms_stime+tmp2.tms_cutime+tmp2.tms_cstime-(tmp1.tms_utime+tmp1.tms_stime+tmp1.tms_cutime+tmp1.tms_cstime) )/CLK_TCK;
@@ -4079,7 +4079,7 @@ extern "C" void Sleep(unsigned int miliSecond);
 		     _python_compat_(false),
 #endif
 		     _angle_mode_(0), _bounded_function_no_(0), _series_flags_(0x3),_step_infolevel_(0),_default_color_(FL_BLACK), _epsilon_(1e-12), _proba_epsilon_(1e-15),  _show_axes_(1),_spread_Row_ (-1), _spread_Col_ (-1), 
-#ifdef EMCC
+#if defined(EMCC) || defined(EMCC2)
 		     _logptr_(&COUT), 
 #else
 #ifdef FXCG
@@ -5336,7 +5336,13 @@ unsigned int ConvertUTF8toUTF162 (
 #ifdef GIAC_HAS_STO_38
       const char * c=g._SYMBptr->sommet.ptr()->s;
 #else
-      string ss=unlocalize(g._SYMBptr->sommet.ptr()->s);
+      string ss=g._SYMBptr->sommet.ptr()->s;
+      if (g._SYMBptr->sommet==at_sto && g._SYMBptr->feuille.type==_VECT){
+	vecteur & v=*g._SYMBptr->feuille._VECTptr;
+	if (v.size()==2 && v.front().type==_SYMB)
+	  ss=v.front()._SYMBptr->sommet.ptr()->s;
+      }
+      ss=unlocalize(ss);
       const char * c=ss.c_str();
 #endif
 #if 1
@@ -5407,7 +5413,7 @@ unsigned int ConvertUTF8toUTF162 (
   void (*my_gprintf)(unsigned special,const string & format,const vecteur & v,GIAC_CONTEXT)=0;
 
 
-#ifdef EMCC
+#if defined(EMCC) || defined(EMCC2)
   static void newlinestobr(string &s,const string & add){
     int l=int(add.size());
     for (int i=0;i<l;++i){
@@ -5436,7 +5442,7 @@ unsigned int ConvertUTF8toUTF162 (
     }
     string s;
     int pos=0;
-#ifdef EMCC
+#if defined(EMCC) || defined(EMCC2)
     *logptr(contextptr) << char(2) << '\n'; // start mixed text/mathml
 #endif
     for (unsigned i=0;i<v.size();++i){
@@ -5444,7 +5450,7 @@ unsigned int ConvertUTF8toUTF162 (
       if (p<0 || p>=int(format.size()))
 	break;
       newlinestobr(s,format.substr(pos,p-pos));
-#ifdef EMCC
+#if defined(EMCC) || defined(EMCC2)
       gen tmp;
       if (v[i].is_symb_of_sommet(at_pnt))
 	tmp=_svg(v[i],contextptr);
@@ -5458,7 +5464,7 @@ unsigned int ConvertUTF8toUTF162 (
     }
     newlinestobr(s,format.substr(pos,format.size()-pos));
     *logptr(contextptr) << s << '\n';
-#ifdef EMCC
+#if defined(EMCC) || defined(EMCC2)
     *logptr(contextptr) << char(3) << '\n'; // end mixed text/mathml
     *logptr(contextptr) << '\n';
 #endif
@@ -5512,7 +5518,7 @@ void update_lexer_localization(const std::vector<int> & v,std::map<std::string,s
 	for (++j;j<l;++j){
 	  if (line[j]==' '){
 	    if (!local_kw.empty()){
-#ifdef EMCC
+#if defined(EMCC) || defined(EMCC2)
 	      gen localgen(gen(local_kw,contextptr));
 	      keywordsptr->push_back(localgen);
 	      sto(gen(giac_kw,contextptr),localgen,contextptr);
@@ -5527,7 +5533,7 @@ void update_lexer_localization(const std::vector<int> & v,std::map<std::string,s
 	    local_kw += line[j];
 	}
 	if (!local_kw.empty()){
-#ifdef EMCC
+#if defined(EMCC) || defined(EMCC2)
 	  gen localgen(gen(local_kw,contextptr));
 	  keywordsptr->push_back(localgen);
 	  sto(gen(giac_kw,contextptr),localgen,contextptr);
@@ -6565,7 +6571,7 @@ void update_lexer_localization(const std::vector<int> & v,std::map<std::string,s
 	    progpos=cur.find("if");
 	    q=2;
 	  }
-	  if (p && progpos>=0 && progpos<cs && instruction_at(cur,progpos,q)){
+	  if (p>progpos && progpos>=0 && progpos<cs && instruction_at(cur,progpos,q)){
 	    pythonmode=true;
 #if 1
 	    res = cur.substr(0,p)+":\n"+string(progpos+4,' ')+cur.substr(p+1,pos-p)+'\n'+res;
@@ -6587,7 +6593,7 @@ void update_lexer_localization(const std::vector<int> & v,std::map<std::string,s
 #endif
 	  }
 	  progpos=cur.find("else");
-	  if (p && progpos>=0 && progpos<cs && instruction_at(cur,progpos,4)){
+	  if (p>progpos && progpos>=0 && progpos<cs && instruction_at(cur,progpos,4)){
 	    pythonmode=true;
 #if 1
 	    res = cur.substr(0,p)+":\n"+string(progpos+4,' ')+cur.substr(p+1,pos-p)+'\n'+res;
@@ -6599,7 +6605,7 @@ void update_lexer_localization(const std::vector<int> & v,std::map<std::string,s
 #endif
 	  }
 	  progpos=cur.find("for");
-	  if (p && progpos>=0 && progpos<cs && instruction_at(cur,progpos,3)){
+	  if (p>progpos && progpos>=0 && progpos<cs && instruction_at(cur,progpos,3)){
 	    pythonmode=true;
 	    cur=cur.substr(0,p)+" do "+cur.substr(p+1,pos-p);
 	    convert_python(cur,contextptr);
@@ -6607,7 +6613,7 @@ void update_lexer_localization(const std::vector<int> & v,std::map<std::string,s
 	    p=0;
 	  }
 	  progpos=cur.find("while");
-	  if (p && progpos>=0 && progpos<cs && instruction_at(cur,progpos,5)){
+	  if (p>progpos && progpos>=0 && progpos<cs && instruction_at(cur,progpos,5)){
 	    pythonmode=true;
 	    cur=cur.substr(0,p)+" do "+cur.substr(p+1,pos-p);
 	    convert_python(cur,contextptr);
