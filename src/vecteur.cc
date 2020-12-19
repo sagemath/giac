@@ -875,7 +875,7 @@ namespace giac {
 	}
 	gen g=m[i][j];
 	// find all cells in g
-	vecteur sub_in(lcell(g[0])),sub_out;
+	vecteur sub_in(lcell(g.type==_VECT?g[0]:g)),sub_out;
 	if (sub_in.empty()){
 	  tmp.push_back(g);
 	  continue;
@@ -2366,7 +2366,7 @@ namespace giac {
     }
     int epsbits=-std::log(eps)/std::log(2.);
     if (precis && int(crystalball.size())==deg 
-#ifndef EMCC
+#if !defined(EMCC) && !defined(EMCC2)
 	&& dkw(v_accurate,crystalball,nbits,eps)
 #endif
 	){
@@ -3393,7 +3393,7 @@ namespace giac {
     int c=c2>c1?c2-c1:it->size(); // ncols of a = rows of res
     res.resize(c);
     // find begin of each row
-#if defined( VISUALC ) || defined( BESTA_OS ) || defined(EMCC) || defined(__clang__)
+#if defined( VISUALC ) || defined( BESTA_OS ) || defined(EMCC) || defined EMCC2 || defined(__clang__)
     vector<int>::const_iterator * itr=(vector<int>::const_iterator *)alloca(ncolres*sizeof(vector<int>::const_iterator));
 #else
     vector<int>::const_iterator itr[ncolres];
@@ -8978,12 +8978,12 @@ namespace giac {
       }
       pivotline=l;
       pivotcol=c;
-      if (!pivot){ // scan current line
+      if (gcd(pivot,modulo)!=1){ // scan current line
 	noswap=false;
 	if (l<dont_swap_below){ 
 	  for (int ctemp=c+1;ctemp<cmax;++ctemp){
 	    temp = N[l].empty()?0:(N[l][ctemp] %= modulo);
-	    if (temp){
+	    if (temp && gcd(temp,modulo)==1){
 	      pivot=smod(temp,modulo);
 	      pivotcol=ctemp;
 	      break;
@@ -8995,7 +8995,7 @@ namespace giac {
 	    temp = N[ltemp].empty()?0:(N[ltemp][c] %= modulo);
 	    if (debug_infolevel>2)
 	      print_debug_info(temp);
-	    if (temp){
+	    if (temp && gcd(temp,modulo)==1){
 	      pivot=smod(temp,modulo);
 	      pivotline=ltemp;
 	      break;
@@ -9003,7 +9003,7 @@ namespace giac {
 	  }
 	}
       } // end if is_zero(pivot), true pivot found on line or column
-      if (pivot){
+      if (gcd(pivot,modulo)==1){
 	if (debug_infolevel>1){
 	  if (l%10==9){ CERR << "+"; CERR.flush();}
 	  if (l%500==499){ CERR << CLOCK()*1e-6 << " remaining " << lmax-l << '\n'; }
@@ -9085,7 +9085,7 @@ namespace giac {
 	++l;	  
       } // end if (!is_zero(pivot)
       else { // if pivot is 0 increment either the line or the col
-	idet = 0;
+	idet = 0; // warning: this is wrong for non prime modulo
 	if (rref_or_det_or_lu==1){
 	  if (!workptr && tmpptr)
 	    delete tmpptr;
@@ -9523,7 +9523,7 @@ namespace giac {
 	}
 	return true;
       }
-      CERR << "Non prime modulo. Reduction mail fail" << '\n';
+      CERR << "Non prime modulo. Reduction may fail" << '\n';
     }
     if (modulo.type==_INT_ && 
 #if 0 // ndef _I386_
@@ -16952,7 +16952,7 @@ namespace giac {
       return gensizeerr(gettext("Expecting file name to convert"));
     string file=*gs._STRNGptr;
     if (isfile){
-#ifdef EMCC
+#if defined(EMCC) || defined(EMCC2)
       istringstream i(fetch(file));
       return csv2gen(i,sep,nl,decsep,eof,contextptr);
 #else
@@ -19111,7 +19111,7 @@ namespace giac {
   }
 
   double complex_abs(const complex_double & c){
-#if defined EMCC || defined FXCG
+#if defined EMCC || defined EMCC2 || defined FXCG
     double r=c.real(),i=c.imag();
     r=std::sqrt(r*r+i*i);
     return r;
@@ -19121,7 +19121,7 @@ namespace giac {
   }
 
   double complex_long_abs(const complex_long_double & c){
-#if defined EMCC || defined FXCG
+#if defined EMCC || defined EMCC2 || defined FXCG
     long_double r=c.real(),i=c.imag();
     r=std::sqrt(r*r+i*i);
     return r;
@@ -19258,7 +19258,7 @@ namespace giac {
 	complex_double delta=a*a-2.0*a*d+d*d+4.0*b*c;
 	if (debug_infolevel>2)
 	  CERR << "delta " << delta << '\n';
-#ifdef EMCC
+#if defined(EMCC) || defined(EMCC2)
 	delta=std::exp(std::log(delta)/2.0);
 #else
 	delta=sqrt(delta);
