@@ -1,10 +1,11 @@
-giac (1.6.0.31+dfsg1-2) UNRELEASED; urgency=medium
+giac (1.6.0.41+dfsg1-1) UNRELEASED; urgency=medium
 
   * Unmark -dev as Multi-Arch: same following hinter.
   * Run wrap-and-sort for cleaner files.
   * Add missing deps for the -dev package. (Closes: #976067)
+  * New upstream release.
 
- -- Julien Puydt <jpuydt@debian.org>  Mon, 14 Dec 2020 09:14:42 +0100
+ -- Julien Puydt <jpuydt@debian.org>  Sat, 19 Dec 2020 12:51:46 +0100
 
 giac (1.6.0.31+dfsg1-1) unstable; urgency=medium
 
