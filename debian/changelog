@@ -1,6 +1,7 @@
 giac (1.6.0.45+dfsg1-1) UNRELEASED; urgency=medium
 
   * New upstream release.
+  * Try to make the build reproducible.
 
  -- Julien Puydt <jpuydt@debian.org>  Sat, 09 Jan 2021 09:53:40 +0100
 
