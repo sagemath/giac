@@ -125,7 +125,7 @@ This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
  Pour cr\'eer une commande en ligne avec r\'eponse en MathML (ou
 --- giac.orig/doc/xcas.js
 +++ giac/doc/xcas.js
-@@ -2919,7 +2919,7 @@
+@@ -2933,7 +2933,7 @@
          if (!UI.usemathjax) {
            var script = document.createElement("script");
            script.type = "text/javascript";
@@ -147,7 +147,7 @@ This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
      }
 --- giac.orig/doc/xcasfr.html
 +++ giac/doc/xcasfr.html
-@@ -3871,7 +3871,7 @@
+@@ -3874,7 +3874,7 @@
          (function () {
              var script = document.createElement("script");
              script.type = "text/javascript";
