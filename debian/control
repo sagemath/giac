@@ -112,7 +112,7 @@ Package: giac-doc
 Architecture: all
 Multi-Arch: foreign
 Section: doc
-Depends: libjs-codemirror, libjs-mathjax, xcas, ${misc:Depends}
+Depends: libjs-codemirror, libjs-mathjax, xcas:any, ${misc:Depends}
 Recommends: xcas (= ${binary:Version})
 Description: Computer Algebra System - documentation
  Giac is a computer algebra system, following the development of the CAS for HP
