@@ -426,7 +426,30 @@ namespace giac {
   }
 
 #else // KHICAS
-  
+
+
+  double get_realtime(){ 
+#if !defined HAVE_NO_SYS_TIMES_H && defined HAVE_SYS_TIME_H
+    struct timeval t;
+    gettimeofday(&t, NULL);
+    t.tv_sec -= (2021 - 1970)*24*365*3600; // substract 2021, in order to loose less precision when doing a difference of get_realtime()
+    return ((double)t.tv_usec + ((double)t.tv_sec*1e6)) ;
+#else
+    return 0;
+#endif
+  }
+
+  const double realtime_init(get_realtime());
+  double realtime(){
+    double d= get_realtime()-realtime_init;
+    return d*1e-6;
+  }
+
+  cpureal_t clock_realtime(){
+    cpureal_t ans={CLOCK()*1e-6,realtime()};
+    return ans;
+  }
+
   gen _time(const gen & a,GIAC_CONTEXT){
     if ( a.type==_STRNG && a.subtype==-1) return  a;
     if (a.type==_VECT && a.subtype==_SEQ__VECT){
@@ -1124,6 +1147,11 @@ namespace giac {
 	for (int i=2;i<s;++i)
 	  fprintf(f,"%s",v[i].type==_STRNG?v[i]._STRNGptr->c_str():unquote(v[i].print(contextptr)).c_str());
       }
+      else if (s>1 && v[1].type==_STRNG && v[1]._STRNGptr->size()==0){
+	for (int i=2;i<s;++i)
+	  fprintf(f,"%s",v[i].type==_STRNG?v[i]._STRNGptr->c_str():unquote(v[i].print(contextptr)).c_str());
+	fprintf(f,"\n");
+      }
       else {
 	for (int i=1;i<s;++i)
 	  fprintf(f,"%s",v[i].print(contextptr).c_str());
@@ -1444,6 +1472,10 @@ namespace giac {
   static const char _reverse_rsolve_s []="reverse_rsolve";
   static define_unary_function_eval (__reverse_rsolve,&_reverse_rsolve,_reverse_rsolve_s);
   define_unary_function_ptr5( at_reverse_rsolve ,alias_at_reverse_rsolve,&__reverse_rsolve,0,true);
+
+  static const char _berlekamp_massey_s []="berlekamp_massey";
+  static define_unary_function_eval (__berlekamp_massey,&_reverse_rsolve,_berlekamp_massey_s);
+  define_unary_function_ptr5( at_berlekamp_massey ,alias_at_berlekamp_massey,&__berlekamp_massey,0,true);
 
   // Approx fft or exact if args=poly1,omega,n
   gen fft(const gen & g_orig,int direct,GIAC_CONTEXT){
@@ -3229,6 +3261,9 @@ namespace giac {
     }
     if (is_greater(0,g,context0))
       return -cpp_convert_2(-g,contextptr);
+#ifdef BF2GMP_H
+    return mpz_get_ui(*h._ZINTptr);
+#else
     unsigned int lo, hi;
     mpz_t tmp;
     mpz_init( tmp );
@@ -3239,7 +3274,8 @@ namespace giac {
     mpz_clear( tmp );
     longlong i=(((unsigned long long)hi) << 32) + lo;
     return i;
-#endif
+#endif // BF2GMP
+#endif // GMP_REPLACEMENTS
   }
 
   double cpp_convert_1(const gen & g,GIAC_CONTEXT){

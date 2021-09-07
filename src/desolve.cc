@@ -214,7 +214,7 @@ namespace giac {
     return pf<gen>(p);
   }
 
-  static gen pf_ilaplace(const gen & e0,const gen & x, gen & remains,GIAC_CONTEXT){
+  static gen pf_ilaplace(const gen & e0,const gen & x, gen & remains,int,GIAC_CONTEXT){
     vecteur vexp;
     gen res;
     lin(e0,vexp,contextptr); // vexp = coeff, arg of exponential
@@ -353,7 +353,7 @@ namespace giac {
       return gensizeerr(contextptr);
     if (has_num_coeff(f))
       return ilaplace(exact(f,contextptr),x,s,contextptr);
-    gen remains,res=linear_apply(f,x,remains,contextptr,pf_ilaplace);
+    gen remains,res=linear_apply(f,x,remains,0,contextptr,pf_ilaplace);
     res=subst(res,laplace_var,s,false,contextptr);
     if (!is_zero(remains))
       res=res+symbolic(at_ilaplace,makevecteur(remains,x,s));
@@ -847,9 +847,9 @@ namespace giac {
 	      bool b=calc_mode(contextptr)==1;
 	      if (b)
 		calc_mode(0,contextptr);
-	      gen tmp=_lin(c[i]*exp(-rac[i]*x,contextptr),contextptr);
+	      gen tmp=_lin(makesequence(c[i]*exp(-rac[i]*x,contextptr),at_sqrt),contextptr);
 	      tmp = _integrate(makesequence(tmp,x),contextptr);
-	      part += _lin(tmp*exp(rac[i]*x,contextptr),contextptr);
+	      part += _lin(makesequence(tmp*exp(rac[i]*x,contextptr),at_sqrt),contextptr);
 	      if (b)
 		calc_mode(1,contextptr);
 	    }
@@ -2367,7 +2367,7 @@ namespace giac {
 	  v=vecteur(vars.begin(),vars.begin()+deg);
 	  for (int i=0;i<deg;++i) P[n+1]-=v[i]*pow(x,i);
 	  P[n+1]-=pow(x,deg);
-	  P[n]=-S*(_derive(makesequence(P[n+1],x),contextptr)+th*P[n+1]),contextptr;
+	  P[n]=-S*(_derive(makesequence(P[n+1],x),contextptr)+th*P[n+1]);
 	  if (P[n].type==_SYMB) P[n]=_collect(P[n],contextptr);
 	  for (int i=n;i-->0;) {
 	    P[i]=-S*_derive(makesequence(P[i+1],x),contextptr)+((n-i)*dS-S*th)*P[i+1]-(n-i)*(i+1)*sq(S)*r*P[i+2];

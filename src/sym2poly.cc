@@ -812,21 +812,42 @@ namespace giac {
 	}
       }
     }
+    gen prev=1;
+    gen numprev=r2sym(rdiv(-v.back(),v.front(),contextptr),lv,contextptr),numprevf;
+    bool hasevalf=has_evalf(numprev,numprevf,1,contextptr);
+    if (hasevalf)
+      numprevf=arg(numprevf,contextptr);
     for (f_it=f.begin();f_it!=f_itend;++f_it){
       polynome irr_p(f_it->fact);
       deg=irr_p.lexsorted_degree();
       if (!deg)
 	continue;
       if (deg==1){
-	v=polynome2poly1(irr_p);
+	vecteur vcur=polynome2poly1(irr_p);
 	lowest_degree=1;
-	num=rdiv(-v.back(),v.front(),contextptr);
+	gen numcur=rdiv(-vcur.back(),vcur.front(),contextptr);
 	// cerr << "xroot" << num << "\n";
-	gen numlv=r2sym(num,lv,contextptr);
-	if (!lvar(evalf(numlv,1,contextptr)).empty())
+	gen numlv=r2sym(numcur,lv,contextptr);
+	// select root by computing argument
+	if (!hasevalf){
 	  *logptr(contextptr) << gettext("Warning, checking for positivity of a root depending of parameters might return wrong sign: ")<< numlv << "\n";
-	if (is_positive(numlv,contextptr))
+	  v=vcur;
+	  num=numcur;
 	  break;
+	}
+	gen numlvf=evalf(numlv,1,contextptr);
+	if (is_positive(numlvf,contextptr)){
+	  v=vcur;
+	  num=numcur;
+	  break;
+	}
+	int d=v.size()-1;
+	gen cur=abs(d*arg(numlvf,contextptr)-numprevf);
+	if (is_greater(prev,cur,contextptr)){
+	  v=vcur;
+	  num=numcur;
+	  prev=cur;
+	}
       }
       if (deg==2 && deg==lowest_degree){
 	vecteur tmp=polynome2poly1(irr_p);
@@ -857,7 +878,11 @@ namespace giac {
 	  a__VECTg=*(a._EXTptr+1);
 	}
 	int k;
-	gen new_v=common_minimal_POLY(a__VECTg,v,a,b,k,contextptr);
+	vecteur lvadd(lv); lvadd.insert(lvadd.begin(),vecteur(0));
+	gen new_v=common_minimal_POLY(a__VECTg,v,a,b,k,
+				      // 0.
+				      &lvadd ,
+				      contextptr);
 	if (is_undef(new_v))
 	  return false;
 	*(num._EXTptr+1)=a;
@@ -1703,6 +1728,8 @@ namespace giac {
       embed.pop_back();
       return false;
     }
+    if (extension.type==_FRAC)
+      return in_find_extension(extension._FRACptr->num,already,embed,iext,contextptr);
     if (extension.type!=_EXT)
       return false;
     gen Extension=*(extension._EXTptr+1);
@@ -1935,8 +1962,9 @@ namespace giac {
   }
 
   gen e2r(const gen & e,const vecteur & l,GIAC_CONTEXT){
-    if (e.type!=_VECT)
+    if (e.type!=_VECT){
       return sym2r(e,l,contextptr);
+    }
     bool totally_converted=true;
     int l_size;
     if (!l.empty() && l.front().type==_VECT)
@@ -2272,7 +2300,7 @@ namespace giac {
 	gen tmp=_evalf(makesequence(x,n),contextptr);
 	tmp=_horner(makesequence(p,tmp),contextptr);
 	gen test=(1-cur/tmp);
-	if (is_greater(1e-12,test,contextptr))
+	if (!is_undef(test) && !is_inf(test) && is_greater(1e-12,test,contextptr))
 	  return cur;
 	cur=tmp;
       }
@@ -2280,7 +2308,7 @@ namespace giac {
     for (;n<=1024;n*=2){
       gen tmp=_evalf(makesequence(g,n),contextptr);
       gen test=(1-cur/tmp);
-      if (is_greater(1e-12,test,contextptr))
+      if (!is_undef(test) && !is_inf(test) && is_greater(1e-12,test,contextptr))
 	return cur;
       cur=tmp;
     }
@@ -2736,6 +2764,14 @@ namespace giac {
 	continue;
       if (is_one(expnum) && is_integer(arg[0]))
 	continue;
+      if (is_one(expnum) && arg[0].type==_SYMB){
+	gen tmp=sqrt(arg[0],contextptr); // detect e.g. (1+sin(x))^(1/2)
+	if (tmp!=*it){
+	  lin.push_back(*it);
+	  lout.push_back(tmp);
+	  continue;
+	}
+      }
       // sqrt(arg[0]), we may check that arg[0] is a+b+/-2*sqrt(a*b)
       gen var,a,b,hyp;
       if (is_sqrtxy(arg[0],a,contextptr)){
@@ -2959,6 +2995,7 @@ namespace giac {
       if (lvar(EE).size()<lvar(ee).size()){
 	ee=EE; L=LL;
       }
+      ee=invfracpow(ee,contextptr);
       l=alg_lvar(ee);
       sort0(l);
       if (!L.empty() && debug_infolevel)
@@ -4042,14 +4079,14 @@ namespace giac {
 	modpoly B=unmod(*v[1]._VECTptr,m);
 	gen res;
 	if (ntlresultant(A,B,m,res))
-	  return res;
+	  return makemod(res,m);
 	if (m.type==_INT_){
 	  vector<int> a,b,tmp1,tmp2;
 	  vecteur2vector_int(A,m.val,a);
 	  vecteur2vector_int(B,m.val,b);
 	  return makemod(resultant_int(a,b,tmp1,tmp2,m.val),m);
 	}
-#if defined INT128 && !defined USE_GMP_REPLACEMENTS
+#if defined INT128 && !defined USE_GMP_REPLACEMENTS && !defined BF2GMP_H
 	if (m.type==_ZINT && sizeinbase2(m)<61){
 	  longlong p=mpz_get_si(*m._ZINTptr);
 	  int n=giacmax(A.size(),B.size());

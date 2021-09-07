@@ -45,11 +45,7 @@
 #include <sys/time.h>
 #endif
 #include "path.h"
-#ifndef IN_GIAC
-#include <giac/plot.h>
-#else
 #include "plot.h"
-#endif
 #include "Equation.h"
 #include "Editeur.h"
 #include "Xcas1.h"
@@ -5284,7 +5280,7 @@ namespace xcas {
     find_title_plot(title_tmp,plot_tmp,contextptr);
 #if 1 // changes by L. Marohnic
     int horizontal_pixels=w()-(show_axes>0?int(ylegende*labelsize())+2:0);
-    vertical_pixels=h()-((show_axes!=0 && show_axes!=2?2:0)+(!title.empty()))*labelsize();
+    vertical_pixels=h()-((show_axes?1:0)+(!title.empty()))*labelsize();//h()-((show_axes!=0 && show_axes!=2?2:0)+(!title.empty()))*labelsize();
     int deltax=x(),deltay=y();
     double y_scale=vertical_pixels/(window_ymax-window_ymin);
     double x_scale=horizontal_pixels/(window_xmax-window_xmin);
@@ -7429,6 +7425,7 @@ namespace xcas {
 	    fl_draw(current.s.c_str(),int(deltax+turtlezoom*(current.x-turtlex)),int(deltay+h()-turtlezoom*(current.y-turtley)));
 	  }
 	  else {
+	    fl_line_style(current.turtle_width>>5,current.turtle_width &0x1f);
 	    if (current.radius>0){
 	      int r=current.radius & 0x1ff; // bit 0-8
 	      double theta1,theta2;
@@ -7492,8 +7489,8 @@ namespace xcas {
 	int y=int(turtlezoom*(t.y-turtley)+.5);
 	double cost=std::cos(t.theta*deg2rad_d);
 	double sint=std::sin(t.theta*deg2rad_d);
-	int Dx=int(turtlezoom*t.turtle_length*cost/2+.5);
-	int Dy=int(turtlezoom*t.turtle_length*sint/2+.5);
+	int Dx=int(turtlezoom*turtle_length*cost/2+.5);
+	int Dy=int(turtlezoom*turtle_length*sint/2+.5);
 	xcas_color(t.color);
 	if (t.visible){
 	  fl_line(deltax+x+Dy,deltay+h()-(y-Dx),deltax+x-Dy,deltay+h()-(y+Dx));
@@ -7503,6 +7500,7 @@ namespace xcas {
 	  fl_line(deltax+x-Dy,deltay+h()-(y+Dx),deltax+x+3*Dx,deltay+h()-(y+3*Dy));
 	}
       }
+      fl_line_style(0);
       return;
     } // End logo mode
   }

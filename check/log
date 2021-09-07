@@ -1,5 +1,5 @@
 make  check-TESTS
-make[1] : on entre dans le répertoire « /home/parisse/giac-1.6.0/check »
+make[1] : on entre dans le répertoire « /home/parisse/giac-1.7.0/check »
 // Using locale /usr/share/locale/
 // en_US.UTF8
 // /usr/share/locale/
@@ -8,46 +8,45 @@ make[1] : on entre dans le répertoire « /home/parisse/giac-1.6.0/check »
 // Maximum number of parallel threads 1
 // Giac share root-directory:/usr/share/giac/
 // Giac share root-directory:/usr/share/giac/
-Help file /usr/share/giac/doc/en/aide_cas not found
 Added 0 synonyms
 // Giac share root-directory:/usr/share/giac/
 // Time 0
 // Time 0.01
 // Time 0
 // Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
 // Time 0.01
 // Time 0
-// Time 0.01
-// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.04
+// Time 0
+// Time 0.04
+// Time 0
+// Time 0
 // Time 0.03
 // Time 0
-// Time 0
-// Time 0.03
-// Time 0
-// Time 0
+// Time 0.01
 // Time 0
 // Time 0.02
 // Time 0
-// Time 0.01
-// Time 0
-// Time 0
-// Time 0
-// Time 0.01
-// Time 0
-// Time 0
-// Time 0
-// Time 0.01
 // Time 0
 // Time 0.01
 // Time 0
 // Time 0
 // Time 0.01
+// Time 0
 // Time 0.02
 // Time 0
+// Time 0
+// Time 0
+// Time 0.03
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0.01
+// Time 0.01
 // Time 0
 // Time 0
 // Time 0
@@ -60,27 +59,21 @@ No checks were made for singular points of antiderivative -1/ln(t) for definite 
 No checks were made for singular points of antiderivative ln(n+1)+2*ln(n+2)-3*ln(n+3)+n*ln(1+2/n/(n+3)) for definite integration in [1,+infinity]
 // Time 0.01
 No checks were made for singular points of antiderivative (t^2*n^2-t*pi*n^2-2)*n^3/(-n^3)^2*cos(n*t)-(2*t*n-pi*n)*n^3/(-n^3)^2*sin(n*t) for definite integration in [0,pi]
-// Time 0
+// Time 0.01
 No checks were made for singular points of antiderivative exp(t)*(1/(1+n^2)*cos(n*t)+n/(1+n^2)*sin(n*t)) for definite integration in [-pi,pi]
 // Time 0.01
 No checks were made for singular points of antiderivative exp(-x)*(-1/2*cos(x)+1/2*sin(x)) for definite integration in [0,+infinity]
 // Time 0
-// Time 0.04
+// Time 0.05
 Warning, integration of abs or sign assumes constant sign by intervals (correct if the argument is real):
 Check [abs(ln(x))]
 Discontinuities at zeroes of ln(x) were not checked
 No checks were made for singular points of antiderivative x^2*exp(sign(ln(x))*ln(x))/(sign(ln(x))+2) for definite integration in [2,t]
-// Time 0.01
+// Time 0.02
 No checks were made for singular points of antiderivative 1/sqrt(2)*exp(-t^2/2)*2/t*sqrt(t*x) for definite integration in [a,b]
-// Time 0.01
-// Time 0
-// Time 0.03
-// Time 0.01
 // Time 0
 // Time 0
-// Time 0
-// Time 0
-// Time 0
+// Time 0.05
 // Time 0
 // Time 0.01
 // Time 0
@@ -88,7 +81,13 @@ No checks were made for singular points of antiderivative 1/sqrt(2)*exp(-t^2/2)*
 // Time 0
 // Time 0
 // Time 0
-// Total time 0.33
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Total time 0.44
 PASS: chk_integrate
 // Using locale /usr/share/locale/
 // C
@@ -98,15 +97,9 @@ PASS: chk_integrate
 // Maximum number of parallel threads 1
 // Giac share root-directory:/usr/share/giac/
 // Giac share root-directory:/usr/share/giac/
-Help file /usr/share/giac/doc/en/aide_cas not found
 Added 0 synonyms
 // Giac share root-directory:/usr/share/giac/
 // Time 0
-// Time 0.01
-// Time 0
-// Time 0
-// Time 0
-// Time 0
 // Time 0
 // Time 0
 // Time 0
@@ -121,19 +114,24 @@ Added 0 synonyms
 // Time 0
 // Time 0
 // Time 0
-// Time 0
-// Time 0.01
-// Time 0
-// Time 0
 // Time 0.01
 // Time 0
 // Time 0
 // Time 0
 // Time 0
 // Time 0
+// Time 0
 // Time 0.01
-// Time 0.07
-// Total time 0.12
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0.06
+// Total time 0.11
 PASS: chk_factor
 // Using locale /usr/share/locale/
 // fr_FR.UTF-8
@@ -153,16 +151,16 @@ Added 0 synonyms
 // Time 0
 // Time 0
 // Time 0
-// Time 0.24
+// Time 0.23
 // Time 0
 // Time 0
 // Time 0
 // Time 0
 // Time 0
 
-Temps mis pour l'évaluation: 3.16
-// Time 3.16
-// Total time 3.43
+Temps mis pour l'évaluation: 3.29
+// Time 3.3
+// Total time 3.56
 PASS: chk_normalize
 // Using locale /usr/share/locale/
 // fr_FR.UTF-8
@@ -174,8 +172,8 @@ PASS: chk_normalize
 // Giac share root-directory:/usr/share/giac/
 Added 0 synonyms
 // Giac share root-directory:/usr/share/giac/
-// Time 0.01
-// Total time 0.01
+// Time 0
+// Total time 0
 PASS: chk_partfrac
 // Using locale /usr/share/locale/
 // fr_FR.UTF-8
@@ -192,7 +190,7 @@ Added 0 synonyms
 // Time 0
 // Time 0.01
 // Time 0
-// Time 0
+// Time 0.01
 // Time 0
 // Time 0.03
 // Time 0
@@ -200,37 +198,31 @@ Added 0 synonyms
 // Time 0
 // Time 0.02
 // Time 0
+// Time 0.01
+// Time 0
 // Time 0
 // Time 0
 // Time 0.01
 // Time 0
 // Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0.01
 // Time 0
 // Time 0.02
 // Time 0
-// Time 0.01
 // Time 0
-// Time 0.02
-// Time 0
-// Time 0.01
 // Time 0
 // Time 0
 // Time 0
 // Time 0.01
-// Time 0
-// Time 0
 // Time 0
 // Time 0
 // Time 0
 
-Temps mis pour l'évaluation: 0.71
-// Time 0.71
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0.01
+Temps mis pour l'évaluation: 1.72
+// Time 1.72
 // Time 0
 // Time 0.01
 // Time 0
@@ -238,10 +230,45 @@ Temps mis pour l'évaluation: 0.71
 // Time 0
 // Time 0
 // Time 0
-// Time 0.04
+// Time 0.02
+// Time 0
+// Time 0
 // Time 0
 // Time 0.01
-// Total time 0.93
+// Time 0
+Impossible de déterminer le signe: (56*pi/(sign(x)-1)/2)>(-56*pi/(sign(x)-1)/2)
+Impossible de déterminer le signe: (56*pi/(sign(x)-1)/2)>(-56*pi/(sign(x)-1)/2)
+Impossible de déterminer le signe: (56*pi/(sign(x)-1)/2)>(-56*pi/(sign(x)-1)/2)
+Impossible de déterminer le signe: (56*pi/(sign(x)-1)/2)>(-56*pi/(sign(x)-1)/2)
+Impossible de déterminer le signe: (56*pi/(sign(x)-1)/2)>(-56*pi/(sign(x)-1)/2)
+Impossible de déterminer le signe: (56*pi/(sign(x)-1)/2)>(-56*pi/(sign(x)-1)/2)
+Impossible de déterminer le signe: (56*pi/(sign(x)-1)/2)>(-56*pi/(sign(x)-1)/2)
+Impossible de déterminer le signe: (56*pi/(sign(x)-1)/2)>(-56*pi/(sign(x)-1)/2)
+Impossible de déterminer le signe: (56*pi/(sign(x)-1)/2)>(-56*pi/(sign(x)-1)/2)
+Impossible de déterminer le signe: (56*pi/(sign(x)-1)/2)>(-56*pi/(sign(x)-1)/2)
+Impossible de déterminer le signe: (56*pi/(sign(x)-1)/2)>(-56*pi/(sign(x)-1)/2)
+Impossible de déterminer le signe: (56*pi/(sign(x)-1)/2)>(-56*pi/(sign(x)-1)/2)
+Impossible de déterminer le signe: (56*pi/(sign(x)-1)/2)>(-56*pi/(sign(x)-1)/2)
+Impossible de déterminer le signe: (56*pi/(sign(x)-1)/2)>(-56*pi/(sign(x)-1)/2)
+Impossible de déterminer le signe: (56*pi/(sign(x)-1)/2)>(-56*pi/(sign(x)-1)/2)
+Impossible de déterminer le signe: (56*pi/(sign(x)-1)/2)>(-56*pi/(sign(x)-1)/2)
+Impossible de déterminer le signe: (56*pi/(sign(x)-1)/2)>(-56*pi/(sign(x)-1)/2)
+Impossible de déterminer le signe: (56*pi/(sign(x)-1)/2)>(-56*pi/(sign(x)-1)/2)
+Impossible de déterminer le signe: (56*pi/(sign(x)-1)/2)>(-56*pi/(sign(x)-1)/2)
+Impossible de déterminer le signe: (56*pi/(sign(x)-1)/2)>(-56*pi/(sign(x)-1)/2)
+Impossible de déterminer le signe: (56*pi/(sign(x)-1)/2)>(-56*pi/(sign(x)-1)/2)
+Impossible de déterminer le signe: (56*pi/(sign(x)-1)/2)>(-56*pi/(sign(x)-1)/2)
+Impossible de déterminer le signe: (56*pi/(sign(x)-1)/2)>(-56*pi/(sign(x)-1)/2)
+Impossible de déterminer le signe: (56*pi/(sign(x)-1)/2)>(-56*pi/(sign(x)-1)/2)
+Impossible de déterminer le signe: (56*pi/(sign(x)-1)/2)>(-56*pi/(sign(x)-1)/2)
+Impossible de déterminer le signe: (56*pi/(sign(x)-1)/2)>(-56*pi/(sign(x)-1)/2)
+Impossible de déterminer le signe: (56*pi/(sign(x)-1)/2)>(-56*pi/(sign(x)-1)/2)
+
+Temps mis pour l'évaluation: 1.42
+// Time 1.42
+// Time 0
+// Time 0.01
+// Total time 3.34
 PASS: chk_limit
 // Using locale /usr/share/locale/
 // C
@@ -251,47 +278,10 @@ PASS: chk_limit
 // Maximum number of parallel threads 1
 // Giac share root-directory:/usr/share/giac/
 // Giac share root-directory:/usr/share/giac/
-Help file /usr/share/giac/doc/en/aide_cas not found
 Added 0 synonyms
 // Giac share root-directory:/usr/share/giac/
 // Success
 // Success
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0.01
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
 // Time 0.01
 // Time 0
 // Time 0
@@ -312,41 +302,6 @@ Added 0 synonyms
 // Time 0
 // Time 0
 // Time 0.01
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0.01
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0.01
-// Time 0.01
-// Time 0
 // Time 0
 // Time 0
 // Time 0
@@ -392,6 +347,35 @@ Added 0 synonyms
 // Time 0
 // Time 0
 // Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
 // Time 0
 // Time 0
 // Time 0
@@ -415,6 +399,48 @@ Added 0 synonyms
 // Time 0
 // Time 0
 // Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.02
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
 // Time 0
 Warning, argument is not an equation, solving x^2-1=0
 // Time 0
@@ -423,40 +449,8 @@ Warning, argument is not an equation, solving x^2-3=0
 // Time 0
 Warning, argument is not an equation, solving x^3-3*y=0
 // Time 0
-// Time 0.01
 // Time 0
 // Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0.01
 // Time 0
 // Time 0
 // Time 0
@@ -502,37 +496,69 @@ Warning, argument is not an equation, solving x^3-3*y=0
 // Time 0
 // Time 0
 // Time 0
+// Time 0.01
 // Time 0
 // Time 0
-// Time 0.19
-// Time 0
-// Time 0.02
 // Time 0
 // Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0.27
+// Time 0
+// Time 0.04
+// Time 0
+// Time 0.01
 // Time 0
 // Time 0
 // Time 0
 Converting to exact approx symbolic matrix
-// Time 0.01
 // Time 0
 // Time 0.01
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
 // Time 0.02
 // Time 0
 // Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
 // Time 0.01
 // Time 0
 // Time 0
+// Time 0.01
 // Time 0
-// Total time 0.37
+// Time 0
+// Time 0.01
+// Total time 0.51
 PASS: chk_cas
 // Using locale /usr/share/locale/
 // en_US.UTF8
@@ -542,12 +568,19 @@ PASS: chk_cas
 // Maximum number of parallel threads 1
 // Giac share root-directory:/usr/share/giac/
 // Giac share root-directory:/usr/share/giac/
-Help file /usr/share/giac/doc/en/aide_cas not found
 Added 0 synonyms
 // Giac share root-directory:/usr/share/giac/
 // Time 0
 // Time 0
 medianes
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
 // Time 0.01
 // Time 0
 // Time 0
@@ -556,14 +589,6 @@ medianes
 // Time 0
 // Time 0
 // Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0.01
 // Time 0
 mediatrices
 // Time 0
@@ -571,31 +596,35 @@ mediatrices
 // Time 0
 // Time 0
 // Time 0
-// Time 0
+// Time 0.01
 // Time 0
 bissectrices
 // Time 0
 // Time 0
 // Time 0
 // Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
 // Time 0.01
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
 // Time 0.01
 // Time 0
 // Time 0
 Napoleon theorem
 // Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0.01
 // Time 0
 // Time 0
 // Time 0
 // Time 0
 // Time 0
-// Time 0
+// Time 0.01
 // Time 0
 // Time 0
 // Time 0.01
@@ -605,13 +634,9 @@ Napoleon theorem
 // Time 0
 // Time 0
 // Time 0
+// Time 0
+// Time 0
 // Time 0.01
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
 // Time 0
 Feuerbach theorem
 // Time 0
@@ -626,11 +651,11 @@ Feuerbach theorem
 // Time 0
 // Time 0
 // Time 0
-// Time 0
+// Time 0.01
 // Time 0
 // Time 0
 teste que le pied de la altitude est sur c de 2 facons, doit renvoyer 1 puis 0
-// Time 0.01
+// Time 0
 // Time 0
 // Time 0
 // Time 0
@@ -638,13 +663,13 @@ teste que le pied de la altitude est sur c de 2 facons, doit renvoyer 1 puis 0
 // Time 0
 circle incircle de A,B,C, center
 // Time 0
+// Time 0.01
+// Time 0.01
 // Time 0
 // Time 0.01
 // Time 0
-// Time 0
-// Time 0
 Le prochain resultat doit etre 0
-// Time 0
+// Time 0.01
 // Time 0
 theoreme de Simson
 // Time 0
@@ -658,8 +683,8 @@ theoreme de Simson
 // Time 0
 // Time 0
 // Time 0
-// Time 0
 // Time 0.01
+// Time 0
 // Time 0
 // Time 0
 // Time 0
@@ -677,20 +702,20 @@ Morley theorem
 // Time 0
 // Time 0
 // Time 0
-// Time 0
+// Time 0.01
 // Time 0.01
 // Time 0
-// Time 0.03
+// Time 0.04
+// Time 0.04
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
 // Time 0.02
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0.01
-// Time 0
-// Time 0
-// Time 0.01
-// Total time 0.17
+// Total time 0.28
 PASS: chk_geo
 // Using locale /usr/share/locale/
 // C
@@ -700,7 +725,6 @@ PASS: chk_geo
 // Maximum number of parallel threads 1
 // Giac share root-directory:/usr/share/giac/
 // Giac share root-directory:/usr/share/giac/
-Help file /usr/share/giac/doc/en/aide_cas not found
 Added 0 synonyms
 // Giac share root-directory:/usr/share/giac/
 // Parsing find_equi
@@ -709,7 +733,7 @@ Added 0 synonyms
 // Parsing find_equi
 // Warning: Ptest,test, declared as global variable(s). If symbolic variables are required, declare them as local and run purge
 // compiling find_equi
-// Time 0
+// Time 0.02
 q:0
 q:1
 test equilateral,1,1,1
@@ -788,10 +812,10 @@ q:33
 q:34
 q:35
 
-Evaluation time: 1.26
-// Time 1.26
+Evaluation time: 1.99
+// Time 1.99
 // Time 0
-// Total time 1.26
+// Total time 2.01
 PASS: chk_morley_demo
 // Using locale /usr/share/locale/
 // C
@@ -801,7 +825,6 @@ PASS: chk_morley_demo
 // Maximum number of parallel threads 1
 // Giac share root-directory:/usr/share/giac/
 // Giac share root-directory:/usr/share/giac/
-Help file /usr/share/giac/doc/en/aide_cas not found
 Added 0 synonyms
 // Giac share root-directory:/usr/share/giac/
 // Success
@@ -816,42 +839,36 @@ Added 0 synonyms
 // End defining m4
 // Success
 // End defining h1
-// Time 0.01
-// Time 0.01
+// Time 0
+// Time 0.03
 // Time 0.01
 // Time 0
 // Time 0
-// Time 0.01
+// Time 0.03
 // Time 0
 // Time 0.01
-// Time 0.01
+// Time 0.03
 // Time 0
 // Time 0.01
-// Time 0.01
+// Time 0.03
 // Time 0
-// Time 0.01
 // Time 0
-// Time 0.26
-// Time 0.17
-Simplification assuming t near 0
-Simplification assuming t near 0
-Simplification assuming t near 0
-Simplification assuming t near 0
-// Time 0.12
-Simplification assuming t near 0
-Simplification assuming t near 0
-Simplification assuming t near 0
-Simplification assuming t near 0
-Simplification assuming t near 0
-Simplification assuming t near 0
-Simplification assuming t near 0
-Simplification assuming t near 0
-Simplification assuming t near 0
-Simplification assuming t near 0
+// Time 0
+// Time 0.41
 
-Evaluation time: 3.2
-// Time 3.2
-// Total time 3.84
+Evaluation time: 0.88
+// Time 0.88
+Simplification assuming t near 0
+Simplification assuming t near 0
+Simplification assuming t near 0
+Simplification assuming t near 0
+// Time 0.28
+Simplification assuming t near 0
+Simplification assuming t near 0
+Simplification assuming t near 0
+Simplification assuming t near 0
+// Time 0.27
+// Total time 1.99
 PASS: chk_xavier
 // Using locale /usr/share/locale/
 // C
@@ -861,7 +878,6 @@ PASS: chk_xavier
 // Maximum number of parallel threads 1
 // Giac share root-directory:/usr/share/giac/
 // Giac share root-directory:/usr/share/giac/
-Help file /usr/share/giac/doc/en/aide_cas not found
 Added 0 synonyms
 // Giac share root-directory:/usr/share/giac/
 // Warning: a, declared as global variable(s). If symbolic variables are required, declare them as local and run purge
@@ -892,7 +908,7 @@ Added 0 synonyms
 // Time 0
 // Time 0
 // Time 0
-// Time 0
+// Time 0.01
 // Time 0
 // Time 0
 OK c'est un  carre
@@ -901,25 +917,25 @@ OK c'est un  carre
 calcul du det 8x8 antisymetrique formel
 // Time 0
 
-Evaluation time: 1.78
-// Time 1.78
+Evaluation time: 1.93
+// Time 1.93
 // Time 0.02
 OK c'est bien nul
 
-Evaluation time: 0.9
-// Time 0.9
-// GCD eval dimension 27 3079095 Vector [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2] 5250 Vector [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1]1380 
-Find_good_eval 3079542 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-Fb= 3080541 0
-Gb= 3080791 0
-Find_good_eval 3080805 [-28,-28,23,-26,-46,-87,88,6,-16,14,69,71,-78,-74,81,-27,-87,81,-88,51,-8,68,48,-46,-59,-69]
-Fb= 3149825 %%%{13461,[2]%%%}+%%%{2905,[1]%%%}+%%%{12350,[0]%%%}
-Gb= 3172393 %%%{13461,[1]%%%}+%%%{-13554,[0]%%%}
-FOUND good eval3172413 [-28,-28,23,-26,-46,-87,88,6,-16,14,69,71,-78,-74,81,-27,-87,81,-88,51,-8,68,48,-46,-59,-69]
+Evaluation time: 1.32
+// Time 1.32
+// GCD eval dimension 27 3679984 Vector [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2] 5250 Vector [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1]1380 
+Find_good_eval 3680406 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+Fb= 3681397 0
+Gb= 3681639 0
+Find_good_eval 3681654 [-28,-28,23,-26,-46,-87,88,6,-16,14,69,71,-78,-74,81,-27,-87,81,-88,51,-8,68,48,-46,-59,-69]
+Fb= 3749045 %%%{13461,[2]%%%}+%%%{2905,[1]%%%}+%%%{12350,[0]%%%}
+Gb= 3770155 %%%{13461,[1]%%%}+%%%{-13554,[0]%%%}
+FOUND good eval3770178 [-28,-28,23,-26,-46,-87,88,6,-16,14,69,71,-78,-74,81,-27,-87,81,-88,51,-8,68,48,-46,-59,-69]
 // evaled GCD deg 1
-Trying q/lgcd(q) as gcd 27 3172452
-lgcd(q) ok 27 3178724
-Success q/lgcd(q) as gcd 27 3241039
+Trying q/lgcd(q) as gcd 27 3770227
+lgcd(q) ok 27 3776606
+Success q/lgcd(q) as gcd 27 3837436
 
 Evaluation time: 0.45
 // Time 0.45
@@ -946,8 +962,8 @@ OK pour le pfaffien 8x8
 // Time 0
 // Time 0
 // Time 0
-// Time 0.01
 // Time 0
+// Time 0.01
 La jordanisation est bonne
 // Time 0
 // Time 0
@@ -967,6 +983,7 @@ La jordanisation est bonne
 // Time 0
 // Time 0
 // Time 0
+// Time 0
 // Time 0.01
 // Time 0
 // Time 0
@@ -981,8 +998,7 @@ La jordanisation est bonne
 // Time 0
 // Time 0
 // Time 0
-// Time 0
-// Total time 3.18
+// Total time 3.76
 PASS: chk_fhan1
 // Using locale /usr/share/locale/
 // en_US.UTF8
@@ -992,7 +1008,6 @@ PASS: chk_fhan1
 // Maximum number of parallel threads 1
 // Giac share root-directory:/usr/share/giac/
 // Giac share root-directory:/usr/share/giac/
-Help file /usr/share/giac/doc/en/aide_cas not found
 Added 0 synonyms
 // Giac share root-directory:/usr/share/giac/
 // Success
@@ -1002,7 +1017,6 @@ Added 0 synonyms
 // Success
 ============== restarted ===============
 // Time 0
-// Time 0
 // Time 0.01
 // Time 0
 // Time 0
@@ -1012,29 +1026,17 @@ Added 0 synonyms
 // Time 0
 // Time 0
 // Time 0
-// Time 0.07
 // Time 0
+// Time 0.09
 // Time 0
 // Time 0.01
 // Time 0
 // Time 0
 // Time 0
+// Time 0.01
 // Time 0
 // Time 0
-// Time 0.04
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
+// Time 0.05
 // Time 0.01
 // Time 0
 // Time 0
@@ -1049,7 +1051,20 @@ Added 0 synonyms
 // Time 0
 // Time 0
 // Time 0
-// Total time 0.14
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Total time 0.19
 PASS: chk_fhan2
 // Using locale /usr/share/locale/
 // C
@@ -1059,7 +1074,6 @@ PASS: chk_fhan2
 // Maximum number of parallel threads 1
 // Giac share root-directory:/usr/share/giac/
 // Giac share root-directory:/usr/share/giac/
-Help file /usr/share/giac/doc/en/aide_cas not found
 Added 0 synonyms
 // Giac share root-directory:/usr/share/giac/
 // Success
@@ -1078,7 +1092,12 @@ Added 0 synonyms
 // Warning: n,Zequiv,d,L,f,T,ZequivC, declared as global variable(s). If symbolic variables are required, declare them as local and run purge
 // End defining elem
 ============== restarted ===============
+// Time 0.01
 // Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
 // Time 0
 // Time 0
 // Time 0
@@ -1106,7 +1125,7 @@ Added 0 synonyms
 // Time 0
 // Time 0
 // Time 0
-// Time 0
+// Time 0.01
 // Time 0
 // Time 0
 // Time 0
@@ -1121,14 +1140,9 @@ Added 0 synonyms
 // Time 0
 // Time 0.01
 // Time 0
+// Time 0.01
 // Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Total time 0.02
+// Total time 0.06
 PASS: chk_fhan3
 // Using locale /usr/share/locale/
 // C
@@ -1138,7 +1152,6 @@ PASS: chk_fhan3
 // Maximum number of parallel threads 1
 // Giac share root-directory:/usr/share/giac/
 // Giac share root-directory:/usr/share/giac/
-Help file /usr/share/giac/doc/en/aide_cas not found
 Added 0 synonyms
 // Giac share root-directory:/usr/share/giac/
 // Warning: a, declared as global variable(s). If symbolic variables are required, declare them as local and run purge
@@ -1179,24 +1192,14 @@ Added 0 synonyms
 0
 // Time 0.01
 // Time 0
-// Time 0.01
-// Time 0
-// Time 0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-// Time 0.02
 // Time 0
 // Time 0
 // Time 0
-// Time 0
-// Time 0
+0
+0
+0
+0
+0
 0
 0
 0
@@ -1206,8 +1209,23 @@ Added 0 synonyms
 // Time 0
 // Time 0
 // Time 0
+// Time 0
 0
-// Time 0.05
+0
+0
+0
+// Time 0.04
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+0
+// Time 0.09
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
 // Time 0
 // Time 0
 // Time 0
@@ -1221,49 +1239,49 @@ Added 0 synonyms
 // Time 0
 // Time 0
 // Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
 // Time 0.01
 // Time 0
-// Time 0.01
+// Time 0
+// Time 0.02
   ***   Warning: increasing stack size to 2048000.
   *** _ZM_mul_worker: Warning: increasing stack size to 4096000.
-// Time 0.24
-// Time 0.17
-// Time 0.26
+// Time 0.12
+// Time 0.21
+// Time 0.12
 // Time 0
 // Time 0
 // Time 0
-// Time 0
+// Time 0.01
 // Time 0.2
-// Time 0.15
-// Time 0.15
+// Time 0.22
+// Time 0.16
 // Time 0
 // Time 0
 // Time 0
 // Time 0
-// Time 0
-// Time 0.36
-// Time 0.14
-// Time 0.19
-// Time 0.17
-// Time 0.01
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0.28
-// Time 0
-// Time 0.01
 // Time 0
 
-Evaluation time: 0.88
-// Time 0.88
+Evaluation time: 0.44
+// Time 0.44
+// Time 0.22
+// Time 0.26
+// Time 0.17
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0.34
+// Time 0
+// Time 0
+// Time 0
+
+Evaluation time: 1
+// Time 1
+// Time 0
+// Time 0
+// Time 0
 // Time 0
 // Time 0
 // Time 0
@@ -1285,10 +1303,7 @@ Evaluation time: 0.88
 // Time 0
 // Time 0
 // Time 0
-// Time 0
-// Time 0
-// Time 0
-// Total time 3.37
+// Total time 3.71
 PASS: chk_fhan4
 // Using locale /usr/share/locale/
 // C
@@ -1298,7 +1313,6 @@ PASS: chk_fhan4
 // Maximum number of parallel threads 1
 // Giac share root-directory:/usr/share/giac/
 // Giac share root-directory:/usr/share/giac/
-Help file /usr/share/giac/doc/en/aide_cas not found
 Added 0 synonyms
 // Giac share root-directory:/usr/share/giac/
 // Warning: j, declared as global variable(s). If symbolic variables are required, declare them as local and run purge
@@ -1312,6 +1326,13 @@ Added 0 synonyms
 // End defining cf
 // Warning: a, declared as global variable(s). If symbolic variables are required, declare them as local and run purge
 ============== restarted ===============
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
 // Time 0.01
 // Time 0
 // Time 0
@@ -1320,13 +1341,6 @@ Added 0 synonyms
 // Time 0
 // Time 0
 // Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
 // Time 0.04
 // Time 0
 // Time 0
@@ -1335,306 +1349,306 @@ Added 0 synonyms
 // Time 0
 // Time 0
 // Time 0
-// Time 0.04
+// Time 0.05
 // Time 0
 // Time 0
-// Time 0.13
-// GCD eval dimension 24 349596 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 20 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]20 
-Find_good_eval 350060 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-Fb= 350143 0
-Gb= 350172 0
-Find_good_eval 350350 [44,48,82,48,55,-65,-20,72,-86,-16,77,-46,-28,-28,23,-26,-46,-87,88,6,-16,14,69]
-Fb= 350673 %%%{-48,[1]%%%}+%%%{106,[0]%%%}
-Gb= 350977 %%%{-48,[1]%%%}+%%%{106,[0]%%%}
-FOUND good eval350988 [44,48,82,48,55,-65,-20,72,-86,-16,77,-46,-28,-28,23,-26,-46,-87,88,6,-16,14,69]
+// Time 0.12
+// GCD eval dimension 24 370991 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 20 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]20 
+Find_good_eval 371149 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+Fb= 371187 0
+Gb= 371200 0
+Find_good_eval 371214 [44,48,82,48,55,-65,-20,72,-86,-16,77,-46,-28,-28,23,-26,-46,-87,88,6,-16,14,69]
+Fb= 371589 %%%{-48,[1]%%%}+%%%{106,[0]%%%}
+Gb= 371859 %%%{-48,[1]%%%}+%%%{106,[0]%%%}
+FOUND good eval371868 [44,48,82,48,55,-65,-20,72,-86,-16,77,-46,-28,-28,23,-26,-46,-87,88,6,-16,14,69]
 // evaled GCD deg 1
-Trying p/lgcd(p) as gcd 24 351012
-lgcd(p) ok 24 351062
-Success p/lgcd(p) as gcd 24 351076
-// GCD eval dimension 24 351652 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 60 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]60 
-Find_good_eval 351795 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-Fb= 351824 0
-Gb= 351843 0
-Find_good_eval 351852 [71,-78,-74,81,-27,-87,81,-88,51,-8,68,48,-46,-59,-69,84,31,45,-28,99,84,56,-66]
-Fb= 352611 %%%{9425,[1]%%%}+%%%{-1684,[0]%%%}
-Gb= 353321 %%%{9425,[1]%%%}+%%%{-1684,[0]%%%}
-FOUND good eval353329 [71,-78,-74,81,-27,-87,81,-88,51,-8,68,48,-46,-59,-69,84,31,45,-28,99,84,56,-66]
+Trying p/lgcd(p) as gcd 24 371892
+lgcd(p) ok 24 371929
+Success p/lgcd(p) as gcd 24 371943
+// GCD eval dimension 24 372512 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 60 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]60 
+Find_good_eval 372669 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+Fb= 372697 0
+Gb= 372716 0
+Find_good_eval 372726 [71,-78,-74,81,-27,-87,81,-88,51,-8,68,48,-46,-59,-69,84,31,45,-28,99,84,56,-66]
+Fb= 373520 %%%{9425,[1]%%%}+%%%{-1684,[0]%%%}
+Gb= 374230 %%%{9425,[1]%%%}+%%%{-1684,[0]%%%}
+FOUND good eval374238 [71,-78,-74,81,-27,-87,81,-88,51,-8,68,48,-46,-59,-69,84,31,45,-28,99,84,56,-66]
 // evaled GCD deg 1
-Trying p/lgcd(p) as gcd 24 353350
-lgcd(p) ok 24 353446
-Success p/lgcd(p) as gcd 24 353464
-// GCD eval dimension 24 354405 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 120 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]120 
-Find_good_eval 354552 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-Fb= 354590 0
-Gb= 354618 0
-Find_good_eval 354627 [92,-31,-63,33,44,93,-37,-20,39,-4,-40,-48,10,-58,31,78,81,-22,10,-26,-97,37,-9]
-Fb= 356069 %%%{12176,[1]%%%}+%%%{-12422,[0]%%%}
-Gb= 357459 %%%{12176,[1]%%%}+%%%{-12422,[0]%%%}
-FOUND good eval357468 [92,-31,-63,33,44,93,-37,-20,39,-4,-40,-48,10,-58,31,78,81,-22,10,-26,-97,37,-9]
+Trying p/lgcd(p) as gcd 24 374258
+lgcd(p) ok 24 374347
+Success p/lgcd(p) as gcd 24 374366
+// GCD eval dimension 24 375464 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 120 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]120 
+Find_good_eval 375611 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+Fb= 375693 0
+Gb= 375723 0
+Find_good_eval 375734 [92,-31,-63,33,44,93,-37,-20,39,-4,-40,-48,10,-58,31,78,81,-22,10,-26,-97,37,-9]
+Fb= 377096 %%%{12176,[1]%%%}+%%%{-12422,[0]%%%}
+Gb= 378881 %%%{12176,[1]%%%}+%%%{-12422,[0]%%%}
+FOUND good eval378896 [92,-31,-63,33,44,93,-37,-20,39,-4,-40,-48,10,-58,31,78,81,-22,10,-26,-97,37,-9]
 // evaled GCD deg 1
-Trying p/lgcd(p) as gcd 24 357489
-lgcd(p) ok 24 357594
-Success p/lgcd(p) as gcd 24 357615
-// GCD eval dimension 24 358622 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 120 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]120 
-Find_good_eval 358819 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-Fb= 358858 0
-Gb= 358886 0
-Find_good_eval 358896 [-54,60,89,77,-85,76,84,-5,64,-56,74,98,18,26,0,3,86,32,53,-39,32,45,79]
-Fb= 360180 %%%{-8899,[1]%%%}+%%%{-1640,[0]%%%}
-Gb= 361345 %%%{-8899,[1]%%%}+%%%{-1640,[0]%%%}
-FOUND good eval361353 [-54,60,89,77,-85,76,84,-5,64,-56,74,98,18,26,0,3,86,32,53,-39,32,45,79]
+Trying p/lgcd(p) as gcd 24 378926
+lgcd(p) ok 24 379067
+Success p/lgcd(p) as gcd 24 379092
+// GCD eval dimension 24 380342 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 120 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]120 
+Find_good_eval 380510 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+Fb= 380552 0
+Gb= 380584 0
+Find_good_eval 380596 [-54,60,89,77,-85,76,84,-5,64,-56,74,98,18,26,0,3,86,32,53,-39,32,45,79]
+Fb= 382054 %%%{-8899,[1]%%%}+%%%{-1640,[0]%%%}
+Gb= 383419 %%%{-8899,[1]%%%}+%%%{-1640,[0]%%%}
+FOUND good eval383431 [-54,60,89,77,-85,76,84,-5,64,-56,74,98,18,26,0,3,86,32,53,-39,32,45,79]
 // evaled GCD deg 1
-Trying p/lgcd(p) as gcd 24 361377
-lgcd(p) ok 24 361585
-Success p/lgcd(p) as gcd 24 361606
-// GCD eval dimension 24 362087 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 20 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]20 
-Find_good_eval 362226 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-Fb= 362247 0
-Gb= 362326 0
-Find_good_eval 362337 [41,43,-31,42,-91,-77,-72,-7,6,-20,-40,81,-64,83,-68,-60,2,92,8,-70,-12,80,-96]
-Fb= 362601 %%%{-42,[1]%%%}+%%%{2451,[0]%%%}
-Gb= 362854 %%%{-42,[1]%%%}+%%%{2451,[0]%%%}
-FOUND good eval362862 [41,43,-31,42,-91,-77,-72,-7,6,-20,-40,81,-64,83,-68,-60,2,92,8,-70,-12,80,-96]
+Trying p/lgcd(p) as gcd 24 383461
+lgcd(p) ok 24 383706
+Success p/lgcd(p) as gcd 24 383730
+// GCD eval dimension 24 384342 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 20 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]20 
+Find_good_eval 384487 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+Fb= 384510 0
+Gb= 384523 0
+Find_good_eval 384533 [41,43,-31,42,-91,-77,-72,-7,6,-20,-40,81,-64,83,-68,-60,2,92,8,-70,-12,80,-96]
+Fb= 384808 %%%{-42,[1]%%%}+%%%{2451,[0]%%%}
+Gb= 385131 %%%{-42,[1]%%%}+%%%{2451,[0]%%%}
+FOUND good eval385141 [41,43,-31,42,-91,-77,-72,-7,6,-20,-40,81,-64,83,-68,-60,2,92,8,-70,-12,80,-96]
 // evaled GCD deg 1
-Trying p/lgcd(p) as gcd 24 362882
-lgcd(p) ok 24 362912
-Success p/lgcd(p) as gcd 24 362923
-// GCD eval dimension 24 363397 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 60 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]60 
-Find_good_eval 363541 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-Fb= 363566 0
-Gb= 363584 0
-Find_good_eval 363653 [-29,-95,-68,60,-66,8,34,-7,-21,-18,-46,11,70,-59,63,-86,67,0,-59,28,-36,-43,55]
-Fb= 364309 %%%{6321,[1]%%%}+%%%{13148,[0]%%%}
-Gb= 364980 %%%{6321,[1]%%%}+%%%{13148,[0]%%%}
-FOUND good eval364989 [-29,-95,-68,60,-66,8,34,-7,-21,-18,-46,11,70,-59,63,-86,67,0,-59,28,-36,-43,55]
+Trying p/lgcd(p) as gcd 24 385162
+lgcd(p) ok 24 385191
+Success p/lgcd(p) as gcd 24 385203
+// GCD eval dimension 24 385701 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 60 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]60 
+Find_good_eval 385844 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+Fb= 385869 0
+Gb= 385886 0
+Find_good_eval 385896 [-29,-95,-68,60,-66,8,34,-7,-21,-18,-46,11,70,-59,63,-86,67,0,-59,28,-36,-43,55]
+Fb= 386716 %%%{6321,[1]%%%}+%%%{13148,[0]%%%}
+Gb= 387395 %%%{6321,[1]%%%}+%%%{13148,[0]%%%}
+FOUND good eval387405 [-29,-95,-68,60,-66,8,34,-7,-21,-18,-46,11,70,-59,63,-86,67,0,-59,28,-36,-43,55]
 // evaled GCD deg 1
-Trying p/lgcd(p) as gcd 24 365011
-lgcd(p) ok 24 365096
-Success p/lgcd(p) as gcd 24 365115
-// GCD eval dimension 24 366008 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 120 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]120 
-Find_good_eval 366158 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-Fb= 366194 0
-Gb= 366222 0
-Find_good_eval 366231 [-12,-71,-13,-93,-85,-18,93,-22,-43,-7,-3,46,85,31,84,-86,82,76,-49,-25,-65,15,-33]
-Fb= 367933 %%%{14286,[1]%%%}+%%%{-13734,[0]%%%}
-Gb= 369383 %%%{14286,[1]%%%}+%%%{-13734,[0]%%%}
-FOUND good eval369393 [-12,-71,-13,-93,-85,-18,93,-22,-43,-7,-3,46,85,31,84,-86,82,76,-49,-25,-65,15,-33]
+Trying p/lgcd(p) as gcd 24 387428
+lgcd(p) ok 24 387519
+Success p/lgcd(p) as gcd 24 387538
+// GCD eval dimension 24 388606 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 120 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]120 
+Find_good_eval 388754 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+Fb= 388797 0
+Gb= 388826 0
+Find_good_eval 388836 [-12,-71,-13,-93,-85,-18,93,-22,-43,-7,-3,46,85,31,84,-86,82,76,-49,-25,-65,15,-33]
+Fb= 390199 %%%{14286,[1]%%%}+%%%{-13734,[0]%%%}
+Gb= 391549 %%%{14286,[1]%%%}+%%%{-13734,[0]%%%}
+FOUND good eval391557 [-12,-71,-13,-93,-85,-18,93,-22,-43,-7,-3,46,85,31,84,-86,82,76,-49,-25,-65,15,-33]
 // evaled GCD deg 1
-Trying p/lgcd(p) as gcd 24 369421
-lgcd(p) ok 24 369538
-Success p/lgcd(p) as gcd 24 369562
-// GCD eval dimension 24 370650 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 120 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]120 
-Find_good_eval 370797 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-Fb= 370834 0
-Gb= 370862 0
-Find_good_eval 370872 [-84,-49,-17,52,-13,-64,24,84,-65,8,-81,22,61,-16,-8,-16,-33,-6,-57,-32,63,73,13]
-Fb= 372383 %%%{-13898,[1]%%%}+%%%{-11140,[0]%%%}
-Gb= 373929 %%%{-13898,[1]%%%}+%%%{-11140,[0]%%%}
-FOUND good eval373942 [-84,-49,-17,52,-13,-64,24,84,-65,8,-81,22,61,-16,-8,-16,-33,-6,-57,-32,63,73,13]
+Trying p/lgcd(p) as gcd 24 391578
+lgcd(p) ok 24 391685
+Success p/lgcd(p) as gcd 24 391706
+// GCD eval dimension 24 392891 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 120 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]120 
+Find_good_eval 393038 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+Fb= 393091 0
+Gb= 393120 0
+Find_good_eval 393130 [-84,-49,-17,52,-13,-64,24,84,-65,8,-81,22,61,-16,-8,-16,-33,-6,-57,-32,63,73,13]
+Fb= 394789 %%%{-13898,[1]%%%}+%%%{-11140,[0]%%%}
+Gb= 396214 %%%{-13898,[1]%%%}+%%%{-11140,[0]%%%}
+FOUND good eval396223 [-84,-49,-17,52,-13,-64,24,84,-65,8,-81,22,61,-16,-8,-16,-33,-6,-57,-32,63,73,13]
 // evaled GCD deg 1
-Trying p/lgcd(p) as gcd 24 373967
-lgcd(p) ok 24 374146
-Success p/lgcd(p) as gcd 24 374166
-// GCD eval dimension 24 374649 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 20 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]20 
-Find_good_eval 374793 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-Fb= 374814 0
-Gb= 374826 0
-Find_good_eval 374835 [-3,-97,-13,89,-63,1,7,11,-47,-77,-14,87,-38,-37,13,-94,17,-70,45,77,-80,-85,75]
-Fb= 375090 %%%{-89,[1]%%%}+%%%{-9760,[0]%%%}
-Gb= 375334 %%%{-89,[1]%%%}+%%%{-9760,[0]%%%}
-FOUND good eval375343 [-3,-97,-13,89,-63,1,7,11,-47,-77,-14,87,-38,-37,13,-94,17,-70,45,77,-80,-85,75]
+Trying p/lgcd(p) as gcd 24 396249
+lgcd(p) ok 24 396432
+Success p/lgcd(p) as gcd 24 396453
+// GCD eval dimension 24 397006 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 20 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]20 
+Find_good_eval 397141 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+Fb= 397161 0
+Gb= 397173 0
+Find_good_eval 397183 [-3,-97,-13,89,-63,1,7,11,-47,-77,-14,87,-38,-37,13,-94,17,-70,45,77,-80,-85,75]
+Fb= 397430 %%%{-89,[1]%%%}+%%%{-9760,[0]%%%}
+Gb= 397668 %%%{-89,[1]%%%}+%%%{-9760,[0]%%%}
+FOUND good eval397676 [-3,-97,-13,89,-63,1,7,11,-47,-77,-14,87,-38,-37,13,-94,17,-70,45,77,-80,-85,75]
 // evaled GCD deg 1
-Trying p/lgcd(p) as gcd 24 375363
-lgcd(p) ok 24 375390
-Success p/lgcd(p) as gcd 24 375401
-// GCD eval dimension 24 375851 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 60 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]60 
-Find_good_eval 375994 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-Fb= 376019 0
-Gb= 376037 0
-Find_good_eval 376046 [-92,-8,-33,-35,42,62,91,-55,63,26,66,-29,89,69,-50,-56,89,-63,61,-4,-97,-89,55]
-Fb= 376762 %%%{-14180,[1]%%%}+%%%{2663,[0]%%%}
-Gb= 377469 %%%{-14180,[1]%%%}+%%%{2663,[0]%%%}
-FOUND good eval377490 [-92,-8,-33,-35,42,62,91,-55,63,26,66,-29,89,69,-50,-56,89,-63,61,-4,-97,-89,55]
+Trying p/lgcd(p) as gcd 24 397695
+lgcd(p) ok 24 397722
+Success p/lgcd(p) as gcd 24 397733
+// GCD eval dimension 24 398211 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 60 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]60 
+Find_good_eval 398532 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+Fb= 398589 0
+Gb= 398672 0
+Find_good_eval 398685 [-92,-8,-33,-35,42,62,91,-55,63,26,66,-29,89,69,-50,-56,89,-63,61,-4,-97,-89,55]
+Fb= 399465 %%%{-14180,[1]%%%}+%%%{2663,[0]%%%}
+Gb= 400161 %%%{-14180,[1]%%%}+%%%{2663,[0]%%%}
+FOUND good eval400170 [-92,-8,-33,-35,42,62,91,-55,63,26,66,-29,89,69,-50,-56,89,-63,61,-4,-97,-89,55]
 // evaled GCD deg 1
-Trying p/lgcd(p) as gcd 24 377510
-lgcd(p) ok 24 377591
-Success p/lgcd(p) as gcd 24 377609
-// GCD eval dimension 24 378486 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 120 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]120 
-Find_good_eval 378635 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-Fb= 378670 0
-Gb= 378698 0
-Find_good_eval 378707 [30,-21,-65,-82,-62,5,7,87,-69,71,-44,44,-43,85,53,42,-95,-25,59,-68,96,-78,60]
-Fb= 380097 %%%{-8336,[1]%%%}+%%%{-2316,[0]%%%}
-Gb= 381480 %%%{-8336,[1]%%%}+%%%{-2316,[0]%%%}
-FOUND good eval381489 [30,-21,-65,-82,-62,5,7,87,-69,71,-44,44,-43,85,53,42,-95,-25,59,-68,96,-78,60]
+Trying p/lgcd(p) as gcd 24 400191
+lgcd(p) ok 24 400290
+Success p/lgcd(p) as gcd 24 400311
+// GCD eval dimension 24 401561 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 120 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]120 
+Find_good_eval 401718 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+Fb= 401763 0
+Gb= 401794 0
+Find_good_eval 401805 [30,-21,-65,-82,-62,5,7,87,-69,71,-44,44,-43,85,53,42,-95,-25,59,-68,96,-78,60]
+Fb= 403571 %%%{-8336,[1]%%%}+%%%{-2316,[0]%%%}
+Gb= 405239 %%%{-8336,[1]%%%}+%%%{-2316,[0]%%%}
+FOUND good eval405250 [30,-21,-65,-82,-62,5,7,87,-69,71,-44,44,-43,85,53,42,-95,-25,59,-68,96,-78,60]
 // evaled GCD deg 1
-Trying p/lgcd(p) as gcd 24 381509
-lgcd(p) ok 24 381608
-Success p/lgcd(p) as gcd 24 381628
-// GCD eval dimension 24 382694 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 120 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]120 
-Find_good_eval 382842 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-Fb= 382878 0
-Gb= 382906 0
-Find_good_eval 382915 [-22,-84,-1,40,-42,98,79,32,2,-92,39,-20,50,72,91,-18,-31,46,18,29,3,-41,-97]
-Fb= 384896 %%%{8943,[1]%%%}+%%%{3549,[0]%%%}
-Gb= 386473 %%%{8943,[1]%%%}+%%%{3549,[0]%%%}
-FOUND good eval386484 [-22,-84,-1,40,-42,98,79,32,2,-92,39,-20,50,72,91,-18,-31,46,18,29,3,-41,-97]
+Trying p/lgcd(p) as gcd 24 405279
+lgcd(p) ok 24 405445
+Success p/lgcd(p) as gcd 24 405471
+// GCD eval dimension 24 406786 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 120 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]120 
+Find_good_eval 406943 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+Fb= 406987 0
+Gb= 407017 0
+Find_good_eval 407028 [-22,-84,-1,40,-42,98,79,32,2,-92,39,-20,50,72,91,-18,-31,46,18,29,3,-41,-97]
+Fb= 408591 %%%{8943,[1]%%%}+%%%{3549,[0]%%%}
+Gb= 410092 %%%{8943,[1]%%%}+%%%{3549,[0]%%%}
+FOUND good eval410102 [-22,-84,-1,40,-42,98,79,32,2,-92,39,-20,50,72,91,-18,-31,46,18,29,3,-41,-97]
 // evaled GCD deg 1
-Trying p/lgcd(p) as gcd 24 386513
-lgcd(p) ok 24 386714
-Success p/lgcd(p) as gcd 24 386737
-// GCD eval dimension 24 387296 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 16 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]16 
-Find_good_eval 387444 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-Fb= 387466 0
-Gb= 387479 0
-Find_good_eval 387489 [-38,2,-51,-98,69,-52,72,50,45,-24,-63,28,32,-66,-52,62,23,85,72,-2,-3,-88,-42]
-Fb= 387830 %%%{98,[1]%%%}+%%%{8523,[0]%%%}
-Gb= 388107 %%%{98,[1]%%%}+%%%{8523,[0]%%%}
-FOUND good eval388117 [-38,2,-51,-98,69,-52,72,50,45,-24,-63,28,32,-66,-52,62,23,85,72,-2,-3,-88,-42]
+Trying p/lgcd(p) as gcd 24 410123
+lgcd(p) ok 24 410296
+Success p/lgcd(p) as gcd 24 410317
+// GCD eval dimension 24 411021 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 16 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]16 
+Find_good_eval 411167 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+Fb= 411198 0
+Gb= 411210 0
+Find_good_eval 411220 [-38,2,-51,-98,69,-52,72,50,45,-24,-63,28,32,-66,-52,62,23,85,72,-2,-3,-88,-42]
+Fb= 411477 %%%{98,[1]%%%}+%%%{8523,[0]%%%}
+Gb= 411717 %%%{98,[1]%%%}+%%%{8523,[0]%%%}
+FOUND good eval411726 [-38,2,-51,-98,69,-52,72,50,45,-24,-63,28,32,-66,-52,62,23,85,72,-2,-3,-88,-42]
 // evaled GCD deg 1
-Trying p/lgcd(p) as gcd 24 388141
-lgcd(p) ok 24 388172
-Success p/lgcd(p) as gcd 24 388185
-// GCD eval dimension 24 388667 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 48 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]48 
-Find_good_eval 388829 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-Fb= 388856 0
-Gb= 388874 0
-Find_good_eval 388885 [-96,-55,-34,-9,-29,-86,-35,1,-36,25,99,60,97,-56,8,-38,11,77,3,39,49,-80,-8]
-Fb= 389628 %%%{-5977,[1]%%%}+%%%{12640,[0]%%%}
-Gb= 390363 %%%{-5977,[1]%%%}+%%%{12640,[0]%%%}
-FOUND good eval390373 [-96,-55,-34,-9,-29,-86,-35,1,-36,25,99,60,97,-56,8,-38,11,77,3,39,49,-80,-8]
+Trying p/lgcd(p) as gcd 24 411745
+lgcd(p) ok 24 411774
+Success p/lgcd(p) as gcd 24 411786
+// GCD eval dimension 24 412331 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 48 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]48 
+Find_good_eval 412473 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+Fb= 412498 0
+Gb= 412514 0
+Find_good_eval 412524 [-96,-55,-34,-9,-29,-86,-35,1,-36,25,99,60,97,-56,8,-38,11,77,3,39,49,-80,-8]
+Fb= 413229 %%%{-5977,[1]%%%}+%%%{12640,[0]%%%}
+Gb= 413905 %%%{-5977,[1]%%%}+%%%{12640,[0]%%%}
+FOUND good eval413914 [-96,-55,-34,-9,-29,-86,-35,1,-36,25,99,60,97,-56,8,-38,11,77,3,39,49,-80,-8]
 // evaled GCD deg 1
-Trying p/lgcd(p) as gcd 24 390395
-lgcd(p) ok 24 390475
-Success p/lgcd(p) as gcd 24 390494
-// GCD eval dimension 24 391323 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 96 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]96 
-Find_good_eval 391691 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-Fb= 391750 0
-Gb= 391779 0
-Find_good_eval 391792 [-96,87,35,14,-15,40,39,65,-63,-42,-12,14,51,-33,71,-83,-85,11,52,33,-80,76,14]
-Fb= 393371 %%%{3414,[1]%%%}+%%%{-11024,[0]%%%}
-Gb= 394760 %%%{3414,[1]%%%}+%%%{-11024,[0]%%%}
-FOUND good eval394769 [-96,87,35,14,-15,40,39,65,-63,-42,-12,14,51,-33,71,-83,-85,11,52,33,-80,76,14]
+Trying p/lgcd(p) as gcd 24 413935
+lgcd(p) ok 24 414007
+Success p/lgcd(p) as gcd 24 414024
+// GCD eval dimension 24 414791 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 96 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]96 
+Find_good_eval 414937 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+Fb= 414969 0
+Gb= 414993 0
+Find_good_eval 415003 [-96,87,35,14,-15,40,39,65,-63,-42,-12,14,51,-33,71,-83,-85,11,52,33,-80,76,14]
+Fb= 417357 %%%{3414,[1]%%%}+%%%{-11024,[0]%%%}
+Gb= 419218 %%%{3414,[1]%%%}+%%%{-11024,[0]%%%}
+FOUND good eval419235 [-96,87,35,14,-15,40,39,65,-63,-42,-12,14,51,-33,71,-83,-85,11,52,33,-80,76,14]
 // evaled GCD deg 1
-Trying p/lgcd(p) as gcd 24 394797
-lgcd(p) ok 24 394948
-Success p/lgcd(p) as gcd 24 394971
-// GCD eval dimension 24 396101 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 96 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]96 
-Find_good_eval 396287 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-Fb= 396332 0
-Gb= 396359 0
-Find_good_eval 396371 [-33,-32,-27,-64,-69,46,-38,97,-52,64,89,94,26,-27,20,-27,57,24,19,-14,-32,-82,79]
-Fb= 397638 %%%{-7276,[1]%%%}+%%%{-10294,[0]%%%}
-Gb= 398885 %%%{-7276,[1]%%%}+%%%{-10294,[0]%%%}
-FOUND good eval398895 [-33,-32,-27,-64,-69,46,-38,97,-52,64,89,94,26,-27,20,-27,57,24,19,-14,-32,-82,79]
+Trying p/lgcd(p) as gcd 24 419265
+lgcd(p) ok 24 419435
+Success p/lgcd(p) as gcd 24 419457
+// GCD eval dimension 24 420358 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 96 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]96 
+Find_good_eval 420504 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+Fb= 420555 0
+Gb= 420580 0
+Find_good_eval 420591 [-33,-32,-27,-64,-69,46,-38,97,-52,64,89,94,26,-27,20,-27,57,24,19,-14,-32,-82,79]
+Fb= 421888 %%%{-7276,[1]%%%}+%%%{-10294,[0]%%%}
+Gb= 423023 %%%{-7276,[1]%%%}+%%%{-10294,[0]%%%}
+FOUND good eval423032 [-33,-32,-27,-64,-69,46,-38,97,-52,64,89,94,26,-27,20,-27,57,24,19,-14,-32,-82,79]
 // evaled GCD deg 1
-Trying p/lgcd(p) as gcd 24 398917
-lgcd(p) ok 24 399118
-Success p/lgcd(p) as gcd 24 399138
-// GCD eval dimension 24 400361 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 20 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]20 
-Find_good_eval 400755 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-Fb= 400797 0
-Gb= 400811 0
-Find_good_eval 400823 [58,81,-88,-45,12,-32,-20,-40,-77,-21,2,-43,22,43,-79,-92,-3,-93,97,18,-21,73,-15]
-Fb= 401117 %%%{45,[1]%%%}+%%%{11095,[0]%%%}
-Gb= 401381 %%%{45,[1]%%%}+%%%{11095,[0]%%%}
-FOUND good eval401390 [58,81,-88,-45,12,-32,-20,-40,-77,-21,2,-43,22,43,-79,-92,-3,-93,97,18,-21,73,-15]
+Trying p/lgcd(p) as gcd 24 423057
+lgcd(p) ok 24 423252
+Success p/lgcd(p) as gcd 24 423271
+// GCD eval dimension 24 423937 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 20 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]20 
+Find_good_eval 424086 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+Fb= 424111 0
+Gb= 424124 0
+Find_good_eval 424135 [58,81,-88,-45,12,-32,-20,-40,-77,-21,2,-43,22,43,-79,-92,-3,-93,97,18,-21,73,-15]
+Fb= 424412 %%%{45,[1]%%%}+%%%{11095,[0]%%%}
+Gb= 424689 %%%{45,[1]%%%}+%%%{11095,[0]%%%}
+FOUND good eval424698 [58,81,-88,-45,12,-32,-20,-40,-77,-21,2,-43,22,43,-79,-92,-3,-93,97,18,-21,73,-15]
 // evaled GCD deg 1
-Trying p/lgcd(p) as gcd 24 401412
-lgcd(p) ok 24 401451
-Success p/lgcd(p) as gcd 24 401492
-// GCD eval dimension 24 402524 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 60 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]60 
-Find_good_eval 402775 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-Fb= 402810 0
-Gb= 402831 0
-Find_good_eval 402841 [-4,-46,-60,79,3,-82,-13,-64,65,-72,77,2,80,44,-33,18,97,71,41,20,-42,71,97]
-Fb= 403659 %%%{-78,[1]%%%}+%%%{-10815,[0]%%%}
-Gb= 404542 %%%{-78,[1]%%%}+%%%{-10815,[0]%%%}
-FOUND good eval404554 [-4,-46,-60,79,3,-82,-13,-64,65,-72,77,2,80,44,-33,18,97,71,41,20,-42,71,97]
+Trying p/lgcd(p) as gcd 24 424719
+lgcd(p) ok 24 424749
+Success p/lgcd(p) as gcd 24 424761
+// GCD eval dimension 24 425491 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 60 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]60 
+Find_good_eval 425646 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+Fb= 425682 0
+Gb= 425702 0
+Find_good_eval 425713 [-4,-46,-60,79,3,-82,-13,-64,65,-72,77,2,80,44,-33,18,97,71,41,20,-42,71,97]
+Fb= 426529 %%%{-78,[1]%%%}+%%%{-10815,[0]%%%}
+Gb= 427621 %%%{-78,[1]%%%}+%%%{-10815,[0]%%%}
+FOUND good eval427637 [-4,-46,-60,79,3,-82,-13,-64,65,-72,77,2,80,44,-33,18,97,71,41,20,-42,71,97]
 // evaled GCD deg 1
-Trying p/lgcd(p) as gcd 24 404578
-lgcd(p) ok 24 404682
-Success p/lgcd(p) as gcd 24 404703
-// GCD eval dimension 24 405769 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 120 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]120 
-Find_good_eval 405927 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-Fb= 405967 0
-Gb= 405997 0
-Find_good_eval 406007 [-65,22,-4,-8,-94,40,-94,51,37,69,48,59,-92,-84,-59,-80,72,21,32,2,-43,-99,-71]
-Fb= 407489 %%%{-3999,[1]%%%}+%%%{263,[0]%%%}
-Gb= 409031 %%%{-3999,[1]%%%}+%%%{263,[0]%%%}
-FOUND good eval409042 [-65,22,-4,-8,-94,40,-94,51,37,69,48,59,-92,-84,-59,-80,72,21,32,2,-43,-99,-71]
+Trying p/lgcd(p) as gcd 24 427664
+lgcd(p) ok 24 427774
+Success p/lgcd(p) as gcd 24 427797
+// GCD eval dimension 24 428841 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 120 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]120 
+Find_good_eval 428988 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+Fb= 429026 0
+Gb= 429055 0
+Find_good_eval 429065 [-65,22,-4,-8,-94,40,-94,51,37,69,48,59,-92,-84,-59,-80,72,21,32,2,-43,-99,-71]
+Fb= 430459 %%%{-3999,[1]%%%}+%%%{263,[0]%%%}
+Gb= 432134 %%%{-3999,[1]%%%}+%%%{263,[0]%%%}
+FOUND good eval432152 [-65,22,-4,-8,-94,40,-94,51,37,69,48,59,-92,-84,-59,-80,72,21,32,2,-43,-99,-71]
 // evaled GCD deg 1
-Trying p/lgcd(p) as gcd 24 409065
-lgcd(p) ok 24 409220
-Success p/lgcd(p) as gcd 24 409243
-// GCD eval dimension 24 410401 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 120 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]120 
-Find_good_eval 410551 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-Fb= 410588 0
-Gb= 410616 0
-Find_good_eval 410626 [16,19,34,-59,-77,-5,-94,80,-82,44,18,-19,-38,1,49,-57,-23,-97,68,-33,21,-43,-38]
-Fb= 412039 %%%{-12447,[1]%%%}+%%%{8824,[0]%%%}
-Gb= 413479 %%%{-12447,[1]%%%}+%%%{8824,[0]%%%}
-FOUND good eval413488 [16,19,34,-59,-77,-5,-94,80,-82,44,18,-19,-38,1,49,-57,-23,-97,68,-33,21,-43,-38]
+Trying p/lgcd(p) as gcd 24 432180
+lgcd(p) ok 24 432308
+Success p/lgcd(p) as gcd 24 432331
+// GCD eval dimension 24 433463 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 120 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]120 
+Find_good_eval 433609 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+Fb= 433646 0
+Gb= 433674 0
+Find_good_eval 433684 [16,19,34,-59,-77,-5,-94,80,-82,44,18,-19,-38,1,49,-57,-23,-97,68,-33,21,-43,-38]
+Fb= 435225 %%%{-12447,[1]%%%}+%%%{8824,[0]%%%}
+Gb= 436586 %%%{-12447,[1]%%%}+%%%{8824,[0]%%%}
+FOUND good eval436595 [16,19,34,-59,-77,-5,-94,80,-82,44,18,-19,-38,1,49,-57,-23,-97,68,-33,21,-43,-38]
 // evaled GCD deg 1
-Trying p/lgcd(p) as gcd 24 413510
-lgcd(p) ok 24 413702
-Success p/lgcd(p) as gcd 24 413723
-// GCD eval dimension 24 414302 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 20 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]20 
-Find_good_eval 414441 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-Fb= 414464 0
-Gb= 414477 0
-Find_good_eval 414486 [-3,-4,-83,-8,-38,29,40,-81,-28,-37,-94,39,18,24,-58,14,-99,-66,65,-98,-18,-81,22]
-Fb= 414748 %%%{8,[1]%%%}+%%%{6434,[0]%%%}
-Gb= 414995 %%%{8,[1]%%%}+%%%{6434,[0]%%%}
-FOUND good eval415003 [-3,-4,-83,-8,-38,29,40,-81,-28,-37,-94,39,18,24,-58,14,-99,-66,65,-98,-18,-81,22]
+Trying p/lgcd(p) as gcd 24 436635
+lgcd(p) ok 24 436835
+Success p/lgcd(p) as gcd 24 436856
+// GCD eval dimension 24 437485 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 20 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]20 
+Find_good_eval 437628 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+Fb= 437650 0
+Gb= 437662 0
+Find_good_eval 437672 [-3,-4,-83,-8,-38,29,40,-81,-28,-37,-94,39,18,24,-58,14,-99,-66,65,-98,-18,-81,22]
+Fb= 437935 %%%{8,[1]%%%}+%%%{6434,[0]%%%}
+Gb= 438313 %%%{8,[1]%%%}+%%%{6434,[0]%%%}
+FOUND good eval438327 [-3,-4,-83,-8,-38,29,40,-81,-28,-37,-94,39,18,24,-58,14,-99,-66,65,-98,-18,-81,22]
 // evaled GCD deg 1
-Trying p/lgcd(p) as gcd 24 415023
-lgcd(p) ok 24 415051
-Success p/lgcd(p) as gcd 24 415063
-// GCD eval dimension 24 415522 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 60 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]60 
-Find_good_eval 415664 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-Fb= 415689 0
-Gb= 415707 0
-Find_good_eval 415716 [73,9,30,75,38,-39,85,33,-4,-70,15,2,72,-32,97,-71,93,80,-3,-64,-13,-73,-15]
-Fb= 416433 %%%{9638,[1]%%%}+%%%{-8268,[0]%%%}
-Gb= 417246 %%%{9638,[1]%%%}+%%%{-8268,[0]%%%}
-FOUND good eval417259 [73,9,30,75,38,-39,85,33,-4,-70,15,2,72,-32,97,-71,93,80,-3,-64,-13,-73,-15]
+Trying p/lgcd(p) as gcd 24 438354
+lgcd(p) ok 24 438392
+Success p/lgcd(p) as gcd 24 438405
+// GCD eval dimension 24 438975 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 60 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]60 
+Find_good_eval 439133 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+Fb= 439161 0
+Gb= 439182 0
+Find_good_eval 439193 [73,9,30,75,38,-39,85,33,-4,-70,15,2,72,-32,97,-71,93,80,-3,-64,-13,-73,-15]
+Fb= 439995 %%%{9638,[1]%%%}+%%%{-8268,[0]%%%}
+Gb= 441020 %%%{9638,[1]%%%}+%%%{-8268,[0]%%%}
+FOUND good eval441039 [73,9,30,75,38,-39,85,33,-4,-70,15,2,72,-32,97,-71,93,80,-3,-64,-13,-73,-15]
 // evaled GCD deg 1
-Trying p/lgcd(p) as gcd 24 417283
-lgcd(p) ok 24 417385
-Success p/lgcd(p) as gcd 24 417404
-// GCD eval dimension 24 418325 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 120 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]120 
-Find_good_eval 418635 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-Fb= 418683 0
-Gb= 418712 0
-Find_good_eval 418722 [40,82,-30,57,-86,73,-42,-28,94,84,33,-8,21,-98,-4,36,4,19,92,-77,-22,63,75]
-Fb= 420131 %%%{-2640,[1]%%%}+%%%{-11891,[0]%%%}
-Gb= 421520 %%%{-2640,[1]%%%}+%%%{-11891,[0]%%%}
-FOUND good eval421528 [40,82,-30,57,-86,73,-42,-28,94,84,33,-8,21,-98,-4,36,4,19,92,-77,-22,63,75]
+Trying p/lgcd(p) as gcd 24 441070
+lgcd(p) ok 24 441198
+Success p/lgcd(p) as gcd 24 441223
+// GCD eval dimension 24 442385 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 120 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]120 
+Find_good_eval 442540 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+Fb= 442582 0
+Gb= 442612 0
+Find_good_eval 442623 [40,82,-30,57,-86,73,-42,-28,94,84,33,-8,21,-98,-4,36,4,19,92,-77,-22,63,75]
+Fb= 444295 %%%{-2640,[1]%%%}+%%%{-11891,[0]%%%}
+Gb= 445843 %%%{-2640,[1]%%%}+%%%{-11891,[0]%%%}
+FOUND good eval445855 [40,82,-30,57,-86,73,-42,-28,94,84,33,-8,21,-98,-4,36,4,19,92,-77,-22,63,75]
 // evaled GCD deg 1
-Trying p/lgcd(p) as gcd 24 421549
-lgcd(p) ok 24 421656
-Success p/lgcd(p) as gcd 24 421720
-// GCD eval dimension 24 422751 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 120 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]120 
-Find_good_eval 422895 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-Fb= 422932 0
-Gb= 422959 0
-Find_good_eval 422968 [91,90,38,-42,-11,-20,-27,64,92,60,-6,67,43,-20,14,-38,-55,51,-96,32,64,-90,-85]
-Fb= 424652 %%%{-8088,[1]%%%}+%%%{-13268,[0]%%%}
-Gb= 426183 %%%{-8088,[1]%%%}+%%%{-13268,[0]%%%}
-FOUND good eval426193 [91,90,38,-42,-11,-20,-27,64,92,60,-6,67,43,-20,14,-38,-55,51,-96,32,64,-90,-85]
+Trying p/lgcd(p) as gcd 24 445883
+lgcd(p) ok 24 446009
+Success p/lgcd(p) as gcd 24 446032
+// GCD eval dimension 24 447220 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 120 Vector [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]120 
+Find_good_eval 447368 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+Fb= 447409 0
+Gb= 447437 0
+Find_good_eval 447448 [91,90,38,-42,-11,-20,-27,64,92,60,-6,67,43,-20,14,-38,-55,51,-96,32,64,-90,-85]
+Fb= 449240 %%%{-8088,[1]%%%}+%%%{-13268,[0]%%%}
+Gb= 450739 %%%{-8088,[1]%%%}+%%%{-13268,[0]%%%}
+FOUND good eval450749 [91,90,38,-42,-11,-20,-27,64,92,60,-6,67,43,-20,14,-38,-55,51,-96,32,64,-90,-85]
 // evaled GCD deg 1
-Trying p/lgcd(p) as gcd 24 426220
-lgcd(p) ok 24 426424
-Success p/lgcd(p) as gcd 24 426446
-// Time 0.08
+Trying p/lgcd(p) as gcd 24 450777
+lgcd(p) ok 24 450991
+Success p/lgcd(p) as gcd 24 451011
+// Time 0.09
 // Time 0
 // Time 0
 // Time 0
 // Time 0.03
-// Time 0.04
-// Time 0.18
-// Time 0.2
+// Time 0.05
+// Time 0.12
+// Time 0.12
 // Time 0
 // Time 0
 // Time 0
@@ -1649,17 +1663,17 @@ Success p/lgcd(p) as gcd 24 426446
 // Time 0.01
 // Time 0
 // Time 0
-// Time 0
-// Time 0
 // Time 0.01
+// Time 0
+// Time 0.02
 // Time 0.02
 // Time 0
-// Time 0.03
-// Time 0.04
+// Time 0.09
+// Time 0.06
 // Time 0
 // Time 0.01
-// Time 0.03
-// Total time 0.94
+// Time 0.04
+// Total time 0.93
 PASS: chk_fhan5
 // Using locale /usr/share/locale/
 // C
@@ -1669,7 +1683,6 @@ PASS: chk_fhan5
 // Maximum number of parallel threads 1
 // Giac share root-directory:/usr/share/giac/
 // Giac share root-directory:/usr/share/giac/
-Help file /usr/share/giac/doc/en/aide_cas not found
 Added 0 synonyms
 // Giac share root-directory:/usr/share/giac/
 // Warning: x, declared as global variable(s). If symbolic variables are required, declare them as local and run purge
@@ -1685,35 +1698,27 @@ Added 0 synonyms
 // Time 0
 // Time 0
 // Time 0
+// Time 0
+// Time 0.25
+// Time 0
+// Time 0
+// Time 0
 // Time 0.01
-// Time 0.17
-// Time 0
-// Time 0
-// Time 0.01
-// Time 0
-// Time 0.2
-// Time 0.2
-// Time 0.06
+// Time 0.21
 // Time 0.24
+// Time 0.09
+// Time 0.28
 pcar OK
 // Time 0.01
 pcar OK
 // Time 0
 // Time 0.04
+// Time 0.07
+// Time 0
+// Time 0
+// Time 0
 // Time 0.06
-// Time 0
-// Time 0
-// Time 0.01
-// Time 0.06
-// Time 0.06
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
+// Time 0.07
 // Time 0
 // Time 0
 // Time 0
@@ -1732,7 +1737,15 @@ pcar OK
 // Time 0.01
 // Time 0
 // Time 0
-// Total time 1.14
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Total time 1.34
 PASS: chk_fhan6
 // Using locale /usr/share/locale/
 // en_US.UTF8
@@ -1742,7 +1755,6 @@ PASS: chk_fhan6
 // Maximum number of parallel threads 1
 // Giac share root-directory:/usr/share/giac/
 // Giac share root-directory:/usr/share/giac/
-Help file /usr/share/giac/doc/en/aide_cas not found
 Added 0 synonyms
 // Giac share root-directory:/usr/share/giac/
 // Success
@@ -1762,13 +1774,13 @@ Added 0 synonyms
 // Warning: egalomega,plus, declared as global variable(s). If symbolic variables are required, declare them as local and run purge
 // End defining factell
 // Time 0
+// Time 0.01
 // Time 0
-// Time 0
-// Time 0.03
+// Time 0.04
 Near [0,0], 1/epsilon^2*f([0,0]+epsilon*[1,t])=-3*t roots [0.0]
 Singular points directions: [cell_i, cell_j, singularity, next solution] [[50,50,0.0,0.0666666666667+0.00148146522433*i],[50,50,0.0,-0.0666666666667+0.0014814977397*i]]
 Bad branch, questionnable accuracy
-// Time 0.08
+// Time 0.15
 // Time 0
 // Time 0
 // Time 0
@@ -1782,15 +1794,6 @@ noneg:noneg
 eg:eg
 // Time 0
 // Time 0
-// Time 0.01
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
 // Time 0
 // Time 0.01
 // Time 0
@@ -1801,8 +1804,17 @@ eg:eg
 // Time 0
 // Time 0
 // Time 0
+// Time 0.01
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
 // Time 0
 // Time 0.01
+// Time 0
 1,1,1
 1,2,20011
 1,3,1
@@ -1864,9 +1876,9 @@ eg:eg
 3,19,1
 3,20,1
 
-Evaluation time: 0.69
-// Time 0.69
-// Time 0
+Evaluation time: 0.91
+// Time 0.91
+// Time 0.01
 // Time 0
 1,1,1
 1,2,1234577
@@ -1929,9 +1941,9 @@ Evaluation time: 0.69
 3,19,1
 3,20,1
 
-Evaluation time: 1.99
-// Time 2
-// Total time 2.83
+Evaluation time: 2.96
+// Time 2.96
+// Total time 4.12
 PASS: chk_fhan8
 // Using locale /usr/share/locale/
 // C
@@ -1941,7 +1953,6 @@ PASS: chk_fhan8
 // Maximum number of parallel threads 1
 // Giac share root-directory:/usr/share/giac/
 // Giac share root-directory:/usr/share/giac/
-Help file /usr/share/giac/doc/en/aide_cas not found
 Added 0 synonyms
 // Giac share root-directory:/usr/share/giac/
 // Warning: t, declared as global variable(s). If symbolic variables are required, declare them as local and run purge
@@ -1954,6 +1965,15 @@ Added 0 synonyms
 // Time 0
 // Time 0
 // Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
 // Time 0
 // Time 0
 // Time 0
@@ -1975,29 +1995,12 @@ Added 0 synonyms
 // Time 0
 // Time 0.01
 // Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0.01
 // Time 0
 // Time 0
 // Time 0
 // Time 0
 // Time 0.01
 // Time 0.02
-// Time 0
-// Time 0.01
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0.01
-// Time 0.01
 // Time 0.01
 // Time 0.02
 // Time 0
@@ -2005,12 +2008,25 @@ Added 0 synonyms
 // Time 0
 // Time 0
 // Time 0
+// Time 0.01
+// Time 0.01
+// Time 0.01
 // Time 0
 // Time 0
 // Time 0
 // Time 0.01
 // Time 0
 // Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
 // Time 0.01
 // Time 0
 // Time 0
@@ -2018,15 +2034,11 @@ Added 0 synonyms
 // Time 0
 // Time 0
 // Time 0
+// Time 0.08
 // Time 0
 // Time 0
 // Time 0
-// Time 0
-// Time 0.06
-// Time 0
-// Time 0
-// Time 0
-// Total time 0.19
+// Total time 0.23
 PASS: chk_fhan0
 // Using locale /usr/share/locale/
 // C
@@ -2036,43 +2048,42 @@ PASS: chk_fhan0
 // Maximum number of parallel threads 1
 // Giac share root-directory:/usr/share/giac/
 // Giac share root-directory:/usr/share/giac/
-Help file /usr/share/giac/doc/en/aide_cas not found
 Added 0 synonyms
 // Giac share root-directory:/usr/share/giac/
 ============== restarted ===============
 // Time 0
 // Time 0
 // Time 0
-// Time 0.12
+// Time 0.17
+// Time 0.16
 // Time 0.13
-// Time 0.12
 // Time 0
 // Time 0
-// Time 0.27
+// Time 0.33
 // Time 0
-// Time 0.01
+// Time 0
 // Time 0
   ***   Warning: increasing stack size to 2048000.
   ***   Warning: increasing stack size to 4096000.
   ***   Warning: increasing stack size to 8192000.
 
-Evaluation time: 1.82
-// Time 1.82
+Evaluation time: 2
+// Time 2
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
 // Time 0
 // Time 0
 // Time 0
 // Time 0
 // Time 0
 // Time 0.01
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
 // Time 0
 // Time 0
 // Time 0
@@ -2093,16 +2104,16 @@ ca fait bien p-1
 // Time 0
 // Time 0.01
 // Time 0
-// Time 0.01
-// Time 0.02
 // Time 0
-// Time 0.25
-// Time 0.21
-// Time 0.22
+// Time 0.03
 // Time 0
-// Time 0.24
-// Time 0.13
+// Time 0.34
+// Time 0.26
+// Time 0.28
+// Time 0
+// Time 0.26
 // Time 0.12
+// Time 0.13
 // Time 0
 // Time 0
 // Time 0
@@ -2110,14 +2121,14 @@ ca fait bien p-1
 // Time 0
 // Time 0
 // Time 0
-// Time 0.01
 // Time 0
 // Time 0
 // Time 0
 // Time 0
 // Time 0
 // Time 0
-// Total time 3.71
+// Time 0
+// Total time 4.24
 13c13
 < 1,
 ---
@@ -2131,7 +2142,6 @@ FAIL: chk_fhan11
 // Maximum number of parallel threads 1
 // Giac share root-directory:/usr/share/giac/
 // Giac share root-directory:/usr/share/giac/
-Help file /usr/share/giac/doc/en/aide_cas not found
 Added 0 synonyms
 // Giac share root-directory:/usr/share/giac/
 // Success
@@ -2149,7 +2159,7 @@ Added 0 synonyms
 // Success
 // End defining ordre
 ============== restarted ===============
-// Time 0
+// Time 0.01
 // Time 0
 // Time 0
 Assigning variables a and K
@@ -2162,15 +2172,15 @@ Now e.g. a^200+1 will build an element of K
 // Time 0.04
 Assigning variables b and L
 Now e.g. b^200+1 will build an element of L
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
 // Time 0.01
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
 // Time 0
 1,2
 2,4
@@ -2180,7 +2190,7 @@ Now e.g. b^200+1 will build an element of L
 16,64
 32,128
 64,256
-// Time 0.01
+// Time 0
 (X-1)*(X+1),2
 (X-1)*(X+1)*(X^2+1),4
 (X-1)*(X+1)*(X^2+1)*(X^4+1),8
@@ -2204,42 +2214,6 @@ i_i_:64
 // Time 0
 // Time 0.01
 // Time 0
-// Time 0.01
-// Time 0
-// Time 0
-// Time 0.01
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0.01
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0.01
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0.01
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
 // Time 0
 // Time 0
 // Time 0
@@ -2250,9 +2224,45 @@ i_i_:64
 // Time 0
 // Time 0
 // Time 0
+// Time 0.01
 // Time 0
 // Time 0
 // Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
 ca marche
 // Time 0
 // Total time 0.16
@@ -2265,7 +2275,6 @@ PASS: chk_fhan12
 // Maximum number of parallel threads 1
 // Giac share root-directory:/usr/share/giac/
 // Giac share root-directory:/usr/share/giac/
-Help file /usr/share/giac/doc/en/aide_cas not found
 Added 0 synonyms
 // Giac share root-directory:/usr/share/giac/
 // Warning: x, declared as global variable(s). If symbolic variables are required, declare them as local and run purge
@@ -2278,31 +2287,7 @@ Added 0 synonyms
 // Time 0
 // Time 0
 // Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
 // Time 0.01
-// Time 0
-// Time 0
-// Time 0
-// Time 0.01
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
 // Time 0
 // Time 0
 // Time 0
@@ -2325,10 +2310,34 @@ Added 0 synonyms
 // Time 0
 // Time 0
 // Time 0
-// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
 // Time 0
 // Time 0.01
-// Total time 0.05
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0.02
+// Total time 0.06
 PASS: chk_fhan13
 // Using locale /usr/share/locale/
 // en_US.UTF8
@@ -2338,7 +2347,6 @@ PASS: chk_fhan13
 // Maximum number of parallel threads 1
 // Giac share root-directory:/usr/share/giac/
 // Giac share root-directory:/usr/share/giac/
-Help file /usr/share/giac/doc/en/aide_cas not found
 Added 0 synonyms
 // Giac share root-directory:/usr/share/giac/
 // Warning: x, declared as global variable(s). If symbolic variables are required, declare them as local and run purge
@@ -2351,7 +2359,7 @@ Added 0 synonyms
 // End defining facteurpseudoirred
 // Warning: A, declared as global variable(s). If symbolic variables are required, declare them as local and run purge
 // End defining borne
-// Time 0
+// Time 0.01
 // Time 0
 // Time 0
 // Time 0
@@ -2376,12 +2384,12 @@ facteurs multiples,23
 // Time 0
 // Time 0
 // Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
 // Time 0.01
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
 f est irred
 // Time 0
 // Time 0
@@ -2410,7 +2418,7 @@ x^2+9*x+17,est un diviseur dans Z
 // Time 0
 // Time 0
 // Time 0
-// Time 0.02
+// Time 0.01
 // Time 0
 // Time 0
 // Total time 0.11
@@ -2423,13 +2431,13 @@ PASS: chk_fhan14
 // Maximum number of parallel threads 1
 // Giac share root-directory:/usr/share/giac/
 // Giac share root-directory:/usr/share/giac/
-Help file /usr/share/giac/doc/en/aide_cas not found
 Added 0 synonyms
 // Giac share root-directory:/usr/share/giac/
 // Warning: v, declared as global variable(s). If symbolic variables are required, declare them as local and run purge
 // End defining paff
 // Warning: a, declared as global variable(s). If symbolic variables are required, declare them as local and run purge
 ============== restarted ===============
+// Time 0.01
 // Time 0
 // Time 0
 // Time 0
@@ -2447,13 +2455,12 @@ Added 0 synonyms
 // Time 0
 // Time 0
 // Time 0
-// Time 0.02
 // Time 0
 // Time 0
 // Time 0
 // Time 0
 // Time 0
-// Time 0
+// Time 0.01
 Ellipsis of center (-50/7,17/2)
 // Time 0.01
 // Time 0
@@ -2462,8 +2469,6 @@ Ellipsis of center (-50/7,17/2)
 // Time 0
 // Time 0
 // Time 0
-// Time 0
-// Time 0
 // Time 0.01
 // Time 0
 // Time 0
@@ -2484,16 +2489,18 @@ Ellipsis of center (-50/7,17/2)
 // Time 0
 // Time 0
 // Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
 // Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
 // Total time 0.05
 PASS: chk_fhan15
 // Using locale /usr/share/locale/
@@ -2504,7 +2511,6 @@ PASS: chk_fhan15
 // Maximum number of parallel threads 1
 // Giac share root-directory:/usr/share/giac/
 // Giac share root-directory:/usr/share/giac/
-Help file /usr/share/giac/doc/en/aide_cas not found
 Added 0 synonyms
 // Giac share root-directory:/usr/share/giac/
 // Success
@@ -2514,7 +2520,7 @@ Added 0 synonyms
 ============== restarted ===============
 // Time 0
 // Time 0
-// Time 0.01
+// Time 0
 // Time 0
 // Time 0
 // Time 0
@@ -2525,28 +2531,34 @@ Near [0,2], 1/epsilon^2*f([0,2]+epsilon*[1,t])=1 roots []
 Near [0,2], 1/epsilon^2*f([0,2]+epsilon*[1,t])=1 roots []
 Singular points directions: [cell_i, cell_j, singularity, next solution] [[50,70,2.0*i,-0.00112947877252+2.03333333333*i],[50,70,2.0*i,0.00112947877252+2.03333333333*i],[50,70,2.0*i,-0.00109243590672+1.96666666667*i],[50,70,2.0*i,0.00109243590672+1.96666666667*i],[50,70,2.0*i,-0.00112947877252+2.03333333333*i],[50,70,2.0*i,0.00112947877252+2.03333333333*i],[50,70,2.0*i,-0.00109243590672+1.96666666667*i],[50,70,2.0*i,0.00109243590672+1.96666666667*i],[50,70,2.0*i,-0.00112947877252+2.03333333333*i],[50,70,2.0*i,0.00112947877252+2.03333333333*i],[50,70,2.0*i,-0.00109243590672+1.96666666667*i],[50,70,2.0*i,0.00109243590672+1.96666666667*i]]
 Warning! Could not loop or reach boundaries 
+Bad branch, questionnable accuracy
 Warning! Could not loop or reach boundaries 
 Warning! Could not loop or reach boundaries 
 Warning! Could not loop or reach boundaries 
 Warning! Could not loop or reach boundaries 
 Warning! Could not loop or reach boundaries 
 Warning! Could not loop or reach boundaries 
-// Time 0.05
-// Time 0
-// Time 0
-// Time 0
-// Time 0
+Warning! Could not loop or reach boundaries 
+Warning! Could not loop or reach boundaries 
+Warning! Could not loop or reach boundaries 
+Bad branch, questionnable accuracy
+// Time 0.06
 // Time 0
 // Time 0.01
-// Groebner basis computation time 0.004424 Memory 52.384M
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Groebner basis computation time 0.004797 Memory 57.156M
 Warning! Could not loop or reach boundaries 25*y^2*2.68992345258e-17+10*y^2*1.55399613571e-14+59*y^2*8.97759372102e-12+20*y^2*5.18644719686e-09+43*y^2*2.99626329301e-06+10*y^2*0.00173097177707+9*y^2-80*y*2.68992345258e-17-136*y*1.55399613571e-14+56*y*8.97759372102e-12+240*y*5.18644719686e-09+104*y*2.99626329301e-06+1.72155100965e-15+2.98367258056e-12+1.72369799443e-09+3.31932620599e-07
-// Time 0.2
+// Time 0.22
 // Time 0
 // Time 0
 // Time 0
 Hyperbola of center (0,0)
 // Time 0
-// Time 0.06
+// Time 0.07
+// Time 0
 // Time 0
 // Time 0
 // Time 0
@@ -2555,7 +2567,6 @@ Hyperbola of center (0,0)
 // Time 0
 // Time 0
 // Time 0.01
-// Time 0
 // Time 0
 // Time 0
 Warning, argument is not an equation, solving -14699.0*t^6+25716.0*t^5+1779.0*t^4-15116.0*t^3-624.0*t^2+2496.0*t+448.0=0
@@ -2565,17 +2576,17 @@ Warning, argument is not an equation, solving -14699.0*t^6+25716.0*t^5+1779.0*t^
 // Time 0
 // Time 0
 // Time 0
-// Time 0
-// Time 0.07
+// Time 0.01
+// Time 0.06
 // Time 0
 // Time 0
 schur row 5 -2.79096e-08
 // Time 0
 // Time 0
-// Time 0.01
+// Time 0
 // Time 0
 Warning, argument is not an equation, solving x^3-2.0*x^2-20.0*x+48.0=0
-// Time 0
+// Time 0.01
 // Time 0
 Warning, argument is not an equation, solving x^3-2*x^2-20*x+48=0
 // Time 0
@@ -2584,23 +2595,6 @@ Warning, argument is not an equation, solving 6*sqrt(13)+18+y^2=0
 Warning, argument is not an equation, solving -6*sqrt(13)+18+y^2=0
 Warning, argument is not an equation, solving y^2=0
 // Time 0
-// Time 0.01
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0.01
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Groebner basis computation time 0.000513 Memory 56.244M
-// Time 0.3
 // Time 0
 // Time 0
 // Time 0
@@ -2611,6 +2605,19 @@ Warning, argument is not an equation, solving y^2=0
 // Time 0
 // Time 0
 // Time 0
+Ellipsoid of center [0,0,0]
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Groebner basis computation time 0.000471 Memory 60.904M
+// Time 0.29
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
 // Time 0
 // Time 0
 // Time 0
@@ -2622,9 +2629,15 @@ Warning, argument is not an equation, solving y^2=0
 // Time 0
 // Time 0
 // Time 0
-// Groebner basis computation time 9.9e-05 Memory 56.308M
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Groebner basis computation time 9.9e-05 Memory 61.044M
+Singular points directions: [cell_i, cell_j, singularity, next solution] []
 // Time 0.07
-// Total time 0.82
+// Total time 0.83
 PASS: chk_fhan16
 // Using locale /usr/share/locale/
 // C
@@ -2634,7 +2647,6 @@ PASS: chk_fhan16
 // Maximum number of parallel threads 1
 // Giac share root-directory:/usr/share/giac/
 // Giac share root-directory:/usr/share/giac/
-Help file /usr/share/giac/doc/en/aide_cas not found
 Added 0 synonyms
 // Giac share root-directory:/usr/share/giac/
 // Warning: x,y,z, declared as global variable(s). If symbolic variables are required, declare them as local and run purge
@@ -2642,32 +2654,31 @@ Added 0 synonyms
 // Warning: rl, declared as global variable(s). If symbolic variables are required, declare them as local and run purge
 // End defining ql
 ============== restarted ===============
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Groebner basis computation time 0.000187 Memory 50.696M
-Warning! Could not loop or reach boundaries 
-Warning! Could not loop or reach boundaries 
-Warning! Could not loop or reach boundaries 
-// Time 0.09
-// Time 0
-// Time 0
-// Time 0
 // Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Groebner basis computation time 0.00018 Memory 55.156M
+Warning! Could not loop or reach boundaries 
+Warning! Could not loop or reach boundaries 
+Warning! Could not loop or reach boundaries 
+// Time 0.1
+// Time 0
+// Time 0
+// Time 0
+// Time 0
 // Time 0
 c'est bon, le point trouve est bien sur la cubique
-// Time 0
-// Time 0
 // Time 0.01
 // Time 0
 // Time 0
 // Time 0
 // Time 0
-// Groebner basis computation time 0.000582 Memory 52.928M
-S est
- bien  lisse. on peut continuer!
+// Time 0
 // Time 0.01
+// Groebner basis computation time 0.000572 Memory 57.268M
+Pas de chance, il faut prendre un autre P
+// Time 0
 // Time 0
 // Time 0
 // Time 0
@@ -2679,28 +2690,28 @@ c'est bon
 // Time 0
 // Time 0
 // Time 0
-// Time 0.01
 // Time 0
 // Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0.01
-// Time 0
-// Time 0.01
-// Time 0.14
-// Time 0.01
 // Time 0
 // Time 0
 // Time 0
 // Time 0.01
 // Time 0
+// Time 0
 // Time 0.01
+// Time 0
+// Time 0
+// Time 0.17
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
 Warning, argument is not an equation, solving (-4*a^6*u+10*a^6*v+57*a^6-18*a^5*u-13*a^5*v+13*a^5-4*a^4*u-15*a^4*v+92*a^4-10*a^3*u+67*a^3*v-458*a^3-66*a^2*u+91*a^2*v+523*a^2-62*a*u+36*a*v-885*a-16*u+4*v+298)/(a^6-2*a^5+9*a^4-16*a^3+24*a^2-32*a+16)=0
 // Time 0
-// Time 0
+// Time 0.01
 // Time 0.02
 // Time 0
 // Time 0
@@ -2708,14 +2719,14 @@ Warning, argument is not an equation, solving (-4*a^6*u+10*a^6*v+57*a^6-18*a^5*u
 // Time 0
 // Time 0
 // Time 0
-// Time 0.01
 // Time 0
+// Time 0.01
 // Time 0
 // Time 0.01
 // Time 0
 c'est bien de degre 27
 // Time 0
-// Total time 0.36
+// Total time 0.39
 PASS: chk_fhan17
 // Using locale /usr/share/locale/
 // C
@@ -2725,7 +2736,6 @@ PASS: chk_fhan17
 // Maximum number of parallel threads 1
 // Giac share root-directory:/usr/share/giac/
 // Giac share root-directory:/usr/share/giac/
-Help file /usr/share/giac/doc/en/aide_cas not found
 Added 0 synonyms
 // Giac share root-directory:/usr/share/giac/
 // Warning: A,x,P, declared as global variable(s). If symbolic variables are required, declare them as local and run purge
@@ -2740,7 +2750,7 @@ Added 0 synonyms
 // Time 0
 // Time 0
 // Time 0
-// Groebner basis computation time 0.000664 Memory 51.9M
+// Groebner basis computation time 0.000633 Memory 56.092M
 Warning! Could not loop or reach boundaries 
 Warning! Could not loop or reach boundaries undef
 Warning! Could not loop or reach boundaries 
@@ -2748,30 +2758,21 @@ Warning! Could not loop or reach boundaries
 Warning! Could not loop or reach boundaries 
 Warning! Could not loop or reach boundaries 
 Warning! Could not loop or reach boundaries 
-// Time 0.28
+// Time 0.27
 // Time 0
 // Time 0
-// Time 0.01
+// Time 0
 // Time 0
 // Time 0
 // Time 0
 Warning, argument is not an equation, solving -44*t^4-81*t^3-84*t^2-29*t-2+(16*t^4+15*t^3+41*t^2+23*t+2)*x=0
 // Time 0
-// Time 0
+// Time 0.01
 // Time 0
 // Time 0
 Warning, argument is not an equation, solving 77*t^3+73*t^2+6*t+(16*t^4+15*t^3+41*t^2+23*t+2)*y=0
 // Time 0
-// Time 0.19
-// Time 0
-// Time 0
-// Time 0
-// Time 0.01
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
+// Time 0.2
 // Time 0
 // Time 0
 // Time 0
@@ -2780,7 +2781,16 @@ Warning, argument is not an equation, solving 77*t^3+73*t^2+6*t+(16*t^4+15*t^3+4
 // Time 0.01
 // Time 0
 // Time 0
-// Total time 0.5
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Total time 0.49
 PASS: chk_fhan19
 // Using locale /usr/share/locale/
 // C
@@ -2790,7 +2800,6 @@ PASS: chk_fhan19
 // Maximum number of parallel threads 1
 // Giac share root-directory:/usr/share/giac/
 // Giac share root-directory:/usr/share/giac/
-Help file /usr/share/giac/doc/en/aide_cas not found
 Added 0 synonyms
 // Giac share root-directory:/usr/share/giac/
 ============== restarted ===============
@@ -2816,15 +2825,16 @@ Added 0 synonyms
 // Time 0
 // Time 0
 Warning: non-square matrix!
-// Time 0.01
+// Time 0
 // Time 0
 Warning: non-square matrix!
 // Time 0
-// Time 0
+// Time 0.01
 // Time 0
 Hyperbola of center (1201/284,-523/568)
 // Time 0.02
-// Groebner basis computation time 0.000243 Memory 54.396M
+// Groebner basis computation time 0.000269 Memory 60.284M
+Singular points directions: [cell_i, cell_j, singularity, next solution] []
 // Time 0.1
 // Time 0
 // Time 0
@@ -2836,21 +2846,21 @@ Hyperbola of center (1201/284,-523/568)
 // Time 0
 // Time 0.01
 // Time 0
-// Time 0
-// Time 0
-// Time 0
-// Groebner basis computation time 0.000961 Memory 55.776M
-// Time 0.01
 // Time 0.01
 // Time 0
+// Time 0
+// Groebner basis computation time 0.000605 Memory 61.68M
+// Time 0
 // Time 0.01
+// Time 0
+// Time 0
 // Time 0
 Line A-5*B+1=0
 Line A-3*B-6=0
 Line A-2*B-3=0
 Line A-2*B+2=0
 Line A-B+1=0
-// Time 0
+// Time 0.01
 // Total time 0.18
 PASS: chk_fhan20
 // Using locale /usr/share/locale/
@@ -2861,7 +2871,6 @@ PASS: chk_fhan20
 // Maximum number of parallel threads 1
 // Giac share root-directory:/usr/share/giac/
 // Giac share root-directory:/usr/share/giac/
-Help file /usr/share/giac/doc/en/aide_cas not found
 Added 0 synonyms
 // Giac share root-directory:/usr/share/giac/
 // Warning: x,g, declared as global variable(s). If symbolic variables are required, declare them as local and run purge
@@ -2882,7 +2891,6 @@ Added 0 synonyms
 // Time 0
 // Time 0
 // Time 0
-// Time 0.01
 // Time 0
 // Time 0
 // Time 0
@@ -2891,7 +2899,8 @@ Added 0 synonyms
 // Time 0
 // Time 0
 // Time 0
-// Time 0.01
+// Time 0.02
+// Time 0
 // Time 0.02
 // Time 0
 // Time 0
@@ -2918,17 +2927,17 @@ ca doit etre nul,0
 // Time 0
 // Time 0
 // Time 0
+// Time 0
+// Time 0
+// Time 0
 // Time 0.01
 // Time 0
+// Time 0.03
+// Time 0.08
 // Time 0
 // Time 0
 // Time 0
-// Time 0.04
-// Time 0.07
-// Time 0.01
-// Time 0
-// Time 0
-// Total time 0.21
+// Total time 0.2
 PASS: chk_fhan21
 // Using locale /usr/share/locale/
 // C
@@ -2938,7 +2947,6 @@ PASS: chk_fhan21
 // Maximum number of parallel threads 1
 // Giac share root-directory:/usr/share/giac/
 // Giac share root-directory:/usr/share/giac/
-Help file /usr/share/giac/doc/en/aide_cas not found
 Added 0 synonyms
 // Giac share root-directory:/usr/share/giac/
 // Success
@@ -2950,25 +2958,8 @@ Added 0 synonyms
 // Time 0
 // Time 0
 
-Evaluation time: 12.91
-// Time 12.91
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0.01
+Evaluation time: 13.29
+// Time 13.29
 // Time 0
 // Time 0
 // Time 0
@@ -2978,6 +2969,11 @@ Evaluation time: 12.91
 // Time 0
 // Time 0
 // Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
 // Time 0
 // Time 0
 // Time 0
@@ -3009,6 +3005,19 @@ Evaluation time: 12.91
 // Time 0
 // Time 0
 // Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
 // Time 0
 // Time 0
 // Time 0
@@ -3018,8 +3027,7 @@ Evaluation time: 12.91
 // Time 0
 // Time 0.01
 // Time 0
-// Time 0
-// Total time 12.96
+// Total time 13.35
 PASS: chk_fhan9
 // Using locale /usr/share/locale/
 // C
@@ -3029,7 +3037,6 @@ PASS: chk_fhan9
 // Maximum number of parallel threads 1
 // Giac share root-directory:/usr/share/giac/
 // Giac share root-directory:/usr/share/giac/
-Help file /usr/share/giac/doc/en/aide_cas not found
 Added 0 synonyms
 // Giac share root-directory:/usr/share/giac/
 // Warning: S, declared as global variable(s). If symbolic variables are required, declare them as local and run purge
@@ -3071,27 +3078,27 @@ Added 0 synonyms
 // Warning: distham,C, declared as global variable(s). If symbolic variables are required, declare them as local and run purge
 // Warning: distham,C, declared as global variable(s). If symbolic variables are required, declare them as local and run purge
 ============== restarted ===============
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
 // Time 0.01
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
-// Time 0
 // Time 0
 // Time 0
 // Time 0
@@ -3106,7 +3113,7 @@ menti a la question:,2
 votre nombre est:,13
 // Time 0
 // Time 0
-// Time 0.01
+// Time 0
 // Time 0
 // Time 0
 erreur
@@ -3132,7 +3139,7 @@ powerlist: recursive definition
 // Time 0
 BON
 // Time 0
-// Time 0
+// Time 0.01
 est il dans,[8,9,10,11,12,13,14,15]
 est il dans,[4,5,6,7,12,13,14,15]
 est il dans,[2,3,6,7,10,11,14,15]
@@ -3140,7 +3147,7 @@ est il dans,[1,3,5,7,9,11,13,15]
 est il dans,[1,2,4,7,9,10,12,15]
 est il dans,[1,2,5,6,8,11,12,15]
 est il dans,[1,3,4,6,8,10,13,15]
-// Time 0.01
+// Time 0
 // Time 0
 // Time 0
 // Time 0
@@ -3166,7 +3173,7 @@ You can explicitly call a simplification function like simplify(a-b)==0 to avoid
 // Time 0.02
 // Time 0.02
 // Time 0.02
-// Total time 0.09
+// Total time 0.08
 PASS: chk_fhan18
 // Using locale /usr/share/locale/
 // en_US.UTF8
@@ -3176,7 +3183,6 @@ PASS: chk_fhan18
 // Maximum number of parallel threads 1
 // Giac share root-directory:/usr/share/giac/
 // Giac share root-directory:/usr/share/giac/
-Help file /usr/share/giac/doc/en/aide_cas not found
 Added 0 synonyms
 // Giac share root-directory:/usr/share/giac/
 // Warning: x,f, declared as global variable(s). If symbolic variables are required, declare them as local and run purge
@@ -3203,9 +3209,6 @@ Added 0 synonyms
 // Time 0
 // Time 0
 // Time 0
-// Time 0
-// Time 0
-// Time 0
 // Time 0.01
 // Time 0
 // Time 0
@@ -3219,7 +3222,10 @@ Added 0 synonyms
 // Time 0
 // Time 0
 // Time 0
-// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0.03
 0.0857864376269
 0.00245310429357
 2.12390141741e-06
@@ -3234,22 +3240,22 @@ Added 0 synonyms
 0.0
 0.0
 0.0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
 // Time 0.01
 // Time 0
 // Time 0
 // Time 0
+// Time 0.08
 // Time 0
 // Time 0
 // Time 0
-// Time 0
-// Time 0.01
-// Time 0
-// Time 0
-// Time 0
-// Time 0.06
-// Time 0
-// Time 0
-// Time 0.01
 // Time 0
 // Time 0
 // Time 0
@@ -3266,16 +3272,16 @@ that the internal representation of regroup(a-b) is not 0.
 Therefore a==b may return false even if a and b are mathematically equal,
 if they have different internal representations.
 You can explicitly call a simplification function like simplify(a-b)==0 to avoid this.
-// Time 0.01
-// Time 0
-// Time 0
 // Time 0.02
 // Time 0
-// Total time 0.14
+// Time 0
+// Time 0.01
+// Time 0
+// Total time 0.17
 PASS: chk_fhan7
 ====================
 1 of 30 tests failed
 ====================
-make[1]: *** [Makefile:339: check-TESTS] Error 1
-make[1] : on quitte le répertoire « /home/parisse/giac-1.6.0/check »
-make: *** [Makefile:462: check-am] Error 2
+make[1]: *** [Makefile:349: check-TESTS] Error 1
+make[1] : on quitte le répertoire « /home/parisse/giac-1.7.0/check »
+make: *** [Makefile:472: check-am] Error 2

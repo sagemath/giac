@@ -66,6 +66,11 @@ inline giac::gen _graph_charpoly(const giac::gen &g,const giac::context *){ retu
 const char * mp_hal_input(const char * prompt) ;
 #endif
 
+#ifdef HAVE_LIBCURL
+#include <curl/curl.h>
+#include <curl/easy.h>
+#endif
+
 #ifndef NO_NAMESPACE_GIAC
 namespace giac {
 #endif // ndef NO_NAMESPACE_GIAC
@@ -373,6 +378,10 @@ namespace giac {
   static define_unary_function_eval (__asec,&_asec,_asec_s);
   define_unary_function_ptr5( at_asec ,alias_at_asec,&__asec,0,true);
 
+  static const char _arcsec_s []="arcsec";
+  static define_unary_function_eval (__arcsec,&_asec,_arcsec_s);
+  define_unary_function_ptr5( at_arcsec ,alias_at_arcsec,&__arcsec,0,true);
+
   gen _acsc(const gen & args,GIAC_CONTEXT){
     if ( args.type==_STRNG && args.subtype==-1) return  args;
     return asin(inv(args,contextptr),contextptr);
@@ -380,6 +389,10 @@ namespace giac {
   static const char _acsc_s []="acsc";
   static define_unary_function_eval (__acsc,&_acsc,_acsc_s);
   define_unary_function_ptr5( at_acsc ,alias_at_acsc,&__acsc,0,true);
+
+  static const char _arccsc_s []="arccsc";
+  static define_unary_function_eval (__arccsc,&_acsc,_arccsc_s);
+  define_unary_function_ptr5( at_arccsc ,alias_at_arccsc,&__arccsc,0,true);
 
   gen _acot(const gen & args,GIAC_CONTEXT){
     if ( args.type==_STRNG && args.subtype==-1) return  args;
@@ -395,6 +408,10 @@ namespace giac {
   static const char _acot_s []="acot";
   static define_unary_function_eval (__acot,&_acot,_acot_s);
   define_unary_function_ptr5( at_acot ,alias_at_acot,&__acot,0,true);
+
+  static const char _arccot_s []="arccot";
+  static define_unary_function_eval (__arccot,&_acot,_arccot_s);
+  define_unary_function_ptr5( at_arccot ,alias_at_arccot,&__arccot,0,true);
 
   // args=[u'*v,v] or [[F,u'*v],v] -> [F+u*v,-u*v']
   // a third argument would be the integration var
@@ -1514,6 +1531,10 @@ namespace giac {
       else
 	remain.push_back(tmp);
       f=_floor(tmp,0);
+      if (has_op(f,*at_floor)){
+	*logptr(contextptr) << "Unable to simplify " << f << "\n";
+	return res; 
+      }
       res.push_back(f);
       if (is_zero(tmp-f))
 	return res;
@@ -4654,7 +4675,7 @@ static define_unary_function_eval (__center2interval,&_center2interval,_center2i
       double inf,sup; // delta=h._DOUBLE_val-g._DOUBLE_val;
       it=v.begin();
       //  int nclass=itend-it;
-#if defined HAVE_LIBFLTK && defined GIAC_LMCHANGES // changes by L. Marohnić
+#if defined GIAC_LMCHANGES // changes by L. Marohnić
       vecteur res(1,symb_equal(change_subtype(gen(_AXES),_INT_PLOT),3));
 #else
       vecteur res;
@@ -4701,7 +4722,7 @@ static define_unary_function_eval (__center2interval,&_center2interval,_center2i
     double kbegin=std::floor((w1.front()-class_minimum)/class_size);
     double kend=std::floor((w1.back()-class_minimum)/class_size);
     vector<double>::const_iterator it=w1.begin(),itend=w1.end();
-#if defined HAVE_LIBFLTK && defined GIAC_LMCHANGES // changes by L. Marohnić
+#if defined GIAC_LMCHANGES // changes by L. Marohnić
     vecteur res(1,symb_equal(change_subtype(gen(_AXES),_INT_PLOT),3));
 #else
     vecteur res;
@@ -4748,7 +4769,7 @@ static define_unary_function_eval (__center2interval,&_center2interval,_center2i
     vecteur args;
     if (g.subtype==_SEQ__VECT)
       args=*g._VECTptr;
-#if defined HAVE_LIBFLTK && defined GIAC_LMCHANGES // changes by L. Marohnić
+#if defined GIAC_LMCHANGES // changes by L. Marohnić
     vecteur attributs(1,int(FL_DARK1));
     int s=read_attributs(args,attributs,contextptr);
     int col=attributs[0].val;
@@ -6024,7 +6045,7 @@ static define_unary_function_eval (__bitxor,&_bitxor,_bitxor_s);
     if ( g.type==_STRNG && g.subtype==-1) return  g;
     if (g.type==_INT_)
       return ~g.val;
-#if !defined(USE_GMP_REPLACEMENTS)
+#if !defined(USE_GMP_REPLACEMENTS) && !defined(BF2GMP_H)
     if (g.type==_ZINT){
       ref_mpz_t *  e = new ref_mpz_t;
       mpz_com(e->z,*g._ZINTptr);
@@ -8289,10 +8310,16 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
     gen f2=derive(f1,x,contextptr);
 #if 1
     int cm=calc_mode(contextptr);
+    gen c,c1,c2;
+#ifndef NO_STDEXCEPT
+    try {
+#endif
     calc_mode(-38,contextptr); // avoid rootof
-    gen c1=solve(f1,x,periode==0?2:0,contextptr);
-    if (is_undef(c1))
+    c1=solve(f1,x,periode==0?2:0,contextptr);
+    if (is_undef(c1)){
+      calc_mode(cm,contextptr); 
       return 0;
+    }
     // add approx root if not detected by exact solver
     double eps=epsilon(contextptr);
     gen c1f=evalf(c1,1,contextptr);
@@ -8314,7 +8341,11 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
       }
       c1=gen(w,c1.subtype);
     }
-    gen c2=(!(do_inflex_tabsign & 1) || is_zero(f2))?gen(vecteur(0)):solve(_numer(f2,contextptr),x,periode==0?2:0,contextptr),c(c1);
+    c2=(!(do_inflex_tabsign & 1) || is_zero(f2))?gen(vecteur(0)):solve(_numer(f2,contextptr),x,periode==0?2:0,contextptr);
+    c=c1;
+#ifndef NO_STDEXCEPT
+    } catch (std::runtime_error & err) { calc_mode(cm,contextptr); throw(err);}
+#endif
     calc_mode(cm,contextptr);
     step_infolevel(st,contextptr);
     if (x!=xval)
@@ -9096,8 +9127,8 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
     return gensizeerr(contextptr);
   }
   static const char _range_s []="range";
-  static define_unary_function_eval (__range,&_range,_range_s);
-  define_unary_function_ptr5( at_range ,alias_at_range,&__range,0,true);
+  static define_unary_function_eval (__giac_range,&_range,_range_s);
+  define_unary_function_ptr5( at_range ,alias_at_range,&__giac_range,0,true);
 
   string strip(const string & s,const string &chars){
     int ss=int(s.size()),cs=int(chars.size()),i,j;
@@ -9226,6 +9257,10 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
   define_unary_function_ptr5( at_python_list ,alias_at_python_list,&__python_list,0,true);
 
   bool freeze=false;
+  void console_freeze(){
+    giac::freeze=true;
+  }
+
   int rgb565to888(int c){
     c &= 0xffff;
     int r=(c>>11)&0x1f,g=(c>>5)&0x3f,b=c&0x1f;
@@ -9243,6 +9278,10 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
     }
     return rgb(g,contextptr);
   }
+
+#ifndef KHICAS
+void sync_screen(){}
+#endif
 
   gen _set_pixel(const gen & a_,GIAC_CONTEXT){
     freeze=true;
@@ -9333,6 +9372,9 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
   void set_pixel(int x,int y,int c,GIAC_CONTEXT){
     _set_pixel(makesequence(x,y,c),contextptr);
   }
+  void set_pixel(int x,int y,int c){
+    _set_pixel(makesequence(x,y,c),context0);
+  }
   void set_pixel(double x,double y,int c,GIAC_CONTEXT){
     _set_pixel(makesequence(int(x+.5),int(y+.5),c),contextptr);
   }
@@ -9354,6 +9396,7 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
       return gensizeerr(contextptr);
     screen_w=giacmax(1,w.val);
     screen_h=giacmax(1,h.val);
+    return 1;
   }
   static const char _set_screen_s []="set_screen";
   static define_unary_function_eval (__set_screen,&_set_screen,_set_screen_s);
@@ -10097,6 +10140,13 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
   static define_unary_function_eval (__modf,&_modf,_modf_s);
   define_unary_function_ptr5( at_modf ,alias_at_modf,&__modf,0,true);
 
+  gen _leafsize(const gen & g,GIAC_CONTEXT){
+    return int(taille(g,RAND_MAX));
+  }
+  static const char _leafsize_s []="leafsize";
+  static define_unary_function_eval (__leafsize,&_leafsize,_leafsize_s);
+  define_unary_function_ptr5( at_leafsize ,alias_at_leafsize,&__leafsize,0,true);
+  
 #if defined HAVE_UNISTD_H && !defined NUMWORKS
   void locate_files(const char * dirname,const char * ext_,vector<string> & v,bool recurse,GIAC_CONTEXT){
     DIR *dp;
@@ -10410,8 +10460,6 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
     
 #else // EMCC
 #ifdef HAVE_LIBCURL
-#include <curl/curl.h>
-#include <curl/easy.h>
   //#include <curl/curlbuild.h>
   size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream) {
     string data((const char*) ptr, (size_t) size * nmemb);

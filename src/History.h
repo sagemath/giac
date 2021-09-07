@@ -4,11 +4,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#ifndef IN_GIAC
-#include <giac/first.h>
-#else
 #include "first.h"
-#endif
 #ifdef HAVE_LIBFLTK
 #include <FL/Fl_Pack.H>
 #include <FL/Fl_Button.H>
@@ -21,12 +17,8 @@
 #include <FL/Fl_Tabs.H>
 #endif
 #include <string>
-#ifndef IN_GIAC
-#include <giac/giac.h>
-#else
 #include "giacPCH.h"
 #include "giac.h"
-#endif
 
 #ifdef HAVE_LIBFLTK
 char *file_chooser(const char *message,const char *pat,const char *fname,int relative=0);
@@ -215,6 +207,7 @@ namespace xcas {
     void set_scroller(Fl_Group * gr); // make gr visible by scrolling history pack
   };
 
+  void new_program(Fl_Widget * m, int load);
   // Exported so that we can use it inside Geometry Edit menu
   void cb_Rm_Answers(Fl_Widget* m , void*) ;
   void cb_Delete(Fl_Widget* m , void*) ;
@@ -223,6 +216,9 @@ namespace xcas {
   void History_cb_Save_as_xcas_casio(Fl_Widget* m , void*) ;
   void History_cb_Save_as_xcas_nspire(Fl_Widget* m , void*) ;
   void History_cb_Save_as_xcas_numworks(Fl_Widget* m , void*) ;
+  void History_cb_Save_as_numworks_archive(Fl_Widget* m , void*) ;
+  void History_cb_Save_as_numworks_calculator(Fl_Widget* m , void*) ;
+  void History_cb_Send_session_numworks(Fl_Widget* m , void*) ;
   void History_cb_Save_as_xcas_text(Fl_Widget* m , void*) ;
   void History_cb_Save_as_xcaspy_text(Fl_Widget* m , void*) ;
   void History_cb_Save_as_maple_text(Fl_Widget* m , void*) ;
@@ -268,6 +264,9 @@ namespace xcas {
   int parse(Fl_Widget * w,giac::gen & g);
   bool set_gen_value(Fl_Widget * w,const giac::gen & g);
   bool set_value(Fl_Widget * w,const std::string & s,bool exec);
+  // translate Xcas session encoded in python C string s_
+  bool xwaspy_decode(const char * s_,string & s);
+  std::string casio2xws(const char * s,int ss,int l,const giac::context * contextptr,bool eval_var=true);
 
   // Get surrounding History_Pack if it exists
   History_Pack * get_history_pack(const Fl_Widget * w);
@@ -325,7 +324,7 @@ namespace xcas {
     bool close();
     void clear_modified();
     void eval();
-    void update_status();
+    void update_status(bool force=false);
   };
 
   class Xcas_Tabs:public Fl_Tabs {

@@ -106,17 +106,40 @@ inline double giac_log(double d){
 #endif
 
 extern "C" int ctrl_c_interrupted(int exception);
+extern "C" void console_print(const char * s);
+extern "C" const char * console_prompt(const char * s);
+
+bool dfu_get_scriptstore_addr(size_t & start,size_t & taille);
+bool dfu_get_scriptstore(const char * fname);
+bool dfu_send_scriptstore(const char * fname);
+bool dfu_send_rescue(const char * fname);
+const int nwstoresize1=0x8000,nwstoresize2=0x8014;
+bool dfu_send_firmware(const char * fname);
+bool dfu_send_apps(const char * fname);
+
 #if defined HAVE_LIBMICROPYTHON
 #include <string>
 // giac interface to micropython modules
-extern std::string python_console;
+std::string & python_console();
 #endif
+#ifdef QUICKJS
+#include <string>
+extern std::string js_vars;
+#endif
+int js_token(const char * list,const char * buf);
+int js_token(const char * buf);
+void update_js_vars();
 
 extern bool freezeturtle;
+extern "C" size_t pythonjs_stack_size,pythonjs_heap_size;
+extern "C" void * bf_ctx_ptr;
+extern "C" size_t bf_global_prec;
 
 #ifndef NO_NAMESPACE_GIAC
 namespace giac {
 #endif // ndef NO_NAMESPACE_GIAC
+  // 3 or 1 if a list of space separated commandnames includes buf
+
   int dichotomic_search(const char * const * tab,unsigned tab_size,const char * s);
   void opaque_double_copy(void * source,void * target);
   double opaque_double_val(const void * source);
@@ -264,6 +287,7 @@ Boolean isLegalUTF8Sequence(const UTF8 *source, const UTF8 *sourceEnd);
   extern int NEWTON_DEFAULT_ITERATION;
   extern int DEFAULT_EVAL_LEVEL;
   extern int PARENTHESIS_NWAIT;
+  extern int MAX_PROD_EXPAND_SIZE;
 
   extern int TEST_PROBAB_PRIME; // probabilistic primality tests
   extern int GCDHEU_MAXTRY; // maximal number of retry for heuristic algorithms
@@ -292,9 +316,11 @@ Boolean isLegalUTF8Sequence(const UTF8 *source, const UTF8 *sourceEnd);
   // extern int GBASISF4_BUCHBERGER;
   extern unsigned max_pairs_by_iteration; 
   extern unsigned simult_primes,simult_primes2,simult_primes_seuil2,simult_primes3,simult_primes_seuil3; 
+  // see global.cc for explanations
   extern double gbasis_reinject_ratio;
   extern double gbasis_reinject_speed_ratio;
-  extern int gbasis_logz_age_sort,gbasis_stop;
+  extern int gbasis_logz_age_sort,gbasis_stop,rur_do_gbasis,rur_do_certify,rur_certify_maxthreads;
+
   extern int PROOT_FACTOR_MAXDEG;
   extern int ABS_NBITS_EVALF;
   extern volatile bool ctrl_c,interrupted,kbd_interrupted;
@@ -500,6 +526,17 @@ throw(std::runtime_error("Stopped by user interruption.")); \
   typedef std::map<const char *, gen,ltstr> map_charptr_gen;
   typedef map_charptr_gen sym_tab;
 
+  struct nwsrec {
+    unsigned char type;
+    std::vector<unsigned char> data;
+  };
+  typedef std::map<std::string,nwsrec,ltstring> nws_map;
+  bool scriptstore2map(const char * fname,nws_map & m);
+  bool map2scriptstore(const nws_map & m,const char * fname);
+  // check that filename content matches a file content signed in sigfilename
+  bool sha256_check(const char * sigfilename,const char * filename);
+  bool nws_certify_firmware(bool with_overwrite,GIAC_CONTEXT); // Numworks certification
+
   struct parser_lexer {
     int _index_status_; // 0 if [ -> T_VECT_DISPATCH, 1 if [ -> T_INDEX_BEGIN
     int _opened_quote_; // 1 if we are inside a quote
@@ -516,6 +553,7 @@ throw(std::runtime_error("Stopped by user interruption.")); \
     int _i_sqrt_minus1_;
   };
   std::string gen2string(const gen & g);
+  const int turtle_length=10;
 #ifdef KHICAS
   struct logo_turtle {
     double x,y;
@@ -523,13 +561,13 @@ throw(std::runtime_error("Stopped by user interruption.")); \
     bool visible; // true if turtle visible
     bool mark; // true if moving marks
     bool direct; // true if rond/disque is done in the trigonometric direction
+    char turtle_width;
+    short int s;//std::string s;
     int color;
-    int turtle_length;
     int radius; // 0 nothing, >0 -> draw a plain disk 
     // bit 0-8=radius, bit9-17 angle1, bit 18-26 angle2, bit 27=1 filled  or 0 
     // <0 fill a polygon from previous turtle positions
-    int s;//std::string s;
-    logo_turtle(): x(100),y(100),theta(0),visible(true),mark(true),direct(true),color(0),turtle_length(10),radius(0) {}
+    logo_turtle(): x(100),y(100),theta(0),visible(true),mark(true),direct(true),color(0),turtle_width(1),radius(0) {}
   };
 #else // KHICAS
   struct logo_turtle {
@@ -539,16 +577,16 @@ throw(std::runtime_error("Stopped by user interruption.")); \
     bool mark; // true if moving marks
     bool direct; // true if rond/disque is done in the trigonometric direction
     int color;
-    int turtle_length;
+    int turtle_width;
     int radius; // 0 nothing, >0 -> draw a plain disk 
     // bit 0-8=radius, bit9-17 angle1, bit 18-26 angle2, bit 27=1 filled  or 0 
     // <0 fill a polygon from previous turtle positions
     std::string s;
     void * widget;
 #ifdef IPAQ
-    logo_turtle(): x(70),y(70),theta(0),visible(true),mark(true),direct(true),color(0),turtle_length(10),radius(0),widget(0) {}
+    logo_turtle(): x(70),y(70),theta(0),visible(true),mark(true),direct(true),color(0),turtle_width(1),radius(0),widget(0) {}
 #else
-    logo_turtle(): x(100),y(100),theta(0),visible(true),mark(true),direct(true),color(0),turtle_length(10),radius(0),widget(0) {}
+    logo_turtle(): x(100),y(100),theta(0),visible(true),mark(true),direct(true),color(0),turtle_width(1),radius(0),widget(0) {}
 #endif
   };
 #endif // KHICAS
@@ -593,6 +631,9 @@ throw(std::runtime_error("Stopped by user interruption.")); \
     bool _atan_tan_no_floor_;
     bool _keep_acosh_asinh_;
     bool _keep_algext_;
+    bool _auto_assume_;
+    bool _parse_e_;
+    bool _convert_rootof_;
     int _python_compat_;
     int _angle_mode_;
     int _bounded_function_no_;
@@ -770,6 +811,15 @@ throw(std::runtime_error("Stopped by user interruption.")); \
 
   bool & keep_algext(GIAC_CONTEXT);
   void keep_algext(bool b,GIAC_CONTEXT);
+
+  bool & auto_assume(GIAC_CONTEXT);
+  void auto_assume(bool b,GIAC_CONTEXT);
+
+  bool & parse_e(GIAC_CONTEXT);
+  void parse_e(bool b,GIAC_CONTEXT);
+
+  bool & convert_rootof(GIAC_CONTEXT);
+  void convert_rootof(bool b,GIAC_CONTEXT);
 
   bool & do_lnabs(GIAC_CONTEXT);
   void do_lnabs(bool b,GIAC_CONTEXT);

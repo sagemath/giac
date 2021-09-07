@@ -2,6 +2,7 @@
 #include "Editeur.h"
 #include "Input.h"
 #include "Tableur.h"
+#include "Python.h"
 #ifdef HAVE_LIBMICROPYTHON
 extern "C" int mp_token(const char * line);
 #endif
@@ -29,6 +30,7 @@ extern "C" int mp_token(const char * line);
 #include <FL/fl_ask.H>
 #include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Tooltip.H>
+#include <FL/Fl_Hold_Browser.H>
 #include <fstream>
 #include "vector.h"
 #include <algorithm>
@@ -219,7 +221,7 @@ namespace xcas {
     int	last;
     char buf[255], *bufptr;
     const char *temp;
-    
+    update_js_vars();
     for (current = *style, col = 0, last = 0; length > 0; length --, text ++) {
       if (current == 'B' || current>='E') current = 'A';
       if (current == 'A') {
@@ -254,13 +256,18 @@ namespace xcas {
 	    *bufptr = '\0';
 	    
 	    bufptr = buf;
-	    bool test;
-	    if (mode==4)
-	      test=is_python_keyword(bufptr);
+	    bool test=false;
+#ifdef QUICKJS
+	    if (mode<0)
+	      test=is_js_keyword(bufptr);
 	    else
-	      test=bsearch(&bufptr, code_keywords,
+#endif
+	      if (mode==4)
+		test=is_python_keyword(bufptr);
+	      else
+		test=bsearch(&bufptr, code_keywords,
 			   sizeof(code_keywords) / sizeof(code_keywords[0]),
-			   sizeof(code_keywords[0]), compare_keywords);
+			     sizeof(code_keywords[0]), compare_keywords);
 	    if (test) {
 	      current='A';
 	      while (text < temp) {
@@ -275,7 +282,12 @@ namespace xcas {
 	      last = 1;
 	      continue;
 	    } else {
-	      bool test;
+	      int test=0;
+#ifdef QUICKJS // FIXME
+	      if (mode<0)
+		test=js_token(js_vars.c_str(),buf);
+	      else
+#endif
 #ifdef HAVE_LIBMICROPYTHON
 	      if (mode==4){
 		int tok=mp_token(bufptr);
@@ -404,7 +416,8 @@ namespace xcas {
     //         start, end, text, style);
     
     context * contextptr=get_context((Xcas_Text_Editor *) cbArg);
-    int mode=python_compat(contextptr) & 4;
+    int pyc=python_compat(contextptr);
+    int mode=pyc<0?pyc:pyc & 4;
     style_parse(text, style, end - start,mode);
     
     //  printf("new style = \"%s\"...\n", style);
@@ -634,13 +647,22 @@ namespace xcas {
     xcas_mode(contextptr)=save_maple_mode;
   }
 
-  void cb_editeur_insert(Fl_Menu_ * m,const string & extension,int mode){
+  void cb_editeur_insert(Fl_Menu_ * m,const string & extension,int mode,bool lock=false){
     Fl_Text_Editor * e = find_editor(m);
     if (e){
       char * newfile = load_file_chooser("Insert program",("*"+extension).c_str(), ("session"+extension).c_str(),0,false);
       if ( file_not_available(newfile) )
 	return;
       editeur_insert(e,newfile,mode);
+      // lock it
+      if (lock){
+	if (Xcas_Text_Editor *xe=dynamic_cast<Xcas_Text_Editor *>(e)){
+	  xe->locked=true;
+	  if (Editeur * ed=dynamic_cast<Editeur *>(e->parent())){
+	    ed->output->value(remove_path(newfile).c_str());
+	  }
+	}
+      }
     }
   }
 
@@ -650,6 +672,10 @@ namespace xcas {
 
   static void cb_Editeur_Insert_Xcas(Fl_Menu_* m , void*) {
     cb_editeur_insert(m,".cxx",0);
+  }
+
+  static void cb_Editeur_Insert_Numworks(Fl_Menu_* m , void*) {
+    cb_editeur_insert(m,"xw.py",0,true /* lock */);
   }
 
   static void cb_Editeur_Insert_Python(Fl_Menu_* m , void*) {
@@ -777,8 +803,126 @@ namespace xcas {
     }
   }
 
+  void send_numworks(const string & name_,const string & res){
+    string name=remove_path(remove_extension(name_));
+    if (name.size()<1) name="prog";
+    if (res.size()>8 && res.substr(0,8)=="#xwaspy\n"){
+      if (name.size()<3 || name.substr(name.size()-3,3)!="_xw"){
+	if (name.substr(name.size()-2,2)=="xw")
+	  name=name.substr(0,name.size()-2)+"_xw";
+	else
+	  name+="_xw";
+      }      
+    }
+    name+=".py";
+    char backup[]="__calcbk.nws";
+    if (!dfu_get_scriptstore(backup)){
+      fl_alert("%s",gettext("Check calculator connection"));
+      return;
+    }
+    nws_map m;
+    if (!scriptstore2map(backup,m)){
+      fl_alert("%s",gettext("Invalid scriptstore"));
+      return;
+    }
+    nws_map::const_iterator it=m.find(name),itend=m.end();
+    if (it!=itend){
+      int i=fl_ask("%s",gettext("Program exists on calculator. Overwrite?"));
+      if (i==0)
+	return;      
+    }
+    nwsrec r;
+    r.type=0;
+    r.data.resize(res.size());
+    memcpy(&r.data[0],res.c_str(),res.size());
+    m[name]=r;
+    if (!map2scriptstore(m,backup)){
+      fl_alert("%s",gettext("Data would not fit on calculator, probably too large."));
+      return;
+    }
+    if (!dfu_send_scriptstore(backup)){
+      fl_alert("%s",gettext("Check calculator connection"));
+      return;
+    }    
+  }
+
+  string select_nws(const nws_map & m,bool pyonly,bool xcasonly){
+    static Fl_Window * w = 0;
+    static Fl_Hold_Browser * br = 0;
+    if (!w){
+      Fl_Group::current(0);
+      w=new Fl_Window(300,300);
+      br = new Fl_Hold_Browser(2,2,w->w()-4,w->h()-4);
+      br->label(gettext("Select a script"));
+      w->label(gettext("Numworks scripts"));
+      w->end();
+    }
+    br->clear();
+    nws_map::const_iterator it=m.begin(),itend=m.end();
+    vector<string> v;
+    for (;it!=itend;++it){
+      string s=it->first;
+      if (s.size()<3 || s.substr(s.size()-3,3)!=".py")
+	continue;
+      bool xcas=s.size()>5 && s.substr(s.size()-5,2)=="xw";
+      if (pyonly && xcas) continue;
+      if (xcasonly && !xcas) continue;
+      v.push_back(it->first);
+      br->add(v.back().c_str());
+    }
+    w->set_modal();
+    w->show();
+    w->hotspot(w);
+    Fl::focus(br);
+    Fl_Widget *o=0;
+    for (;;){
+      o = Fl::readqueue();
+      if (o==w || o==br)
+	break;
+      else {
+	Fl::wait(0.0001);
+	usleep(1000);
+      }
+    }
+    w->hide();
+    if (o==w || br->value()==0) return "";
+    return v[br->value()-1];
+  }
+
+  void cb_Editeur_Send_Numworks(Fl_Widget * m_ , void*) {
+    Fl_Text_Editor * e = find_editor(m_);
+    if (!e) return;
+    Editeur * ed=dynamic_cast<Editeur *>(e->parent());
+    string name(ed->output->value());
+    char * ch=e->buffer()->text(); 
+    string res(ch); 
+    free(ch);
+    send_numworks(name,res);
+  }
+
   static void cb_Editeur_Save(Fl_Widget * m , void*) {
     Fl_Text_Editor * e = find_editor(m);
+    Editeur * ed=dynamic_cast<Editeur *>(e->parent());
+    if (strlen(ed->output->value())){
+      if (ed->editor->locked){
+	string filename(remove_extension(ed->output->value()));
+	char * ch=ed->editor->buffer()->text(); 
+	string res(ch),S; 
+	free(ch);
+	if (filename.size()>2 && xwaspy_decode(res.c_str(),S)){
+	  S=casio2xws(S.c_str(),S.size(),e->labelsize(),get_context(ed),false /* do not eval variables */);
+	  filename=filename.substr(0,filename.size()-2)+".xws";
+	  ofstream of(filename.c_str());
+	  of << S ;
+	  of.close();
+	  fl_alert("Encoded Xcas session saved to %s",filename.c_str());
+	  return;
+	}
+      }
+      e->buffer()->savefile(ed->output->value());
+      e->clear_changed();
+      return;
+    }
     if (e // && e->changed()
 	){
       if (e->label() && e->label()[0]){
@@ -1235,8 +1379,14 @@ namespace xcas {
   }
 
   bool Editeur::eval(){
-    log = find_log_output(parent());
+    int pythonjs=editor->pythonjs;
+    if (pythonjs<0 || (pythonjs & 4)){
+      // FIXME, move cursor
+      do_callback();
+      return true;
+    }
     const context * contextptr = get_context(this);
+    log = find_log_output(parent());
     static string logs;
     if (log){
       logs=gettext("Syntax compatibility mode: ")+print_program_syntax(xcas_mode(contextptr))+"\n";
@@ -1261,6 +1411,7 @@ namespace xcas {
       // int pos2=editor->buffer()->skip_lines(pos1,1);
       int pos2=pos1+giac::lexer_column_number(contextptr)-1;
       pos1=giacmax(pos2-giac::error_token_name(contextptr).size(),0);
+      editor->insert_position(pos1);
       editor->buffer()->select(pos1,pos2);
       editor->show_insert_position();
       editor->redraw();
@@ -1315,7 +1466,7 @@ namespace xcas {
     }
   }
 
-  static void cb_Editeur_Test(Fl_Widget* m , void*) {
+  static void cb_Editeur_Parse(Fl_Widget* m , void*) {
     Fl_Text_Editor * e = find_editor(m);
     if (e){
       Fl::focus(e);
@@ -1337,6 +1488,7 @@ namespace xcas {
 	  l=1;
 	int newpos=e->buffer()->skip_lines(0,int(l)-1);
 	e->insert_position(newpos);
+	e->show_insert_position();
       }
     }
   }
@@ -1439,6 +1591,7 @@ namespace xcas {
 	  // int pos2=e->editor->buffer()->skip_lines(pos1,1);
 	  int pos2=pos1+giac::lexer_column_number(contextptr)-1;
 	  pos1=giacmax(pos2-giac::error_token_name(contextptr).size(),0);
+	  e->editor->insert_position(pos1);
 	  e->editor->buffer()->select(pos1,pos2);
 	  e->editor->show_insert_position();
 	  e->editor->redraw();
@@ -1640,7 +1793,7 @@ namespace xcas {
       y_ += dh;
       ifclause=new Fl_Input(dw/2,y_,3*dw/2-2,dh-2,gettext("then"));
       ifclause->tooltip(gettext("Enter instruction(s) executed when test returns true, e.g. x:=-x;"));
-      ifclause->value("x:=1-x;");
+      ifclause->value("x+=1;");
       y_ += dh;
       elseclause=new Fl_Input(dw/2,y_,3*dw/2-2,dh-2,gettext("else"));
       elseclause->tooltip(gettext("Enter instruction(s) executed when test returns false, leave empty if none."));
@@ -1690,19 +1843,25 @@ namespace xcas {
     w->hide();
     if (r==0){
       giac::context * contextptr = get_context(ed);
-      bool python=python_compat(contextptr);
+      bool python=python_compat(contextptr)>0;
+      bool js=python_compat(contextptr)<0;
       int i=ed->insert_position();
-      string s=python?"if ":"si ";
+      string s=js?"if (":(python?"if ":"si ");
       s += cond->value();
-      s += python?":\n":" alors ";
+      s += js?"){\n":(python?":\n":" alors ");
       s += ifclause->value();
       gen g(elseclause->value(),contextptr);
       bool ifonly=is_undef(g);
       if (!ifonly){
-	s += python?"\nelse:\n":" sinon ";
+	s += js?"\n} else {\n":(python?"\nelse:\n":" sinon ");
 	s += elseclause->value();
       }
-      if (python) s+="\n"; else s += " fsi;\n";
+      if (js) 
+	s+= "\n}";
+      else if (python) 
+	s+="\n"; 
+      else 
+	s += " fsi;\n";
       ed->buffer()->insert(i,s.c_str());
       int delta=s.size();
       if (Xcas_Text_Editor * xed=dynamic_cast<Xcas_Text_Editor *>(ed)){
@@ -1722,10 +1881,20 @@ namespace xcas {
 	  ed->insert_position(i+delta);
 	  Fl_Text_Editor::kf_backspace(0,ed);
 	  xed->dedent();
-	} else ed->insert_position(i+delta);
+	} else {
+	  int pos=xed->indent(i+delta);
+	  ed->insert_position(pos);
+	  if (js){
+	    ed->buffer()->insert(pos,"\n");
+	    pos=xed->indent(pos+1);
+	    ed->insert_position(pos);
+	  }
+	}
       }
-      else
-	ed->insert_position(i+delta);
+      else {
+	int pos=xed->indent(i+delta);
+	ed->insert_position(pos);
+      }
     }
   }
 
@@ -1831,60 +2000,95 @@ namespace xcas {
     w->hide();
     if (r==0){
       giac::context * contextptr = get_context(ed);
-      bool python=python_compat(contextptr);
+      bool python=python_compat(contextptr)>0;
+      bool js=python_compat(contextptr)<0;
       int i=ed->insert_position();
       string s;
       if (tantque->value()){
 	if (python)
 	  s = "while ";
+	else if (js)
+	  s = "while (";
 	else
 	  s = "tantque ";
 	s += cond->value();
 	if (python)
 	  s += ":\n";
+	else if (js)
+	  s += ") do {\n";
 	else
 	  s += " faire\n";
 	s +=  loop->value();
-	if (python) s+="\n\n"; else s += "\nftantque;\n";
+	if (python) 
+	  s+="\n\n"; 
+	else if (js) 
+	  s += "\n}\n";
+	else s += "\nftantque;\n";
       }
       else {
-	if (python)
-	  s="for ";
-	else
-	  s="pour ";
-	s += count->value();
-	if (python){
-	  s += " in range(";
-	  s += start->value();
-	  s += ",";
-	  s += stop->value();
+	gen g(step->value(),contextptr);
+	if (js){
+	  s="for(";
+	  s+=count->value();
+	  s+='=';
+	  s+=start->value();
+	  s+=";";
+	  s+=count->value();
+	  if (is_positive(-g,contextptr))
+	    s += ">=";
+	  else
+	    s+="<=";
+	  s+=stop->value();
+	  s+=";";
+	  s+=count->value();
+	  if (is_undef(g))
+	    s+="++";
+	  else {
+	    s+="+=";
+	    s += g.print(contextptr);
+	  }
+	  s+="){\n";
+	  s+=loop->value();
+	  s+="\n}\n";
 	}
 	else {
-	  s += " de ";
-	  s += start->value();
-	  s += " jusque ";
-	  s += stop->value()+(python?1:0);
-	}
-	gen g(step->value(),contextptr);
-	if (!is_undef(g)){
+	  if (python)
+	    s="for ";
+	  else
+	    s="pour ";
+	  s += count->value();
 	  if (python){
-	    s += ',';
-	    s += step->value();
+	    s += " in range(";
+	    s += start->value();
+	    s += ",";
+	    s += stop->value();
 	  }
 	  else {
-	    s += " pas ";
-	    s += step->value();
+	    s += " de ";
+	    s += start->value();
+	    s += " jusque ";
+	    s += stop->value()+(python?1:0);
 	  }
+	  if (!is_undef(g)){
+	    if (python){
+	      s += ',';
+	      s += step->value();
+	    }
+	    else {
+	      s += " pas ";
+	      s += step->value();
+	    }
+	  }
+	  if (python)
+	    s+="):\n";
+	  else
+	    s += " faire\n";
+	  s += loop->value();
+	  if (python)
+	    s += "\n";
+	  else
+	    s += "\nfpour;\n";
 	}
-	if (python)
-	  s+="):\n";
-	else
-	  s += " faire\n";
-	s += loop->value();
-	if (python)
-	  s += "\n";
-	else
-	  s += "\nfpour;\n";
       }
       ed->buffer()->insert(i,s.c_str());
       int delta=s.size();
@@ -1910,7 +2114,8 @@ namespace xcas {
 
   void cb_choose_func(Fl_Text_Editor * ed){
     giac::context * contextptr = get_context(ed);
-    bool python=python_compat(contextptr);
+    bool python=python_compat(contextptr)>0;
+    bool js=python_compat(contextptr)<0;
     int dx=240,dy=300,l=14;
     if (ed->window()){
       dx=int(0.5*ed->window()->w());
@@ -1985,7 +2190,8 @@ namespace xcas {
     }
     autosave_disabled=false;
     w->hide();
-    bool syntaxefr=lang==1; // activer apres les concours 2017
+    if (js) xcas_mode(0,contextptr);
+    bool syntaxefr=!js && lang==1; // activer apres les concours 2017
     if (r==0){
       int i=0,addi=0; // i=ed->insert_position(),addi=0;
       string s;
@@ -1996,6 +2202,7 @@ namespace xcas {
 	else {
 	  if (syntaxefr)
 	    s+="fonction ";
+	  //else s+="function ";
 	}
 	s+=name->value();
 	s+='(';
@@ -2004,12 +2211,14 @@ namespace xcas {
 	if (python)
 	  s += ":";
 	else {
-	  if (!syntaxefr)
+	  if (js)
+	    s+="{";
+	  else if (!syntaxefr)
 	    s+=":={";
 	}
 	s+="\n";
 	if (!python && strlen(locs->value())){
-	  s+=python?"    # local ":"  local ";
+	  s+=python?"    # local ":"  var ";
 	  s+=locs->value();
 	  if (python) 
 	    s+="\n    "; 
@@ -2019,7 +2228,7 @@ namespace xcas {
 	addi=s.size();
 	s += "\n";
 	if (strlen(ret->value())){
-	  if (lang==1 && !python)
+	  if (lang==1 && !python && !js)
 	    s+="  retourne ";
 	  else
 	    s+=python?"    return ":"  return ";
@@ -2034,7 +2243,10 @@ namespace xcas {
 	    s+="ffonction";
 	  else
 	    s+="}";
-	  s+=":;\n\n";
+	  if (!js)
+	    s+=":;\n\n";
+	  else
+	    s+="\n\n";
 	}
 	ed->buffer()->insert(i,s.c_str());  
 	ed->insert_position(i+addi);
@@ -2141,11 +2353,11 @@ namespace xcas {
     if (ed){
       giac::context * contextptr = get_context(ed);
       int i=ed->insert_position();
-      ed->buffer()->insert(i,xcas_mode(contextptr)==3?"\n:Local ":"local ;\n  ");
+      ed->buffer()->insert(i,xcas_mode(contextptr)==3?"\n:Local ":"var ;\n  ");
       ed->insert_position(i+6);
     }
     else
-      Xcas_input_0arg("local ;");    
+      Xcas_input_0arg("var ;");    
   }
 
   static void cb_prg_return(Fl_Menu_* m , void*) {
@@ -2460,6 +2672,7 @@ namespace xcas {
     {gettext("Load"), 0,  (Fl_Callback*)cb_Editeur_Load, 0, 0, 0, 0, 14, 56},
     {gettext("Insert"), 0,  0, 0, 64, 0, 0, 14, 56},
     {gettext("File"), 0,  (Fl_Callback*)cb_Editeur_Insert_File, 0, 0, 0, 0, 14, 56},
+    {gettext("Numworks Xcas session"), 0,  (Fl_Callback*)cb_Editeur_Insert_Numworks, 0, 0, 0, 0, 14, 56},
     {gettext("Xcas text"), 0,  (Fl_Callback*)cb_Editeur_Insert_Xcas, 0, 0, 0, 0, 14, 56},
     {gettext("Xcas Python text"), 0,  (Fl_Callback*)cb_Editeur_Insert_Python, 0, 0, 0, 0, 14, 56},
     {gettext("Maple text"), 0,  (Fl_Callback*)cb_Editeur_Insert_Maple, 0, 0, 0, 0, 14, 56},
@@ -2468,6 +2681,7 @@ namespace xcas {
     {0},
     {gettext("Save"), 0,  (Fl_Callback*)cb_Editeur_Save, 0, 0, 0, 0, 14, 56},
     {gettext("Save as"), 0,  (Fl_Callback*)cb_Editeur_Save_as, 0, 0, 0, 0, 14, 56},
+    {gettext("Send to Numworks"), 0,  (Fl_Callback*)cb_Editeur_Send_Numworks, 0, 0, 0, 0, 14, 56},
     {gettext("File extension"), 0,  (Fl_Callback*)cb_Editeur_Extension, 0, 0, 0, 0, 14, 56},
     {gettext("Export"), 0,  0, 0, 64, 0, 0, 14, 56},
     {gettext("Xcas text"), 0,  (Fl_Callback*)cb_Editeur_Export_Xcas, 0, 0, 0, 0, 14, 56},
@@ -2494,7 +2708,7 @@ namespace xcas {
     {gettext("Search (Ctrl-F)"), 0,  (Fl_Callback *) cb_Editeur_Search, 0, 0, 0, 0, 14, 56},
     {gettext("Indent line (Esc)"), 0,  (Fl_Callback *) cb_Editeur_Indent_line, 0, 0, 0, 0, 14, 56},
     {gettext("Indent all"), 0,  (Fl_Callback *) cb_Editeur_Indent_all, 0, 0, 0, 0, 14, 56},
-    {gettext("Parse"), 0,  (Fl_Callback *) cb_Editeur_Test, 0, 0, 0, 0, 14, 56},
+    {gettext("Parse"), 0,  (Fl_Callback *) cb_Editeur_Parse, 0, 0, 0, 0, 14, 56},
     {gettext("Exec all"), 0xffc4,  (Fl_Callback *) cb_Editeur_Exec_All, 0, 0, 0, 0, 14, 56},
     {gettext("Extend editor"), 0xffc2,  (Fl_Callback *) cb_Editeur_Extend, 0, 0, 0, 0, 14, 56},
     {gettext("Shrink editor"), 0xffc3,  (Fl_Callback *) cb_Editeur_Shrink, 0, 0, 0, 0, 14, 56},
@@ -2544,7 +2758,7 @@ namespace xcas {
     styletable[0].color=Xcas_editor_color;
     cursor_color(Xcas_editor_color);
     tableur=0;
-    gchanged=true;
+    gchanged=true; locked=false;
     labeltype(FL_NO_LABEL);
     color(FL_WHITE);
     buffer(b); 
@@ -2558,7 +2772,8 @@ namespace xcas {
     stylebuf = new Fl_Text_Buffer(buffer()->length());
     
     context * contextptr=get_context(this);
-    int mode=python_compat(contextptr) & 4;
+    pythonjs = python_compat(contextptr);
+    int mode=pythonjs<0?pythonjs:pythonjs & 4;
     style_parse(text, style, buffer()->length(),mode);
     
     stylebuf->text(style);
@@ -2637,14 +2852,14 @@ namespace xcas {
     button->label("OK");
     button->labelcolor(FL_DARK_GREEN);
     button->tooltip(gettext("Parse current program"));
-    button->callback((Fl_Callback *) logo?cb_Editeur_Exec_All:cb_Editeur_Test);
+    button->callback((Fl_Callback *) logo?cb_Editeur_Exec_All:cb_Editeur_Parse);
     button->shortcut(0xffc6); // FIXME: quick fix, otherwise Esc leaves xcas
     save_button = new Fl_Button(x+w/2+w/4,y,w/12,L);
     save_button->labelsize(labelsize());
     save_button->label("Save");
     save_button->tooltip(gettext("Save current program"));
     save_button->callback((Fl_Callback *) cb_Editeur_Save);
-    output = new Fl_Output(x+w/2+w/4+save_button->w(),y,w-w/2-w/4-save_button->w(),L);
+    output = new Fl_Input(x+w/2+w/4+save_button->w(),y,w-w/2-w/4-save_button->w(),L);
     output->labelsize(labelsize());
     end();
 
@@ -2653,7 +2868,7 @@ namespace xcas {
     resizable(editor);
     switch (xcas_mode(contextptr)){
     case 0:
-      if (python_compat(contextptr))
+      if (python_compat(contextptr)>0)
 	extension="py";
       else
 	extension="cxx";
@@ -2860,7 +3075,7 @@ namespace xcas {
   // indent current line at position pos, return new current position
   int Xcas_Text_Editor::indent(int pos){
     giac::context * contextptr = get_context(this);
-    bool python=python_compat(contextptr);
+    bool python=python_compat(contextptr)>0;
     int indentunit=2;
     if (python) indentunit=4;
     int debut_ligne=buffer()->line_start(pos),indent=0;
@@ -3026,8 +3241,11 @@ namespace xcas {
 
 #ifdef HAVE_LIBMICROPYTHON
   vector<aide> micropython_filter_help(const vector<aide> & v_orig){
-    vector<aide> v;
-    for (int i=0;i<v_orig.size();++i){
+    static vector<aide> v;
+    if (v.size())
+      return v;
+    // compute v once
+    for (int i=0;python_heap && i<v_orig.size();++i){
       const char * ptr=v_orig[i].cmd_name.c_str();
       if (giac::is_python_builtin(ptr) || giac::is_python_keyword(ptr) || mp_token(ptr))
 	v.push_back(v_orig[i]);
@@ -3050,8 +3268,9 @@ namespace xcas {
 	break;
     }
     if (s.size()>1 && k<s.size()){
+      int pyc=python_compat(contextptr);
 #ifdef HAVE_LIBMICROPYTHON
-      vector<aide> vs=(contextptr && (python_compat(contextptr) & 4))?micropython_filter_help(*giac::vector_aide_ptr()):*giac::vector_aide_ptr();
+      vector<aide> vs=(contextptr && pyc>0 && (pyc & 4))?micropython_filter_help(*giac::vector_aide_ptr()):*giac::vector_aide_ptr();
 #else
       vector<aide> vs=(*giac::vector_aide_ptr());
 #endif
@@ -3222,10 +3441,18 @@ namespace xcas {
   }
 
   int Xcas_Text_Editor::handle(int event){    
+    if (locked) 
+      return 0;
     if (event==FL_UNFOCUS)
       return 1;
-    if (event==FL_FOCUS || event==FL_PUSH)
+    if (event==FL_FOCUS || event==FL_PUSH){
       Xcas_input_focus=this;
+      if (buffer()->length()){
+	// CERR << "pythonjs " << pythonjs << endl;
+	python_compat(pythonjs,get_context(this));
+	get_history_fold(this)->update_status(true); // force update
+      }
+    }
     if (event==FL_PUSH && tableur)
       tableur->editing=true;
     Editeur * ed =dynamic_cast<Editeur *>(parent());

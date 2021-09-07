@@ -258,10 +258,17 @@ Function {a_propos()} {return_type void
 \#ifdef HAVE_LIBGLPK
   s += "Contains GLPK code (c) Andrew Makhorin\\n";
 \#endif //
+\#ifdef HAVE_LIBMICROPYTHON
+  s += "MicroPython code (c) Damien P. George and others (MIT license)\\n";
+\#endif
+\#ifdef QUICKJS
+  s += "QuickJS (c) Fabrice Bellard and Charlie Gordon (MIT license)\\n";
+\#endif
   s += "Postscript output 2-d inspired by eukleides (c) Christian Obrecht\\n";
   s += "3-d exports from gl2ps, (c) 1999-2006 Christophe Geuzaine\\n";
   s += "Implicitplot3d code derived from Paul Bourke and Cory Gene Bloyd\\n";
   s += "TinyMT code from Mutsuo Saito and Makoto Matsumoto\\n";
+  s += "\\n\\n\\n\\n\\n\\n";
   Xcas_parse_error_output->value(s.c_str());
   Fl::focus(Xcas_parse_error_output);} {}
 } 
@@ -668,7 +675,8 @@ Xcas_Main_Tab->redraw();} {}
 
 Function {load_history(int mws)} {open
 } {
-  code {Fl_Group * s = Xcas_Main_Tab;
+  code {
+Fl_Group * s = Xcas_Main_Tab;
 Fl_Group::current(0);
 xcas::History_Fold * w = new xcas::History_Fold(s->x()+2,s->y()+s->labelsize()+4,s->w()-4,s->h()-s->labelsize()-6,1);
 w->end();
@@ -1138,8 +1146,13 @@ Function {Xcas_run(int argc,char ** argv)} {open
             callback {load_history(-1);}
             xywh {15 15 100 20}
           }
+          MenuItem Xcas_open_nws {
+            label {Numworks Backup}
+            callback {load_history(-4);}
+            xywh {15 15 100 20}
+          }
           MenuItem Xcas_open_numworks {
-            label {Khicas Numworks}
+            label {Numworks Khicas session}
             callback {load_history(-2);}
             xywh {15 15 100 20}
           }
@@ -1170,12 +1183,12 @@ Function {Xcas_run(int argc,char ** argv)} {open
         } {
           MenuItem Xcas_CloneOffline {
             label Offline
-            callback {std::string html5=giac::browser_command("doc/xcasfr.html\#"+xcas::widget_html5(Xcas_current_session())); std::cout << html5 << std::endl; system(html5.c_str());}
+            callback {int pos=0;std::string html5=giac::browser_command("doc/xcasfr.html\#"+xcas::widget_html5(Xcas_current_session(),pos)); std::cout << html5 << std::endl; system(html5.c_str());}
             xywh {10 10 100 20}
           }
           MenuItem Xcas_CloneOnline {
             label Online
-            callback {std::string html5="http://www-fourier.univ-grenoble-alpes.fr/~parisse/xcasfr.html\#"+xcas::widget_html5(Xcas_current_session()); std::cout << html5 << std::endl; giac::system_browser_command(html5);}
+            callback {int pos=0;std::string html5="http://www-fourier.univ-grenoble-alpes.fr/~parisse/xcasfr.html\#"+xcas::widget_html5(Xcas_current_session(),pos); std::cout << html5 << std::endl; giac::system_browser_command(html5);}
             xywh {10 10 100 20}
           }
         }
@@ -1224,18 +1237,137 @@ Function {Xcas_run(int argc,char ** argv)} {open
           callback {Xcas_save_all(Xcas_Main_Tab);}
           xywh {10 10 100 20}
         }
+        Submenu Xcas_Numworks_menu {
+          label {Numworks}
+          xywh {0 0 100 20}
+        } {
+          MenuItem Xcas_nws_doc {
+            label {Documentation}
+            callback {giac::system_browser_command("doc/khicasnw.html")}
+            xywh {15 15 100 20}
+          }
+          MenuItem Xcas_open_numworks_xws {
+            label {Open calculator session}
+            callback {load_history(-6);}
+            xywh {15 15 100 20}
+          }
+          MenuItem Xcas_send_numworks_xws {
+            label {Send session to calculator}
+            callback {xcas::History_cb_Send_session_numworks(Xcas_current_session(),0);}
+            xywh {15 15 100 20}
+          }
+          MenuItem Xcas_send_numworks_prog {
+            label {Send program to calculator}
+            callback {xcas::cb_Editeur_Send_Numworks(xcas::Xcas_input_focus,0);}
+            xywh {15 15 100 20}
+          }
+          MenuItem Xcas_open_nws_calc {
+            label {Import all programs from calculator}
+            callback {load_history(-5);Fl_Widget * wid = Xcas_current_session();
+  xcas::History_Fold * hf=xcas::get_history_fold(wid); hf->pack->in_modified();}
+            xywh {15 15 100 20}
+          }
+          MenuItem Xcas_Export_nws_calc {
+            label {Overwrite calculator}
+            callback {xcas::History_cb_Save_as_numworks_calculator(Xcas_current_session(),0);}
+            xywh {15 15 100 20}
+          }
+         MenuItem Xcas_nw_backup {
+          label {Backup Numworks calculator}
+          callback {const char * newfile=file_chooser("Enter file name", "*.nws", "backup.nws");
+             if (!newfile) return;
+             if (giac::is_file_available(newfile)){
+                int i=fl_ask(gettext("File %s exists. Overwrite?"),newfile);
+                if ( !i ) return;
+             }
+             if (!dfu_get_scriptstore(newfile))
+               fl_alert("%s",gettext("Unable to backup calculator"));
+          }
+          xywh {30 30 100 20}
+         }
+         MenuItem Xcas_nw_restore {
+          label {Restore Numworks from backup}
+          callback {const char * newfile=load_file_chooser("","*.nws","*.nws",0,false); 
+             if (newfile){ 
+                if (!dfu_send_scriptstore(newfile))
+                  fl_alert("%s",gettext("Unable to restore backup to calculator"));
+             }
+          }
+          xywh {30 30 100 20}
+         }
+         MenuItem Xcas_nw_install {
+          label {Install KhiCAS on Numworks calculator}
+          callback {
+             char fname[]="backup.nws";
+             if (!dfu_get_scriptstore(fname))
+               fl_alert("%s",gettext("Unable to backup calculator"));
+	     else {
+              std::string prefix=giac::giac_aide_dir()+"doc/";
+              if (!dfu_send_firmware((prefix+"epsilon.dfu").c_str()))
+                fl_alert("%s",gettext("Unable to send firmware"));
+              else if (!dfu_send_apps((prefix+"apps.tar").c_str()))
+                fl_alert("%s",gettext("Unable to send KhiCAS"));
+              else {
+                fl_alert(gettext("Install success. Reset the calculator, then connect to restore backup %s"),fname);
+		dfu_send_scriptstore(fname);
+              }
+             }
+          }
+          xywh {30 30 100 20}
+         }
+         MenuItem Xcas_nw_rescue {
+          label {Rescue mode (calculator assistance)}
+          callback {
+             int i=fl_ask(gettext("Connect the calculator,\\nPress the 6 key on the calculator, press the RESET button on the back keeping the 6 key pressed, release the 6 key,\\nThe screen should be down and the led should be red")); if (!i) return;
+             std::string prefix=giac::giac_aide_dir()+"doc/";
+             if (!dfu_send_rescue((prefix+"recovery").c_str()))
+               fl_alert("%s",gettext("Unable to send rescue RAM image to the Numworks calculator."));
+              i=fl_ask(gettext("Install KhiCAS?"));
+              if (!i) return;
+              if (!dfu_send_firmware((prefix+"epsilon.dfu").c_str()))
+                fl_alert("%s",gettext("Unable to send firmware"));
+              else if (!dfu_send_apps((prefix+"apps.tar").c_str()))
+                fl_alert("%s",gettext("Unable to send KhiCAS"));
+              else 
+                fl_alert(gettext("Install success. Press the RESET button on the calculator back."));
+          }
+          xywh {30 30 100 20}
+         }
+         MenuItem Xcas_nw_certify {
+          label {Certification du firmware Numworks N0110}
+          callback {
+	    bool b=giac::nws_certify_firmware(false,Xcas_get_context());
+            fl_message(b?"Firmware signé par le logiciel Xcas, conforme à la réglementation (assurez-vous d'avoir téléchargé Xcas sur www-fourier.ujf-grenoble.fr/~parisse/install_fr.html)":"Le firmware n'est pas certifié par le logiciel Xcas. Vérifiez que la calculatrice est bien connectée!");
+          }
+          xywh {30 30 100 20}
+         } 
+         MenuItem Xcas_nw_certify_overwrite {
+          label {Certification N0110 avec test R/W}
+          callback {
+	    bool b=giac::nws_certify_firmware(true,Xcas_get_context());
+            fl_message(b?"Firmware signé par le logiciel Xcas, conforme à la réglementation (assurez-vous d'avoir téléchargé Xcas sur www-fourier.ujf-grenoble.fr/~parisse/install_fr.html)":"Le firmware n'est pas certifié par le logiciel Xcas. Vérifiez que la calculatrice est bien connectée!");
+          }
+          xywh {30 30 100 20}
+         }
+
+        }
         Submenu Xcas_Export {
           label {Export as}
           xywh {0 0 100 20}
         } {
-          MenuItem Xcas_Export_Khicas_Casio {
-            label KhiCas
-            callback {xcas::History_cb_Save_as_xcas_casio(Xcas_current_session(),0);}
-            xywh {65 65 100 20}
+          MenuItem Xcas_Export_nws {
+            label {Numworks Archive}
+            callback {xcas::History_cb_Save_as_numworks_archive(Xcas_current_session(),0);}
+            xywh {15 15 100 20}
           }
           MenuItem Xcas_Export_Khicas_Numworks {
             label {KhiCas Numworks}
             callback {xcas::History_cb_Save_as_xcas_numworks(Xcas_current_session(),0);}
+            xywh {65 65 100 20}
+          }
+          MenuItem Xcas_Export_Khicas_Casio {
+            label {KhiCas Casio}
+            callback {xcas::History_cb_Save_as_xcas_casio(Xcas_current_session(),0);}
             xywh {65 65 100 20}
           }
           MenuItem Xcas_Export_Khicas_Nspire {
@@ -4532,7 +4664,7 @@ if (argc>argstart){
   for (int i=argstart;i<argc;++i){
     load_filename(argv[i],false);
     if (link){
-      std::string html5="http://www-fourier.univ-grenoble-alpes.fr/~parisse/xcasfr.html\#"+xcas::widget_html5(Xcas_current_session()); std::cout << html5 << std::endl; giac::system_browser_command(html5);
+      int pos=0;std::string html5="http://www-fourier.univ-grenoble-alpes.fr/~parisse/xcasfr.html\#"+xcas::widget_html5(Xcas_current_session(),pos); std::cout << html5 << std::endl; giac::system_browser_command(html5);
     }
   }
   if (link){
@@ -4543,7 +4675,11 @@ else make_history();
   giac::python_compat(0,giac::context0);  // otherwise factor(x^4-4,sqrt(2)) fails if pari is disabled
   bool running=true;
 \#ifdef WIN32
+\#ifdef __MINGW_H
+  static std::string windowname=std::string("Xcas ")+GIAC_VERSION+" (mingw win"+giac::print_INT_(8*sizeof(long))+")";
+\#else 
   static std::string windowname=std::string("Xcas ")+GIAC_VERSION+" (win"+giac::print_INT_(8*sizeof(long))+")";
+\#endif
 \#else
 \#ifdef __APPLE__ 
   static std::string windowname=std::string("Xcas ")+GIAC_VERSION+" (osx"+giac::print_INT_(8*sizeof(long))+")";
@@ -4565,7 +4701,7 @@ else make_history();
 Function {main(int argc,char ** argv)} {open return_type int
 } {
   code {\#ifdef HAVE_LIBMICROPYTHON
-    python_heap=micropy_init(python_stack_size,python_heap_size);
+    python_heap=micropy_init(pythonjs_stack_size,pythonjs_heap_size);
 \#endif
 if (argc==2 && strlen(argv[1])==0)
   argc=1;
