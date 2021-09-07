@@ -76,6 +76,7 @@ using namespace std;
 #include <signal.h>
 #endif
 #include "Python.h"
+#include "qjsgiac.h"
 #ifdef __MINGW_H
 #include <direct.h>
 #endif
@@ -196,13 +197,20 @@ void format_plugin () {
   cout << TEXMACS_DATA_END;
 }
 
-void flush_stdout(){
+void flush_stdout(int slp = 0){
 #ifdef NSPIRE_NEWLIB
   giac::usleep(2000);
 #else
   usleep(2000);
 #endif
   fflush (stdout);
+  if (slp>0) {
+#ifdef NSPIRE_NEWLIB
+    giac::usleep(slp*1000);
+#else
+    usleep(slp*1000);
+#endif
+  }
 }
 
 void flush_stderr(){
@@ -223,39 +231,62 @@ void texmacs_next_input () {
   flush_stdout();
 }
 
-#define TEXMACS_IMAGE_SCALE 57.0 // percent
-#define TEXMACS_IMAGE_PADDING_ABOVE 1.75 // ex
-#define TEXMACS_IMAGE_PADDING_BELOW 1.75 // ex
-
-void ifstream_output(istream & tmpif){
-  flush_stdout();
-  putchar(TEXMACS_DATA_BEGIN);
-#if 0 // changes by L. Marohnić
-  printf("scheme:(with \"par-mode\" \"center\" (document (image (tuple (raw-data \"");
-  char c;
-  for (int j=1;!tmpif.eof();++j){
-    tmpif.get(c);
-    putchar(c);
-    if (!(j%1024))
-      flush_stdout();
-  }
-  flush_stdout();
-  printf("\n\") \"ps\") \"0.7par\" \"\" \"\" \"\")))");
+bool texmacs_graph_lr_margins(const string &fname,int &val,bool init=true,int width=0) {
+  char buffer[1024];
+  int left,w;
+#ifdef __MINGW_H
+  string devnull=" 2>nul";
 #else
-  printf("ps:");
-  char c;
-  for (int j=1;!tmpif.eof();++j){
-    tmpif.get(c);
-    putchar(c);
-    if (!(j%1024))
-      flush_stdout();
-  }
+  string devnull=" 2>/dev/null";
 #endif
-  putchar(TEXMACS_DATA_END);
-  flush_stdout();
+  FILE *pipe=popen(((init?"pdfcrop --verbose ":"pdfinfo ")+fname+devnull).c_str(),"r");
+  if (!pipe) return false;
+  try {
+    int i=-1,j;
+    while(fgets(buffer,sizeof(buffer),pipe)!=NULL) {
+      string line(buffer);
+      if (init) {
+        if (line.substr(2,12)=="BoundingBox:") {
+          line=line.substr(15);
+          i=line.find_first_of(' ');
+          left=atoi(line.substr(0,i).c_str());
+          j=line.find_first_of(' ',i+1)+1;
+          i=line.find_last_of(' ');
+          w=atoi(line.substr(j,i-j).c_str());
+          break;
+        }
+      } else {
+        if (line.substr(0,10)=="Page size:") {
+          for (i=10;line[i]==' ';++i);
+          for (j=i;line[j]!=' ';++j);
+          val=atoi(line.substr(i,j-i).c_str())-width;
+          break;
+        }
+      }
+    }
+    if (i<0)
+      return false;
+  } catch (...) {
+    pclose(pipe);
+    return false;
+  }
+  pclose(pipe);
+  if (init) {
+    int right;
+    if (!texmacs_graph_lr_margins(fname,right,false,w))
+      return false;
+    val=(left+right)/2;
+  }
+  return true;
 }
 
-
+bool system_status_ok(int status) {
+  return status!=-1
+#ifndef __MINGW_H
+		&& WEXITSTATUS(status)==0
+#endif
+    ;
+}
 
 void texmacs_graph_output(const giac::gen & g,giac::gen & gg,std::string & figfilename,int file_type,const giac::context * contextptr){
 #if 1 // changes by L. Marohnić
@@ -264,9 +295,9 @@ void texmacs_graph_output(const giac::gen & g,giac::gen & gg,std::string & figfi
   string tmpname(has_temp_file?buf:"casgraph");
 #ifdef _WIN32
   string tmpdir=getenv("TEMP")?getenv("TEMP"):"c:\\Users\\Public";
-  tmpname=tmpdir+tmpname;
+  tmpname=tmpdir+"\\"+tmpname;
 #endif
-  string ext=".eps",extc="cl.eps";
+  string ext=".eps",extc=".pdf";
   if (!xcas::fltk_view(g,gg,tmpname+ext,figfilename,file_type,contextptr)){
     putchar(TEXMACS_DATA_BEGIN);
     printf("verbatim:Plot cancelled or unable to plot\n");
@@ -288,28 +319,65 @@ void texmacs_graph_output(const giac::gen & g,giac::gen & gg,std::string & figfi
     flush_stdout();
   }
   else {
-    bool cleaned=false;
+    bool cleaned=false,cropped=false,no_pdfcrop=true;
 #ifdef HAVE_SYSTEM
     if (system(NULL)) {
-      int status;
-      status=system(("eps2eps "+tmpname+ext+" "+tmpname+extc).c_str());
-      if (status!=-1
-#ifndef __MINGW_H
-			&& WEXITSTATUS(status)==0
+#ifdef __MINGW_H
+      no_pdfcrop=system("where pdfcrop >nul") || system("where pdfinfo >nul");
+#else
+      no_pdfcrop=system("which pdfcrop >/dev/null 2>&1") || system("which pdfinfo >/dev/null 2>&1");
 #endif
-		)
-        cleaned=true;
+      stringstream ss;
+      int lr,status;
+#ifdef __MINGW_H
+      cleaned=system_status_ok(system(("eps2eps "+tmpname+ext+" "+tmpname+"-cleaned"+ext).c_str())) &&
+              system_status_ok(system(("ps2pdf -dEPSCrop "+tmpname+"-cleaned"+ext+" "+tmpname+extc).c_str()));
+#else
+      status=system(("eps2eps "+tmpname+ext+" - | ps2pdf -dEPSCrop - "+tmpname+extc).c_str());
+      cleaned=system_status_ok(status);
+#endif
+      if (cleaned && !no_pdfcrop) {
+        if (!texmacs_graph_lr_margins(tmpname+extc,lr))
+          no_pdfcrop=true;
+        else ss << lr << " 0 " << lr << " 0";
+      }
+      string mrg=ss.str();
+      if (cleaned && !no_pdfcrop) {
+#ifdef __MINGW_H
+        string devnull=" >nul";
+#else
+        string devnull=" >/dev/null 2>&1";
+#endif
+        status=system(("pdfcrop --margins '"+mrg+"' "+tmpname+extc+" "+tmpname+"-cropped"+extc+devnull).c_str());
+        cropped=system_status_ok(status);
+      }
     }
 #endif
-    ifstream tmpif((tmpname+(cleaned?extc:ext)).c_str());
-    ifstream_output(tmpif); // send PS to TeXmacs
-    tmpif.close();
-    // remove temporary files:
+    usleep(10000);
+    putchar(TEXMACS_DATA_BEGIN);
+    printf("scheme:(htab \"\")");
+    putchar(TEXMACS_DATA_END);
+    putchar(TEXMACS_DATA_BEGIN);
+    printf("file:%s", (tmpname+(cropped?"-cropped":"")+(cleaned?extc:ext)).c_str());
+    putchar(TEXMACS_DATA_END);
+    putchar(TEXMACS_DATA_BEGIN);
+    printf("scheme:(htab \"\")");
+    putchar(TEXMACS_DATA_END);
+    flush_stdout(200);
+    // remove temporary files
     bool remove_fail=false;
     if (remove((tmpname+ext).c_str())!=0)
       remove_fail=true;
     if (cleaned) {
+#ifdef __MINGW_H
+      if (remove((tmpname+"-cleaned"+ext).c_str())!=0)
+        remove_fail=true;
+#endif
       if (remove((tmpname+extc).c_str())!=0)
+        remove_fail=true;
+    }
+    if (cropped) {
+      if (remove((tmpname+"-cropped"+extc).c_str())!=0)
         remove_fail=true;
     }
     if (remove_fail)
@@ -1055,7 +1123,22 @@ void pgiac(std::string infile,std::string outfile,std::ostream * checkptr,std::o
 }
 #endif
 
-int micropy_evaled(string & s,const giac::context * contextptr){
+int micropyjs_evaled(string & s,const giac::context * contextptr){
+#ifdef QUICKJS
+  if (python_compat(contextptr) <0){
+    if (s.size() && s[0]=='@')
+      s=s.substr(1,s.size()-1);
+    else
+      s="\"use math\";"+s;
+    char * js=js_ck_eval(s.c_str(),&global_js_context);
+    if (js){
+      printf("%s\n",js);
+      free(js);
+    }
+    else printf("%s\n","QuickJS error");
+    return 1;
+  }
+#endif
 #ifdef HAVE_LIBMICROPYTHON
   if (python_compat(contextptr) & 4){
     const char * ptr=s.c_str();
@@ -1066,10 +1149,10 @@ int micropy_evaled(string & s,const giac::context * contextptr){
     bool turt=strcmp(ptr,".")==0;
     if (!gr && !pix && !turt){
       giac::python_contextptr=contextptr;
-      python_console="";
+      python_console()="";
       int i=micropy_ck_eval(s.c_str());
-      cout << python_console ;
-      return true;
+      cout << python_console() ;
+      return 1;
     }
     giac::context * cascontextptr=(giac::context *)giac::caseval("caseval contextptr");
     if (gr){
@@ -1085,7 +1168,7 @@ int micropy_evaled(string & s,const giac::context * contextptr){
     }
   }
 #endif
-  return false;
+  return 0;
 }
 
 int main(int ARGC, char *ARGV[]){    
@@ -1161,7 +1244,7 @@ int main(int ARGC, char *ARGV[]){
   }
 #endif
   if (ARGC==2 && (string(ARGV[1])=="-v" || string(ARGV[1])=="--version" ) ){
-    cout << "// (c) 2001, 2020 B. Parisse & others" << '\n';
+    cout << "// (c) 2001, 2021 B. Parisse & others" << '\n';
     cout << GIAC_VERSION << '\n';
 #ifndef GNUWINCE
     return 0;
@@ -1170,9 +1253,9 @@ int main(int ARGC, char *ARGV[]){
   //signal(SIGUSR1,data_signal_handler);
   //signal(SIGUSR2,plot_signal_handler);
   giac::child_id=1;
-  bool intexmacs=((ARGC>=2) && std::string(ARGV[1])=="--texmacs");
   bool inemacs=((ARGC>=2) && std::string(ARGV[1])=="--emacs");
   bool insage=((ARGC>=2) && std::string(ARGV[1])=="--sage");
+  bool intexmacs=((ARGC>=2) && std::string(ARGV[1])=="--texmacs");
   if (inemacs){
     putchar(EMACS_DATA_BEGIN);
     putchar(EMACS_ERROR);
@@ -1285,7 +1368,7 @@ int main(int ARGC, char *ARGV[]){
       if (getenv("XCAS_HELP"))
 	giac::readhelp((*giac::vector_aide_ptr()),getenv("XCAS_HELP"),helpitems,true);
       else
-	giac::readhelp((*giac::vector_aide_ptr()),(giac::giac_aide_dir()+"aide_cas").c_str(),helpitems,true);
+	giac::readhelp((*giac::vector_aide_ptr()),(giac::giac_aide_dir()+"aide_cas").c_str(),helpitems,false);
     }
 #ifdef STATIC_BUILTIN_LEXER_FUNCTIONS
   }
@@ -1315,7 +1398,7 @@ int main(int ARGC, char *ARGV[]){
     printf("Giac CAS for mupacs, released under the GPL license 3.0\n");
     printf("See http://www.gnu.org for license details\n");
     printf("May contain BSD licensed software parts (lapack, atlas, tinymt)\n");
-    printf("| (c) 2006, 2018 B. Parisse & al (giac), F.Maltey & al (mupacs) |\n");
+    printf("| (c) 2006, 2021 B. Parisse & al (giac), F.Maltey & al (mupacs) |\n");
     putchar(EMACS_DATA_END);
     bool prompt=true;
     for (int k=0;;++k) {
@@ -1510,7 +1593,7 @@ int main(int ARGC, char *ARGV[]){
     printf("\nGiac %s for TeXmacs, released under the GPL license (3.0)\n",PACKAGE_VERSION);
     printf("See www.gnu.org for license details\n");
     printf("May contain BSD licensed software parts (lapack, atlas, tinymt)\n");
-    printf("© 2003–2020 B. Parisse & al (giac), J. van der Hoeven (TeXmacs), L. Marohnić (interface)\n");
+    printf("© 2003–2021 B. Parisse & al (giac), J. van der Hoeven (TeXmacs), L. Marohnić (interface)\n");
     putchar(TEXMACS_DATA_BEGIN);
     printf("scheme:(hrule)");
     putchar(TEXMACS_DATA_END);
@@ -1738,8 +1821,8 @@ int main(int ARGC, char *ARGV[]){
 	clock_t start, end;
 #endif
     using_history();
-    cout << "Welcome to giac readline interface" << '\n';
-    cout << "(c) 2001,2020 B. Parisse & others" << '\n';
+    cout << "Welcome to giac readline interface, version " << GIAC_VERSION << '\n';
+    cout << "(c) 2001,2021 B. Parisse & others" << '\n';
     cout << "Homepage http://www-fourier.ujf-grenoble.fr/~parisse/giac.html" << '\n';
     cout << "Released under the GPL license 3.0 or above" << '\n';
     cout << "See http://www.gnu.org for license details" << '\n';
@@ -1764,10 +1847,15 @@ int main(int ARGC, char *ARGV[]){
       }
       if (s=="xcas"){
 	python_compat(python_compat(contextptr)&3,contextptr);
-	printf("%s\n","Giac 1.6.0");
+	printf("%s\n","Giac 1.7.0");
 	continue;
       }
-      if (micropy_evaled(s,contextptr))
+      if (s=="js"){
+	python_compat(-1,contextptr);
+	printf("%s\n","QuickJS");
+	continue;
+      }
+      if (micropyjs_evaled(s,contextptr))
 	continue;
       if (insage && bs && s[bs-1]==63){
 	string complete_string(s.substr(0,bs-1));

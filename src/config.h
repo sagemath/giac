@@ -4,6 +4,9 @@
 /* Define if building universal (internal helper macro) */
 /* #undef AC_APPLE_UNIVERSAL_BUILD */
 
+/* Replace GMP by libbf */
+/* #undef BF2GMP */
+
 /* Define if <unordered_map> header is available */
 #define C11_UNORDERED_MAP 1
 
@@ -72,6 +75,9 @@
 /* Define to 1 if you have the declaration of `_snwprintf', and to 0 if you
    don't. */
 #define HAVE_DECL__SNWPRINTF 0
+
+/* Define to 1 if you have the <dfu_lib.h> header file. */
+/* #undef HAVE_DFU_LIB_H */
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #define HAVE_DLFCN_H 1
@@ -154,6 +160,9 @@
 
 /* Define to 1 if you have the `curl' library (-lcurl). */
 /* #undef HAVE_LIBCURL */
+
+/* Define to 1 if you have the `dfu' library (-ldfu). */
+/* #undef HAVE_LIBDFU */
 
 /* Define to 1 if you have the `dl' library (-ldl). */
 #define HAVE_LIBDL 1
@@ -247,6 +256,9 @@
 
 /* Define to 1 if you have the `tommath' library (-ltommath). */
 /* #undef HAVE_LIBTOMMATH */
+
+/* Define to 1 if you have the `usb-1.0' library (-lusb-1.0). */
+/* #undef HAVE_LIBUSB_1_0 */
 
 /* Define to 1 if you have the `X11' library (-lX11). */
 #define HAVE_LIBX11 1
@@ -485,7 +497,7 @@
 #define PACKAGE_NAME "giac"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "giac 1.6.0"
+#define PACKAGE_STRING "giac 1.7.0"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "giac"
@@ -494,7 +506,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "1.6.0"
+#define PACKAGE_VERSION "1.7.0"
 
 /* Define if <inttypes.h> exists and defines unusable PRI* macros. */
 /* #undef PRI_MACROS_BROKEN */
@@ -536,7 +548,7 @@
 /* #undef USE_OPENGL32 */
 
 /* Version number of package */
-#define VERSION "1.6.0"
+#define VERSION "1.7.0"
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */

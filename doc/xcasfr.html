@@ -134,6 +134,16 @@
     div.matrixcell:not(:focus) {
       text-align: right;
     }
+
+    .micropy {
+      border-color: yellow;
+    }
+    .js {
+      border-color: orange;
+    }
+    .cas {
+      border-color: cyan;
+    }
   </style>
   <script>
       // Redirect to HTTPS page if not testing locally
@@ -331,7 +341,10 @@
   Bienvenue dans Xcas pour Firefox ou navigateur compatible
   (c) 2020, B. Parisse et R. De Graeve, Institut Fourier,
   Universit&eacute; de Grenoble.<br>
-  Taper python ou xcas dans une ligne de commande pour changer d'interpr&eacute;teur.
+  Depuis Xcas, taper python ou js dans une ligne de commande pour
+  changer d'interpr&eacute;teur vers <a target="_blank" href="https://micropython.org/">MicroPython</a> (Damien P. George et
+  al) ou vers <a target="_blank" href="https://bellard.org/quickjs/">QuickJS</a> de
+  Fabrice Bellard et Charlie Gordon.
 </div>
 <div id="startup">
   Si Xcas ne fonctionne pas, <a
@@ -378,12 +391,15 @@
                                    title="0: pas d'autosimplification, 1: minimum, 2: maximum" value=1
                                    max=2 min=0>
         Syntaxe <input class="bouton" type="button" value="Python"
-                       onclick="python_mode.checked=!python_mode.checked;"> <input
+                       onclick="python_mode.checked=!python_mode.checked; if (python_mode.checked) js_mode.checked=false;"> <input
           class="bouton" type="checkbox" name="python_mode"
 	title="Cocher pour utiliser la syntaxe compatible Python">,
 	<input class="bouton" type="button" value="MicroPython"
-                       onclick="python_xor.checked=!python_xor.checked;"> <input class="bouton" type="checkbox" name="python_xor"
-	title="Si coche, l'interpreteur Micropython est utilise, sinon Xcas">,
+                       onclick="python_xor.checked=!python_xor.checked; if (python_xor.checked){ js_mode.checked=false;python_mode.checked=true;}"> <input class="bouton" type="checkbox" name="python_xor"
+	title="Si coche, utilise l'interpreteur Micropython">,
+	<input class="bouton" type="button" value="JS"
+                       onclick="js_mode.checked=!js_mode.checked;if (js_mode.checked) python_mode.checked=python_xor.checked=false;"> <input class="bouton" type="checkbox" name="js_mode"
+	title="Si coche, utilise l'interpreteur Javascript">,
         <input class="bouton" type="button" title="Afficher les alertes Python" value="warnings" onclick="warnpy_mode.checked=!warnpy_mode.checked">
         <input class="bouton" type="checkbox" name="warnpy_mode"
                title="Cocher pour afficher les alertes Python" checked>
@@ -460,7 +476,8 @@
         <button class="bouton" title="Cliquer ici pour sauvegarder l'historique avec le nom de fichier du champ texte qui suit" onclick="if ($id('loadbutton_file').style.display=='none') UI.savesession(2); else UI.savesession(0);">&#x1f4be;</button>
         <textarea cols="7" id="outputfilename" class="filenamecss" style="font-size:large" title="Nom de sauvegarde du fichier. Avec Firefox, pour pouvoir faire plusieurs sauvegardes sous le meme nom, cocher Toujours demander... dans Pr&eacute;f&eacute;rences, G&eacute;n&eacute;ral, T&eacute;l&eacute;chargements.">session</textarea>
         <button id="exportbutton" class="bouton" title="Cliquer ici pour exporter pour calculatrices (Casio Graph 35eii&90, Numworks ou TI Nspire CX, &agrave; configurer dans les pr&eacute;f&eacute;rences) avec le nom de fichier du champ texte qui pr&eacute;c&egrave;de" onclick='UI.savesession(1);'>Export</button>
-        </span>
+  </span>
+  <button id="numworks_load" class="bouton" title="Cliquer ici pour charger un script depuis une calculatrice Numworks" onclick="UI.numworks_load()">Numworks→</button>
 <button id="loadbutton_cookie" class="bouton" title="Cliquer ici pour charger une session sauvegard&eacute;e" onclick="$id('loadfile_cookie').innerHTML=UI.listCookies();">Charge</button>
   <span id="loadfile_cookie"></span>
 <form id="loadbutton_file" style="display:none">
@@ -480,7 +497,12 @@
                 <strong>Introduction</strong></button>
                 <div id="tutointro" style="display:none">
                     Tapez votre calcul ou programme dans la ligne de commande en bas de la page
-                    (attention, tapez <tt>1.2</tt> pour 1 virgule 2).
+		  (attention, tapez <tt>1.2</tt> pour 1 virgule
+		  2). Pour apprendre &agrave; utiliser Xcas, vous
+		  pouvez lire ce
+		  <a href="https://www-fourier.univ-grenoble-alpes.fr/~parisse/giac/doc/fr/tutoriel/index.html" target="_blank">tutoriel</a>
+		 
+		  <br>
                     Cliquez sur l'icone de <tt>Xcas</tt> ou le bouton
                     <tt>Prog</tt> pour afficher des assistants
                     math&eacute;matiques ou algorithmiques, ou sur
@@ -495,6 +517,15 @@
                     <a
                         href="http://www-fourier.univ-grenoble-alpes.fr/~parisse/giac/doc/fr/cascmd_fr"
                         target="_blank">guide de Xcas</a>
+		  <br>
+		  Vous pouvez choisir l'interpr&eacute;teur depuis la
+    configuration (bouton en haut &agrave; gauche avec la roue
+    dent&eacute;e) parmi Xcas, <a target="_blank" href="https://micropython.org/">MicroPython</a> ou
+    Javascript. L'interpr&eacute;teur Javascript par d&eacute;faut est
+    <a target="_blank" href="https://bellard.org/quickjs/">QuickJS</a> en mode math&eacute;matique sauf si votre ligne de
+    commande commence par <tt>@</tt> (QuickJS sans le mode math) ou
+		  <tt>@@</tt> (interpr&eacute;teur du navigateur).
+		  
                 </div>
             <li style="display:inline">
                 <button class="bouton"
@@ -543,7 +574,6 @@
                     l'enseignant de savoir qui il corrige.
                     L'enseignant corrige la session et la renvoie, le nom de session
                     reste inchang&eacute;.
-                </div>
             </li>
             <li style="display:inline">
                 <button class="bouton"
@@ -559,7 +589,7 @@
                         href="http://www-fourier.univ-grenoble-alpes.fr/~parisse/giac/xcashtml.zip"
                         target="_blank">
                     xcashtml.zip</a>, d&eacute;zippez-le (par exemple avec Androzip sur Android),
-                    cherchez le fichier <tt>xcasfrjs.html</tt> (sur Android depuis
+                    cherchez le fichier <tt>xcasfr.html</tt> (sur Android depuis
                     <a href="file:///sdcard/">ici</a>) et ouvrez-le avec votre
                     navigateur.
                     Vous pouvez cr&eacute;er un raccourci sur votre &eacute;cran
@@ -583,6 +613,55 @@
 		    <tt>security.fileuri.strict_origin_policy</tt>
 		    dans <tt>about:config</tt>.
                 </div>
+            </li>
+            <li style="display:inline">
+                <button class="bouton"
+                        onclick="var tmp=$id('tutonws'); if (tmp.style.display=='none') tmp.style.display='block'; else tmp.style.display='none';">
+                <strong>Numworks</strong></button>
+	    <div id="tutonws" style="display:none">
+	      Sur les navigateurs qui impl&eacute;mentent webusb (par
+	      exemple Chromium ou Chrome), vous pouvez
+	      &eacute;changer facilement des scripts avec une
+	      calculatrice Numworks. 
+	      <br>
+	      Pour r&eacute;cup&eacute;rer un script depuis la
+	      calculatrice, cliquer sur le bouton Numworks→. Pour
+	      renvoyer un script vers la Numworks, cliquer sur le
+	      bouton Export. Le nom du script apparait &agrave; gauche
+	      du bouton Export. S'il se termine par <tt>xw</tt>, il
+	      d&eacute;signera une session KhiCAS Numworks, s'il se
+	      termine par <tt>.py</tt> un script Python. Vous pouvez
+	      ensuite facilement partager vos scripts par email ou sur
+	      des forums (icone enveloppe ou bouton F)<br>
+	      <a href="https://www-fourier.univ-grenoble-alpes.fr/~parisse/numworks/khicasnw.html" target="_blank">KhiCAS</a> est
+	      une version pour Numworks de Xcas, qui
+	      <a href="https://parisseb.github.io/nw-external-apps/"
+                    target="_blank">s'installe </a> sur les
+	      Numworks N0110 qui ont une version du syst&egrave;me
+	      inf&eacute;rieure ou &eacute;gale &agrave; 15. Vous pouvez certifier
+	      qu'une calculatrice Numworks contient le firmware
+	      Delta+KhiCAS en cliquant sur le bouton
+	      <button
+                    onclick="UI.numworks_certify(nws_sig,false);">Certification</button> ou
+	      <button
+                    onclick="UI.numworks_certify(nws_sig,true);">Certification avec test d'&eacute;criture</button>.
+	      <b>Attention, ne mettez pas &agrave; jour votre calculatrice
+	      sur le site officiel de Numworks, les mises
+	      &agrave; jour versions 16 ou plus sont
+	      irr&eacute;versiblement incompatibles avec
+	      Xcas</b>. <a
+                    href="https://tiplanet.org/forum/viewtopic.php?f=97&t=24968"
+	      target="_blank">Plus d'informations ici</a> et une
+	      <a
+                    href="https://www.change.org/freenumworks" target="_blank">p&eacute;tition</a>
+                    en ligne pour protester contre cette volte-face de
+                    Numworks.
+	      <br>
+	      Remerciements &agrave; Maxime Friess pour le script
+	      <a
+                    href="https://github.com/M4xi1m3/numworks.js/blob/master/README.md"
+                    target="_blank">Numworks.js</a> (sous licence MIT).
+	    </div>
             </li>
             <li style="display:inline">
                 <button class="bouton"
@@ -1299,7 +1378,11 @@ Pour avoir des informations pendant le d&eacute;roulement des calculs, tapez la 
 	        <br>
 	        Optimization, signalprocessing, graph theory code (c) Luka Marohnić.
                 <br>
-                Sortie mathml et SVG (c) code principalement &eacute;crit par J.P. Branchard.
+                Sortie mathml et SVG (c) code principalement
+	    &eacute;crit par J.P. Branchard.
+<br><a target="_blank" href="https://micropython.org/">MicroPython</a> (c) Damien P. George et al <br>
+<a target="_blank" href="https://bellard.org/quickjs/">QuickJS</a> (c)
+  Fabrice Bellard et Charlie Gordon.
                 </span>
             </li>
             <br>
@@ -2087,7 +2170,7 @@ Pour avoir des informations pendant le d&eacute;roulement des calculs, tapez la 
   <input type="button" style="width:46px;height:35px" name="add_debug"
          id="add_debug"
          value="debug" onmousedown="event.preventDefault()"
-         onClick="UI.insert_focused('debug(')" title="Mettre au point, par exemple debug(f(2,3)) execute la fonction f avec arguments 2 et 3 en pas &agrave; pas">
+         onClick="UI.insert_focused('debug(')" title="Mettre au point (Xcas, ne fonctionne pas avec MicroPython), par exemple debug(f(2,3)) execute la fonction f avec arguments 2 et 3 en pas &agrave; pas">
   <input type="button" style="width:29px;height:35px" name="add_//"
          id="add_//"
          value="//" onmousedown="event.preventDefault()" onClick="UI.insert_focused(UI.python_mode?'#':'//');UI.funcoff();" title="commentaire">
@@ -3712,6 +3795,8 @@ Pour avoir des informations pendant le d&eacute;roulement des calculs, tapez la 
   }
 </style>
 <script src="xcas.js"></script>
+<script src="numworks.js"></script>
+<script src="nws_sig.js"></script>
 <script type='text/javascript'>
     // remove existing codemirror field
     prog = $id('prog');
@@ -3927,7 +4012,7 @@ Pour avoir des informations pendant le d&eacute;roulement des calculs, tapez la 
                 else
                     alertmgs = "L'affichage 2d ne fonctionne pas en distant avec Chrome. " + alertmsg;
             }
-            alert(alertmsg);
+            //alert(alertmsg);
         }
         //console.log(window.location.href);
         var mobile = UI.detectmob();

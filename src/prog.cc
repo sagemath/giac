@@ -78,6 +78,7 @@ extern "C" {
 
 #ifdef NSPIRE_NEWLIB
 #include <os.h>
+extern "C" double millis();
 #endif
 
 //#ifdef BESTA_OS
@@ -119,7 +120,7 @@ namespace giac {
   void alert(const string & s,GIAC_CONTEXT){
 #if defined(EMCC) || defined(EMCC2)
     EM_ASM_ARGS({
-	if (UI.warnpy){
+	if (typeof UI!=='undefined' && UI.warnpy){
           var msg = UTF8ToString($0);// Pointer_stringify($0); // Convert message to JS string
           alert(msg);                      // Use JS version of alert          
         }
@@ -3431,6 +3432,15 @@ namespace giac {
 	return feuille_(args._VECTptr->front(),args._VECTptr->back(),contextptr);
       return gen(*args._VECTptr,_SEQ__VECT);
     }
+    if (args.type==_MAP){
+      const gen_map & m=*args._MAPptr;
+      gen_map::const_iterator it=m.begin(),itend=m.end();
+      vecteur res;
+      for (;it!=itend;++it){
+	res.push_back(makevecteur(it->first,it->second));
+      }
+      return res;
+    }
     if (args.type!=_SYMB)
       return args;
     gen tmp=args._SYMBptr->feuille;
@@ -4293,7 +4303,7 @@ namespace giac {
 #ifdef FXCG
       int t=RTC_GetTicks();
 #else
-      int t=int(time(NULL));
+      int t=int(time(0));
 #endif // FXCG
 #endif // RTOS/BESTA
       t = (1000000000*ulonglong(t))% 2147483647;
@@ -6292,7 +6302,7 @@ namespace giac {
 	bool turt=strcmp(ptr,".")==0;
 	bool xc=strcmp(ptr,"xcas")==0;
 	python_contextptr=contextptr;
-	python_console="";
+	python_console()="";
 	gen g;
 	if (!gr && !xc && !turt && !pix ){
 	  (*micropy_ptr)(ptr);
@@ -6308,11 +6318,11 @@ namespace giac {
 	  return _show_pixels(0,contextptr);
 	if (gr)
 	  return history_plot(cascontextptr);
-	if (python_console.empty())
+	if (python_console().empty())
 	  return string2gen("Done",false);
-	if (python_console[python_console.size()-1]=='\n')
-	  python_console=python_console.substr(0,python_console.size()-1);
-	return string2gen(python_console.empty()?"Done":python_console,false);
+	if (python_console()[python_console().size()-1]=='\n')
+	  python_console()=python_console().substr(0,python_console().size()-1);
+	return string2gen(python_console().empty()?"Done":python_console(),false);
       }
     }
 #endif
@@ -6329,7 +6339,52 @@ namespace giac {
   static define_unary_function_eval_quoted (__xcas,&_xcas,_xcas_s);
   define_unary_function_ptr5( at_xcas ,alias_at_xcas,&__xcas,_QUOTE_ARGUMENTS,true);
 
+  char * (*quickjs_ptr) (cstcharptr)=0;
   gen _javascript(const gen & args,GIAC_CONTEXT){
+#if defined QUICKJS
+    if (quickjs_ptr && args.type==_VECT && args._VECTptr->size()==2){
+      gen a=args._VECTptr->front(),b=args._VECTptr->back();
+      if (a.type==_STRNG && b==at_javascript){
+	const char * ptr=a._STRNGptr->c_str();
+	while (*ptr==' ')
+	  ++ptr;
+	bool gr= strcmp(ptr,"show()")==0 || strcmp(ptr,",")==0;
+	bool pix =strcmp(ptr,";")==0;
+	bool turt=strcmp(ptr,".")==0;
+	bool xc=strcmp(ptr,"xcas")==0;
+	python_contextptr=contextptr;
+	gen g; string ans;
+	if (!gr && !xc && !turt && !pix ){
+	  char * ansptr=(*quickjs_ptr)(ptr);
+	  if (ansptr){
+	    ans=ansptr;
+	    free(ansptr);
+	  }
+	}
+	context * cascontextptr=(context *)caseval("caseval contextptr");
+	if (freeze || pix)
+	  return _show_pixels(0,cascontextptr);
+	if (gr || ans=="Graphic_object" )
+	  return history_plot(cascontextptr);
+	if (ans.empty())
+	  return string2gen("Done",false);
+	if (ans[ans.size()-1]=='\n')
+	  ans=ans.substr(0,ans.size()-1);
+	g=gen(ans,contextptr);
+	if (first_error_line(contextptr)>0) g=string2gen(ans.empty()?"Done":ans,false);
+#ifndef KHICAS
+	if (freezeturtle || turt || islogo(g) || ans=="Logo_turtle"){
+	  // copy caseval turtle to this context
+	  turtle(contextptr)=turtle(cascontextptr);
+	  turtle_stack(contextptr)=turtle_stack(cascontextptr);
+	  return _avance(0,contextptr);
+	}
+	CERR << "";
+#endif
+	return g;
+      }
+    }
+#endif
     return python_xcas(args,2,contextptr);
   }
   static const char _javascript_s []="javascript";
@@ -6516,8 +6571,8 @@ namespace giac {
       if (is_integral(a) && is_integral(b) && is_integral(c)){
 	python_compat(a.val,contextptr) ;
 #ifdef KHICAS
-	python_heap_size=giacmax(absint(b.val),16*1024);
-	python_stack_size=giacmax(absint(c.val),8*1024);
+	pythonjs_heap_size=giacmax(absint(b.val),16*1024);
+	pythonjs_stack_size=giacmax(absint(c.val),8*1024);
 #endif
 	return p;
       }
@@ -6647,6 +6702,53 @@ namespace giac {
   static const char _keep_algext_s []="keep_algext";
   static define_unary_function_eval2 (__keep_algext,&_keep_algext,_keep_algext_s,&printasDigits);
   define_unary_function_ptr( at_keep_algext ,alias_at_keep_algext ,&__keep_algext);
+
+  gen _auto_assume(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG &&  g.subtype==-1) return  g;
+    gen args(g);
+    if (g.type==_DOUBLE_)
+      args=int(g._DOUBLE_val);
+    if (g.type==_SYMB || g.type==_IDNT)
+      return autoassume(g,vx_var,contextptr);
+    if (args.type!=_INT_)
+      return auto_assume(contextptr);
+    auto_assume((args.val)!=0,contextptr);
+    parent_cas_setup(contextptr);
+    return args;
+  }
+  static const char _auto_assume_s []="auto_assume";
+  static define_unary_function_eval (__auto_assume,&_auto_assume,_auto_assume_s);
+  define_unary_function_ptr5( at_auto_assume ,alias_at_auto_assume ,&__auto_assume,0,true);
+
+  gen _parse_e(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG &&  g.subtype==-1) return  g;
+    gen args(g);
+    if (g.type==_DOUBLE_)
+      args=int(g._DOUBLE_val);
+    if (args.type!=_INT_)
+      return parse_e(contextptr);
+    parse_e((args.val)!=0,contextptr);
+    parent_cas_setup(contextptr);
+    return args;
+  }
+  static const char _parse_e_s []="parse_e";
+  static define_unary_function_eval (__parse_e,&_parse_e,_parse_e_s);
+  define_unary_function_ptr5( at_parse_e ,alias_at_parse_e ,&__parse_e,0,true);
+
+  gen _convert_rootof(const gen & g,GIAC_CONTEXT){
+    if ( g.type==_STRNG &&  g.subtype==-1) return  g;
+    gen args(g);
+    if (g.type==_DOUBLE_)
+      args=int(g._DOUBLE_val);
+    if (args.type!=_INT_)
+      return convert_rootof(contextptr);
+    convert_rootof((args.val)!=0,contextptr);
+    parent_cas_setup(contextptr);
+    return args;
+  }
+  static const char _convert_rootof_s []="convert_rootof";
+  static define_unary_function_eval (__convert_rootof,&_convert_rootof,_convert_rootof_s);
+  define_unary_function_ptr5( at_convert_rootof ,alias_at_convert_rootof ,&__convert_rootof,0,true);
 
   gen _angle_radian(const gen & g,GIAC_CONTEXT){
     if ( g.type==_STRNG &&  g.subtype==-1) return  g;
@@ -6981,6 +7083,7 @@ namespace giac {
     if (args.type!=_INT_)
       return decimal_digits(contextptr);
     set_decimal_digits(args.val,contextptr);
+    bf_global_prec=std::ceil(M_LN10/M_LN2*giacmax(absint(args.val),1));
     _cas_setup(cas_setup(contextptr),contextptr);
     return decimal_digits(contextptr);
   }
@@ -9545,7 +9648,10 @@ namespace giac {
     }
     if (args.type!=_STRNG)
       return symbolic(at_expr,args);
-    return eval(gen(*args._STRNGptr,contextptr),eval_level(contextptr),contextptr);
+    gen g(*args._STRNGptr,contextptr);
+    if (giac::first_error_line(contextptr))
+      return gensizeerr(string(gettext("Syntax compatibility mode "))+print_program_syntax(xcas_mode(contextptr))+gettext(". Parse error line ")+print_INT_(giac::first_error_line(contextptr)) + gettext(" column ")+print_INT_(giac::lexer_column_number(contextptr))+  gettext(" at ")  + giac::error_token_name(contextptr)) ;
+    return eval(g,eval_level(contextptr),contextptr);
   }
   static const char _expr_s []="expr";
   static define_unary_function_eval (__expr,&_expr,_expr_s);
@@ -13181,7 +13287,15 @@ namespace giac {
       unary_function_ptr u(uf);
       // cout << symbolic(u,makevecteur(1,2)) << '\n';
       user_operator_list.push_back(u);
-      bool res=lexer_functions_register(u,ss.c_str(),token_value);
+      static vector<string> * user_operator_string=0;
+      if (!user_operator_string) 
+	user_operator_string=new vector<string>;
+      int pos=equalposcomp(*user_operator_string,ss);
+      if (!pos){
+	user_operator_string->push_back(ss);
+	pos=user_operator_string->size();
+      }
+      bool res=lexer_functions_register(u,(*user_operator_string)[pos-1].c_str(),token_value);
       if (res){
 #ifdef HAVE_SIGNAL_H_OLD
 	if (!child_id)

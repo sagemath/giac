@@ -131,7 +131,7 @@ namespace giac {
   }
 
   // coeff & argument of exponential
-  void lin(const gen & e,vecteur & v,GIAC_CONTEXT){
+  void lin(const gen & e,vecteur & v,bool convert_sqrt,GIAC_CONTEXT){
     if (e.type!=_SYMB){
       v.push_back(e);
       v.push_back(0);
@@ -142,13 +142,13 @@ namespace giac {
     if ((s==at_plus) && (e._SYMBptr->feuille.type==_VECT)){
       vecteur::const_iterator it=e._SYMBptr->feuille._VECTptr->begin(),itend=e._SYMBptr->feuille._VECTptr->end();
       for (;it!=itend;++it)
-	lin(*it,v,contextptr);
+	lin(*it,v,convert_sqrt,contextptr);
       compress(v,contextptr);
       return;
     }
     if (s==at_neg){
       vecteur tmp;
-      lin(e._SYMBptr->feuille,tmp,contextptr);
+      lin(e._SYMBptr->feuille,tmp,convert_sqrt,contextptr);
       const_iterateur it=tmp.begin(),itend=tmp.end();
       for (;it!=itend;++it){
 	v.push_back(-*it);
@@ -159,7 +159,7 @@ namespace giac {
     }
     if (s==at_inv){
       vecteur w;
-      lin(e._SYMBptr->feuille,w,contextptr);
+      lin(e._SYMBptr->feuille,w,convert_sqrt,contextptr);
       if (w.size()==2){
 	v.push_back(inv(w[0],contextptr));
 	v.push_back(-w[1]);
@@ -173,16 +173,16 @@ namespace giac {
     }
     if (s==at_prod){
       if (e._SYMBptr->feuille.type!=_VECT){
-	lin(e._SYMBptr->feuille,v,contextptr);
+	lin(e._SYMBptr->feuille,v,convert_sqrt,contextptr);
 	return;
       }
       vecteur w;
       vecteur::const_iterator it=e._SYMBptr->feuille._VECTptr->begin(),itend=e._SYMBptr->feuille._VECTptr->end();
-      lin(*it,w,contextptr);
+      lin(*it,w,convert_sqrt,contextptr);
       ++it;
       for (;it!=itend;++it){
 	vecteur v0;
-	lin(*it,v0,contextptr);
+	lin(*it,v0,convert_sqrt,contextptr);
 	vecteur res;
 	convolution(w,v0,res,contextptr);
 	w=res;
@@ -193,10 +193,10 @@ namespace giac {
     if (s==at_pow){
       vecteur::const_iterator it=e._SYMBptr->feuille._VECTptr->begin();
       vecteur w;
-      lin(*it,w,contextptr);
+      lin(*it,w,convert_sqrt,contextptr);
       ++it;
       if (w.size()==2){
-	if ( is_zero(w[1]) && (w[0].type==_INT_) ){
+	if ( is_zero(w[1]) && (w[0].type==_INT_ && convert_sqrt) ){
 	  w[1]=ln(w[0],contextptr);
 	  w[0]=plus_one;
 	}
@@ -216,7 +216,7 @@ namespace giac {
       v.push_back(0);
       return ;
     }
-    gen f=_lin(e._SYMBptr->feuille,contextptr);
+    gen f=_lin(convert_sqrt?e._SYMBptr->feuille:makesequence(e._SYMBptr->feuille,at_sqrt),contextptr);
     if (s==at_exp){
       v.push_back(1);
       v.push_back(f);
@@ -233,12 +233,22 @@ namespace giac {
     v.push_back(0);
   }
 
+  void lin(const gen & e,vecteur & v,GIAC_CONTEXT){
+    lin(e,v,true,contextptr);
+  }
+
   symbolic symb_lin(const gen & a){
     return symbolic(at_lin,a);
   }
 
   // "unary" version
-  gen _lin(const gen & args,GIAC_CONTEXT){
+  gen _lin(const gen & args_,GIAC_CONTEXT){
+    gen args(args_);
+    bool convert_sqrt=true;
+    if (args.type==_VECT && args.subtype==_SEQ__VECT && args._VECTptr->back()==at_sqrt){
+      args=args._VECTptr->front();
+      convert_sqrt=false;
+    }
     if ( args.type==_STRNG && args.subtype==-1) return  args;
     gen var,res;
     if (is_algebraic_program(args,var,res))
@@ -247,7 +257,7 @@ namespace giac {
       return apply_to_equal(args,_lin,contextptr);
     vecteur v;
     if (args.type!=_VECT){
-      lin(args,v,contextptr);
+      lin(args,v,convert_sqrt,contextptr);
       return unlin(v,contextptr);
     }
     return apply(args,_lin,contextptr);
@@ -576,6 +586,8 @@ namespace giac {
     // distribute wrt a AND b
     const_iterateur ita=a._SYMBptr->feuille._VECTptr->begin(),itaend=a._SYMBptr->feuille._VECTptr->end();
     const_iterateur itb=b._SYMBptr->feuille._VECTptr->begin(),itbend=b._SYMBptr->feuille._VECTptr->end();
+    if ((itbend-itb)*(itaend-ita)>MAX_PROD_EXPAND_SIZE)
+      return a*b;
     vecteur v;
     v.reserve((itbend-itb)*(itaend-ita));
     for (;ita!=itaend;++ita){
@@ -594,7 +606,12 @@ namespace giac {
     return _simplifier(prod_expand(prod_expand(it,it+s/2,contextptr),prod_expand(it+s/2,itend,contextptr),contextptr),contextptr);
   }
   static gen prod_expand(const gen & e_orig,GIAC_CONTEXT){
+    int te=taille(e_orig,MAX_PROD_EXPAND_SIZE);
+    if (te>MAX_PROD_EXPAND_SIZE)
+      return symbolic(at_prod,e_orig);
     gen e=aplatir_fois_plus(expand(e_orig,contextptr));
+    if (taille(e,MAX_PROD_EXPAND_SIZE)>MAX_PROD_EXPAND_SIZE)
+      return symbolic(at_prod,e_orig);
     if (e.type!=_VECT)
       return e;
     // look for sommet=at_plus inside e
@@ -675,6 +692,8 @@ namespace giac {
       int n=int(w.size());
       if (!n)
 	return gensizeerr(contextptr);
+      if (std::pow(n,k)>MAX_PROD_EXPAND_SIZE)
+	return pow(v[0],v[1],contextptr);
       vecteur res;
       gen p;
       for (int i=k;i>=0;--i){
