@@ -8,7 +8,7 @@ Forwarded: Debian-specific
  $(srcdir)/casinter: casinter.stamp
  $(srcdir)/tutoriel: tutoriel.stamp
  
--install-data-local: $(HTML_STAMPS) $(PS_LOCAL) $(DVI_LOCAL) troussesurvie_en.pdf # $(PDF_LOCAL) 
+-install-data-local: $(HTML_STAMPS) troussesurvie_en.pdf # $(PDF_LOCAL) $(PS_LOCAL) $(DVI_LOCAL) 
 +all-local: html-local ps-local dvi-local troussesurvie_en.pdf # pdf-local
 +
 +install-data-local: all-local

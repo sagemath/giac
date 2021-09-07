@@ -3,7 +3,7 @@ Author: Ximin Luo <infinity0@debian.org>
 Forwarded: TODO
 --- giac.orig/src/Graph3d.cc
 +++ giac/src/Graph3d.cc
-@@ -48,7 +48,7 @@
+@@ -44,7 +44,7 @@
  #include "Editeur.h"
  #include "Xcas1.h"
  #include "Print.h"
@@ -14,16 +14,16 @@ Forwarded: TODO
  //#include <OpenGL/gl.h>
 --- giac.orig/src/Makefile.am
 +++ giac/src/Makefile.am
-@@ -14,7 +14,7 @@
-   help.cc  lpsolve.cc optimization.cc signalprocessing.cc \
-   graphe.cc graphtheory.cc nautywrapper.c markup.cc kdisplay.cc kadd.cc # Ugh..
+@@ -16,7 +16,7 @@
+   caseval.c cutils.c graphic.c libbf.c libregexp.c libunicode.c \
+   qjsgiac.c quickjs.c quickjs-libc.c js.c
  
--libgiac_la_LIBADD = $(NTL_LIBS) $(COCOA_LIBS) $(PARI_LIBS) $(GSL_LIBS)
+-libgiac_la_LIBADD = $(NTL_LIBS) $(COCOA_LIBS) $(PARI_LIBS) $(GSL_LIBS) 
 +libgiac_la_LIBADD = $(NTL_LIBS) $(COCOA_LIBS) $(PARI_LIBS) $(GSL_LIBS) -lgl2ps
  
  giacincludedir = $(includedir)/giac
  giacinclude_HEADERS = dispatch.h fraction.h gen.h desolve.h misc.h ti89.h \
-@@ -36,11 +36,11 @@
+@@ -41,11 +41,11 @@
  	Tableur.cc Editeur.cc Graph.cc Graph3d.cc Help1.cc Cfg.cc \
  	Flv_CStyle.cc \
  	Flve_Check_Button.cc Flve_Input.cc Flv_Style.cc Flv_Data_Source.cc \
