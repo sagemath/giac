@@ -1,11 +1,11 @@
-giac (1.6.0.47+dfsg1-1) UNRELEASED; urgency=medium
+giac (1.7.0.29+dfsg1-1) UNRELEASED; urgency=medium
 
   * New upstream release.
   * Try to make the build reproducible.
   * Annotate giac-doc's dependency on xcas with :any following hinter.
   * Refresh patches.
 
- -- Julien Puydt <jpuydt@debian.org>  Sun, 24 Jan 2021 08:16:41 +0100
+ -- Julien Puydt <jpuydt@debian.org>  Tue, 07 Sep 2021 07:49:12 +0200
 
 giac (1.6.0.41+dfsg1-1) unstable; urgency=medium
 
