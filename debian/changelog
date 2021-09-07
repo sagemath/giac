@@ -4,6 +4,7 @@ giac (1.7.0.29+dfsg1-1) UNRELEASED; urgency=medium
   * Try to make the build reproducible.
   * Annotate giac-doc's dependency on xcas with :any following hinter.
   * Refresh patches.
+  * Don't put mkjs.cc in Files-Excluded in d/copyright.
 
  -- Julien Puydt <jpuydt@debian.org>  Tue, 07 Sep 2021 07:49:12 +0200
 
