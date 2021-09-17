@@ -4,12 +4,11 @@ Forwarded: Debian-specific
 
 --- giac.orig/doc/en/Makefile.am
 +++ giac/doc/en/Makefile.am
-@@ -34,7 +34,9 @@
- $(srcdir)/casinter: casinter.stamp
+@@ -35,6 +35,9 @@
  $(srcdir)/tutoriel: tutoriel.stamp
  
--install-data-local: $(HTML_STAMPS) troussesurvie_en.pdf # $(PDF_LOCAL) $(PS_LOCAL) $(DVI_LOCAL) 
-+all-local: html-local ps-local dvi-local troussesurvie_en.pdf # pdf-local
+ install-data-local: $(HTML_STAMPS) troussesurvie_en.pdf # $(PDF_LOCAL) # $(PS_LOCAL) $(DVI_LOCAL) 
++all-local: html-local ps-local dvi-local troussesurvie_en.pdf
 +
 +install-data-local: all-local
  	$(install_sh) -d $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
