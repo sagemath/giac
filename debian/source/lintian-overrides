@@ -1,5 +1,14 @@
 # False positive, very long regex for giac syntax
-giac source: source-is-missing doc/xcas.js line length is * characters (>*)
+giac source: source-is-missing doc/xcas.js line * is * characters long (>*)
+
+# False positive, just very ugly code
+giac source: source-is-missing doc/giacsimple.js line 231 is 281 characters long (>256)
+
+# False positive, it's the list of xcas commands (on a single line...)
+giac source: source-is-missing doc/giactableau.js line 3456 is 23124 characters long (>512)
+
+# False positive, a unicode trie in base64!
+giac source: source-is-missing doc/html2canvas.js line 6707 is 50640 characters long (>512)
 
 # Format-specification bug, see #649530
 giac source: missing-license-paragraph-in-dep5-copyright *+ (line *)
