@@ -1,4 +1,4 @@
-giac (1.7.0.31+dfsg2-1) UNRELEASED; urgency=medium
+giac (1.7.0.33+dfsg2-1) UNRELEASED; urgency=medium
 
   * New upstream release.
   * Try to make the build reproducible.
@@ -6,7 +6,7 @@ giac (1.7.0.31+dfsg2-1) UNRELEASED; urgency=medium
   * Refresh patches.
   * Don't put mkjs.cc in Files-Excluded in d/copyright.
 
- -- Julien Puydt <jpuydt@debian.org>  Fri, 17 Sep 2021 22:11:01 +0200
+ -- Julien Puydt <jpuydt@debian.org>  Tue, 28 Sep 2021 08:57:19 +0200
 
 giac (1.6.0.41+dfsg1-1) unstable; urgency=medium
 
