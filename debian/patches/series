@@ -18,3 +18,4 @@ split-build-install.patch # upstream doesn't know - says hevea2mml should be use
 d-dont-build-files-excluded.patch
 d-find-doc-files-at-buildtime.patch
 d-dont-include-remote-scripts.patch
+fix_gcc11.patch

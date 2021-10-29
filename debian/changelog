@@ -5,6 +5,7 @@ giac (1.7.0.39+dfsg2-1) UNRELEASED; urgency=medium
   * Annotate giac-doc's dependency on xcas with :any following hinter.
   * Refresh patches.
   * Don't put mkjs.cc in Files-Excluded in d/copyright.
+  * Add fix_gcc11.patch to fix compilation.
 
  -- Julien Puydt <jpuydt@debian.org>  Wed, 27 Oct 2021 15:18:06 +0200
 
