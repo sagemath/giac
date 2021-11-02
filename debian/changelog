@@ -6,6 +6,7 @@ giac (1.7.0.39+dfsg2-1) UNRELEASED; urgency=medium
   * Refresh patches.
   * Don't put mkjs.cc in Files-Excluded in d/copyright.
   * Add fix_gcc11.patch to fix compilation.
+  * Bump standards-version to 4.6.0.
 
  -- Julien Puydt <jpuydt@debian.org>  Wed, 27 Oct 2021 15:18:06 +0200
 
