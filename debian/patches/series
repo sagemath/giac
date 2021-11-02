@@ -19,3 +19,4 @@ d-dont-build-files-excluded.patch
 d-find-doc-files-at-buildtime.patch
 d-dont-include-remote-scripts.patch
 fix_gcc11.patch
+dont_build_dvi_and_ps.patch
