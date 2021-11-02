@@ -1,9 +1,5 @@
 #!/usr/bin/make -f
 
-# should make dvips-generated files build-reproducible
-export SOURCE_DATE_EPOCH = $(shell date -d "$$(dpkg-parsechangelog -SDate)" +%s)
-export FORCE_SOURCE_DATE = 1
-
 %:
 	dh "$@" --with autoreconf
 
