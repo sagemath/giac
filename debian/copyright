@@ -166,15 +166,6 @@ Copyright: 2014 Carleos Artime <carleos@pinon.ccu.uniovi.es>
            2017 Ximin Luo <infinity0@debian.org>
 License: GPL-3+
 
-Files: debian/upstream-doc-fr/*
-Copyright: 2000-2017 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
-License: GPL-3+
-
-Files: debian/upstream-doc-fr/Makefile.am.Debian
-Copyright: 2000-2017 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
-           2017 Ximin Luo <infinity0@debian.org>
-License: GPL-3+
-
 License: GPL-1
  On Debian GNU/Linux systems, the complete text of the GNU General Public
  License version 1 can be found in `/usr/share/common-licenses/GPL-1'

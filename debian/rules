@@ -20,9 +20,6 @@ override_dh_autoreconf:
 	find doc/ -maxdepth 1 -type d -exec ln -sf /usr/share/texmf/tex/texinfo/texinfo.tex '{}/' \;
 # Deal with emscripten placeholder
 	cp debian/giac.js doc/giac.js
-# Deal with french documentation
-	cp -a debian/upstream-doc-fr doc/fr
-	cp doc/fr/Makefile.am.Debian doc/fr/Makefile.am
 # Actually configure
 	dh_autoreconf
 

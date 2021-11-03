@@ -1,0 +1,24 @@
+Description: drop the fr documentation (doesn't build upstream)
+Author: Julien Puydt
+Forwarded: in-discussion
+
+--- giac.orig/doc/Makefile.am
++++ giac/doc/Makefile.am
+@@ -1,5 +1,5 @@
+-SUBDIRS = 	en es fr el local pt zh de
+-DIST_SUBDIRS = 	en es fr el local pt zh de 
++SUBDIRS = 	en es el local pt zh de
++DIST_SUBDIRS = 	en es el local pt zh de
+ XCASHTML = xcasfr.html xcasen.html *.css *.js logo.png giac.tex giacfr.tex test.tex testfr.tex test.html testfr.html algolycee.html graphtheory-user_manual.pdf *.sty simple.html *tableau* magnets html2canvas.js jspdf.umd.min.js khicasnw.html epsilon.dfu apps.tar recovery nws*.html nws.js numworks.js shakeys
+ EXTRA_DIST = aide_cas README index.html $(XCASHTML) dxcas/* pari/* castex.tex tortue.tex 50-numworks-calculator.rules  # private nwscert.cc -> shakeys
+ 
+--- giac.orig/configure.ac
++++ giac/configure.ac
+@@ -560,7 +560,6 @@
+ doc/Makefile
+ doc/en/Makefile
+ doc/es/Makefile
+-doc/fr/Makefile
+ doc/el/Makefile
+ doc/local/Makefile
+ doc/pt/Makefile
