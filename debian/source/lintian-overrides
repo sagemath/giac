@@ -12,3 +12,13 @@ giac source: source-is-missing doc/html2canvas.js
 
 # Format-specification bug, see #649530
 giac source: missing-license-paragraph-in-dep5-copyright debian/copyright *+ (line *)
+giac source: unused-license-paragraph-in-dep5-copyright debian/copyright * (line *)
+
+# RFP #998381
+giac source: source-is-missing doc/jspdf.umd.min.js
+
+# RFP #998380
+giac source: source-is-missing doc/jszip.min.js
+
+# RFP #998379
+giac source: source-is-missing doc/nws.js

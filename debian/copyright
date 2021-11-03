@@ -57,12 +57,46 @@ Files-Excluded:
  doc/fr/*
 
 Files: *
-Copyright: 2000-2017 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
+Copyright: 2000-2021 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
 License: GPL-3+
+
+Files: xcas.metainfo.xml
+Copyright: 2021 Bernard Parisse
+License: FSFAP
+
+Files: doc/jspdf.umd.min.js
+Copyright: 2010-2020 James Hall
+           2015-2020 yWorks GmbH
+	             Lukas Holländer
+           2016-2018 Aras Abbasi
+           2010 Aaron Spike
+           2012 Willow Systems Corporation
+	        Pablo Hess
+		Florian Jenett
+           2013 Warren Weckesser
+	   	Youssef Beddad
+		Lee Driscoll
+		Stefan Slonevskiy
+		Jeremy More,
+	   	Christoph Hartmann
+           2014 Juan Pablo Gaviria
+	   	James Makes
+                Diego Casorran
+                Steven Spungin
+                Kenneth Glassey
+License: Expat
+
+Files: doc/jszip.min.js
+Copyright: 2009-2016 Stuart Knightley
+License: Expat
+
+Files: doc/nws.js
+Copyright: 2020-2021 Maxime Friess
+License: Expat
 
 Files: micropython-1.12/*
 Copyright: 2003-1019 Damien P. George
-           2020 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
+           2020-2021 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
 License: Expat
 
 Files: src/gauss.cc src/isom.* src/renee.cc
@@ -158,7 +192,7 @@ License: GPL-3+
 Files: debian/*
 Copyright: 2009 Gilles Filippini <gilles.filippini@free.fr>
            2017 Ximin Luo <infinity0@debian.org>
-           2020 Julien Puydt <jpuydt@debian.org>
+           2020-2021 Julien Puydt <jpuydt@debian.org>
 License: GPL-3+
 
 Files: debian/man/*
@@ -235,3 +269,9 @@ License: Expat
  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
+
+License: FSFAP
+ Copying and distribution of this file, with or without modification, are
+ permitted in any medium without royalty provided the copyright notice
+ and this notice are preserved. This file is offered as-is, without any
+ warranty.
