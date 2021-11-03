@@ -26,9 +26,9 @@ Forwarded: not-needed
  $(srcdir)/casinter: casinter.stamp
  $(srcdir)/tutoriel: tutoriel.stamp
  
- install-data-local: $(HTML_STAMPS) troussesurvie_en.pdf # $(PDF_LOCAL) # $(PS_LOCAL) $(DVI_LOCAL) 
+ install-data-local: $(HTML_STAMPS) # $(PDF_LOCAL) # $(PS_LOCAL) $(DVI_LOCAL)
 -all-local: html-local ps-local dvi-local
-+all-local: html-local pdf-local
++all-local: html-local
  
  install-data-local: all-local
  	$(install_sh) -d $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
