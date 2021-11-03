@@ -11,6 +11,7 @@ giac (1.7.0.39+dfsg2-1) UNRELEASED; urgency=medium
   * Update lintian overrides.
   * Add a patch to avoid building the dvi and ps files.
   * Drop the fr documentation (broken upstream).
+  * Install the xcas.metainfo.xml file.
 
  -- Julien Puydt <jpuydt@debian.org>  Wed, 27 Oct 2021 15:18:06 +0200
 
