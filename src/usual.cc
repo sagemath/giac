@@ -6824,20 +6824,27 @@ namespace giac {
 	double d=std::pow(10.0,double(b.val));
 #endif
 	*/
-	gen d=10.0;
+	gen d=10.0,a=args._VECTptr->front();
 	if (b.val<0){
-	  gen gf=_floor(log10(abs(args._VECTptr->front(),contextptr),contextptr),contextptr); 
+	  gen gf=_floor(log10(abs(a,contextptr),contextptr),contextptr); 
 	  if (gf.type!=_INT_ && gf.type!=_FLOAT_)
 	    return gensizeerr(contextptr);
 	  b=-1-b-gf;
 	}
 	if (b.val>14)
 	  d=accurate_evalf(gen(10),int(b.val*3.32192809489+.5));
+	else
+	  d=accurate_evalf(gen(10),60);
 	d=pow(d,b.val,contextptr);
-	gen e=_round(d*args._VECTptr->front(),contextptr);
+	gen e=_round(d*a,contextptr);
 	if (b.val>14)
 	  e=accurate_evalf(e,int(b.val*3.32192809489+.5));
 	e=rdiv(e,d,contextptr);
+	if (b.val<=14){
+	  gen f=evalf_double(e,1,contextptr);
+	  if (!is_undef(f))
+	    return f;
+	}
 	return e;
       }
     }
@@ -6974,12 +6981,12 @@ namespace giac {
     gen args(args0);
     if ( args.type==_STRNG && args.subtype==-1) return  args;
     int certif=0;
-#ifdef HAVE_LIBPARI
     if (args0.type==_VECT && args0.subtype==_SEQ__VECT && args0._VECTptr->size()==2 && args0._VECTptr->back().type==_INT_){
       args=args0._VECTptr->front();
       certif=args0._VECTptr->back().val;
     }
-#endif
+    if (certif==1)
+      return prime_cert(args,contextptr);
     if (args.type==_VECT)
       return apply(args,_is_prime,contextptr);
     if (!is_integral(args))
@@ -6988,6 +6995,8 @@ namespace giac {
     gen res=pari_isprime(args,certif);
     if (res.type!=_STRNG)
       return res;
+#else
+    if (certif) return gensizeerr("Compile with PARI for prime certificate");
 #endif
     return is_probab_prime_p(args);
   }

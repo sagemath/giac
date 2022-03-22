@@ -18,6 +18,10 @@
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 using namespace std;
+#ifdef __MINGW_H
+#define HAVE_NO_PWD_H
+#endif
+
 #ifndef HAVE_NO_PWD_H
 #ifndef BESTA_OS
 #include <pwd.h>
@@ -836,7 +840,8 @@ namespace giac {
   }
 
   static string printasbloc(const gen & feuille,const char * sommetstr,GIAC_CONTEXT);
-  static string printasprogram(const gen & feuille,const char * sommetstr,GIAC_CONTEXT){
+  
+  static string in_printasprogram(const gen & feuille,const char * sommetstr,GIAC_CONTEXT){
     if ( (feuille.type!=_VECT) || (feuille._VECTptr->size()!=3) )
       return string(sommetstr)+('('+feuille.print(contextptr)+')');
     string res;
@@ -996,6 +1001,32 @@ namespace giac {
       }
     }
     return res;
+  }
+  
+  string rm_semi(const string & s){
+    //return s;
+    string res;
+    for (int i=0;i<s.size();++i){
+      if (s[i]!=';'){
+	res += s[i];
+	continue;
+      }
+      int j=res.size()-1;
+      for (;j>=0;--j){
+	if (res[j]!=' ')
+	  break;
+      }
+      if (res[j]!=';' 
+	  //&& res[j]!='}'
+	  )
+	res += ';';
+    }
+    return res;
+  }
+
+  static string printasprogram(const gen & feuille,const char * sommetstr,GIAC_CONTEXT){
+    string s=in_printasprogram(feuille,sommetstr,contextptr);
+    return rm_semi(s);
   }
 
   static string texprintasprogram(const gen & feuille,const char * sommetstr,GIAC_CONTEXT){
@@ -1706,7 +1737,7 @@ namespace giac {
 	  res +="; ";
       }
     }
-    return res;
+    return rm_semi(res);
   }
   gen symb_bloc(const gen & args){
     if (args.type!=_VECT)
@@ -1873,11 +1904,18 @@ namespace giac {
       if ((calc38 || xcas_mode(contextptr)>0) && (it->type==_SYMB) && (it->_SYMBptr->sommet==at_bloc))
 	res += printasinnerbloc(it->_SYMBptr->feuille,contextptr);
       else {
-	res += it->print(contextptr);
-	if (res[res.size()-1]!=';' 
-	    //&& !xcas_mode(contextptr)
-	    )
-	  res += ";";
+	if (it->type==_SYMB && (it->_SYMBptr->sommet==at_ifte || it->_SYMBptr->sommet==at_for)){
+	  res +='{';
+	  res += it->print(contextptr);
+	  res += '}';
+	}
+	else {
+	  res += it->print(contextptr);
+	  if (res[res.size()-1]!=';' 
+	      //&& !xcas_mode(contextptr)
+	      )
+	    res += ";";
+	}
       }
       debug_ptr(contextptr)->indent_spaces -=2;
     }
@@ -2301,7 +2339,13 @@ namespace giac {
       res += it->print(contextptr) + ") ";
       ++it;
       debug_ptr(contextptr)->indent_spaces += 2;
-      res += it->print(contextptr) ;
+      if (it->is_symb_of_sommet(at_bloc))
+	res += it->print(contextptr) ;
+      else {
+	res += '{';
+	res += it->print(contextptr) ;
+	res += '}';
+      }
       debug_ptr(contextptr)->indent_spaces -= 2;
     }
     if (res[res.size()-1]!='}')
@@ -4175,7 +4219,7 @@ namespace giac {
 #endif
       }
     }
-    if ( (args.type==_SYMB) && (args._SYMBptr->sommet==at_interval) ){
+    if ( (args.type==_SYMB) && args._SYMBptr->sommet==at_interval && args._SYMBptr->feuille.type==_VECT ){
       vecteur & v=*args._SYMBptr->feuille._VECTptr;
       return symb_program(vecteur(0),vecteur(0),symb_rand(gen(v,_SEQ__VECT)),contextptr);
       // return rand_interval(v);
@@ -6304,7 +6348,7 @@ namespace giac {
 	python_contextptr=contextptr;
 	python_console()="";
 	gen g;
-	if (!gr && !xc && !turt && !pix ){
+	if ( strcmp(ptr,",") && !xc && !turt && !pix ){
 	  (*micropy_ptr)(ptr);
 	}
 	context * cascontextptr=(context *)caseval("caseval contextptr");
@@ -9169,6 +9213,8 @@ namespace giac {
     }
     if ( (v[0].type!=_INT_) || (v[1].type!=_INT_) )
       return gensizeerr(contextptr);
+    if (v[0].val==0)
+      return symbolic(at_matrix,g); // used by PARI in bnfinit
     int l(giacmax(v[0].val,1)),c(giacmax(v[1].val,1));
     if (l*longlong(c)>LIST_SIZE_LIMIT)
       return gendimerr(contextptr);
@@ -9459,7 +9505,9 @@ namespace giac {
   }
   gen inputform_post_analysis(const vecteur & v,const gen & res,GIAC_CONTEXT){
     gen tmp=res.eval(eval_level(contextptr),contextptr);
-    if (tmp.type==_VECT && !tmp._VECTptr->empty() && python_compat(contextptr))
+    if (tmp.type==_VECT && !tmp._VECTptr->empty() 
+	&& python_compat(contextptr)
+	)
       return tmp._VECTptr->back();
     return tmp;
   }
