@@ -2,8 +2,8 @@ Description: split the build install in several targets
 Author: Ximin Luo
 Forwarded: Debian-specific
 
---- giac.orig/doc/en/Makefile.am
-+++ giac/doc/en/Makefile.am
+--- a/doc/en/Makefile.am
++++ b/doc/en/Makefile.am
 @@ -35,6 +35,9 @@
  $(srcdir)/tutoriel: tutoriel.stamp
  
@@ -14,8 +14,8 @@ Forwarded: Debian-specific
  	$(install_sh) -d $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
  #	$(INSTALL_DATA) $(PDF_LOCAL) $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
  	$(INSTALL_DATA) troussesurvie_en.pdf $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
---- giac.orig/doc/el/Makefile.am
-+++ giac/doc/el/Makefile.am
+--- a/doc/el/Makefile.am
++++ b/doc/el/Makefile.am
 @@ -24,7 +24,9 @@
  
  $(srcdir)/cascmd_el: cascmd_el.stamp
@@ -27,8 +27,8 @@ Forwarded: Debian-specific
  	$(install_sh) -d $(DESTDIR)$(prefix)/share/giac/doc/$(the_LANG)
  #	$(INSTALL_DATA) $(PDF_LOCAL) $(DESTDIR)/$(the_LANG)
  #	$(INSTALL_DATA) $(PS_LOCAL) $(DESTDIR)/$(the_LANG)
---- giac.orig/doc/es/Makefile.am
-+++ giac/doc/es/Makefile.am
+--- a/doc/es/Makefile.am
++++ b/doc/es/Makefile.am
 @@ -16,7 +16,9 @@
  dvi-local: $(DVI_LOCAL)
  ps-local: $(PS_LOCAL)

@@ -2,8 +2,8 @@ Description: make tests pass with a recent pari
 Author: Ximin Luo
 Forwarded: yes
 
---- giac.orig/check/TP11-sol.cas.out1
-+++ giac/check/TP11-sol.cas.out1
+--- a/check/TP11-sol.cas.out1
++++ b/check/TP11-sol.cas.out1
 @@ -10,7 +10,7 @@
  1073741824000000000000000000061203284109000000000000000000000000008409,
  2^3*3*389*733*156904374622257604823879982847602392900751802349981470895277241,

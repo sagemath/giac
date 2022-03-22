@@ -20,8 +20,8 @@ Author: Ximin Luo <infinity0@debian.org>
 Forwarded: not-needed
 ---
 This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
---- giac.orig/doc/algolycee.html
-+++ giac/doc/algolycee.html
+--- a/doc/algolycee.html
++++ b/doc/algolycee.html
 @@ -58,7 +58,7 @@
   (function () {
    var script = document.createElement("script");
@@ -40,8 +40,8 @@ This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
      document.getElementsByTagName("head")[0].appendChild(script);
    }
    var elem= document.getElementById('controlindex');
---- giac.orig/doc/giac.tex
-+++ giac/doc/giac.tex
+--- a/doc/giac.tex
++++ b/doc/giac.tex
 @@ -1,7 +1,7 @@
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  %% giac/hevea interaction code definitions
@@ -60,7 +60,7 @@ This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
    document.getElementsByTagName("head")[0].appendChild(script);
  })();
  }
-@@ -958,7 +958,7 @@
+@@ -936,7 +936,7 @@
    if (UI.usemathjax){
      var script = document.createElement("script");
      script.type = "text/javascript";
@@ -69,8 +69,8 @@ This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
      document.getElementsByTagName("head")[0].appendChild(script);
    }
    var elem= document.getElementById('controlindex');
---- giac.orig/doc/giacfr.tex
-+++ giac/doc/giacfr.tex
+--- a/doc/giacfr.tex
++++ b/doc/giacfr.tex
 @@ -1,7 +1,7 @@
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  %% giac/hevea interaction code definitions
@@ -98,8 +98,8 @@ This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
      document.getElementsByTagName("head")[0].appendChild(script);
    }
    var elem= document.getElementById('controlindex');
---- giac.orig/doc/testfr.tex
-+++ giac/doc/testfr.tex
+--- a/doc/testfr.tex
++++ b/doc/testfr.tex
 @@ -93,19 +93,19 @@
  
  \section{Utilisation} 
@@ -123,9 +123,9 @@ This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
  juste avant \verb|\begin{document}|).
  
  Pour cr\'eer une commande en ligne avec r\'eponse en MathML (ou
---- giac.orig/doc/xcas.js
-+++ giac/doc/xcas.js
-@@ -3816,7 +3816,7 @@
+--- a/doc/xcas.js
++++ b/doc/xcas.js
+@@ -3860,7 +3860,7 @@
          if (!UI.usemathjax) {
            var script = document.createElement("script");
            script.type = "text/javascript";
@@ -134,9 +134,9 @@ This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
            document.getElementsByTagName("head")[0].appendChild(script);
            window.setTimeout(UI.setmathjax, 400);
          }
---- giac.orig/doc/xcasen.html
-+++ giac/doc/xcasen.html
-@@ -3755,7 +3755,7 @@
+--- a/doc/xcasen.html
++++ b/doc/xcasen.html
+@@ -3762,7 +3762,7 @@
          (function () {
              var script = document.createElement("script");
              script.type = "text/javascript";
@@ -145,8 +145,8 @@ This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
              document.getElementsByTagName("head")[0].appendChild(script);
          })();
      }
---- giac.orig/doc/xcasfr.html
-+++ giac/doc/xcasfr.html
+--- a/doc/xcasfr.html
++++ b/doc/xcasfr.html
 @@ -3968,7 +3968,7 @@
          (function () {
              var script = document.createElement("script");
@@ -156,8 +156,8 @@ This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
              document.getElementsByTagName("head")[0].appendChild(script);
          })();
      }
---- giac.orig/doc/castex.tex
-+++ giac/doc/castex.tex
+--- a/doc/castex.tex
++++ b/doc/castex.tex
 @@ -183,7 +183,7 @@
  %  (function () {
  %   var script = document.createElement("script");
@@ -167,8 +167,8 @@ This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
  %   document.getElementsByTagName("head")[0].appendChild(script);
  % })();
  % }
---- giac.orig/doc/test.html
-+++ giac/doc/test.html
+--- a/doc/test.html
++++ b/doc/test.html
 @@ -58,7 +58,7 @@
   (function () {
    var script = document.createElement("script");

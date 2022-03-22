@@ -2,8 +2,8 @@ Description: don't build the dvi and ps files
 Author: J.Puydt
 Forwarded: not-needed
 
---- giac.orig/doc/en/Makefile.am
-+++ giac/doc/en/Makefile.am
+--- a/doc/en/Makefile.am
++++ b/doc/en/Makefile.am
 @@ -2,10 +2,6 @@
  
  PDF_LOCAL = cascmd_en.pdf casinter.pdf cas.pdf

@@ -4,9 +4,9 @@ Description: Allow XCAS_ROOT override, so doc files can be found during the buil
 Author: Ximin Luo <infinity0@debian.org>
 Forwarded: not-needed
 
---- giac.orig/src/global.cc
-+++ giac/src/global.cc
-@@ -4447,6 +4447,10 @@
+--- a/src/global.cc
++++ b/src/global.cc
+@@ -4481,6 +4481,10 @@
        string s=getenv("XCAS_ROOT");
        return s;
      }

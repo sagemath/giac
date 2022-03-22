@@ -1,8 +1,8 @@
 Description: Use system gl2ps
 Author: Ximin Luo <infinity0@debian.org>
 Forwarded: TODO
---- giac.orig/src/Graph3d.cc
-+++ giac/src/Graph3d.cc
+--- a/src/Graph3d.cc
++++ b/src/Graph3d.cc
 @@ -44,7 +44,7 @@
  #include "Editeur.h"
  #include "Xcas1.h"
@@ -12,8 +12,8 @@ Forwarded: TODO
  
  #ifdef __APPLE__
  //#include <OpenGL/gl.h>
---- giac.orig/src/Makefile.am
-+++ giac/src/Makefile.am
+--- a/src/Makefile.am
++++ b/src/Makefile.am
 @@ -16,7 +16,7 @@
    caseval.c cutils.c graphic.c libbf.c libregexp.c libunicode.c \
    qjsgiac.c quickjs.c quickjs-libc.c js.c

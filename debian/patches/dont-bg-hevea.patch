@@ -1,8 +1,8 @@
 Description: Don't run hevea in background
 Author: Ximin Luo <infinity0@debian.org>
 Forwarded: TODO
---- giac.orig/src/icas.cc
-+++ giac/src/icas.cc
+--- a/src/icas.cc
++++ b/src/icas.cc
 @@ -733,7 +733,7 @@
  	  out.close();
  	  COUT << "File " << outfile << " created" << outfile << '\n' << "Then I will run pdflatex " << giac::remove_extension(outfile) << '\n' ;
