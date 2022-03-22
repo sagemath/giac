@@ -1282,7 +1282,7 @@ namespace xcas {
 		if (pythonjs==4)
 		  normalcolor=FL_YELLOW;
 		else
-		  normalcolor=245;
+		  normalcolor=pythonjs?245:253;
 	      }
 	    }
 	  }
@@ -1381,6 +1381,37 @@ namespace xcas {
 	return 1;
       }
       char ch=Fl::event_text()?Fl::event_text()[0]:0;
+      bool toxcas=ch=='x' || ch=='X';
+      bool tocas=ch=='c' || ch=='C';
+      bool topy=ch=='p' || ch=='P' || ch=='m' || ch=='M';
+      bool tojs=ch=='j' || ch=='J';
+      if ( (toxcas || topy || tocas || tojs ) && _sel_begin>=0 ){
+	int last=_sel_end+1;
+	if (last>children()) last=children();
+	for (int i=_sel_begin;i<last;++i){
+	  Fl_Group * cur=dynamic_cast<Fl_Group *>(child(i));
+	  if (cur){
+	    Fl_Widget * curr=cur->child(0);
+	    if (Editeur * edt=dynamic_cast<Editeur *>(curr))
+	      curr=edt->editor;
+	    if (Xcas_Text_Editor * ed=dynamic_cast<Xcas_Text_Editor *>(curr)){
+	      if (toxcas)
+		ed->pythonjs=0;
+	      if (tocas)
+		ed->pythonjs=1;
+	      if (topy)
+		ed->pythonjs=4;
+	      if (tojs)
+		ed->pythonjs=-1;
+	      ed->style_reparse();
+	    }
+	  }
+	}
+	redraw();
+	focus(_sel_begin,true);
+	_sel_begin=_sel_end=-1;
+	return 1;
+      }
       if (ch==17 && !children()){ // Ctrl-Q -> search for a main menu shortcut
 	if (Fl_Window * w=window()){
 	  int n=w->children();
@@ -4569,7 +4600,7 @@ namespace xcas {
 #ifdef HAVE_LIBMICROPYTHON
 			      (pyc&4)?FL_YELLOW:
 #endif
-			      245);
+			      pyc?245:253);
       string mode_s="Config ";
       if (pack->url)
 	mode_s += '\''+remove_path(*pack->url)+'\'';
@@ -4615,7 +4646,7 @@ namespace xcas {
 	      mode_s += "MicroPython ";
 	    else
 #endif
-	      mode_s += pyc==2?"python ^==xor ":"python ^=** ";
+	      mode_s += pyc==2?"python ^==xor ":"caspy ^=** ";
 	  }
 	}
 	else

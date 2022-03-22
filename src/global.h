@@ -116,6 +116,7 @@ bool dfu_send_rescue(const char * fname);
 const int nwstoresize1=0x8000,nwstoresize2=0x8014;
 bool dfu_send_firmware(const char * fname);
 bool dfu_send_apps(const char * fname);
+bool dfu_update_khicas(const char * fname); 
 
 #if defined HAVE_LIBMICROPYTHON
 #include <string>
@@ -368,6 +369,7 @@ Boolean isLegalUTF8Sequence(const UTF8 *source, const UTF8 *sourceEnd);
   extern double gbasis_reinject_ratio;
   extern double gbasis_reinject_speed_ratio;
   extern int gbasis_logz_age_sort,gbasis_stop,rur_do_gbasis,rur_do_certify,rur_certify_maxthreads;
+  extern bool rur_error_ifnot0dimensional; // error code or compute gbasis
 
   extern int PROOT_FACTOR_MAXDEG;
   extern int ABS_NBITS_EVALF;

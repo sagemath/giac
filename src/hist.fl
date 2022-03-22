@@ -623,12 +623,15 @@ Function {Xcas_widget_size(const giac::gen & g,const giac::context * cptr)} {ret
 
 Function {make_history()} {open
 } {
-  code {Fl_Group * s = Xcas_Main_Tab;
+  code {
+const giac::context * oldctxptr=Xcas_get_context();
+Fl_Group * s = Xcas_Main_Tab;
         Fl_Group::current(0);
 s->handle(FL_FOCUS);
 xcas::History_Fold * w = new xcas::History_Fold(s->x()+2,s->y()+s->labelsize()+4,s->w()-4,s->h()-s->labelsize()-6,1);
 w->end();
 w->pack->contextptr = giac::clone_context(giac::context0);
+python_compat(python_compat(oldctxptr),w->pack->contextptr);
 w->handle(FL_FOCUS);
 w->pack->handle(FL_FOCUS);
 w->labelsize(s->labelsize());
@@ -1305,7 +1308,7 @@ Function {Xcas_run(int argc,char ** argv)} {open
             xywh {15 15 100 20}
           }
          MenuItem Xcas_nw_install {
-          label {Install KhiCAS on Numworks calculator}
+          label {Install Khi and KhiCAS on Numworks calculator}
           callback {
              char fname[]="backup.nws";
              if (!dfu_get_scriptstore(fname))
@@ -1316,6 +1319,42 @@ Function {Xcas_run(int argc,char ** argv)} {open
                 fl_alert("%s",gettext("Unable to send firmware"));
               else if (!dfu_send_apps((prefix+"apps.tar").c_str()))
                 fl_alert("%s",gettext("Unable to send KhiCAS"));
+              else {
+                fl_alert(gettext("Install success. Reset the calculator, then connect to restore backup %s"),fname);
+		dfu_send_scriptstore(fname);
+              }
+             }
+          }
+          xywh {30 30 100 20}
+         }
+         MenuItem Xcas_nw_update {
+          label {Update KhiCAS on Numworks calculator}
+          callback {
+             char fname[]="backup.nws";
+             if (!dfu_get_scriptstore(fname))
+               fl_alert("%s",gettext("Unable to backup calculator"));
+	     else {
+              std::string prefix=giac::giac_aide_dir()+"doc/";
+              if (!dfu_update_khicas((prefix+"apps.tar").c_str()))
+                fl_alert("%s",gettext("Unable to update KhiCAS"));
+              else {
+                fl_alert(gettext("Install success. Reset the calculator, then connect to restore backup %s"),fname);
+		dfu_send_scriptstore(fname);
+              }
+             }
+          }
+          xywh {30 30 100 20}
+         }
+         MenuItem Xcas_nw_alpha {
+          label {Test KhiCAS Alpha on Numworks calculator}
+          callback {
+             char fname[]="backup.nws";
+             if (!dfu_get_scriptstore(fname))
+               fl_alert("%s",gettext("Unable to backup calculator"));
+	     else {
+              std::string prefix=giac::giac_aide_dir()+"doc/";
+              if (!dfu_update_khicas((prefix+"appsalpha.tar").c_str()))
+                fl_alert("%s",gettext("Unable to update KhiCAS"));
               else {
                 fl_alert(gettext("Install success. Reset the calculator, then connect to restore backup %s"),fname);
 		dfu_send_scriptstore(fname);
