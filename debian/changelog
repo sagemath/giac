@@ -1,3 +1,11 @@
+giac (1.7.0.53+dfsg2-1) UNRELEASED; urgency=medium
+
+  * New upstream release.
+  * Remove fix_gcc11.patch (no longer neeeded).
+  * Refresh patches. 
+
+ -- Ileana Dumitrescu <ileanadumi95@protonmail.com>  Tue, 22 Mar 2022 15:52:55 +0200
+
 giac (1.7.0.39+dfsg2-1) unstable; urgency=medium
 
   * New upstream release.
