@@ -2145,7 +2145,7 @@ namespace giac {
     //if (!surd1.empty()) expr=subst(expr,surd1,surd2,false,contextptr);
     // Remark: algebraic extension could also be solved using resultant
     vecteur ls(lvarfracpow(expr,x,contextptr));
-    if (!ls.empty()){ // Use auxiliary variables
+    if (!ls.empty()){  // Use auxiliary variables
       int s=int(ls.size())/3;
       vecteur substin,substout,equations,listvars(lvarx(expr,x,true));
       // remove ls from listvars, add aux var instead
@@ -2155,8 +2155,17 @@ namespace giac {
 	if (j)
 	  listvars.erase(listvars.begin()+j-1);
       }
-      if (listvars.size()!=1)
+      if (listvars.size()!=1){
+	// try factorization before err, e.g. (sqrt(x))^-1*exp(x)+2*sqrt(x)*exp(x)
+	gen tryf=factor(expr,false,contextptr);
+	if (tryf.is_symb_of_sommet(at_neg))
+	  tryf=tryf._SYMBptr->feuille;
+	if (tryf.is_symb_of_sommet(at_prod) || tryf.is_symb_of_sommet(at_pow)){
+	  // recurse
+	  return solve_cleaned(tryf,e_check,x,isolate_mode,contextptr);
+	}
 	return vecteur(1,gensizeerr(gettext("Unable to isolate ")+gen(listvars).print(contextptr)+gettext(" solving equation ")+expr.print(contextptr)));
+      }
       vecteur assumedvars;
       for (int i=0;i<s;++i){
 	gen lsvar=ls[3*i+2];
@@ -6668,6 +6677,11 @@ namespace giac {
 	} // end resultant not 0
       } // end #var=2
       gen G=_gbasis(makesequence(eq,var,change_subtype(_RUR_REVLEX,_INT_GROEBNER)),contextptr);
+      if (G.type==_VECT && G._VECTptr->size()==1){
+	if (!is_zero(G._VECTptr->front()))
+	  return vecteur(0); // system was equivalent to 1=0
+	gensizeerr("solve.cc internal error");
+      }
       if (G.type==_VECT && G._VECTptr->size()==var.size()+4 && G._VECTptr->front().type==_INT_ && G._VECTptr->front().val==_RUR_REVLEX){
 	vecteur Gv=*G._VECTptr,S;
 	gen rurvar=var.front();

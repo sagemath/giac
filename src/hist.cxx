@@ -1142,34 +1142,30 @@ static void cb_Xcas_Handle_nws_flash(Fl_Menu_*, void*) {
 }
 
 static void cb_Xcas_nw_install(Fl_Menu_*, void*) {
-  char fname[]="backup.nws";
-             if (!dfu_get_scriptstore(fname))
-               fl_alert("%s",gettext("Unable to backup calculator"));
-	     else {
-              std::string prefix=giac::giac_aide_dir()+"doc/";
-              if (!dfu_send_firmware((prefix+"epsilon.dfu").c_str()))
-                fl_alert("%s",gettext("Unable to send firmware"));
+  std::string prefix=giac::giac_aide_dir()+"doc/";
+              if (!dfu_send_bootloader((prefix+"bootloader.bin").c_str()))
+	        fl_alert("%s",gettext("Unable to send multi-boot loader. You will be asked to update your bootloader when running KhiCAS for the first time."));
+              if (!dfu_send_firmware((prefix+"khi.A.bin").c_str(),0))
+                fl_alert("%s",gettext("Unable to send slot 1\nBackup your data and try again after reset+4 on the Numworks"));
+              else if (!dfu_send_firmware((prefix+"khi.B.bin").c_str(),0x18))
+                fl_alert("%s",gettext("Unable to send slot 2."));
               else if (!dfu_send_apps((prefix+"apps.tar").c_str()))
                 fl_alert("%s",gettext("Unable to send KhiCAS"));
               else {
-                fl_alert(gettext("Install success. Reset the calculator, then connect to restore backup %s"),fname);
-		dfu_send_scriptstore(fname);
-              }
-             };
+                fl_alert(gettext("Install success. Reset the calculator"));
+              };
 }
 
 static void cb_Xcas_nw_update(Fl_Menu_*, void*) {
   char fname[]="backup.nws";
              if (!dfu_get_scriptstore(fname))
                fl_alert("%s",gettext("Unable to backup calculator"));
-	     else {
-              std::string prefix=giac::giac_aide_dir()+"doc/";
-              if (!dfu_update_khicas((prefix+"apps.tar").c_str()))
-                fl_alert("%s",gettext("Unable to update KhiCAS"));
-              else {
+	     std::string prefix=giac::giac_aide_dir()+"doc/";
+             if (!dfu_update_khicas((prefix+"apps.tar").c_str()))
+                fl_alert("%s",gettext("Unable to update KhiCAS. Press reset+4 on the calculator and try again."));
+             else {
                 fl_alert(gettext("Install success. Reset the calculator, then connect to restore backup %s"),fname);
 		dfu_send_scriptstore(fname);
-              }
              };
 }
 
@@ -1180,7 +1176,7 @@ static void cb_Xcas_nw_alpha(Fl_Menu_*, void*) {
 	     else {
               std::string prefix=giac::giac_aide_dir()+"doc/";
               if (!dfu_update_khicas((prefix+"appsalpha.tar").c_str()))
-                fl_alert("%s",gettext("Unable to update KhiCAS"));
+                fl_alert("%s",gettext("Unable to update KhiCAS. Press reset+4 on the calculator and try again."));
               else {
                 fl_alert(gettext("Install success. Reset the calculator, then connect to restore backup %s"),fname);
 		dfu_send_scriptstore(fname);
@@ -1195,8 +1191,10 @@ static void cb_Xcas_nw_rescue(Fl_Menu_*, void*) {
                fl_alert("%s",gettext("Unable to send rescue RAM image to the Numworks calculator."));
               i=fl_ask(gettext("Install KhiCAS?"));
               if (!i) return;
-              if (!dfu_send_firmware((prefix+"epsilon.dfu").c_str()))
-                fl_alert("%s",gettext("Unable to send firmware"));
+              if (!dfu_send_firmware((prefix+"khi.A.bin").c_str(),0))
+                fl_alert("%s",gettext("Unable to send slot 1\nTry again after reset+4 on the Numworks"));
+              else if (!dfu_send_firmware((prefix+"khi.B.bin").c_str(),0x18))
+                fl_alert("%s",gettext("Unable to send slot 2."));
               else if (!dfu_send_apps((prefix+"apps.tar").c_str()))
                 fl_alert("%s",gettext("Unable to send KhiCAS"));
               else 
@@ -1205,14 +1203,14 @@ static void cb_Xcas_nw_rescue(Fl_Menu_*, void*) {
 
 static void cb_Xcas_nw_certify(Fl_Menu_*, void*) {
   bool b=giac::nws_certify_firmware(false,Xcas_get_context());
-            fl_message(b?"Firmware signé par le logiciel Xcas, conforme à la réglementation\n(assurez-vous d'avoir téléchargé Xcas sur www-fourier.ujf-grenoble.fr/~parisse/install_fr.html)":"Le firmware n'est pas certifié par le logiciel Xcas.\nVérifiez que la calculatrice est bien connectée!");
+            fl_message(b?"Firmware signé par le logiciel Xcas, conforme à la réglementation\n(assurez-vous d'avoir téléchargé Xcas sur www-fourier.univ-grenoble-alpes.fr/~parisse/install_fr.html)":"Le firmware n'est pas certifié par le logiciel Xcas.\nVérifiez que la calculatrice est bien connectée!");
 }
 
 static void cb_Xcas_nw_certify_overwrite(Fl_Menu_*, void*) {
   int i=fl_ask("Ce test necessite l'accord du proprietaire de la calculatrice et dure environ 1 minute. Effectuer?");
             if (i==0) return;
 	    bool b=giac::nws_certify_firmware(true,Xcas_get_context());
-            fl_message(b?"Firmware signé par le logiciel Xcas, conforme à la réglementation\n(assurez-vous d'avoir téléchargé Xcas sur www-fourier.ujf-grenoble.fr/~parisse/install_fr.html)":"Le firmware n'est pas certifié par le logiciel Xcas.\nVérifiez que la calculatrice est bien connectée!");
+            fl_message(b?"Firmware signé par le logiciel Xcas, conforme à la réglementation\n(assurez-vous d'avoir téléchargé Xcas sur www-fourier.univ-grenoble-alpes.fr/~parisse/install_fr.html)":"Le firmware n'est pas certifié par le logiciel Xcas.\nVérifiez que la calculatrice est bien connectée!");
 }
 
 static void cb_Xcas_Export_nws(Fl_Menu_*, void*) {

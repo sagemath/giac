@@ -33,6 +33,8 @@
 #define is_cx2 false
 #endif
 
+
+
 #ifdef KHICAS
 
 #ifdef NUMWORKS
@@ -65,6 +67,14 @@ const int xwaspy_shift=33; // must be between 32 and 63, reflect in xcas.js and 
 #include <ctype.h>
 #include "input_lexer.h"
 #include "input_parser.h"
+#if defined NUMWORKS && defined DEVICE
+  void py_ck_ctrl_c(){
+    if (giac::ctrl_c || giac::interrupted)
+      raisememerr();
+  }
+#else
+  void py_ck_ctrl_c(){}
+#endif
 //giac::context * contextptr=0;
 int clip_ymin=0;
 int lang=1;
@@ -2256,7 +2266,9 @@ const catalogFunc completeCaten[] = { // list of all functions (including some n
     }
 #endif
     gen g(_VARS(0,contextptr));
-    if (g.type!=_VECT || g._VECTptr->empty()){
+    if (g.type!=_VECT
+	//|| g._VECTptr->empty()
+	){
       confirm((lang==1)?"Pas de variables. Exemples pour en creer":"No variables. Examples to create",(lang==1)?"a=1 ou f(x):=sin(x^2)":"a=1 or f(x):=sin(x^2)",true);
       return undef;
     }
@@ -2304,7 +2316,12 @@ const catalogFunc completeCaten[] = { // list of all functions (including some n
     smallmenu.height=12;
     smallmenu.scrollbar=1;
     smallmenu.scrollout=1;
-    smallmenu.title = (char*)"Variables";
+    string vars="Variables";
+#if defined NUMWORKS && defined DEVICE
+    vars += ", free >= ";
+    vars += print_INT_(_heap_size-((int)_heap_ptr-(int)_heap_base));
+#endif
+    smallmenu.title = (char*) vars.c_str();
     //MsgBoxPush(5);
     int sres = doMenu(&smallmenu);
     //MsgBoxPop();
@@ -2632,6 +2649,24 @@ const catalogFunc completeCaten[] = { // list of all functions (including some n
     return status;
   }
 
+#if defined NUMWORKS && defined DEVICE
+  bool ck_turtle_size(){
+    vector<logo_turtle> & v=turtle_stack();
+    if (v.size()<v.capacity())
+      return true;
+    int l=2*v.size();
+    if (1024+l*sizeof(logo_turtle)<_heap_size-((int)_heap_ptr-(int)_heap_base))
+      return true;
+    ctrl_c=interrupted=true;
+    return false;
+  }
+
+#else
+  int ck_turtle_size(){
+      return 1;
+  }
+#endif
+
   bool set_turtle_state(const vecteur & v,GIAC_CONTEXT){
     if (v.size()>=2 && v[0].type==_DOUBLE_ && v[1].type==_DOUBLE_){
       vecteur w(v);
@@ -2644,6 +2679,8 @@ const catalogFunc completeCaten[] = { // list of all functions (including some n
 	w.push_back(0);
       if (w[2].type==_DOUBLE_ && w[3].type==_INT_ && w[4].type==_INT_){
 	(*turtleptr)=vecteur2turtle(w);
+	if (!ck_turtle_size())
+	  return false;
 #ifdef TURTLETAB
 	turtle_stack_push_back(*turtleptr);
 #else
@@ -2664,6 +2701,14 @@ const catalogFunc completeCaten[] = { // list of all functions (including some n
   }
 
   static gen update_turtle_state(bool clrstring,GIAC_CONTEXT){
+#if defined NUMWORKS && defined DEVICE
+    if (!ck_turtle_size()){
+      if (ctrl_c || interrupted)
+	return undef;
+      ctrl_c=true; interrupted=true;
+      return gensizeerr("Not enough memory");
+    }
+#else
 #ifdef TURTLETAB
     if (turtle_stack_size>=MAX_LOGO)
       return gensizeerr("Not enough memory");
@@ -2673,14 +2718,28 @@ const catalogFunc completeCaten[] = { // list of all functions (including some n
       return gensizeerr("Not enough memory");
     }
 #endif
+#endif
     if (clrstring)
       (*turtleptr).s=-1;
     (*turtleptr).theta = (*turtleptr).theta - floor((*turtleptr).theta/360)*360;
+    bool push=true;
+    if (push){
 #ifdef TURTLETAB
-    turtle_stack_push_back((*turtleptr));
+      turtle_stack_push_back((*turtleptr));
 #else
-    turtle_stack().push_back((*turtleptr));
+      if (!turtle_stack().empty()){
+	logo_turtle & t=turtle_stack().back();
+	if (t.equal_except_nomark(*turtleptr)){
+	  t.theta=turtleptr->theta;
+	  t.mark=turtleptr->mark;
+	  t.visible=turtleptr->visible;
+	  t.color=turtleptr->color;
+	  push=false;
+	}
+      }
+      turtle_stack().push_back((*turtleptr));
 #endif
+    }
     gen res=turtle_state(contextptr);
 #if defined EMCC || defined (EMCC2) // should directly interact with canvas
     return gen(turtlevect2vecteur(turtle_stack()),_LOGO__VECT);
@@ -3274,7 +3333,7 @@ const catalogFunc completeCaten[] = { // list of all functions (including some n
       turtle_fill_color= g.val;
       return g;
     }
-    if (is_zero(g)){ // 0.0
+    if (g.type!=_VECT && is_zero(g)){ // 0.0
       turtle_fill_begin=turtle_stack().size();
       return 1;
     }
@@ -3294,6 +3353,7 @@ const catalogFunc completeCaten[] = { // list of all functions (including some n
       turtleptr->radius=-absint(n);
       gen res=update_turtle_state(true,contextptr);
       if (turtle_fill_color>=0){
+	turtleptr->radius=0;
 	_crayon(c,contextptr);
       }
       return res;
@@ -9609,6 +9669,26 @@ namespace xcas {
   }
 #endif
 #endif
+
+#if defined NUMWORKS && defined DEVICE
+  BYTE bootloader_hash[]={116,198,71,80,107,25,110,250,180,171,154,127,1,174,88,153,108,172,2,218,82,101,93,157,148,76,37,33,102,53,12,136,};
+  const int bootloader_size=65480;
+  // check bootloade code, skipping exam mode buffer sector
+  bool bootloader_sha256_check(size_t addr){
+    BYTE buf[SHA256_BLOCK_SIZE];
+    SHA256_CTX ctx;
+    unsigned char * ptr=(unsigned char *)addr;
+    giac_sha256_init(&ctx);
+    giac_sha256_update(&ctx, ptr, 16*1024);
+    giac_sha256_update(&ctx, ptr+32*1024, bootloader_size-32*1024);
+    giac_sha256_final(&ctx, buf);
+    if (0) confirm(("@"+hexa_print_INT_(addr)).c_str(),("hash "+print_INT_(buf[0])+","+print_INT_(buf[1])).c_str());
+    if (!memcmp(bootloader_hash, buf, SHA256_BLOCK_SIZE))
+      return true;
+    return false;
+  }
+#endif
+  
   string print_duration(double & duration){
     if (duration<=0)
       return "";
@@ -12120,6 +12200,250 @@ namespace xcas {
       confirm((lang==1)?"Fin du mode examen":"End exam mode","enter: OK");
   }    
 
+#ifdef NUMWORKS
+/* begin section (c) B. Parisse, write exam mode in *all* firmwares 
+   code is dual-licensed for use in Epsilon and here
+ */
+// write exam mode mode to flash at offset pos/8
+  void write_exammode(unsigned char * ptr,int pos,int mode,int modulo){
+    int curmode=pos%modulo;
+    if (curmode == mode)
+      return;
+    int delta=(mode+modulo-curmode)%modulo; // 0<delta<modulo, number of bits that we will set to 0
+    unsigned char * target = ptr + pos/8;
+    int pos8=pos % 8; // number of bits already set to 0 at target
+    pos8 += delta; // 0<pos8<modulo+7
+    unsigned char postab[]={0b11111111,0b1111111,0b111111,0b11111,0b1111,0b111,0b11,0b1,0}; // postab[i] is a byte with i bits set to 0 
+    unsigned char tab[2];
+    bool writenext=pos8>8;
+    tab[0]=postab[writenext?8:pos8];
+    tab[1]=postab[writenext?pos8-8:0];
+#if 1 // KHICAS
+    WriteMemory((char *)target, (const char *)tab, writenext?2:1);
+#else
+    target[0]=tab[0];
+    if (writenext) target[1]=tab[1];
+#endif
+  }
+
+  // check that region is split in two parts: bits set to 0 followed by bits set to 1, returns position of the first 1 bit or -1
+  int pos_01(unsigned * start,int l){
+    unsigned *ptr=start,* end=start+l/sizeof(unsigned);
+    for (;ptr<end;++ptr){
+      if (*ptr)
+	break;
+    }
+    if (ptr==end)
+      return -1;
+    int pos=(ptr-start)*32;
+    unsigned char * ptr8=(unsigned char *) ptr;
+    if (*ptr8==0){
+      pos+=8; ++ptr8;
+    }
+    if (*ptr8==0){
+      pos+=8; ++ptr8;
+    }
+    if (*ptr8==0){
+      pos+=8; ++ptr8;
+    }
+    switch (*ptr8){
+    case 0b1: pos+=7; break; // 7 bits are already set to 0
+    case 0b11: pos+=6; break;
+    case 0b111: pos+=5; break;
+    case 0b1111: pos+=4; break;
+    case 0b11111: pos+=3; break;
+    case 0b111111: pos+=2; break;
+    case 0b1111111: pos+=1; break;
+    case 0b11111111: break;
+    default: return -1;
+    }
+    ++ptr;
+    for (;ptr<end;++ptr){
+      if (*ptr!=0xffffffff)
+	return -1;
+    }
+    return pos;
+  }
+
+  char print_hex(int val){
+    val &= 0xf;
+    if (val>=0 && val<=9)
+      return '0'+val;
+    return 'A'+(val-10);
+  }
+
+  void print_hex(unsigned val,char * ptr){
+    for (int i=0;i<8;++i){
+      ptr[i]=print_hex(val>>(28-4*i));
+    }
+  }
+
+  void set_exammode(int mode,int modulo){
+    if (mode<0 || mode>=modulo)
+      return;
+    // scan external flash every dflash bytes
+    unsigned * flashptr=(unsigned *) 0x90000000;
+    unsigned dflash=0x10000,ntests=8*1024*1024/dflash/sizeof(unsigned);
+    for (unsigned i=0;i<ntests;++i){
+      unsigned * ptr=flashptr+i*dflash;
+      // kernel header?
+      if (*ptr!=0xffffffff || *(ptr+1)!=0xffffffff || *(ptr+2)!= 0xdec00df0 /* f0 0d c0 de*/)
+	continue;
+      ptr += 0x1000/sizeof(unsigned); // exam mode buffer?
+      int pos=pos_01(ptr,0x1000);
+      if (pos==-1)
+	continue;
+      if (pos>=0x1000-8){
+	erase_sector((const char *)ptr);
+	pos=0;
+      }
+      write_exammode((unsigned char *)ptr,pos,mode,modulo);
+    }
+  }
+
+  const size_t baseaddr[]={0x90000000,0x90180000,0x90400000};
+  void boot_firmware(int slot){
+    const int taille=int(sizeof(baseaddr)/sizeof(size_t));
+    if (slot<0 || slot>taille)
+      slot=taille;
+    unsigned * ptr=(unsigned *) 0x08004000;
+    int pos=pos_01(ptr,0x1000);
+    if (pos==-1)
+      return;
+    if (pos>=0x8000-8){
+      erase_sector((const char *)ptr);
+      pos=0;
+    }
+    write_exammode((unsigned char *)ptr,pos,slot,4);
+    wait_1ms(10); // Ion::Timing::msleep(10);
+    erase_sector(0); // Ion::Device::Reset::core();
+  }
+
+  const size_t kernelheader=0xdec00df0;
+  const size_t userheader=0xDEC0EDFE;
+  const size_t omegaheader=0xEFBEADDE;
+  const size_t upsilonheader=0x55707369;
+
+  // return 0 if invalid, 1 for Khi, 2 for Omega, 3 for Upsilon, 4 for Epsilon<=18.2.3
+  int is_valid(int slot){ 
+    if (slot<0 || slot>=int(sizeof(baseaddr)/sizeof(size_t)))
+      return 0;
+    // kernel header
+    size_t * addr=(size_t *) baseaddr[slot];
+    if (addr[0]!=0xffffffff || addr[1]!=0xffffffff || addr[2]!=kernelheader || addr[7]!=kernelheader)
+      return 0;
+    // userland header
+    addr=(size_t *) (baseaddr[slot]+0x10000);
+    if (addr[0]!=userheader || addr[9]!=userheader)
+      return 0;
+    if (addr[10]==omegaheader){
+      char * version=(char *)&addr[11];
+      if (version[1]=='.')
+	return 2; // Omega
+      return 1; // Khi
+    }
+    if (addr[10]==upsilonheader)
+      return 3;
+    // epsilon version
+    char * version=(char *)&addr[1];
+    if (strcmp(version,"18.2.3")>0)
+      return 0;
+    return 4;
+  }
+
+  size_t find_storage(){
+    // find storage
+    int slot=0;
+    size_t addr[]={0x90000000,0x90180000,0x90400000};
+    for (;slot<sizeof(addr)/sizeof(size_t);++slot){
+      unsigned char * r=(unsigned char *) addr[slot];
+      bool externalinfo=r[8]==0xf0 && r[9]==0x0d && r[10]==0xc0 && r[11]==0xde;
+      if (!externalinfo)
+	continue;
+      r += 0x10000;
+      if (r[15]!=0x20) // ram is at 0x20000000 (+256K)
+	continue;
+      size_t start=((r[15]*256U+r[14])*256+r[13])*256+r[12];
+      r=(unsigned char *)start;
+      if (r[0]==0xba && r[1]==0xdd && r[2]==0x0b && r[3]==0xee){ // ba dd 0b ee begin of scriptstore
+	return start;
+      }
+    }
+    return 0;
+  }    
+
+  bool save_backup(int no){
+    if (no!=1 && no!=0)
+      return false;
+    int L=32*1024;
+    size_t backupaddr=0x90800000-2*L;
+    size_t storageaddr=find_storage();
+    //confirm("Storage @",hexa_print_INT_(storageaddr).c_str());
+    if (storageaddr){
+      char * sptr=(char *)storageaddr;
+      int L=32*1024;
+      if (no==0){
+	// check if sector is already formatted
+	unsigned * ptr=(unsigned *) (backupaddr);
+	for (int i=0;i<L/2;++i){
+	  if (ptr[i]!=0xffffffff){ // it's not, format
+	    erase_sector((const char *)backupaddr);
+	    break;
+	  }
+	}
+	if (sptr[4]==0 && sptr[5]==0){
+	  return false; // nothing to save 
+	}
+	WriteMemory((char *)backupaddr,(const char *)storageaddr,L);
+	return true;
+      }
+      if (no==1){
+	if (sptr[4]==0 && sptr[5]==0){
+	  return false; // nothing to save 
+	}
+	// check if sector is already formatted
+	unsigned * ptr=(unsigned *) (backupaddr+L);
+	for (int i=0;i<L/4;++i){
+	  if (ptr[i]!=0xffffffff){ // it's not, format
+	    char * buf=(char *)malloc(L);
+	    memcpy(buf,(char *)backupaddr,L);
+	    erase_sector((const char *)backupaddr);
+	    WriteMemory((char *)backupaddr,buf,L);
+	    free(buf);
+	    break;
+	  }
+	}
+	WriteMemory((char *)(backupaddr+L),(const char *)storageaddr,L);
+	return true;
+      } 
+      return true; // never reached
+    }
+    return false;
+  }
+
+  // 0 or 1 restore, 2 or 3 check if there is something to restore
+  bool restore_backup(int no){
+    if (no<0)
+      return false;
+    int L=32*1024;
+    size_t backupaddr=0x90800000-2*L;
+    size_t storageaddr=find_storage();
+    //confirm("Storage @",hexa_print_INT_(storageaddr).c_str());
+    if (!storageaddr)
+      return false;
+    char * sptr=(char *)(backupaddr+(no & 1)*L);
+    // ba dd 0b ee
+    if (sptr[0]!=0xba || sptr[1]!=0xdd || sptr[2]!=0x0b || sptr[3]!=0xee )
+      return false;
+    if (sptr[4]==0 && sptr[5]==0)
+      return false; // nothing to restore
+    if (no>=2)
+      return true;
+    memcpy((char *)storageaddr,sptr,L);
+    return true;
+  }
+  /* end section (c) B. Parisse, */
+#endif
   
   void menu_setup(GIAC_CONTEXT){
     Menu smallmenu;
@@ -12129,8 +12453,13 @@ namespace xcas {
     smallmenu.height=12;
     smallmenu.scrollbar=1;
     smallmenu.scrollout=1;
-    smallmenu.title = (char*)"Config";
+    smallmenu.title = (char *)"Config";
+  
 #ifdef NUMWORKS
+#ifdef DEVICE
+    string titles="Config (Memory "+print_INT_(_heap_size)+")";
+    smallmenu.title = (char*) titles.c_str();
+#endif
     smallmenuitems[0].type = MENUITEM_CHECKBOX;
     smallmenuitems[0].text = (char*)"x,n,t -> t";
 #endif
@@ -12146,7 +12475,7 @@ namespace xcas {
     smallmenuitems[8].text = (char*)"Deutsch&English";
     smallmenuitems[9].text = (char *) ((lang==1)?"Raccourcis clavier (0)":"Shortcuts (0)");
 #ifdef NUMWORKS
-    smallmenuitems[10].text = (char*) ((lang==1)?"Backup examen (e^x)":"Exam backup (e^x)");
+    smallmenuitems[10].text = (char*) ((lang==1)?"Backup, mode examen (e^x)":"Backup, exam mode (e^x)");
 #else
     smallmenuitems[10].text = (char*) ((lang==1)?"Mode examen (e^x)":"Exam mode (e^x)");
 #endif
@@ -12314,11 +12643,41 @@ namespace xcas {
 #endif // NSPIRE_NEWLIB
 #ifdef NUMWORKS
 #ifdef DEVICE
-	  if (do_confirm(lang==1?"Restaurer le backup du dernier examen?":"Restore last backup before last exam?")){
-	    if (extapp_restorebackup(-1))
-	      do_confirm(lang==1?"Restauration du backup reussie!":"Backup restore success!");
+	  const char * tab[]={lang==1?"Sauvegarde multi-firmwares":"Backup for multi-firmware",lang==1?"Restauration multifirmwares":"Restore multi-firmware backup",lang==1?"Lancer le mode examen":"Run exam mode",lang==1?"Backup du mode examen":"Restore exam mode backup",0};
+	  int choix=select_item(tab,"Mode examen",true);
+	  if (choix<0 || choix>4)
+	    break;
+	  if (choix==0){
+	    if (!save_backup(1))
+	      confirm(lang==1?"Rien a sauvegarder":"Nothing to save","OK?");
+	    break;
+	  }
+	  if (choix==1){
+	    if (restore_backup(3)){
+	      if (confirm(lang==1?"Les donnees actuelles vont etre effacees":"Current data will be erased!","OK/Back?")==KEY_CTRL_F1){
+		confirm(restore_backup(1)?"Success!":"Failure!","OK?");
+	      }
+	    }
 	    else
-	      do_confirm(lang==1?"Mode exam actif ou pas de backup trouve!":"Exam mode enabled or no backup found!");
+	      confirm(lang==1?"Pas de donnees":"No data.","OK/Back?");	      
+	    break;
+	  }
+	  if (choix==2){
+	    if (confirm(lang==1?"Sauvegarde, effacement puis mode examen":"Backup, clear then exam mode","OK/Back?")==KEY_CTRL_F1){
+	      if (!save_backup(0))
+		confirm(lang==1?"Rien a sauvegarder":"Nothing to save","OK?");
+	      // save to exam mode backup sector and format reset backup sector
+	      set_exammode(1,4);
+	      erase_sector(0); // means reset
+	    }
+	  }
+	  if (choix==3){
+	    if (inexammode()){ 
+	      confirm(lang==1?"Sortez d'abord du mode examen!":"Leave exam mode first!",lang==1?"(Connectez la calculatrice)":"(Connect calculator)");
+	      break;
+	    }
+	    confirm(restore_backup(0)?"Success!":"Failure!","OK?");
+	    break;
 	  }
 #endif
 	  // if (do_confirm(lang==1?"Le mode examen se lance depuis Parametres":"Enter Exam mode from Settings")) shutdown_state=1;
@@ -12398,13 +12757,13 @@ namespace xcas {
 #endif
 	      inputdouble(
 #if defined NUMWORKS && defined DEVICE
-			  "Tas MicroPy/JS en K (16-64)?"
+			  string("Tas MicroPy/JS en K (16-"+print_INT_(_heap_size/1024-52)+")?").c_str()
 #else
 			  "Tas MicroPy/JS en K (64-1728)?"
 #endif
 			  ,d,contextptr) && d==int(d) &&
 #if defined NUMWORKS && defined DEVICE
-	      d>=16 && d<=64
+	      d>=16 && d<=_heap_size/1024-52
 #else
 	      d>=64 && d<=1728
 #endif
@@ -13674,7 +14033,47 @@ namespace xcas {
     edptr->pos=0;
     return 2;
   }
-#ifdef NUMWORKS
+#if defined NUMWORKS && defined DEVICE
+  void numworks_certify_internal(){
+    // check internal flash sha256 signature
+    size_t internal_flash_start=0x08000000;
+    if (bootloader_sha256_check(internal_flash_start)){
+      confirm(lang==1?"Amorcage calculatrice certifie!":"Boot sector certified!",lang==1?"Acces amorcage par Power ln":"Access boot with Power ln");
+      Bdisp_AllClr_VRAM();
+      return;
+    }
+    PrintMini(0,0,lang==1?"Amorcage non certifie.":"Boot sector not certified.",TEXT_MODE_NORMAL,COLOR_BLACK, COLOR_WHITE);
+    std::vector<fileinfo_t> v=tar_fileinfo(flash_buf,0);
+    int i=0;
+    for (;i<v.size();++i){
+      fileinfo_t & f=v[i];
+      if (f.filename=="bootloader.bin" && f.size==bootloader_size)
+	break;
+    }
+    // check file content signature
+    unsigned romaddr=((unsigned) flash_buf) +v[i].header_offset+0x200;
+    if (i<v.size() && !bootloader_sha256_check(romaddr))
+      i=v.size();
+    if (i==v.size()){
+      PrintMini(0,18,lang==1?"Pour mettre a jour:":"Please upgrade from:",TEXT_MODE_NORMAL,COLOR_BLACK, COLOR_WHITE);
+      PrintMini(0,36,"www-fourier.univ-grenoble-alpes.fr",TEXT_MODE_NORMAL,COLOR_BLACK, COLOR_WHITE);
+      PrintMini(0,54,"/~parisse/nw",TEXT_MODE_NORMAL,COLOR_BLACK, COLOR_WHITE);
+      int key; GetKey(&key);
+    }
+    else {
+      if (confirm(lang==1?"Mise a jour de l'amorcage ?":"Update bootsector?","OK/Annul.")==KEY_CTRL_F1){
+	// sector size=16K -> erase 4 sector for 64K
+	erase_sector((const char *) internal_flash_start);
+	erase_sector((const char *) (internal_flash_start+16*1024));
+	erase_sector((const char *) (internal_flash_start+32*1024));
+	erase_sector((const char *) (internal_flash_start+48*1024));
+	WriteMemory((char *)internal_flash_start,(const char *) romaddr,bootloader_size);
+	confirm(lang==1?"Mise a jour faite":"Update done",lang==1?"Acces amorcage par Power ln":"Access boot with Power ln");
+      }
+    }
+    Bdisp_AllClr_VRAM();
+  }
+  				   
   int restore_session(const char * fname,GIAC_CONTEXT){
     // cout << "0" << fname << endl; Console_Disp(1); GetKey(&key);
     string filename(remove_path(remove_extension(fname)));
@@ -13692,9 +14091,10 @@ namespace xcas {
     if (!load_console_state_smem(filename.c_str(),contextptr)){
       if (confirm("OK: Francais, Back: English","set_language(1|0)")==KEY_CTRL_F6)
 	lang=0;
+      numworks_certify_internal();
       Bdisp_AllClr_VRAM();
       int x=0,y=0;
-      PrintMini(x,y,"KhiCAS 1.6 (c) 2020 B. Parisse",TEXT_MODE_NORMAL, COLOR_BLACK, COLOR_WHITE);
+      PrintMini(x,y,"KhiCAS 1.7 (c) 2022 B. Parisse",TEXT_MODE_NORMAL, COLOR_BLACK, COLOR_WHITE);
       y +=18;
       PrintMini(x,y,"et al, License GPL 2",TEXT_MODE_NORMAL,COLOR_BLACK, COLOR_WHITE);
       y += 18;
@@ -13733,6 +14133,21 @@ namespace xcas {
 	// fake lexer required to initialize color syntax
 	gen g("abs",contextptr);
 	*logptr(contextptr) << "Xcas interpreter, Python compatible mode\n";
+      }
+#endif
+#ifdef NUMWORKS
+      if (lang==1){
+	*logptr(contextptr) << "!!! ATTENTION !!!\n";
+	*logptr(contextptr) << "Ne faites pas de mises a jour\n";
+	*logptr(contextptr) << "depuis le site de Numworks.\n";
+	*logptr(contextptr) << "Cela verrouille la Numworks\n";
+	*logptr(contextptr) << "et empeche d'utiliser KhiCAS\n";
+      } else {
+	*logptr(contextptr) << "!!! BEWARE !!!\n";
+	*logptr(contextptr) << "Don't make upgrades\n";
+	*logptr(contextptr) << "from Numworks website\n";
+	*logptr(contextptr) << "They lock your calculator\n";
+	*logptr(contextptr) << "it's incompatible with KhiCAS\n";
       }
 #endif
       Bdisp_AllClr_VRAM();
@@ -14240,7 +14655,11 @@ namespace xcas {
       if (key==KEY_CTRL_MENU){
 #if 1
 	Menu smallmenu;
+#if defined NUMWORKS && defined DEVICE
+	smallmenu.numitems=20;
+#else
 	smallmenu.numitems=17;
+#endif
 	MenuItem smallmenuitems[smallmenu.numitems];
       
 	smallmenu.items=smallmenuitems;
@@ -14277,6 +14696,12 @@ namespace xcas {
 #else
 	  smallmenuitems[16].text = (char*) ((lang==1)?"Quitter (HOME)":"Quit");
 #endif
+#if defined NUMWORKS && defined DEVICE
+	  smallmenuitems[16].text = (char*) ((lang==1)?"Reboot autre firmware":"Reboot alt. firmware");
+	  smallmenuitems[17].text = (char*) ((lang==1)?"Sauvegarde multi-firmware":"Backup multi-firmware");
+	  smallmenuitems[18].text = (char*) ((lang==1)?"Restauration multi-firmware":"Restore multi-firmware");
+	  smallmenuitems[19].text = (char*) ((lang==1)?"Quitter (HOME)":"Quit");
+#endif
 	  if (exam_mode)
 	    smallmenuitems[16].text = (char*)((lang==1)?"Quitter le mode examen":"Quit exam mode");
 	  if (nspire_exam_mode==2)
@@ -14285,6 +14710,34 @@ namespace xcas {
 	    return KEY_SHUTDOWN;
 	  int sres = doMenu(&smallmenu);
 	  if(sres == MENU_RETURN_SELECTION || sres==KEY_CTRL_EXE) {
+#if defined NUMWORKS && defined DEVICE
+	    if (smallmenu.selection==17){
+	      int b1=is_valid(0),b2=is_valid(1),b3=is_valid(2);
+	      const char * boot_tab[]={b1?"Slot 1":"Invalid slot 1",b2?"Slot 2":"Invalid slot 2",b3?"Slot 3":"Invalid slot 3","Bootloader","Cancel/Annuler",0};
+	      int choix=select_item(boot_tab,"Reboot firmware",true);
+	      if (choix>=0 && choix<=2 && !is_valid(choix)){
+		break;
+	      }
+	      if (choix>=0 && choix<=3){
+		if (confirm(lang==1?"Les donnees seront perdues!":"Data will be lost!",lang==1?"OK/Back?":"OK/Back?")==KEY_CTRL_F1)
+		  boot_firmware(choix);
+	      }
+	      break;
+	    }
+	    if (smallmenu.selection==18){
+	      if (!save_backup(1))
+		confirm(lang==1?"Rien a sauvegarder":"Nothing to save","OK?");
+	      break;
+	    }
+	    if (smallmenu.selection==19){
+	      if (restore_backup(3)){
+		if (confirm(lang==1?"Les donnees actuelles vont etre effacees":"Current data will be erased!","OK/Back?")==KEY_CTRL_F1){
+		  confirm(restore_backup(1)?"Success!":"Failure!","OK?");
+		}
+	      }
+	      break;
+	    }
+#endif
 	    if (smallmenu.selection==smallmenu.numitems){
 	      if (nspire_exam_mode==2)
 		check_nspire_exam_mode(contextptr);
@@ -15488,6 +15941,11 @@ namespace xcas {
 #endif // NUMWORKS
 
   int console_main(GIAC_CONTEXT,const char * sessionname){
+#if defined NUMWORKS && defined DEVICE
+    // insure value not too high (_heap_size depends on launcher firmware)
+    if (pythonjs_heap_size>_heap_size-52*1024)
+      pythonjs_heap_size=_heap_size-52*1024;
+#endif
     mp_stack_ctrl_init();
     //volatile int stackTop;
     //mp_stack_set_top((void *)(&stackTop));
@@ -16311,6 +16769,92 @@ c_complex c_det(c_complex *x,int n){
 
 void c_sprint_double(char * s,double d){
   giac::sprint_double(s,d);
+}
+
+void c_turtle_forward(double d){
+  context * cascontextptr=(context *)caseval("caseval contextptr");
+  //const context * contextptr=caseval_context();
+  giac::_avance(d,cascontextptr);
+  py_ck_ctrl_c();
+}
+
+void c_turtle_left(double d){
+  context * cascontextptr=(context *)caseval("caseval contextptr");
+  giac::_tourne_gauche(d,cascontextptr);
+  py_ck_ctrl_c();
+}
+
+void c_turtle_up(int i){
+  context * cascontextptr=(context *)caseval("caseval contextptr");
+  if (i)
+    giac::_leve_crayon(0,cascontextptr);
+  else
+    giac::_baisse_crayon(0,cascontextptr);
+  py_ck_ctrl_c();
+}
+
+void c_turtle_goto(double x,double y){
+  context * cascontextptr=(context *)caseval("caseval contextptr");
+  giac::_position(makesequence(x,y),cascontextptr);
+  py_ck_ctrl_c();
+}
+
+void c_turtle_cap(double x){
+  context * cascontextptr=(context *)caseval("caseval contextptr");
+  giac::_cap(x,cascontextptr);
+  py_ck_ctrl_c();
+}
+
+void c_turtle_crayon(int i){
+  context * cascontextptr=(context *)caseval("caseval contextptr");
+  giac::_crayon(i,cascontextptr);
+  py_ck_ctrl_c();
+}
+
+void c_turtle_rond(int x,int y,int z){
+  context * cascontextptr=(context *)caseval("caseval contextptr");
+  giac::_rond(makesequence(x,y,z),cascontextptr);
+  py_ck_ctrl_c();
+}
+
+void c_turtle_disque(int x,int y,int z,int centre){
+  context * cascontextptr=(context *)caseval("caseval contextptr");
+  if (centre)
+    giac::_disque_centre(makesequence(x,y,z),cascontextptr);
+  else
+    giac::_disque(makesequence(x,y,z),cascontextptr);
+  py_ck_ctrl_c();
+}
+
+void c_turtle_fill(int i){
+  gen arg(vecteur(0));
+  if (i==0) 
+    arg.subtype=_SEQ__VECT;
+  context * cascontextptr=(context *)caseval("caseval contextptr");
+  giac::_polygone_rempli(arg,cascontextptr);
+  py_ck_ctrl_c();
+}
+
+void c_turtle_fillcolor(double r,double g,double b,int entier){
+  context * cascontextptr=(context *)caseval("caseval contextptr");
+  if (entier)
+    giac::_polygone_rempli(makesequence(int(r),int(g),int(b)),cascontextptr);
+  else
+    giac::_polygone_rempli(makesequence(r,g,b),cascontextptr);
+  py_ck_ctrl_c();
+}
+
+void c_turtle_getposition(double * x,double * y){
+  context * cascontextptr=(context *)caseval("caseval contextptr");
+  gen arg(vecteur(0)); arg.subtype=_SEQ__VECT;
+  giac::gen g=giac::_position(arg,cascontextptr);
+  if (g.type==_VECT && g._VECTptr->size()==2){
+    gen a=g._VECTptr->front(),b=g._VECTptr->back();
+    a=evalf_double(a,1,cascontextptr);
+    b=evalf_double(b,1,cascontextptr);
+    *x=a._DOUBLE_val;
+    *y=b._DOUBLE_val;
+  }
 }
 
 // auto-shutdown

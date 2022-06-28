@@ -437,7 +437,7 @@ namespace giac {
 #if defined(EMCC) || defined(EMCC2)
 #include <map>
 #endif
-#if (defined EMCC || defined EMCC2 || defined(HASH_MAP_NAMESPACE)) && defined(PRIMES32)
+#if (defined EMCC || defined EMCC2 || defined(HASH_MAP_NAMESPACE)) && defined(PRIMES32) && !defined(ADDITIONAL_PRIMES_HASHMAP)
 #define ADDITIONAL_PRIMES_HASHMAP
 #endif
 #endif // RTOS_THREADX || BESTA_OS
@@ -4163,7 +4163,7 @@ namespace giac {
 	  return g;
 	return _matrix(makesequence(g._VECTptr->size()/2,2,g),contextptr);
       }
-#ifndef EMCC
+#if !defined EMCC && defined HAVE_LIBPARI
       if (b.type==_SYMB){
 	gen res;
 	// b is assumed to be a minimal polynomial check if g is a norm 
@@ -4774,7 +4774,7 @@ namespace giac {
     else {
       // is q a power of a prime?
       double d=evalf_double(q,1,contextptr)._DOUBLE_val;
-      int maxpow=int(std::ceil(std::log(d)/std::log(3)));
+      int maxpow=int(std::ceil(std::log(d)/std::log(3.0)));
       for (int i=2;i<=maxpow;++i){
 	if ( (i>2 && i%2==0) ||
 	     (i>3 && i%3==0) ||
@@ -5218,8 +5218,8 @@ namespace giac {
     switch (t) {
     case 0: 
       mpz_mul(xz,xz,xz); mpz_tdiv_r(xz,xz,Nz); // x = longlong(x*x) % N;  
-      mpz_mul_si(az,az,2); mpz_tdiv_r(az,az,nz);  // a = longlong(a*2) % n;  
-      mpz_mul_si(bz,bz,2); mpz_tdiv_r(bz,bz,nz); // b = longlong(b*2) % n;  
+      mpz_mul_ui(az,az,2); mpz_tdiv_r(az,az,nz);  // a = longlong(a*2) % n;  
+      mpz_mul_ui(bz,bz,2); mpz_tdiv_r(bz,bz,nz); // b = longlong(b*2) % n;  
       break;
     case 1: 
       mpz_mul(xz,*alpha._ZINTptr,xz); mpz_tdiv_r(xz,xz,Nz); // x = longlong(x*alpha) % N;  
