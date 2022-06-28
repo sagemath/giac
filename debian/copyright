@@ -61,34 +61,34 @@ Copyright: 2000-2021 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
 License: GPL-3+
 
 Files: xcas.metainfo.xml
-Copyright: 2021 Bernard Parisse
+Copyright: 2021 Bernard Parisse <parisseb@orange.fr>
 License: FSFAP
 
 Files: doc/jspdf.umd.min.js
-Copyright: 2010-2020 James Hall
+Copyright: 2010-2020 James Hall <james@parall.ax>
            2015-2020 yWorks GmbH
-	             Lukas Holländer
-           2016-2018 Aras Abbasi
+           2015-2020 Lukas Holländer <lukas.hollaender@yworks.com>
+           2016-2018 Aras Abbasi <aras.abbasi@gmail.com>
            2010 Aaron Spike
            2012 Willow Systems Corporation
-	        Pablo Hess
-		Florian Jenett
+           2012 Pablo Hess
+           2012 Florian Jenett
            2013 Warren Weckesser
-	   	Youssef Beddad
-		Lee Driscoll
-		Stefan Slonevskiy
-		Jeremy More,
-	   	Christoph Hartmann
+           2013 Youssef Beddad
+           2013 Lee Driscoll
+           2013 Stefan Slonevskiy
+           2013 Jeremy Morel
+           2013 Christoph Hartmann
            2014 Juan Pablo Gaviria
-	   	James Makes
-                Diego Casorran
-                Steven Spungin
-                Kenneth Glassey
+           2014 James Makes
+           2014 Diego Casorran
+           2014 Steven Spungin
+           2014 Kenneth Glassey
 License: Expat
 
 Files: doc/jszip.min.js
 Copyright: 2009-2016 Stuart Knightley
-License: Expat
+License: Expat or GPL-3
 
 Files: doc/nws.js
 Copyright: 2020-2021 Maxime Friess
@@ -99,42 +99,69 @@ Copyright: 2003-1019 Damien P. George
            2020-2021 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
 License: Expat
 
-Files: src/gauss.cc src/isom.* src/renee.cc
+Files: src/gauss.cc src/isom.*
 Copyright: 2001-2014 Renée de Graeve <degraeve@univ-grenoble-alpes.fr>
 License: GPL-3+
 
-Files: src/ifactor.cc src/misc.cc src/permu.cc
+Files: src/renee.cc
+Copyright: 2002 Renée de Graeve <degraeve@univ-grenoble-alpes.fr>
+License: GPL-3+
+
+Files: src/ifactor.cc
+Copyright: 2003-2014 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
+           2003-2014 Renée de Graeve <degraeve@univ-grenoble-alpes.fr>
+License: GPL-3+
+
+Files: src/misc.cc
 Copyright: 2001-2007 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
            2001-2007 Renée de Graeve <degraeve@univ-grenoble-alpes.fr>
 License: GPL-3+
 
-Files: src/solve.*
+Files: src/permu.cc
+Copyright: 2005-2007 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
+           2005-2007 Renée de Graeve <degraeve@univ-grenoble-alpes.fr>
+License: GPL-3+
+
+Files: src/solve.h
 Copyright: 2000-2014 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
-           2000-2014 Renée de Graeve <degraeve@univ-grenoble-alpes.fr>
            1992 Michael J. D. Powell <M.J.D.Powell@damtp.cam.ac.uk>
            2004 Jean-Sebastien Roy <js@jeannot.org>
-License: GPL-3+
+License: GPL-3+ and Expat
+
+Files: src/solve.cc
+Copyright: 2001-2014 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
+           2001-2014 Renée de Graeve <degraeve@univ-grenoble-alpes.fr>
+           1992 Michael J. D. Powell <M.J.D.Powell@damtp.cam.ac.uk>
+           2004 Jean-Sebastien Roy <js@jeannot.org>
+License: GPL-3+ and Expat
 
 Files: src/mathml.*
-Copyright: 2003-2004 J.P. Branchard <Jean-Pierr.Branchard@ac-grenoble.fr>
+Copyright: 2003 J.P. Branchard <Jean-Pierr.Branchard@ac-grenoble.fr>
 License: GPL-3+
 
-Files: src/input_lexer.* src/input_parser.yy
+Files: src/input_lexer.ll src/input_parser.yy
+Copyright: 2001-2014 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
+License: GPL-3+
+
+Files: src/input_lexer.h
 Copyright: 1999-2000 Johannes Gutenberg University Mainz, Germany
-           2000-2007 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
 License: GPL-3+
 
 Files: src/tinymt32.*
-Copyright: 2011 Mutsuo Saito, Makoto Matsumoto
-           2011 Hiroshima University, The University of Tokyo
+Copyright: 2011 Mutsuo Saito
+           2011 Makoto Matsumoto
 License: BSD-3-clause
 
 Files: src/Tmp*
 Copyright: 2006 Stefan Kaspar <stefan.kaspar@uni-dortmund.de>
 License: GPL-3
 
-Files: src/Flv*
-Copyright: 1999-2000 Laurence Charlton
+Files: src/Flv*.H
+Copyright: 1999 Laurence Charlton
+License: GPL-2+
+
+Files: src/Flv*.cc
+Copyright: 1999 Laurence Charlton
 License: LGPL-3+
 
 Files: src/Fl_GDI_Printer.cxx
@@ -142,11 +169,11 @@ Copyright: 2002 Jean-Marc Lienher <oksid@bluewin.ch>
 License: LGPL-3+
 
 Files: src/Fl_Gl_Choice.H
-Copyright: 1998-2001 Bill Spitzak and others <fltk-bugs@easysw.com>
+Copyright: 1998-2018 Bill Spitzak and others <fltk-bugs@easysw.com>
 License: GPL-2+
 
 Files: src/pgiac
-Copyright: Jean-Michel Sarlat <jsarlat@planete.net>
+Copyright: 2008 Jean-Michel Sarlat <jm-sarlat@melusine.eu.org>
 License: GPL-1+ or Artistic
 Comment:
  This program is free software; you can redistribute it and/or modify
@@ -162,8 +189,8 @@ License: GPL-3+
 
 Files: doc/en/cascmd_en.tex doc/en/giacxcas.tex doc/en/slipres.tex
        doc/el/cascmd_el.tex
-Copyright: 2002-2009 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
-           2002-2009 Renée de Graeve <degraeve@univ-grenoble-alpes.fr>
+Copyright: 2002-2007 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
+           2002-2007 Renée de Graeve <degraeve@univ-grenoble-alpes.fr>
 License: GPL-3+
 
 Files: doc/en/casinter.tex
@@ -171,11 +198,11 @@ Copyright: 2007-2009 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
 License: GFDL-NIV-1.2+
 
 Files: doc/en/giac_us.texinfo
-Copyright: 2000-2009 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
+Copyright: 2001 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
 License: GPL-3+
 
 Files: doc/es/giac_es.texinfo
-Copyright: 2000-2002 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
+Copyright: 2001-2002 Bernard Parisse <parisse@univ-grenoble-alpes.fr>
            2002 Jose Manrique Lopez de la Fuente <jsmanrique_lopez@yahoo.es>
 License: GPL-2+
 
@@ -193,6 +220,7 @@ Files: debian/*
 Copyright: 2009 Gilles Filippini <gilles.filippini@free.fr>
            2017 Ximin Luo <infinity0@debian.org>
            2020-2021 Julien Puydt <jpuydt@debian.org>
+           2022 Ileana Dumitrescu <ileanadumi95@protonmail.com>
 License: GPL-3+
 
 Files: debian/man/*
