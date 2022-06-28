@@ -1744,6 +1744,12 @@ namespace xcas {
   void next_line(const string & s,int L,string & line,int & i){
     line="";
     for (;i<L;++i){
+      if (0 && i<L-1 && s[i]==0xd && s[i+1]==0xa){ 
+	// windows CR should not happen anymore
+	line += '\n';
+	i+=2;
+	break;
+      }
       line += ( (s[i]==char(0x7f) || s[i]==char(0243))?'\n':s[i]);
       if (s[i]=='\n'){
 	++i;

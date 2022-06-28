@@ -113,8 +113,10 @@ bool dfu_get_scriptstore_addr(size_t & start,size_t & taille);
 bool dfu_get_scriptstore(const char * fname);
 bool dfu_send_scriptstore(const char * fname);
 bool dfu_send_rescue(const char * fname);
+bool dfu_send_bootloader(const char * fname);
 const int nwstoresize1=0x8000,nwstoresize2=0x8014;
-bool dfu_send_firmware(const char * fname);
+// send to 0x90000000+offset*0x10000
+bool dfu_send_firmware(const char * fname,int offset);
 bool dfu_send_apps(const char * fname);
 bool dfu_update_khicas(const char * fname); 
 
@@ -164,6 +166,8 @@ int tar_filebrowser(const char * buf,const char ** filenames,int maxrecords,cons
 int flash_synchronize(const char * buffer,const std::vector<fileinfo_t> & finfo,size_t * tar_first_modif_offsetptr);
 ulonglong fromstring8(const char * ptr);
 std::string toString8(longlong chksum);
+void WriteMemory(char * target,const char * src,size_t length);
+void erase_sector(const char * buf);
 
 // empty trash: files marked as non readable are really removed
 // this will do 1 sector write from first sector where a file is marked to be removed to the end 
@@ -183,6 +187,37 @@ int file_savetar(const char * filename,char * buffer,size_t buffersize);
 char * numworks_gettar(size_t & tar_first_modif_offset); 
 bool numworks_sendtar(char * buffer,size_t buffersize,size_t tar_first_modif_offset=0);
 #endif
+
+//sha256 support
+#if !defined USE_GMP_REPLACEMENTS && !defined GIAC_HAS_STO_38
+#ifdef __cplusplus
+extern "C" {
+#endif
+/*************************** HEADER FILES ***************************/
+#include <stddef.h>
+
+/****************************** MACROS ******************************/
+#define SHA256_BLOCK_SIZE 32            // SHA256 outputs a 32 byte digest
+
+/**************************** DATA TYPES ****************************/
+typedef unsigned char BYTE;             // 8-bit byte
+typedef unsigned int  WORD32;             // 32-bit word, change to "long" for 16-bit machines
+
+typedef struct {
+	BYTE data[64];
+	WORD32 datalen;
+	unsigned long long bitlen;
+	WORD32 state[8];
+} SHA256_CTX;
+
+/*********************** FUNCTION DECLARATIONS **********************/
+void giac_sha256_init(SHA256_CTX *ctx);
+void giac_sha256_update(SHA256_CTX *ctx, const BYTE data[], size_t len);
+void giac_sha256_final(SHA256_CTX *ctx, BYTE hash[]);
+#ifdef __cplusplus
+}
+#endif
+#endif // sha256  
 
 #ifndef NO_NAMESPACE_GIAC
 namespace giac {
@@ -619,6 +654,9 @@ throw(std::runtime_error("Stopped by user interruption.")); \
     // bit 0-8=radius, bit9-17 angle1, bit 18-26 angle2, bit 27=1 filled  or 0 
     // <0 fill a polygon from previous turtle positions
     logo_turtle(): x(100),y(100),theta(0),visible(true),mark(true),direct(true),color(0),turtle_width(1),radius(0) {}
+    inline bool equal_except_nomark(const logo_turtle &t) const {
+      return x==t.x && y==t.y && turtle_width==t.turtle_width && s==t.s && radius==t.radius;
+    }
   };
 #else // KHICAS
   struct logo_turtle {
@@ -634,6 +672,9 @@ throw(std::runtime_error("Stopped by user interruption.")); \
     // <0 fill a polygon from previous turtle positions
     std::string s;
     void * widget;
+    inline bool equal_except_nomark(const logo_turtle &t) const {
+      return x==t.x && y==t.y  && turtle_width==t.turtle_width && s==t.s &&  radius==t.radius;
+    }
 #ifdef IPAQ
     logo_turtle(): x(70),y(70),theta(0),visible(true),mark(true),direct(true),color(0),turtle_width(1),radius(0),widget(0) {}
 #else
