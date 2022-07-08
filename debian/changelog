@@ -1,6 +1,6 @@
 giac (1.9.0.7+dfsg2-1) unstable; urgency=medium
 
-  * New upstream release.
+  * New upstream release (Closes: #1012057).
   * Remove fix_gcc11.patch (no longer neeeded).
   * Refresh patches. 
   * Update licensing.
