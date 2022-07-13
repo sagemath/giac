@@ -3,9 +3,9 @@ Author: Ximin Luo <infinity0@debian.org>
 Forwarded: TODO
 --- a/src/Graph3d.cc
 +++ b/src/Graph3d.cc
-@@ -44,7 +44,7 @@
- #include "Editeur.h"
+@@ -45,7 +45,7 @@
  #include "Xcas1.h"
+ #include "Cfg.h"
  #include "Print.h"
 -#include "gl2ps.h"
 +#include <gl2ps.h>

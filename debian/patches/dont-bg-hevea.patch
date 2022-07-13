@@ -3,7 +3,7 @@ Author: Ximin Luo <infinity0@debian.org>
 Forwarded: TODO
 --- a/src/icas.cc
 +++ b/src/icas.cc
-@@ -733,7 +733,7 @@
+@@ -988,7 +988,7 @@
  	  out.close();
  	  COUT << "File " << outfile << " created" << outfile << '\n' << "Then I will run pdflatex " << giac::remove_extension(outfile) << '\n' ;
  	  if (dohevea){
@@ -12,7 +12,7 @@ Forwarded: TODO
  	    COUT << "Running " << cmd << '\n';
  	    giac::system_no_deprecation(cmd.c_str());
  	  }
-@@ -994,8 +994,8 @@
+@@ -1249,8 +1249,8 @@
  	if (pos>=0 && pos<ss){
  	  out << s << '\n';
  	  out.close();

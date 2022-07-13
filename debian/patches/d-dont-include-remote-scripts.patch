@@ -125,7 +125,7 @@ This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
  Pour cr\'eer une commande en ligne avec r\'eponse en MathML (ou
 --- a/doc/xcas.js
 +++ b/doc/xcas.js
-@@ -3860,7 +3860,7 @@
+@@ -3863,7 +3863,7 @@
          if (!UI.usemathjax) {
            var script = document.createElement("script");
            script.type = "text/javascript";
