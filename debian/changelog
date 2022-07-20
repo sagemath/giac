@@ -1,3 +1,14 @@
+giac (1.9.0.19+dfsg2-2) unstable; urgency=medium
+
+  [ Bo Yu ]
+  * Add support for riscv64 (Closes: #1015229).
+
+  [ Ileana Dumitrescu ]
+  * Add myself as uploader.
+  * Bump standards-version to 4.6.1.
+
+ -- Ileana Dumitrescu <ileanadumi95@protonmail.com>  Wed, 20 Jul 2022 15:43:32 +0300
+
 giac (1.9.0.19+dfsg2-1) unstable; urgency=medium
 
   * New upstream release (Closes: #1012057).
