@@ -3,7 +3,8 @@ Section: science
 Priority: optional
 Maintainer: Debian Science Maintainers <debian-science-maintainers@alioth-lists.debian.net>
 Uploaders: Ximin Luo <infinity0@debian.org>,
-           Gilles Filippini <pini@debian.org>
+           Gilles Filippini <pini@debian.org>,
+           Ileana Dumitrescu <ileanadumi95@protonmail.com>
 Build-Depends: automake,
                bison,
                debhelper-compat (= 13),
@@ -42,7 +43,7 @@ Build-Depends-Indep: hevea <!nodoc>,
                      texlive-science <!nodoc>,
                      xauth <!nodoc>,
                      xvfb <!nodoc>
-Standards-Version: 4.6.0
+Standards-Version: 4.6.1
 Rules-Requires-Root: no
 Homepage: https://www-fourier.ujf-grenoble.fr/~parisse/giac.html
 Vcs-Browser: https://salsa.debian.org/science-team/giac
@@ -50,7 +51,7 @@ Vcs-Git: https://salsa.debian.org/science-team/giac.git
 
 Package: libgiac0
 Section: libs
-Architecture: amd64 arm64 armel armhf i386 mips64el mipsel
+Architecture: amd64 arm64 armel armhf i386 mips64el mipsel riscv64
 Multi-Arch: same
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Suggests: giac-doc
@@ -63,7 +64,7 @@ Description: Computer Algebra System C++ library
  This package contains the shared libraries needed to run programs using giac.
 
 Package: libgiac-dev
-Architecture: amd64 arm64 armel armhf i386 mips64el mipsel
+Architecture: amd64 arm64 armel armhf i386 mips64el mipsel riscv64
 Section: libdevel
 Depends: libfltk1.3-dev,
          libgiac0 (= ${binary:Version}),
@@ -83,7 +84,7 @@ Description: Computer Algebra System C++ library - Development files
  development files needed to build software that uses giac.
 
 Package: xcas
-Architecture: amd64 arm64 armel armhf i386 mips64el mipsel
+Architecture: amd64 arm64 armel armhf i386 mips64el mipsel riscv64
 Multi-Arch: allowed
 Depends: libgiac0 (= ${binary:Version}),
          ${misc:Depends},
