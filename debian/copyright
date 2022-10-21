@@ -228,11 +228,11 @@ Copyright: 2014 Carleos Artime <carleos@pinon.ccu.uniovi.es>
            2017 Ximin Luo <infinity0@debian.org>
 License: GPL-3+
 
-License: GPL-1
+License: GPL-1+
  On Debian GNU/Linux systems, the complete text of the GNU General Public
  License version 1 can be found in `/usr/share/common-licenses/GPL-1'
 
-License: GPL-2
+License: GPL-2+
  On Debian GNU/Linux systems, the complete text of the GNU General Public
  License version 2 can be found in `/usr/share/common-licenses/GPL-2'
 
@@ -240,11 +240,15 @@ License: GPL-3
  On Debian GNU/Linux systems, the complete text of the GNU General Public
  License version 3 can be found in `/usr/share/common-licenses/GPL-3'
 
-License: LGPL-3
+License: GPL-3+
+ On Debian GNU/Linux systems, the complete text of the GNU General Public
+ License version 3 can be found in `/usr/share/common-licenses/GPL-3'
+
+License: LGPL-3+
  On Debian GNU/Linux systems, the complete text of the GNU Lesser General
  Public License version 3 can be found in `/usr/share/common-licenses/LGPL-3'
 
-License: GFDL-NIV-1.2
+License: GFDL-NIV-1.2+
  GNU Free Documentation License with no cover texts or invariant sections.
  .
  On Debian GNU/Linux systems, the complete text of the GNU Free Documentation

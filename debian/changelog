@@ -1,13 +1,19 @@
-giac (1.9.0.19+dfsg2-2) unstable; urgency=medium
+giac (1.9.0.21+dfsg2-1) unstable; urgency=medium
+
+  [ Ileana Dumitrescu ]
+  * New upstream release.
+  * Add myself as uploader.
+  * Add patches define-anyarg.patch and increase-pari-size.patch to
+    fix FTBFS with pari 2.15.0 (Closes: #1020436).
+    Thanks to sagemath for these patches.
+  * Remove configure generated files during dh_auto_clean.
+  * Bump standards-version to 4.6.1.
+  * Update licensing.
 
   [ Bo Yu ]
   * Add support for riscv64 (Closes: #1015229).
 
-  [ Ileana Dumitrescu ]
-  * Add myself as uploader.
-  * Bump standards-version to 4.6.1.
-
- -- Ileana Dumitrescu <ileanadumi95@protonmail.com>  Wed, 20 Jul 2022 15:43:32 +0300
+ -- Ileana Dumitrescu <ileanadumitrescu95@gmail.com>  Fri, 21 Oct 2022 16:43:11 +0300
 
 giac (1.9.0.19+dfsg2-1) unstable; urgency=medium
 
