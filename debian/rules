@@ -20,6 +20,13 @@ override_dh_auto_clean:
 	if [ -f ./Makefile ]; then\
 	    rm -f ./Makefile;\
 	fi
+# Remove configure generated files
+	if [ -f ./config.log ]; then\
+	    rm -f ./config.log;\
+	fi
+	if [ -f ./config.status ]; then\
+	    rm -f ./config.status;\
+	fi
 	dh_auto_clean
 
 override_dh_autoreconf:
