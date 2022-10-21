@@ -1,0 +1,22 @@
+From f32439947309f276d963234c827c1e8918bb808c Mon Sep 17 00:00:00 2001
+From: Ileana Dumitrescu <ileanadumi95@protonmail.com>
+Date: Fri, 21 Oct 2022 17:10:36 +0300
+Subject: [PATCH] increase pari size
+
+---
+ check/chk_fhan4 | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/check/chk_fhan4 b/check/chk_fhan4
+index 5d1e1e8..29429d3 100755
+--- a/check/chk_fhan4
++++ b/check/chk_fhan4
+@@ -1,4 +1,5 @@
+ #! /bin/sh
+ unset LANG
++export PARI_SIZE=2048000
+ ../src/icas TP04-sol.cas > TP04.tst
+ diff TP04.tst TP04-sol.cas.out1
+-- 
+2.37.2
+

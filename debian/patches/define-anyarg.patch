@@ -1,0 +1,29 @@
+From 2238c88dbb3ea8eacd7b3d8f071cd8a977c47e98 Mon Sep 17 00:00:00 2001
+From: Ileana Dumitrescu <ileanadumi95@protonmail.com>
+Date: Fri, 21 Oct 2022 16:41:42 +0300
+Subject: [PATCH] define anyarg
+
+---
+ src/pari.cc | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/src/pari.cc b/src/pari.cc
+index 76ce8e1..8d5b22b 100644
+--- a/src/pari.cc
++++ b/src/pari.cc
+@@ -39,6 +39,12 @@ using namespace std;
+ #endif
+ 
+ #ifdef HAVE_LIBPARI
++// ANYARG disappeared from PARI 2.15.0
++#ifdef __cplusplus
++# define ANYARG ...
++#else
++# define ANYARG
++#endif
+ 
+ #ifdef HAVE_PTHREAD_H
+ #include <pthread.h>
+-- 
+2.37.2
+
