@@ -35,7 +35,7 @@ libbf.h list.h cutils.h qjsgiac.h \
 quickjs.h js.h quickjs-atom.h quickjs-libc.h quickjs-opcode.h bf2gmp.h
 
 noinst_LTLIBRARIES = libxcas.la
-libxcas_la_LIBADD = libgiac.la $(GUI_LIBS)
+libxcas_la_LIBADD = libgiac.la $(FLTK_LIBS)
 
 libxcas_la_SOURCES = History.cc Input.cc Xcas1.cc Equation.cc Print.cc \
 	Tableur.cc Editeur.cc Graph.cc Graph3d.cc Help1.cc Cfg.cc \
@@ -56,7 +56,7 @@ bin_PROGRAMS = icas xcas aide hevea2mml
 icas_SOURCES = icas.cc 
 icas_LDADD = libxcas.la $(GINSH_LIBS) $(GSL_LIBS) $(LAPACK_LIBS)
 aide_SOURCES = aide.cc
-aide_LDADD = libgiac.la $(GINSH_LIBS) $(GSL_LIBS) $(LAPACK_LIBS)
+aide_LDADD = libxcas.la $(GINSH_LIBS) $(GSL_LIBS) $(LAPACK_LIBS)
 hevea2mml_SOURCES = hevea2mml.cc lex_yy.c y_tab.c
 hevea2mml_LDADD = 
 
