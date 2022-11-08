@@ -1,3 +1,13 @@
+giac (1.9.0.29+dfsg2-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Update and refresh patches.
+  * Add patch fix-string-compiler-error.patch to fix FTBFS.
+  * Update lintian overrides for giac source, giac-doc, libgiac0, xcas.
+    Removes some false positive lintian errors and warnings.
+
+ -- Ileana Dumitrescu <ileanadumitrescu95@gmail.com>  Sat, 05 Nov 2022 13:58:21 +0200
+
 giac (1.9.0.21+dfsg2-1) unstable; urgency=medium
 
   [ Ileana Dumitrescu ]
