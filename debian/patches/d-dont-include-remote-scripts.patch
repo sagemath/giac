@@ -60,7 +60,7 @@ This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
    document.getElementsByTagName("head")[0].appendChild(script);
  })();
  }
-@@ -936,7 +936,7 @@
+@@ -937,7 +937,7 @@
    if (UI.usemathjax){
      var script = document.createElement("script");
      script.type = "text/javascript";
@@ -89,7 +89,7 @@ This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
    document.getElementsByTagName("head")[0].appendChild(script);
  })();
  }
-@@ -957,7 +957,7 @@
+@@ -958,7 +958,7 @@
    if (UI.usemathjax){
      var script = document.createElement("script");
      script.type = "text/javascript";

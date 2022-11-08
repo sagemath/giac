@@ -7,11 +7,9 @@ Subject: [PATCH] define anyarg
  src/pari.cc | 6 ++++++
  1 file changed, 6 insertions(+)
 
-diff --git a/src/pari.cc b/src/pari.cc
-index 76ce8e1..8d5b22b 100644
 --- a/src/pari.cc
 +++ b/src/pari.cc
-@@ -39,6 +39,12 @@ using namespace std;
+@@ -39,6 +39,12 @@
  #endif
  
  #ifdef HAVE_LIBPARI
@@ -22,8 +20,5 @@ index 76ce8e1..8d5b22b 100644
 +# define ANYARG
 +#endif
  
- #ifdef HAVE_PTHREAD_H
- #include <pthread.h>
--- 
-2.37.2
-
+ #ifndef ANYARG
+ #ifdef __cplusplus
