@@ -174,6 +174,7 @@ ECM_LIBS =
 EGREP = /usr/bin/grep -E
 EXEEXT = 
 FGREP = /usr/bin/grep -F
+FLTK_LIBS = -lfltk_images -ljpeg -lpng -lz -lfltk -lfltk_gl -lXrender -lXext -lXft -lfontconfig -lXinerama -lX11 -lGL -lglpk -lao -llapack -lblas -ldl -lpng16 -lm -lecm -lmpfi -lmpfr -lgmp  
 GENCAT = gencat
 GINSH_LIBS = -lreadline -lncurses -lglpk -lao -llapack -lblas -ldl -lpng16 -lm -lecm -lmpfi -lmpfr -lgmp 
 GLIBC2 = yes
@@ -183,7 +184,6 @@ GMPXX_LIBS = -lgmpxx
 GMSGFMT = /usr/bin/msgfmt
 GREP = /usr/bin/grep
 GSL_LIBS = -lgsl -lgslcblas
-GUI_LIBS = -lfltk_images -ljpeg -lpng -lz -lfltk -lfltk_gl -lXext -lXft -lfontconfig -lXinerama -lX11 -lGL -lglpk -lao -llapack -lblas -ldl -lpng16 -lm -lecm -lmpfi -lmpfr -lgmp  
 HAVE_ASPRINTF = 1
 HAVE_POSIX_PRINTF = 1
 HAVE_SNPRINTF = 1
@@ -310,7 +310,7 @@ top_build_prefix = ../
 top_builddir = ..
 top_srcdir = ..
 SUBDIRS = xcas  
-DIST_SUBDIRS = xcas  nspire numworks docs drivers examples extmod lib logo ports py tests tools unix ulab
+DIST_SUBDIRS = xcas  nspire numworks fxcg docs drivers examples extmod lib logo ports py tests tools unix ulab
 EXTRA_DIST = LICENSE *.md ACKNOWLEDGEMENTS
 all: all-recursive
 
