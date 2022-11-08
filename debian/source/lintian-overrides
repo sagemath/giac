@@ -1,24 +1,35 @@
 # False positive, very long regex for giac syntax
-giac source: source-is-missing doc/xcas.js
+giac source: source-is-missing [doc/xcas.js]
 
 # False positive, just very ugly code
-giac source: source-is-missing doc/giacsimple.js
+#giac source: source-is-missing [doc/giacsimple.js]
 
 # False positive, it's the list of xcas commands (on a single line...)
-giac source: source-is-missing doc/giactableau.js
+giac source: source-is-missing [doc/giactableau.js]
 
 # False positive, a unicode trie in base64!
-giac source: source-is-missing doc/html2canvas.js
+giac source: source-is-missing [doc/html2canvas.js]
 
 # Format-specification bug, see #649530
-giac source: missing-license-paragraph-in-dep5-copyright debian/copyright *+ (line *)
-giac source: unused-license-paragraph-in-dep5-copyright debian/copyright * (line *)
+#giac source: missing-license-paragraph-in-dep5-copyright debian/copyright *+ (line *)
+#giac source: unused-license-paragraph-in-dep5-copyright debian/copyright * (line *)
 
 # RFP #998381
-giac source: source-is-missing doc/jspdf.umd.min.js
+giac source: source-is-missing [doc/jspdf.umd.min.js]
 
 # RFP #998380
-giac source: source-is-missing doc/jszip.min.js
+giac source: source-is-missing [doc/jszip.min.js]
 
 # RFP #998379
-giac source: source-is-missing doc/nws.js
+giac source: source-is-missing [doc/nws.js]
+
+# False positive, source-is-missing with very-long-line-length-in-source-file
+giac source: source-is-missing [doc/algolycee.html]
+giac source: source-is-missing [doc/en/tutoriel.html]
+giac source: source-is-missing [doc/khicasnw.html]
+giac source: source-is-missing [doc/xcasen.html]
+giac source: source-is-missing [doc/xcasfr.html]
+
+# Configure generated files removed in override_dh_auto_clean
+giac source: configure-generated-file-in-source [config.log]
+giac source: configure-generated-file-in-source [config.status]
