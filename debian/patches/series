@@ -7,6 +7,7 @@ dont-bg-hevea.patch # upstream doesn't know - says hevea2mml should be used
 u-version-pari-2.11.patch # upstream doesn't know
 define-anyarg.patch
 increase-pari-size.patch
+fix-string-compiler-error.patch
 
 ## Build script patches
 missing-build-rules.patch # not for upstream
