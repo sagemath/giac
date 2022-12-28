@@ -14,7 +14,7 @@ Forwarded: in-discussion
  
 --- a/configure.ac
 +++ b/configure.ac
-@@ -570,7 +570,6 @@
+@@ -572,7 +572,6 @@
  doc/Makefile
  doc/en/Makefile
  doc/es/Makefile
