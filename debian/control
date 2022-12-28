@@ -43,7 +43,7 @@ Build-Depends-Indep: hevea <!nodoc>,
                      texlive-science <!nodoc>,
                      xauth <!nodoc>,
                      xvfb <!nodoc>
-Standards-Version: 4.6.1
+Standards-Version: 4.6.2
 Rules-Requires-Root: no
 Homepage: https://www-fourier.ujf-grenoble.fr/~parisse/giac.html
 Vcs-Browser: https://salsa.debian.org/science-team/giac
