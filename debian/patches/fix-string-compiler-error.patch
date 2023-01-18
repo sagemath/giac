@@ -9,7 +9,7 @@ Subject: [PATCH] fix string compiler error
 
 --- a/src/Graph.cc
 +++ b/src/Graph.cc
-@@ -5640,7 +5640,7 @@
+@@ -5733,7 +5733,7 @@
    }
  
    bool inputdouble(const char * msg,double & d,GIAC_CONTEXT){
