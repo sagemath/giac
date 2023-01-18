@@ -220,7 +220,7 @@ Files: debian/*
 Copyright: 2009 Gilles Filippini <gilles.filippini@free.fr>
            2017 Ximin Luo <infinity0@debian.org>
            2020-2021 Julien Puydt <jpuydt@debian.org>
-           2022 Ileana Dumitrescu <ileanadumi95@protonmail.com>
+           2022-2023 Ileana Dumitrescu <ileanadumi95@protonmail.com>
 License: GPL-3+
 
 Files: debian/man/*
