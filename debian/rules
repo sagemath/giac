@@ -15,7 +15,7 @@ endif
 # ~/.xcasrc sometimes interferes with doc/test targets, causing failures
 export HOME=/nonexistent
 
-override_dh_auto_clean:
+execute_before_dh_auto_clean:
 # Remove Makefile if it exists because it contains wrong hard-coded paths
 	if [ -f ./Makefile ]; then\
 	    rm -f ./Makefile;\
@@ -27,7 +27,6 @@ override_dh_auto_clean:
 	if [ -f ./config.status ]; then\
 	    rm -f ./config.status;\
 	fi
-	dh_auto_clean
 
 override_dh_autoreconf:
 # Deal with embedded stuff
