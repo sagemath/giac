@@ -1,0 +1,12 @@
+diff -Nru giac-1.9.0.35+dfsg2/src/plot.h giac-1.9.0.37/src/plot.h
+--- giac-1.9.0.35+dfsg2/src/plot.h	2023-01-05 17:43:36.000000000 +0200
++++ giac-1.9.0.37/src/plot.h	2023-01-09 09:52:40.000000000 +0200
+@@ -839,7 +839,7 @@
+ extern const unary_function_ptr * const at_colormap;
+ void rgb2xyz(double R,double G,double B,double &x,double &y,double &z);
+ void xyz2rgb(double x,double y,double z,double &R,double &G,double &B);
+-void blend(uchar r1,uchar g1,uchar b1,uchar r2,uchar g2,uchar b2,double t,uchar &r,uchar &g,uchar &b);
++void blend(unsigned char r1,unsigned char g1,unsigned char b1,unsigned char r2,unsigned char g2,unsigned char b2,double t,unsigned char &r,unsigned char &g,unsigned char &b);
+ gen _bezier(const gen & args,GIAC_CONTEXT);
+ 
+ #ifndef NO_NAMESPACE_GIAC
