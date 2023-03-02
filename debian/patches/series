@@ -1,6 +1,3 @@
-### For upstreaming
-plot-no-uchar.patch
-
 ## Issues with other programs, or version matches
 system-gl2ps.patch # refused
 version-bison-3.patch # refused
