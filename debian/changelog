@@ -1,3 +1,11 @@
+giac (1.9.0.37+dfsg2-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Remove plot-no-uchar.patch (fixed in upstream).
+  * Replace libfontconfig1-dev with libfontconfig-dev in build-depends.
+
+ -- Ileana Dumitrescu <ileanadumitrescu95@gmail.com>  Thu, 02 Mar 2023 17:32:05 +0200
+
 giac (1.9.0.35+dfsg2-1.1) unstable; urgency=medium
 
   * Non-maintainer upload.
