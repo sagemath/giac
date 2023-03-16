@@ -1,4 +1,4 @@
-giac (1.9.0.37+dfsg2-1) unstable; urgency=medium
+giac (1.9.0.37+dfsg2-1) experimental; urgency=medium
 
   * New upstream release.
   * Remove plot-no-uchar.patch (fixed in upstream).
