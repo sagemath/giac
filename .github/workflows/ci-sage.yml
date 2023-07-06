@@ -49,7 +49,7 @@ concurrency:
 
 env:
   # Ubuntu packages to install so that the project can build an sdist
-  DIST_PREREQ:
+  DIST_PREREQ:      automake autoconf gettext autopoint libtool pkg-config libreadline-dev libgmp-dev libmpfr-dev libmpfi-dev libntl-dev libgsl-dev pari-gp2c libpari-dev glpk-utils libglpk-dev curl libcurl4-openssl-dev cliquer libcliquer-dev gmp-ecm libecm-dev
   # Name of this project in the Sage distribution
   SPKG:             giac
   REMOVE_PATCHES:
@@ -69,7 +69,7 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get install $DIST_PREREQ
       - name: Run make dist, prepare upstream artifact
         run: |
-          (cd build/pkgs/${{ env.SPKG }}/src && git archive --format=tar.gz --prefix=${{ env.SPKG }}-git/ HEAD > ${{ env.SPKG }}-git.tar.gz) \
+          (cd build/pkgs/${{ env.SPKG }}/src && autoreconf -fi && ./configure && make dist ) \
           && mkdir -p upstream && cp build/pkgs/${{ env.SPKG }}/src/*.tar.gz upstream/${{ env.SPKG }}-git.tar.gz \
           && echo "sage-package create ${{ env.SPKG }} --version git --tarball ${{ env.SPKG }}-git.tar.gz --type=standard" > upstream/update-pkgs.sh \
           && if [ -n "${{ env.REMOVE_PATCHES }}" ]; then echo "(cd ../build/pkgs/${{ env.SPKG }}/patches && rm -f ${{ env.REMOVE_PATCHES }}; :)" >> upstream/update-pkgs.sh; fi \
