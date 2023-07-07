@@ -42,8 +42,12 @@ AC_C_BIGENDIAN
 
 dnl Check for standard C+headers
 GINAC_STD_CXX_HEADERS
+AC_CHECK_HEADERS(regex)
+AC_CHECK_FUNCS(tgammaf)
 
 dnl CXXFLAGS="$CXXFLAGS -std=c++0x"
+dnl avoid "security" checks for vectors
+CXXFLAGS="$CXXFLAGS -U_GLIBCXX_ASSERTIONS"
 
 dnl Define DOUBLEVAL if bigendian
 if test "x$ac_cv_c_bigendian" = "xyes"; then
@@ -75,6 +79,7 @@ else
   AC_CHECK_FUNCS(mpfr_set_str_raw)
   dnl Check for MPFI
   AC_CHECK_HEADERS(mpfi.h,AC_CHECK_LIB(mpfi,main))
+  AC_CHECK_HEADERS(mps/mps.h,AC_CHECK_LIB(mps,main))
   AC_ARG_ENABLE([gmpxx],
 	[AS_HELP_STRING([--enable-gmpxx], [Use GMP C+wrappers [[default=yes]]])],
 	[if test "$enableval" = "no"; then CONFIG_GMPXX="no"; fi], [])
@@ -448,22 +453,25 @@ dnl		AC_CHECK_LIB(GLU, main)
 	AC_CHECK_LIB(Xfixes,main)
 	AC_CHECK_LIB(Xinerama, main)
 	AC_CHECK_LIB(fontconfig, main)
-	AC_CHECK_LIB(Xft, main)
-	AC_CHECK_LIB(Xext, main)
-	AC_CHECK_LIB(Xrender, main)
-	AC_CHECK_LIB(fltk_gl, main)
-	AC_CHECK_LIB(fltk, main)
-	if test "$HAVE_LIBFLTK" = "1"; then
-	   AC_DEFINE([HAVE_LIBFLVW],1, [Now defined if fltk is available])
-	fi
-	AC_CHECK_LIB(z,main)
-	AC_CHECK_HEADERS(png.h, AC_CHECK_LIB(png,main))
-	AC_CHECK_LIB(jpeg, main)
-	AC_CHECK_LIB(fltk_images, main)
-	FLTK_LIBS="$LIBS $X_LIBS"
-	AC_SUBST(FLTK_LIBS)
-  cd src && ln -sf ../fltk-1.3.8 && cd ..
-  fi
+	AC_CHECK_LIB(Xft, main,[HAVE_LIBXFT=1]) dnl  ,[], [AC_MSG_ERROR(exiting, as libXft cannot be found. Hint: you can run ./configure --disable-fltk to compile without GUI)])
+        if test "$HAVE_LIBXFT" = "1" ; then
+           AC_CHECK_LIB(Xft, main)
+	   AC_CHECK_LIB(Xext, main)
+	   AC_CHECK_LIB(Xrender, main)
+	   AC_CHECK_LIB(fltk_gl, main)
+	   AC_CHECK_LIB(fltk, main)
+	   if test "$HAVE_LIBFLTK" = "1"; then
+	      AC_DEFINE([HAVE_LIBFLVW],1, [Now defined if fltk is available])
+	      fi
+	      AC_CHECK_LIB(z,main)
+	      AC_CHECK_HEADERS(png.h, AC_CHECK_LIB(png,main))
+	      AC_CHECK_LIB(jpeg, main)
+	      AC_CHECK_LIB(fltk_images, main)
+	      FLTK_LIBS="$LIBS $X_LIBS"
+	      AC_SUBST(FLTK_LIBS)
+              cd src && ln -sf ../fltk-1.3.8 && cd ..
+           fi
+        fi
 LIBS="$save_LIBS"
 
 AC_CHECK_HEADERS(dfu_lib.h) 
@@ -477,7 +485,7 @@ AC_CHECK_HEADERS(vcl1/vectorclass.h)
   
 AC_CHECK_LIB(pthread,main)
 AC_CHECK_HEADERS(pthread.h)
-AC_CHECK_HEADERS(malloc.h)
+AC_CHECK_HEADERS(malloc.h,AC_CHECK_FUNCS(mallinfo))
 AC_CHECK_FUNCS(sysconf)
 AC_CHECK_LIB(rt,clock_gettime)
   
