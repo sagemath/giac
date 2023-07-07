@@ -6729,6 +6729,8 @@ static define_unary_function_eval (__os_version,&_os_version,_os_version_s);
       }
     }
 #endif
+    if (calc_mode(contextptr)==110)
+      return string2gen(nws_caseval(args._STRNGptr->c_str()),false);
     return string2gen(caseval(args._STRNGptr->c_str()),false);
   }
   static const char _caseval_s []="caseval";
@@ -10271,6 +10273,7 @@ void sync_screen(){}
   define_unary_function_ptr5( at_dtype ,alias_at_dtype,&__dtype,0,true);
 
   void (*fltk_colormap_rgb_ptr)(int c,unsigned char &r,unsigned char &g,unsigned char &b)=0;
+  void arc_en_ciel(int k,int & r,int & g,int & b);
 
   bool index2rgb(int c,unsigned char &r,unsigned char &g,unsigned char &b) {
     if (c<256) {

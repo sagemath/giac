@@ -421,10 +421,11 @@ namespace giac {
     w=*wfront._VECTptr;
     if (w.size()!=2)
       return;
-    gen l(w[0]),m(w[1]);
+    gen l,m;
     vecteur newv;
     iterateur it=v.begin(),itend=v.end();
     for (;it!=itend;++it){
+      l=w[0];m=w[1];
       *it=simplifier(*it,contextptr);
       if (equalposcomp(excluded,*it))
 	continue;
@@ -951,7 +952,7 @@ namespace giac {
     if (d>2){
       if (has_num_coeff(w)){
 	if (complexmode)
-	  newv=proot(w,epsilon(contextptr));
+	  newv=proot(w,epsilon(contextptr),contextptr);
 	else
 	  newv=real_proot(w,epsilon(contextptr),contextptr);
 	solve_ckrange(x,newv,isolate_mode,contextptr);
@@ -1083,7 +1084,7 @@ namespace giac {
 	  try {
 #endif
 	    if (complexmode)
-	      newv=proot(w,epsilon(contextptr));
+	      newv=proot(w,epsilon(contextptr),contextptr);
 	    else {
 	      if (lvar(w_orig).empty() && !has_num_coeff(w_orig))
 		newv=gen2vecteur(_realroot(gen(makevecteur(w_orig,epsilon(contextptr),at_evalf),_SEQ__VECT),contextptr));
@@ -3907,7 +3908,7 @@ namespace giac {
 	tmp=evalf(tmp,eval_level(contextptr),contextptr);
 	if (tmp.type==_VECT && tmp._VECTptr->size()<1024){
 	  // call realroot? this would be more accurate
-	  gen res=complex_mode(contextptr)?proot(*tmp._VECTptr,epsilon(contextptr)):(lvar(tmp1).empty()?_realroot(gen(makevecteur(tmp1,epsilon(contextptr),at_evalf),_SEQ__VECT),contextptr):real_proot(*tmp._VECTptr,epsilon(contextptr),contextptr));
+	  gen res=complex_mode(contextptr)?proot(*tmp._VECTptr,epsilon(contextptr),contextptr):(lvar(tmp1).empty()?_realroot(gen(makevecteur(tmp1,epsilon(contextptr),at_evalf),_SEQ__VECT),contextptr):real_proot(*tmp._VECTptr,epsilon(contextptr),contextptr));
 	  if (res.type==_VECT && res._VECTptr->size()==1)
 	    return res._VECTptr->front();
 	  return res;
@@ -3928,7 +3929,7 @@ namespace giac {
 	    tmp=tmp._FRACptr->num;
 	  tmp=evalf(tmp,eval_level(contextptr),contextptr);
 	  if (tmp.type==_VECT){
-	    vecteur res0=complex_mode(contextptr)?proot(*tmp._VECTptr,epsilon(contextptr)):real_proot(*tmp._VECTptr,epsilon(contextptr),contextptr);
+	    vecteur res0=complex_mode(contextptr)?proot(*tmp._VECTptr,epsilon(contextptr),contextptr):real_proot(*tmp._VECTptr,epsilon(contextptr),contextptr);
 	    vecteur res;
 	    if (testpi && is_zero(subst(v0orig,v[1],M_PI,false,contextptr),contextptr))
 	      res.push_back(M_PI);
@@ -4322,7 +4323,7 @@ namespace giac {
     vecteur B,R(x);
     gen rep;
     if (A.size()==2 && x.size()==2){
-      gen a00=A[0][0];
+      gen a00=A[0][0]; a00=simplify(a00,contextptr);
       if (is_zero(a00,contextptr))
 	B=makevecteur(A[1],A[0]);
       else 
@@ -6617,8 +6618,10 @@ namespace giac {
 	return sol;
 	//return vecteur(1,gensizeerr(contextptr));
       } // end fractional power code
-      // check if one equation depends only on one unknown
-      if ((evalf_after & 4)==0){
+      if (0 && (evalf_after & 4)==0){
+        // check if one equation depends only on one unknown
+        // disabled, otherwise can't solve
+        // S:=[b^2+c^2+5*b*c-85,10*a*b^3+22*a^2*b^2+10*a^3*b-10a^3-10b^3-25*a*b^2-25a^2*b+5a^2*c+5b^2*c+25a*b*c-32a^2-32b^2+c^2-125a*b-35a-35b-7,a^4+c^4-d^4+10a*c^3+27a^2*c^2+10a^3*c-15d^3+5a^2+5c^2-53d^2+25a*c-15d,a^4-b^4-d^4-10b*d^3-27b^2*d^2-10b^3*d+70a^3+1328a^2-35b^2-35d^2-175b*d+3605a+2598,48d^4-10d^3-417d^2-2135d-7650];
 	for (unsigned i=0;i<eq.size();++i){
 	  vecteur curv=lidnt(eq[i]);
 	  gen curvvar=_intersect(makesequence(curv,var),contextptr);
