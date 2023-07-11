@@ -1,3 +1,15 @@
+giac (1.9.0.57+dfsg2-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Move to unstable after Debian release.
+  * Remove u-version-pari-2.11.patch (fixed in upstream).
+  * d/libgiac0.lintian-overrides: Add wildcard to avoid mismatched-override.
+                                  Additional false positive spelling errors.
+  * d/xcas.lintian-overrides: Additional false positive spelling errors.
+  * d/rules: Enable hardening.
+
+ -- Ileana Dumitrescu <ileanadumitrescu95@gmail.com>  Fri, 07 Jul 2023 18:50:03 +0300
+
 giac (1.9.0.43+dfsg2-1) experimental; urgency=medium
 
   * New upstream release.
