@@ -9,7 +9,7 @@ set -e
 
 ORIGDIR=`pwd`
 SRC=`pwd`
-SAGEPATCHES=$ORIGDIR/sage
+SAGEPATCHES=$ORIGDIR/sage/patches
 
 # remove unnecessary files
 rm -rf $SRC/doc/pari/*.html
@@ -20,24 +20,24 @@ sed -E -i.bak '/XCASHTML/s/[^ ]*[.](wasm|js)//g' $SRC/doc/Makefile.am
 # removing french html doc, but keep keywords, and working makefiles.
 # NB: the french html doc is huge and not GPL.
 # it is freely redistributable only for non commercial purposes.
-cd $SRC/doc/fr
-rm -rf [^Mkx]*
-rm -rf *.pdf *.eps *.pdf *.png *.cxx *.cas *.jpg *.tex *.stamp *html* cas* *.fig fig*
-# repair the build procedure with a minimal Makefile.am
-echo -e "EXTRA_DIST = xcasmenu xcasex keywords\n\nlocaldocdir = \$(docdir)/fr \n\n\
-dist_localdoc_DATA = xcasmenu xcasex keywords html_mall html_mtt html_vall">Makefile.am
-# copy and adjust a minimal Makefile.in
-cp ../local/Makefile.in ./
-sed -ie 's|localdocdir = $(docdir)/local|localdocdir = $(docdir)/fr|' Makefile.in
-sed -ie 's|doc/local|subdir = doc/fr|g' Makefile.in
-#
-touch html_mall
-touch html_mtt
-touch html_vall
-#
-
-# building giac source tarball for the spkg
-cd ../../
+if [ -d "$SRC/doc/fr" ]; then
+    cd $SRC/doc/fr
+    rm -rf [^Mkx]*
+    rm -rf *.pdf *.eps *.pdf *.png *.cxx *.cas *.jpg *.tex *.stamp *html* cas* *.fig fig*
+    # repair the build procedure with a minimal Makefile.am
+    echo -e "EXTRA_DIST = xcasmenu xcasex keywords\n\nlocaldocdir = \$(docdir)/fr \n\n\
+    dist_localdoc_DATA = xcasmenu xcasex keywords html_mall html_mtt html_vall">Makefile.am
+    # copy and adjust a minimal Makefile.in
+    cp ../local/Makefile.in ./
+    sed -ie 's|localdocdir = $(docdir)/local|localdocdir = $(docdir)/fr|' Makefile.in
+    sed -ie 's|doc/local|subdir = doc/fr|g' Makefile.in
+    #
+    touch html_mall
+    touch html_mtt
+    touch html_vall
+    # building giac source tarball for the spkg
+    cd ../../
+fi
 
 # get rid of micropython
 rm -rf micropython*
